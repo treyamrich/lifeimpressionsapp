@@ -28,7 +28,7 @@ const AuthLogin = ({ title, subtitle, subtext }: loginType) => (
 
     {subtext}
 
-    <Stack>
+    {/* <Stack>
       <Box>
         <Typography
           variant="subtitle1"
@@ -77,7 +77,7 @@ const AuthLogin = ({ title, subtitle, subtext }: loginType) => (
           Forgot Password ?
         </Typography>
       </Stack>
-    </Stack>
+    </Stack> */}
     <Box>
       <Button
         color="primary"
@@ -88,7 +88,7 @@ const AuthLogin = ({ title, subtitle, subtext }: loginType) => (
         href="/"
         type="submit"
       >
-        Sign In
+        Sign In with Google
       </Button>
     </Box>
     {subtitle}
