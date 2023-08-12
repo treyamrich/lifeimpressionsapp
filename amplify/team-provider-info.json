@@ -1,0 +1,20 @@
+{
+  "dev": {
+    "awscloudformation": {
+      "AuthRoleName": "amplify-lifeimpressionsapp-dev-82555-authRole",
+      "UnauthRoleArn": "arn:aws:iam::068621236033:role/amplify-lifeimpressionsapp-dev-82555-unauthRole",
+      "AuthRoleArn": "arn:aws:iam::068621236033:role/amplify-lifeimpressionsapp-dev-82555-authRole",
+      "Region": "us-west-2",
+      "DeploymentBucketName": "amplify-lifeimpressionsapp-dev-82555-deployment",
+      "UnauthRoleName": "amplify-lifeimpressionsapp-dev-82555-unauthRole",
+      "StackName": "amplify-lifeimpressionsapp-dev-82555",
+      "StackId": "arn:aws:cloudformation:us-west-2:068621236033:stack/amplify-lifeimpressionsapp-dev-82555/af060660-393d-11ee-a800-065fd848f1d5",
+      "AmplifyAppId": "d1afn19kbdiaeb"
+    },
+    "categories": {
+      "auth": {
+        "lifeimpressionsappbfbe04f2": {}
+      }
+    }
+  }
+}
