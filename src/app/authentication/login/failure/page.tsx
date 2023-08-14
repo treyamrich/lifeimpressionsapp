@@ -52,7 +52,7 @@ const LoginFailure = () => {
                   <Typography
                     variant="subtitle1"
                     textAlign="center"
-                    color="textSecondary"
+                    color="red"
                     mb={1}
                   >
                     Failed to sign in.
