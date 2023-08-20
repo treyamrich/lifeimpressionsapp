@@ -1,4 +1,39 @@
 {
+  "api": {
+    "lifeimpressionsapp": {
+      "dependsOn": [
+        {
+          "attributes": [
+            "UserPoolId"
+          ],
+          "category": "auth",
+          "resourceName": "lifeimpressionsappbfbe04f2"
+        }
+      ],
+      "output": {
+        "authConfig": {
+          "additionalAuthenticationProviders": [
+            {
+              "apiKeyConfig": {
+                "apiKeyExpirationDate": "2024-08-13T09:23:18.564Z",
+                "apiKeyExpirationDays": 365,
+                "description": "Sandbox api key for development LIH"
+              },
+              "authenticationType": "API_KEY"
+            }
+          ],
+          "defaultAuthentication": {
+            "authenticationType": "AMAZON_COGNITO_USER_POOLS",
+            "userPoolConfig": {
+              "userPoolId": "authlifeimpressionsappbfbe04f2"
+            }
+          }
+        }
+      },
+      "providerPlugin": "awscloudformation",
+      "service": "AppSync"
+    }
+  },
   "auth": {
     "lifeimpressionsappbfbe04f2": {
       "customAuth": false,

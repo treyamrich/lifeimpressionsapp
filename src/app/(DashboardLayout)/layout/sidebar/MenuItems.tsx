@@ -15,12 +15,29 @@ const Menuitems = [
     navlabel: true,
     subheader: "Home",
   },
-
   {
     id: uniqueId(),
     title: "Dashboard",
     icon: IconLayoutDashboard,
     href: "/",
+  },
+  {
+    id: uniqueId(),
+    title: "Inventory",
+    icon: IconLayoutDashboard,
+    href: "/inventory",
+  },
+  {
+    id: uniqueId(),
+    title: "Purchase Orders",
+    icon: IconLayoutDashboard,
+    href: "/purchaseorders",
+  },
+  {
+    id: uniqueId(),
+    title: "Orders",
+    icon: IconLayoutDashboard,
+    href: "/orders",
   },
   {
     navlabel: true,
@@ -53,22 +70,6 @@ const Menuitems = [
     title: "Register",
     icon: IconUserPlus,
     href: "/authentication/register",
-  },
-  {
-    navlabel: true,
-    subheader: "Extra",
-  },
-  {
-    id: uniqueId(),
-    title: "Icons",
-    icon: IconMoodHappy,
-    href: "/icons",
-  },
-  {
-    id: uniqueId(),
-    title: "Sample Page",
-    icon: IconAperture,
-    href: "/sample-page",
   },
 ];
 

@@ -1,0 +1,66 @@
+input AMPLIFY { globalAuthRule: AuthRule = { allow: public } } # FOR TESTING ONLY!
+
+type TShirt @model {
+  id: ID!
+  styleNumber: String!
+  brand: String!
+  color: String!
+  size: TShirtSize!
+  type: TShirtType!
+  quantityOnHand: Int!
+}
+
+enum TShirtSize {
+  NB
+  SixMonths
+  TwelveMonths
+  EighteenMonths
+  TwoT
+  ThreeT
+  FourT
+  FiveT
+  YXS
+  YS
+  YM
+  YL
+  YXL
+  AS
+  AM
+  AL
+  AXL
+  TwoX
+  ThreeX
+  FourX
+  FiveX
+}
+
+enum TShirtType {
+  Cotton
+  Drifit
+  Blend
+}
+
+type PurchaseOrder @model {
+  id: ID!
+  vendor: String!
+  orderedItems: [TShirtOrder!]! @hasMany
+}
+
+type TShirtOrder @model {
+  tshirt: TShirt!
+  quantity: Int!
+}
+
+type CustomerOrder @model {
+  id: ID!
+  contact: CustomerContact!
+  orderDate: AWSDate!
+  dateNeededBy: AWSDate
+  orderedItems: [TShirtOrder!]! @hasMany
+}
+
+type CustomerContact {
+  name: String!
+  email: String
+  phoneNumber: AWSPhone
+}
