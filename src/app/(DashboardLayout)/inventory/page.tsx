@@ -5,6 +5,12 @@ import DashboardCard from "@/app/(DashboardLayout)/components/shared/DashboardCa
 import { TShirt } from "@/API";
 import React, { useEffect, useMemo, useState, useCallback } from "react";
 import { Delete, Edit } from "@mui/icons-material";
+import { createTShirtAPI } from "@/app/graphql-helpers/create-apis";
+import {
+  type DBOperationError,
+  DBOperation,
+  defaultDbOperationError,
+} from "@/app/graphql-helpers/graphql-errors";
 import {
   tablePrimaryKey,
   entityName,
@@ -14,9 +20,10 @@ import {
   type SelectValue,
   TShirtFormError,
   initialTShirtFormState,
-  getInitialTShirtFormErrorMap
+  getInitialTShirtFormErrorMap,
 } from "./table-constants";
 import {
+  Alert,
   Box,
   Button,
   Dialog,
@@ -49,8 +56,19 @@ const Inventory = () => {
   const [columnFilters, setColumnFilters] = useState<MRT_ColumnFiltersState>(
     []
   );
+  const [dbOperationError, setDbOperationError] = useState({
+    ...defaultDbOperationError,
+  } as DBOperationError);
 
-  const handleCreateNewRow = (values: TShirt) => {
+  const handleCreateNewRow = async (values: TShirt): Promise<void> => {
+    const resp = await createTShirtAPI(values);
+    if (resp.errors && resp.errors.length > 0) {
+      setDbOperationError({
+        operationName: DBOperation.CREATE,
+        errorMessage: "Failed to create TShirt",
+      });
+      return;
+    }
     tableData.push(values);
     setTableData([...tableData]);
   };
@@ -179,6 +197,16 @@ const Inventory = () => {
 
   return (
     <PageContainer title="Inventory" description="this is Inventory">
+      {dbOperationError.errorMessage !== undefined ? (
+        <Alert
+          severity="error"
+          onClose={() => setDbOperationError({ ...defaultDbOperationError })}
+        >
+          {dbOperationError.errorMessage}
+        </Alert>
+      ) : (
+        <></>
+      )}
       <DashboardCard title="Inventory">
         <>
           <MaterialReactTable
@@ -271,7 +299,7 @@ const CreateModal = <TShirt extends Record<string, any>>({
   const resetForm = () => {
     setValues({ ...initialTShirtFormState });
     setErrorMap(getInitialTShirtFormErrorMap());
-  }
+  };
   const handleClose = () => {
     resetForm();
     onClose();
