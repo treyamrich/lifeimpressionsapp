@@ -6,6 +6,7 @@ import { TShirt } from "@/API";
 import React, { useEffect, useMemo, useState, useCallback } from "react";
 import { Delete, Edit } from "@mui/icons-material";
 import { createTShirtAPI } from "@/app/graphql-helpers/create-apis";
+import { listTShirtAPI } from "@/app/graphql-helpers/fetch-apis";
 import {
   type DBOperationError,
   DBOperation,
@@ -21,6 +22,7 @@ import {
   TShirtFormError,
   initialTShirtFormState,
   getInitialTShirtFormErrorMap,
+  getTableColumns,
 } from "./table-constants";
 import {
   Alert,
@@ -62,15 +64,8 @@ const Inventory = () => {
 
   const handleCreateNewRow = async (values: TShirt): Promise<void> => {
     const resp = await createTShirtAPI(values);
-    if (resp.errors && resp.errors.length > 0) {
-      setDbOperationError({
-        operationName: DBOperation.CREATE,
-        errorMessage: "Failed to create TShirt",
-      });
-      return;
-    }
-    tableData.push(values);
-    setTableData([...tableData]);
+    "operationName" in resp ? setDbOperationError(resp) :
+    setTableData([...tableData, resp]);
   };
 
   const handleSaveRowEdits: MaterialReactTableProps<TShirt>["onEditingRowSave"] =
@@ -139,62 +134,18 @@ const Inventory = () => {
   );
 
   const columns = useMemo<MRT_ColumnDef<TShirt>[]>(
-    () => [
-      {
-        accessorKey: "styleNumber",
-        header: "Style No.",
-        muiTableHeadCellProps: { sx: { color: "green" } }, //custom props
-        enableEditing: false,
-        helperText: "1",
-      },
-      {
-        accessorKey: "quantityOnHand",
-        header: "Qty.",
-        muiTableBodyCellEditTextFieldProps: ({ cell }) => ({
-          ...getCommonEditTextFieldProps(cell),
-          type: "number",
-        }),
-        helperText: "2",
-      },
-      {
-        accessorKey: "brand",
-        header: "Brand",
-        muiTableBodyCellEditTextFieldProps: ({ cell }) => ({
-          ...getCommonEditTextFieldProps(cell),
-        }),
-      },
-      {
-        accessorKey: "color",
-        header: "Color",
-        muiTableBodyCellEditTextFieldProps: ({ cell }) => ({
-          ...getCommonEditTextFieldProps(cell),
-        }),
-      },
-      {
-        accessorKey: "size",
-        header: "Size",
-        muiTableBodyCellEditTextFieldProps: ({ cell }) => ({
-          ...getCommonEditTextFieldProps(cell),
-        }),
-        isSelectField: true,
-      },
-      {
-        accessorKey: "type",
-        header: "Type",
-        muiTableBodyCellEditTextFieldProps: ({ cell }) => ({
-          ...getCommonEditTextFieldProps(cell),
-        }),
-        isSelectField: true,
-      },
-      {
-        accessorKey: "updatedAt",
-        header: "Last Modified",
-        enableEditing: false,
-      },
-    ],
+    () => getTableColumns(getCommonEditTextFieldProps),
     [getCommonEditTextFieldProps]
   );
 
+  const fetchTShirts = async () => {
+    const resp = await listTShirtAPI();
+    "operationName" in resp ? setDbOperationError(resp) : setTableData(resp);
+  };
+
+  useEffect(() => {
+    fetchTShirts();
+  }, []);
   return (
     <PageContainer title="Inventory" description="this is Inventory">
       {dbOperationError.errorMessage !== undefined ? (
