@@ -2,15 +2,18 @@
 
 import PageContainer from "@/app/(DashboardLayout)/components/container/PageContainer";
 import DashboardCard from "@/app/(DashboardLayout)/components/shared/DashboardCard";
-import { TShirt } from "@/API";
+import { TShirt, UpdateTShirtInput } from "@/API";
 import React, { useEffect, useMemo, useState, useCallback } from "react";
 import { Delete, Edit } from "@mui/icons-material";
 import { createTShirtAPI } from "@/app/graphql-helpers/create-apis";
 import { listTShirtAPI } from "@/app/graphql-helpers/fetch-apis";
+import { updateTShirtAPI } from "@/app/graphql-helpers/update-apis";
+
 import {
   type DBOperationError,
+  defaultDBOperationError,
+  rescueDBOperation,
   DBOperation,
-  defaultDbOperationError,
 } from "@/app/graphql-helpers/graphql-errors";
 import {
   tablePrimaryKey,
@@ -51,29 +54,38 @@ import {
 
 const Inventory = () => {
   const [createModalOpen, setCreateModalOpen] = useState(false);
-  const [tableData, setTableData] = useState<TShirt[]>(() => mockData);
+  const [tableData, setTableData] = useState<TShirt[]>([]);
   const [validationErrors, setValidationErrors] = useState<{
     [cellId: string]: string;
   }>({});
   const [columnFilters, setColumnFilters] = useState<MRT_ColumnFiltersState>(
     []
   );
-  const [dbOperationError, setDbOperationError] = useState({
-    ...defaultDbOperationError,
+  const [dbOperationError, setDBOperationError] = useState({
+    ...defaultDBOperationError,
   } as DBOperationError);
 
-  const handleCreateNewRow = async (values: TShirt): Promise<void> => {
-    const resp = await createTShirtAPI(values);
-    "operationName" in resp ? setDbOperationError(resp) :
-    setTableData([...tableData, resp]);
+  const handleCreateNewRow = (values: TShirt) => {
+    rescueDBOperation(
+      () => createTShirtAPI(values),
+      setDBOperationError,
+      DBOperation.CREATE,
+      (resp: TShirt) => setTableData([...tableData, resp])
+    );
   };
 
   const handleSaveRowEdits: MaterialReactTableProps<TShirt>["onEditingRowSave"] =
     async ({ exitEditingMode, row, values }) => {
       if (!Object.keys(validationErrors).length) {
-        tableData[row.index] = values;
-        //send/receive api updates here, then refetch or update local table data for re-render
-        setTableData([...tableData]);
+        rescueDBOperation(
+          () => updateTShirtAPI({ ...values, id: row.original.id }), //Need to copy the UUID from the original object
+          setDBOperationError,
+          DBOperation.UPDATE,
+          (resp: TShirt) => {
+            tableData[row.index] = resp;
+            setTableData([...tableData]);
+          }
+        );
         exitEditingMode(); //required to exit editing mode and close modal
       }
     };
@@ -138,9 +150,13 @@ const Inventory = () => {
     [getCommonEditTextFieldProps]
   );
 
-  const fetchTShirts = async () => {
-    const resp = await listTShirtAPI();
-    "operationName" in resp ? setDbOperationError(resp) : setTableData(resp);
+  const fetchTShirts = () => {
+    rescueDBOperation(
+      listTShirtAPI,
+      setDBOperationError,
+      DBOperation.LIST,
+      (resp: TShirt[]) => setTableData(resp)
+    );
   };
 
   useEffect(() => {
@@ -151,7 +167,7 @@ const Inventory = () => {
       {dbOperationError.errorMessage !== undefined ? (
         <Alert
           severity="error"
-          onClose={() => setDbOperationError({ ...defaultDbOperationError })}
+          onClose={() => setDBOperationError({ ...defaultDBOperationError })}
         >
           {dbOperationError.errorMessage}
         </Alert>
