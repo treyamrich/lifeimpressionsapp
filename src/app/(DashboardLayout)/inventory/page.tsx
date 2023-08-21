@@ -2,7 +2,7 @@
 
 import PageContainer from "@/app/(DashboardLayout)/components/container/PageContainer";
 import DashboardCard from "@/app/(DashboardLayout)/components/shared/DashboardCard";
-import { TShirt, UpdateTShirtInput } from "@/API";
+import { TShirt } from "@/API";
 import React, { useEffect, useMemo, useState, useCallback } from "react";
 import { Delete, Edit } from "@mui/icons-material";
 import { createTShirtAPI } from "@/app/graphql-helpers/create-apis";
@@ -20,9 +20,7 @@ import {
   entityName,
   selectInputFields,
   excludeOnCreateFields,
-  mockData,
   type SelectValue,
-  TShirtFormError,
   initialTShirtFormState,
   getInitialTShirtFormErrorMap,
   getTableColumns,
@@ -103,9 +101,16 @@ const Inventory = () => {
       ) {
         return;
       }
-      //send api delete request here, then refetch or update local table data for re-render
-      tableData.splice(row.index, 1);
-      setTableData([...tableData]);
+      const deletedTShirt = {...row.original, isDeleted: true};
+      rescueDBOperation(
+        () => updateTShirtAPI(deletedTShirt),
+        setDBOperationError,
+        DBOperation.DELETE,
+        () => {
+            tableData.splice(row.index, 1);
+            setTableData([...tableData]);
+        }
+      )
     },
     [tableData]
   );
@@ -151,13 +156,12 @@ const Inventory = () => {
   );
 
   const fetchTShirts = () => {
+    const deletedFilter = { isDeleted: { ne: true }};
     rescueDBOperation(
-      listTShirtAPI,
+      () => listTShirtAPI(deletedFilter),
       setDBOperationError,
       DBOperation.LIST,
-      (resp: TShirt[]) => {
-        setTableData(resp);
-      }
+      (resp: TShirt[]) => setTableData(resp)
     );
   };
 

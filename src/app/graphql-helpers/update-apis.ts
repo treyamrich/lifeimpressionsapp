@@ -17,7 +17,6 @@ export const updateTShirtAPI = async (
 ): Promise<TShirt> => {
   //Clean up the data by removing fields not defined in the graphql request
   const updatedTShirt = cleanObjectForUpdate(tshirt);
-  console.log("before", updatedTShirt);
   const resp = await API.graphql<GraphQLQuery<UpdateTShirtMutation>>({
     query: updateTShirt,
     variables: { input: updatedTShirt },
@@ -28,6 +27,5 @@ export const updateTShirtAPI = async (
       console.log(e);
       throw new Error("Failed to update TShirt");
     });
-    console.log(resp);
   return resp;
 };

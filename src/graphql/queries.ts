@@ -3,15 +3,15 @@
 // this is an auto generated file. This will be overwritten
 
 export const getTShirt = /* GraphQL */ `
-  query GetTShirt($id: ID!) {
-    getTShirt(id: $id) {
-      id
+  query GetTShirt($styleNumber: String!) {
+    getTShirt(styleNumber: $styleNumber) {
       styleNumber
       brand
       color
       size
       type
       quantityOnHand
+      isDeleted
       createdAt
       updatedAt
       __typename
@@ -20,19 +20,27 @@ export const getTShirt = /* GraphQL */ `
 `;
 export const listTShirts = /* GraphQL */ `
   query ListTShirts(
+    $styleNumber: String
     $filter: ModelTShirtFilterInput
     $limit: Int
     $nextToken: String
+    $sortDirection: ModelSortDirection
   ) {
-    listTShirts(filter: $filter, limit: $limit, nextToken: $nextToken) {
+    listTShirts(
+      styleNumber: $styleNumber
+      filter: $filter
+      limit: $limit
+      nextToken: $nextToken
+      sortDirection: $sortDirection
+    ) {
       items {
-        id
         styleNumber
         brand
         color
         size
         type
         quantityOnHand
+        isDeleted
         createdAt
         updatedAt
         __typename
@@ -48,15 +56,6 @@ export const getPurchaseOrder = /* GraphQL */ `
       id
       vendor
       orderedItems {
-        items {
-          quantity
-          id
-          createdAt
-          updatedAt
-          purchaseOrderOrderedItemsId
-          customerOrderOrderedItemsId
-          __typename
-        }
         nextToken
         __typename
       }
@@ -76,10 +75,6 @@ export const listPurchaseOrders = /* GraphQL */ `
       items {
         id
         vendor
-        orderedItems {
-          nextToken
-          __typename
-        }
         createdAt
         updatedAt
         __typename
@@ -93,13 +88,13 @@ export const getTShirtOrder = /* GraphQL */ `
   query GetTShirtOrder($id: ID!) {
     getTShirtOrder(id: $id) {
       tshirt {
-        id
         styleNumber
         brand
         color
         size
         type
         quantityOnHand
+        isDeleted
         createdAt
         updatedAt
         __typename
@@ -122,18 +117,6 @@ export const listTShirtOrders = /* GraphQL */ `
   ) {
     listTShirtOrders(filter: $filter, limit: $limit, nextToken: $nextToken) {
       items {
-        tshirt {
-          id
-          styleNumber
-          brand
-          color
-          size
-          type
-          quantityOnHand
-          createdAt
-          updatedAt
-          __typename
-        }
         quantity
         id
         createdAt
@@ -160,15 +143,6 @@ export const getCustomerOrder = /* GraphQL */ `
       orderDate
       dateNeededBy
       orderedItems {
-        items {
-          quantity
-          id
-          createdAt
-          updatedAt
-          purchaseOrderOrderedItemsId
-          customerOrderOrderedItemsId
-          __typename
-        }
         nextToken
         __typename
       }
@@ -187,18 +161,8 @@ export const listCustomerOrders = /* GraphQL */ `
     listCustomerOrders(filter: $filter, limit: $limit, nextToken: $nextToken) {
       items {
         id
-        contact {
-          name
-          email
-          phoneNumber
-          __typename
-        }
         orderDate
         dateNeededBy
-        orderedItems {
-          nextToken
-          __typename
-        }
         createdAt
         updatedAt
         __typename

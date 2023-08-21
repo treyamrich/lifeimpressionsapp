@@ -5,13 +5,13 @@
 export const onCreateTShirt = /* GraphQL */ `
   subscription OnCreateTShirt($filter: ModelSubscriptionTShirtFilterInput) {
     onCreateTShirt(filter: $filter) {
-      id
       styleNumber
       brand
       color
       size
       type
       quantityOnHand
+      isDeleted
       createdAt
       updatedAt
       __typename
@@ -21,13 +21,13 @@ export const onCreateTShirt = /* GraphQL */ `
 export const onUpdateTShirt = /* GraphQL */ `
   subscription OnUpdateTShirt($filter: ModelSubscriptionTShirtFilterInput) {
     onUpdateTShirt(filter: $filter) {
-      id
       styleNumber
       brand
       color
       size
       type
       quantityOnHand
+      isDeleted
       createdAt
       updatedAt
       __typename
@@ -37,13 +37,13 @@ export const onUpdateTShirt = /* GraphQL */ `
 export const onDeleteTShirt = /* GraphQL */ `
   subscription OnDeleteTShirt($filter: ModelSubscriptionTShirtFilterInput) {
     onDeleteTShirt(filter: $filter) {
-      id
       styleNumber
       brand
       color
       size
       type
       quantityOnHand
+      isDeleted
       createdAt
       updatedAt
       __typename
@@ -58,15 +58,6 @@ export const onCreatePurchaseOrder = /* GraphQL */ `
       id
       vendor
       orderedItems {
-        items {
-          quantity
-          id
-          createdAt
-          updatedAt
-          purchaseOrderOrderedItemsId
-          customerOrderOrderedItemsId
-          __typename
-        }
         nextToken
         __typename
       }
@@ -84,15 +75,6 @@ export const onUpdatePurchaseOrder = /* GraphQL */ `
       id
       vendor
       orderedItems {
-        items {
-          quantity
-          id
-          createdAt
-          updatedAt
-          purchaseOrderOrderedItemsId
-          customerOrderOrderedItemsId
-          __typename
-        }
         nextToken
         __typename
       }
@@ -110,15 +92,6 @@ export const onDeletePurchaseOrder = /* GraphQL */ `
       id
       vendor
       orderedItems {
-        items {
-          quantity
-          id
-          createdAt
-          updatedAt
-          purchaseOrderOrderedItemsId
-          customerOrderOrderedItemsId
-          __typename
-        }
         nextToken
         __typename
       }
@@ -134,13 +107,13 @@ export const onCreateTShirtOrder = /* GraphQL */ `
   ) {
     onCreateTShirtOrder(filter: $filter) {
       tshirt {
-        id
         styleNumber
         brand
         color
         size
         type
         quantityOnHand
+        isDeleted
         createdAt
         updatedAt
         __typename
@@ -161,13 +134,13 @@ export const onUpdateTShirtOrder = /* GraphQL */ `
   ) {
     onUpdateTShirtOrder(filter: $filter) {
       tshirt {
-        id
         styleNumber
         brand
         color
         size
         type
         quantityOnHand
+        isDeleted
         createdAt
         updatedAt
         __typename
@@ -188,13 +161,13 @@ export const onDeleteTShirtOrder = /* GraphQL */ `
   ) {
     onDeleteTShirtOrder(filter: $filter) {
       tshirt {
-        id
         styleNumber
         brand
         color
         size
         type
         quantityOnHand
+        isDeleted
         createdAt
         updatedAt
         __typename
@@ -224,15 +197,6 @@ export const onCreateCustomerOrder = /* GraphQL */ `
       orderDate
       dateNeededBy
       orderedItems {
-        items {
-          quantity
-          id
-          createdAt
-          updatedAt
-          purchaseOrderOrderedItemsId
-          customerOrderOrderedItemsId
-          __typename
-        }
         nextToken
         __typename
       }
@@ -257,15 +221,6 @@ export const onUpdateCustomerOrder = /* GraphQL */ `
       orderDate
       dateNeededBy
       orderedItems {
-        items {
-          quantity
-          id
-          createdAt
-          updatedAt
-          purchaseOrderOrderedItemsId
-          customerOrderOrderedItemsId
-          __typename
-        }
         nextToken
         __typename
       }
@@ -290,15 +245,6 @@ export const onDeleteCustomerOrder = /* GraphQL */ `
       orderDate
       dateNeededBy
       orderedItems {
-        items {
-          quantity
-          id
-          createdAt
-          updatedAt
-          purchaseOrderOrderedItemsId
-          customerOrderOrderedItemsId
-          __typename
-        }
         nextToken
         __typename
       }
