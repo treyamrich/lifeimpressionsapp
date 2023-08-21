@@ -2,12 +2,13 @@
 
 import PageContainer from "@/app/(DashboardLayout)/components/container/PageContainer";
 import DashboardCard from "@/app/(DashboardLayout)/components/shared/DashboardCard";
-import { TShirt } from "@/API";
+import { TShirt, TShirtSize } from "@/API";
 import React, { useEffect, useMemo, useState, useCallback } from "react";
 import { Delete, Edit } from "@mui/icons-material";
 import { createTShirtAPI } from "@/app/graphql-helpers/create-apis";
 import { listTShirtAPI } from "@/app/graphql-helpers/fetch-apis";
 import { updateTShirtAPI } from "@/app/graphql-helpers/update-apis";
+import { toReadableDateTime } from "@/utils/datetimeConversions";
 
 import {
   type DBOperationError,
@@ -101,16 +102,16 @@ const Inventory = () => {
       ) {
         return;
       }
-      const deletedTShirt = {...row.original, isDeleted: true};
+      const deletedTShirt = { ...row.original, isDeleted: true };
       rescueDBOperation(
         () => updateTShirtAPI(deletedTShirt),
         setDBOperationError,
         DBOperation.DELETE,
         () => {
-            tableData.splice(row.index, 1);
-            setTableData([...tableData]);
+          tableData.splice(row.index, 1);
+          setTableData([...tableData]);
         }
-      )
+      );
     },
     [tableData]
   );
@@ -156,12 +157,19 @@ const Inventory = () => {
   );
 
   const fetchTShirts = () => {
-    const deletedFilter = { isDeleted: { ne: true }};
+    const deletedFilter = { isDeleted: { ne: true } };
+    let newTableData = [];
     rescueDBOperation(
       () => listTShirtAPI(deletedFilter),
       setDBOperationError,
       DBOperation.LIST,
-      (resp: TShirt[]) => setTableData(resp)
+      (resp: TShirt[]) => {
+        setTableData(
+          resp.map((tshirt: TShirt) => {
+            return { ...tshirt, updatedAt: toReadableDateTime(tshirt.updatedAt) };
+          })
+        );
+      }
     );
   };
 
@@ -307,10 +315,10 @@ const CreateModal = <TShirt extends Record<string, any>>({
     });
     setErrorMap(newErrors);
 
-    if(allValid) {
-        onSubmit(values);
-        resetForm();
-        onClose();
+    if (allValid) {
+      onSubmit(values);
+      resetForm();
+      onClose();
     }
   };
 
