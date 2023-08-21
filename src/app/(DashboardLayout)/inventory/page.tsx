@@ -155,7 +155,10 @@ const Inventory = () => {
       listTShirtAPI,
       setDBOperationError,
       DBOperation.LIST,
-      (resp: TShirt[]) => setTableData(resp)
+      (resp: TShirt[]) => {
+        console.log(resp);
+        setTableData(resp)
+      }
     );
   };
 

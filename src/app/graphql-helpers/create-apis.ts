@@ -8,7 +8,7 @@ export const createTShirtAPI = async (
 ): Promise<TShirt> => {
   const resp = await API.graphql<GraphQLQuery<CreateTShirtMutation>>({
     query: createTShirt,
-    variables: { input: { tshirt, a: "1" } },
+    variables: { input: tshirt },
     authMode: GRAPHQL_AUTH_MODE.API_KEY,
   })
     .then((res) => res.data?.createTShirt as TShirt)
