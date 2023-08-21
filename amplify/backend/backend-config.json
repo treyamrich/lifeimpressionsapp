@@ -15,9 +15,9 @@
           "additionalAuthenticationProviders": [
             {
               "apiKeyConfig": {
-                "apiKeyExpirationDate": "2024-08-13T09:23:18.564Z",
-                "apiKeyExpirationDays": 365,
-                "description": "Sandbox api key for development LIH"
+                "apiKeyExpirationDate": "2023-08-28T02:17:14.750Z",
+                "apiKeyExpirationDays": 7,
+                "description": ""
               },
               "authenticationType": "API_KEY"
             }

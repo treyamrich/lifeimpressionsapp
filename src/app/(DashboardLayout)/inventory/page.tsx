@@ -78,7 +78,7 @@ const Inventory = () => {
     async ({ exitEditingMode, row, values }) => {
       if (!Object.keys(validationErrors).length) {
         rescueDBOperation(
-          () => updateTShirtAPI({ ...values, id: row.original.id }), //Need to copy the UUID from the original object
+          () => updateTShirtAPI(values),
           setDBOperationError,
           DBOperation.UPDATE,
           (resp: TShirt) => {
@@ -156,8 +156,7 @@ const Inventory = () => {
       setDBOperationError,
       DBOperation.LIST,
       (resp: TShirt[]) => {
-        console.log(resp);
-        setTableData(resp)
+        setTableData(resp);
       }
     );
   };
@@ -231,6 +230,7 @@ const Inventory = () => {
             onClose={() => setCreateModalOpen(false)}
             onSubmit={handleCreateNewRow}
             entityName={entityName}
+            records={tableData}
           />
         </>
       </DashboardCard>
@@ -246,6 +246,7 @@ interface CreateModalProps<TShirt extends Record<string, any>> {
   onSubmit: (values: TShirt) => void;
   open: boolean;
   entityName: String;
+  records: TShirt[];
 }
 
 const CreateModal = <TShirt extends Record<string, any>>({
@@ -254,6 +255,7 @@ const CreateModal = <TShirt extends Record<string, any>>({
   onClose,
   onSubmit,
   entityName,
+  records,
 }: CreateModalProps<TShirt>) => {
   //Initial TShirt values
   const [values, setValues] = useState<any>(() => {
@@ -276,22 +278,36 @@ const CreateModal = <TShirt extends Record<string, any>>({
   };
 
   const handleSubmit = () => {
+    //Validate input
     const newErrors = new Map<string, string>(errorMap);
     let allValid = true;
     Object.keys(values).forEach((key) => {
-      let errMsg = validateFormFieldValue(key, values[key]).message;
+      let errMsg = "";
+      let value = values[key];
+      if (key === "quantityOnHand" && value < 0) {
+        errMsg = "Qty. must be non-negative";
+      } else if (value.toString().length < 1) {
+        errMsg = "Field is required";
+      } else if (
+        key === "styleNumber" &&
+        records.reduce(
+          (prev, curr) => prev || curr.styleNumber === value,
+          false
+        )
+      ) {
+        //Enforce primary key attribute
+        errMsg = "Duplicate style numbers not allowed";
+      }
       newErrors.set(key, errMsg);
       allValid = allValid && errMsg === "";
     });
+    setErrorMap(newErrors);
 
-    if (!allValid) {
-      setErrorMap(newErrors);
-      return;
+    if(allValid) {
+        onSubmit(values);
+        resetForm();
+        onClose();
     }
-
-    onSubmit(values);
-    resetForm();
-    onClose();
   };
 
   return (
@@ -358,17 +374,4 @@ const isSelectInputField = (
 ) => {
   let nameOfField = fieldName ? fieldName.toString() : "";
   return selectInputFields.has(nameOfField);
-};
-
-const validateFormFieldValue = (
-  columnName: string,
-  value: any
-): TShirtFormError => {
-  let errMsg = "";
-  if (columnName === "quantityOnHand" && value < 0) {
-    errMsg = "Qty. must be non-negative";
-  } else if (value.toString().length < 1) {
-    errMsg = "Field is required";
-  }
-  return { message: errMsg };
 };

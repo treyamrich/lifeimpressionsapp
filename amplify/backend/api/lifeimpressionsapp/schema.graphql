@@ -1,13 +1,13 @@
 input AMPLIFY { globalAuthRule: AuthRule = { allow: public } } # FOR TESTING ONLY!
 
 type TShirt @model {
-  id: ID!
-  styleNumber: String!
+  styleNumber: String! @primaryKey
   brand: String!
   color: String!
   size: TShirtSize!
   type: TShirtType!
-  quantityOnHand: Int!
+  quantityOnHand: Int @default(value: "0")
+  isDeleted: Boolean @default(value: "false")
 }
 
 enum TShirtSize {
@@ -64,3 +64,4 @@ type CustomerContact {
   email: String
   phoneNumber: AWSPhone
 }
+
