@@ -2,7 +2,7 @@
 
 import PageContainer from "@/app/(DashboardLayout)/components/container/PageContainer";
 import DashboardCard from "@/app/(DashboardLayout)/components/shared/DashboardCard";
-import { TShirt, TShirtSize } from "@/API";
+import { TShirt } from "@/API";
 import React, { useEffect, useMemo, useState, useCallback } from "react";
 import { Delete, Edit } from "@mui/icons-material";
 import { createTShirtAPI } from "@/app/graphql-helpers/create-apis";
@@ -158,7 +158,6 @@ const Inventory = () => {
 
   const fetchTShirts = () => {
     const deletedFilter = { isDeleted: { ne: true } };
-    let newTableData = [];
     rescueDBOperation(
       () => listTShirtAPI(deletedFilter),
       setDBOperationError,
@@ -166,7 +165,10 @@ const Inventory = () => {
       (resp: TShirt[]) => {
         setTableData(
           resp.map((tshirt: TShirt) => {
-            return { ...tshirt, updatedAt: toReadableDateTime(tshirt.updatedAt) };
+            return {
+              ...tshirt,
+              updatedAt: toReadableDateTime(tshirt.updatedAt),
+            };
           })
         );
       }
@@ -205,7 +207,9 @@ const Inventory = () => {
             editingMode="modal" //default
             enableColumnOrdering
             onColumnFiltersChange={setColumnFilters}
-            state={{ columnFilters }}
+            state={{
+              columnFilters,
+            }}
             enableEditing
             onEditingRowSave={handleSaveRowEdits}
             onEditingRowCancel={handleCancelRowEdits}

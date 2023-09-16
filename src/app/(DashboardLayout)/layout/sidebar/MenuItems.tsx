@@ -31,7 +31,7 @@ const Menuitems = [
     id: uniqueId(),
     title: "Purchase Orders",
     icon: IconLayoutDashboard,
-    href: "/purchaseorders",
+    href: "/purchase-orders",
   },
   {
     id: uniqueId(),
