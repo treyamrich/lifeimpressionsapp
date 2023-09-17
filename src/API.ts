@@ -201,6 +201,7 @@ export type TShirtOrder = {
   __typename: "TShirtOrder",
   tshirt: TShirt,
   quantity: number,
+  amountReceived?: number | null,
   id: string,
   createdAt: string,
   updatedAt: string,
@@ -282,6 +283,7 @@ export type DeletePurchaseOrderChangeInput = {
 
 export type CreateTShirtOrderInput = {
   quantity: number,
+  amountReceived?: number | null,
   id?: string | null,
   purchaseOrderOrderedItemsId?: string | null,
   customerOrderOrderedItemsId?: string | null,
@@ -290,6 +292,7 @@ export type CreateTShirtOrderInput = {
 
 export type ModelTShirtOrderConditionInput = {
   quantity?: ModelIntInput | null,
+  amountReceived?: ModelIntInput | null,
   and?: Array< ModelTShirtOrderConditionInput | null > | null,
   or?: Array< ModelTShirtOrderConditionInput | null > | null,
   not?: ModelTShirtOrderConditionInput | null,
@@ -300,6 +303,7 @@ export type ModelTShirtOrderConditionInput = {
 
 export type UpdateTShirtOrderInput = {
   quantity?: number | null,
+  amountReceived?: number | null,
   id: string,
   purchaseOrderOrderedItemsId?: string | null,
   customerOrderOrderedItemsId?: string | null,
@@ -412,6 +416,7 @@ export type ModelPurchaseOrderChangeFilterInput = {
 
 export type ModelTShirtOrderFilterInput = {
   quantity?: ModelIntInput | null,
+  amountReceived?: ModelIntInput | null,
   and?: Array< ModelTShirtOrderFilterInput | null > | null,
   or?: Array< ModelTShirtOrderFilterInput | null > | null,
   not?: ModelTShirtOrderFilterInput | null,
@@ -511,6 +516,7 @@ export type ModelSubscriptionPurchaseOrderChangeFilterInput = {
 
 export type ModelSubscriptionTShirtOrderFilterInput = {
   quantity?: ModelSubscriptionIntInput | null,
+  amountReceived?: ModelSubscriptionIntInput | null,
   and?: Array< ModelSubscriptionTShirtOrderFilterInput | null > | null,
   or?: Array< ModelSubscriptionTShirtOrderFilterInput | null > | null,
 };
@@ -766,6 +772,7 @@ export type CreateTShirtOrderMutation = {
       updatedAt: string,
     },
     quantity: number,
+    amountReceived?: number | null,
     id: string,
     createdAt: string,
     updatedAt: string,
@@ -796,6 +803,7 @@ export type UpdateTShirtOrderMutation = {
       updatedAt: string,
     },
     quantity: number,
+    amountReceived?: number | null,
     id: string,
     createdAt: string,
     updatedAt: string,
@@ -826,6 +834,7 @@ export type DeleteTShirtOrderMutation = {
       updatedAt: string,
     },
     quantity: number,
+    amountReceived?: number | null,
     id: string,
     createdAt: string,
     updatedAt: string,
@@ -1075,6 +1084,7 @@ export type GetTShirtOrderQuery = {
       updatedAt: string,
     },
     quantity: number,
+    amountReceived?: number | null,
     id: string,
     createdAt: string,
     updatedAt: string,
@@ -1096,6 +1106,7 @@ export type ListTShirtOrdersQuery = {
     items:  Array< {
       __typename: "TShirtOrder",
       quantity: number,
+      amountReceived?: number | null,
       id: string,
       createdAt: string,
       updatedAt: string,
@@ -1386,6 +1397,7 @@ export type OnCreateTShirtOrderSubscription = {
       updatedAt: string,
     },
     quantity: number,
+    amountReceived?: number | null,
     id: string,
     createdAt: string,
     updatedAt: string,
@@ -1415,6 +1427,7 @@ export type OnUpdateTShirtOrderSubscription = {
       updatedAt: string,
     },
     quantity: number,
+    amountReceived?: number | null,
     id: string,
     createdAt: string,
     updatedAt: string,
@@ -1444,6 +1457,7 @@ export type OnDeleteTShirtOrderSubscription = {
       updatedAt: string,
     },
     quantity: number,
+    amountReceived?: number | null,
     id: string,
     createdAt: string,
     updatedAt: string,

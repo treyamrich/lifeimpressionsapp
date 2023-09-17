@@ -234,6 +234,7 @@ export const createTShirtOrder = /* GraphQL */ `
         __typename
       }
       quantity
+      amountReceived
       id
       createdAt
       updatedAt
@@ -263,6 +264,7 @@ export const updateTShirtOrder = /* GraphQL */ `
         __typename
       }
       quantity
+      amountReceived
       id
       createdAt
       updatedAt
@@ -292,6 +294,7 @@ export const deleteTShirtOrder = /* GraphQL */ `
         __typename
       }
       quantity
+      amountReceived
       id
       createdAt
       updatedAt

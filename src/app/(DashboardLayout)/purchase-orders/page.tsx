@@ -102,6 +102,7 @@ const PurchaseOrders = () => {
       (resp: PurchaseOrder[]) => {
         setTableData(
           resp.map((PurchaseOrder: PurchaseOrder) => {
+            console.log(resp);
             return {
               ...PurchaseOrder,
               updatedAt: toReadableDateTime(PurchaseOrder.updatedAt),

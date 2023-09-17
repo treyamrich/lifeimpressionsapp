@@ -158,6 +158,7 @@ export const getTShirtOrder = /* GraphQL */ `
         __typename
       }
       quantity
+      amountReceived
       id
       createdAt
       updatedAt
@@ -177,6 +178,7 @@ export const listTShirtOrders = /* GraphQL */ `
     listTShirtOrders(filter: $filter, limit: $limit, nextToken: $nextToken) {
       items {
         quantity
+        amountReceived
         id
         createdAt
         updatedAt
