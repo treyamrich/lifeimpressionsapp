@@ -204,8 +204,8 @@ export type TShirtOrder = {
   id: string,
   createdAt: string,
   updatedAt: string,
-  purchaseOrderOrderedItemsId: string,
-  customerOrderOrderedItemsId: string,
+  purchaseOrderOrderedItemsId?: string | null,
+  customerOrderOrderedItemsId?: string | null,
   tShirtOrderTshirtStyleNumber: string,
 };
 
@@ -283,8 +283,8 @@ export type DeletePurchaseOrderChangeInput = {
 export type CreateTShirtOrderInput = {
   quantity: number,
   id?: string | null,
-  purchaseOrderOrderedItemsId: string,
-  customerOrderOrderedItemsId: string,
+  purchaseOrderOrderedItemsId?: string | null,
+  customerOrderOrderedItemsId?: string | null,
   tShirtOrderTshirtStyleNumber: string,
 };
 
@@ -769,8 +769,8 @@ export type CreateTShirtOrderMutation = {
     id: string,
     createdAt: string,
     updatedAt: string,
-    purchaseOrderOrderedItemsId: string,
-    customerOrderOrderedItemsId: string,
+    purchaseOrderOrderedItemsId?: string | null,
+    customerOrderOrderedItemsId?: string | null,
     tShirtOrderTshirtStyleNumber: string,
   } | null,
 };
@@ -799,8 +799,8 @@ export type UpdateTShirtOrderMutation = {
     id: string,
     createdAt: string,
     updatedAt: string,
-    purchaseOrderOrderedItemsId: string,
-    customerOrderOrderedItemsId: string,
+    purchaseOrderOrderedItemsId?: string | null,
+    customerOrderOrderedItemsId?: string | null,
     tShirtOrderTshirtStyleNumber: string,
   } | null,
 };
@@ -829,8 +829,8 @@ export type DeleteTShirtOrderMutation = {
     id: string,
     createdAt: string,
     updatedAt: string,
-    purchaseOrderOrderedItemsId: string,
-    customerOrderOrderedItemsId: string,
+    purchaseOrderOrderedItemsId?: string | null,
+    customerOrderOrderedItemsId?: string | null,
     tShirtOrderTshirtStyleNumber: string,
   } | null,
 };
@@ -1078,8 +1078,8 @@ export type GetTShirtOrderQuery = {
     id: string,
     createdAt: string,
     updatedAt: string,
-    purchaseOrderOrderedItemsId: string,
-    customerOrderOrderedItemsId: string,
+    purchaseOrderOrderedItemsId?: string | null,
+    customerOrderOrderedItemsId?: string | null,
     tShirtOrderTshirtStyleNumber: string,
   } | null,
 };
@@ -1099,8 +1099,8 @@ export type ListTShirtOrdersQuery = {
       id: string,
       createdAt: string,
       updatedAt: string,
-      purchaseOrderOrderedItemsId: string,
-      customerOrderOrderedItemsId: string,
+      purchaseOrderOrderedItemsId?: string | null,
+      customerOrderOrderedItemsId?: string | null,
       tShirtOrderTshirtStyleNumber: string,
     } | null >,
     nextToken?: string | null,
@@ -1389,8 +1389,8 @@ export type OnCreateTShirtOrderSubscription = {
     id: string,
     createdAt: string,
     updatedAt: string,
-    purchaseOrderOrderedItemsId: string,
-    customerOrderOrderedItemsId: string,
+    purchaseOrderOrderedItemsId?: string | null,
+    customerOrderOrderedItemsId?: string | null,
     tShirtOrderTshirtStyleNumber: string,
   } | null,
 };
@@ -1418,8 +1418,8 @@ export type OnUpdateTShirtOrderSubscription = {
     id: string,
     createdAt: string,
     updatedAt: string,
-    purchaseOrderOrderedItemsId: string,
-    customerOrderOrderedItemsId: string,
+    purchaseOrderOrderedItemsId?: string | null,
+    customerOrderOrderedItemsId?: string | null,
     tShirtOrderTshirtStyleNumber: string,
   } | null,
 };
@@ -1447,8 +1447,8 @@ export type OnDeleteTShirtOrderSubscription = {
     id: string,
     createdAt: string,
     updatedAt: string,
-    purchaseOrderOrderedItemsId: string,
-    customerOrderOrderedItemsId: string,
+    purchaseOrderOrderedItemsId?: string | null,
+    customerOrderOrderedItemsId?: string | null,
     tShirtOrderTshirtStyleNumber: string,
   } | null,
 };

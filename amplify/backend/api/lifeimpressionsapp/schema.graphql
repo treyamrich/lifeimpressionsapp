@@ -44,7 +44,7 @@ type PurchaseOrder @model {
   id: ID!
   orderNumber: String # Optional for admin to track
   vendor: String!
-  orderedItems: [TShirtOrder!]! @hasMany
+  orderedItems: [TShirtOrder!] @hasMany
   status: POStatus!
   changeHistory: [PurchaseOrderChange!] @hasMany
 }
@@ -69,7 +69,7 @@ type CustomerOrder @model {
   contact: CustomerContact!
   orderDate: AWSDate!
   dateNeededBy: AWSDate
-  orderedItems: [TShirtOrder!]! @hasMany
+  orderedItems: [TShirtOrder!] @hasMany
 }
 
 type CustomerContact {

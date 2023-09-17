@@ -7,7 +7,7 @@ export interface SelectValue {
 }
 
 export const tablePrimaryKey = "id"
-export const entityName = "PurchaseOrder"
+export const entityName = "Purchase Order"
 
 export const initialPurchaseOrderFormState: any = {
   orderNumber: "",
@@ -23,13 +23,19 @@ export const getTableColumns = (): MRT_ColumnDef<PurchaseOrder>[] => {
         accessorKey: "id",
         header: "Id",
         muiTableHeadCellProps: { sx: { color: "green" } }, //custom props
-        enableEditing: false,
-        helperText: "1",
+      } as MRT_ColumnDef<PurchaseOrder>,
+      {
+        accessorKey: "orderNumber",
+        header: "PO number",
       } as MRT_ColumnDef<PurchaseOrder>,
       {
         accessorKey: "vendor",
         header: "Vendor",
-        helperText: "2",
+        isRequired: true
+      } as MRT_ColumnDef<PurchaseOrder>,
+      {
+        accessorKey: "status",
+        header:" Status"
       } as MRT_ColumnDef<PurchaseOrder>,
       {
         accessorKey: "createdAt",
@@ -38,13 +44,14 @@ export const getTableColumns = (): MRT_ColumnDef<PurchaseOrder>[] => {
       {
         accessorKey: "updatedAt",
         header: "Last Modified",
-        enableEditing: false,
       } as MRT_ColumnDef<PurchaseOrder>,
     ];
   };
 
 //Exclude these fields when creating
-export const excludeOnCreateFields: string[] = ["updatedAt", "createdAt"];
+export const excludeOnCreateFields: string[] = ["id", "updatedAt", "createdAt"];
+const requiredCreateFields: string[] = ["vendor"];
+export const isRequiredField = (field: string): boolean => requiredCreateFields.includes(field);
 
 export const getInitialPurchaseOrderFormErrorMap = () =>
   new Map<string, string>(
@@ -56,37 +63,10 @@ export const selectInputFields = new Map<
   SelectValue[]
 >([
   [
-    "type",
+    "status",
     [
-      { label: TShirtType.Cotton, value: TShirtType.Cotton },
-      { label: TShirtType.Drifit, value: TShirtType.Drifit },
-      { label: TShirtType.Blend, value: TShirtType.Blend },
-    ],
-  ],
-  [
-    "size",
-    [
-      { label: TShirtSize.NB, value: TShirtSize.NB },
-      { label: TShirtSize.SixMonths, value: TShirtSize.SixMonths },
-      { label: TShirtSize.TwelveMonths, value: TShirtSize.TwelveMonths },
-      { label: TShirtSize.EighteenMonths, value: TShirtSize.EighteenMonths },
-      { label: TShirtSize.TwoT, value: TShirtSize.TwoT },
-      { label: TShirtSize.ThreeT, value: TShirtSize.ThreeT },
-      { label: TShirtSize.FourT, value: TShirtSize.FourT },
-      { label: TShirtSize.FiveT, value: TShirtSize.FiveT },
-      { label: TShirtSize.YXS, value: TShirtSize.YXS },
-      { label: TShirtSize.YS, value: TShirtSize.YS },
-      { label: TShirtSize.YM, value: TShirtSize.YM },
-      { label: TShirtSize.YL, value: TShirtSize.YL },
-      { label: TShirtSize.YXL, value: TShirtSize.YXL },
-      { label: TShirtSize.AS, value: TShirtSize.AS },
-      { label: TShirtSize.AM, value: TShirtSize.AM },
-      { label: TShirtSize.AL, value: TShirtSize.AL },
-      { label: TShirtSize.AXL, value: TShirtSize.AXL },
-      { label: TShirtSize.TwoX, value: TShirtSize.TwoX },
-      { label: TShirtSize.ThreeX, value: TShirtSize.ThreeX },
-      { label: TShirtSize.FourX, value: TShirtSize.FourX },
-      { label: TShirtSize.FiveX, value: TShirtSize.FiveX },
+      { label: POStatus.Open, value: POStatus.Open },
+      { label: POStatus.Closed, value: POStatus.Closed },
     ],
   ],
 ]);
