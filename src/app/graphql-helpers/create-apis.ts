@@ -27,10 +27,10 @@ export const createPurchaseOrderAPI = async (
     variables: { input: po },
     authMode: GRAPHQL_AUTH_MODE.API_KEY
   })
-  .then(res => res.data?.createPurchaseOrder as PurchaseOrder)
-  .catch(e => {
-    console.log(e);
-    throw new Error("Failed to create new Purchase Order");
-  });
+    .then(res => res.data?.createPurchaseOrder as PurchaseOrder)
+    .catch(e => {
+      console.log(e);
+      throw new Error("Failed to create new Purchase Order");
+    });
   return resp
 }
