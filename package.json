@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "node --max_old_space_size=4096 node_modules/.bin/next dev",
+    "dev": "cross-env NODE_OPTIONS=--max_old_space_size=4096 next dev",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"
@@ -37,6 +37,7 @@
     "typescript": "5.0.4"
   },
   "devDependencies": {
-    "@types/lodash": "^4.14.194"
+    "@types/lodash": "^4.14.194",
+    "cross-env": "^7.0.3"
   }
 }
