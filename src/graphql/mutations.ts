@@ -66,8 +66,14 @@ export const createPurchaseOrder = /* GraphQL */ `
   ) {
     createPurchaseOrder(input: $input, condition: $condition) {
       id
+      orderNumber
       vendor
       orderedItems {
+        nextToken
+        __typename
+      }
+      status
+      changeHistory {
         nextToken
         __typename
       }
@@ -84,8 +90,14 @@ export const updatePurchaseOrder = /* GraphQL */ `
   ) {
     updatePurchaseOrder(input: $input, condition: $condition) {
       id
+      orderNumber
       vendor
       orderedItems {
+        nextToken
+        __typename
+      }
+      status
+      changeHistory {
         nextToken
         __typename
       }
@@ -102,13 +114,103 @@ export const deletePurchaseOrder = /* GraphQL */ `
   ) {
     deletePurchaseOrder(input: $input, condition: $condition) {
       id
+      orderNumber
       vendor
       orderedItems {
         nextToken
         __typename
       }
+      status
+      changeHistory {
+        nextToken
+        __typename
+      }
       createdAt
       updatedAt
+      __typename
+    }
+  }
+`;
+export const createPurchaseOrderChange = /* GraphQL */ `
+  mutation CreatePurchaseOrderChange(
+    $input: CreatePurchaseOrderChangeInput!
+    $condition: ModelPurchaseOrderChangeConditionInput
+  ) {
+    createPurchaseOrderChange(input: $input, condition: $condition) {
+      tshirt {
+        styleNumber
+        brand
+        color
+        size
+        type
+        quantityOnHand
+        isDeleted
+        createdAt
+        updatedAt
+        __typename
+      }
+      quantityChange
+      id
+      createdAt
+      updatedAt
+      purchaseOrderChangeHistoryId
+      purchaseOrderChangeTshirtStyleNumber
+      __typename
+    }
+  }
+`;
+export const updatePurchaseOrderChange = /* GraphQL */ `
+  mutation UpdatePurchaseOrderChange(
+    $input: UpdatePurchaseOrderChangeInput!
+    $condition: ModelPurchaseOrderChangeConditionInput
+  ) {
+    updatePurchaseOrderChange(input: $input, condition: $condition) {
+      tshirt {
+        styleNumber
+        brand
+        color
+        size
+        type
+        quantityOnHand
+        isDeleted
+        createdAt
+        updatedAt
+        __typename
+      }
+      quantityChange
+      id
+      createdAt
+      updatedAt
+      purchaseOrderChangeHistoryId
+      purchaseOrderChangeTshirtStyleNumber
+      __typename
+    }
+  }
+`;
+export const deletePurchaseOrderChange = /* GraphQL */ `
+  mutation DeletePurchaseOrderChange(
+    $input: DeletePurchaseOrderChangeInput!
+    $condition: ModelPurchaseOrderChangeConditionInput
+  ) {
+    deletePurchaseOrderChange(input: $input, condition: $condition) {
+      tshirt {
+        styleNumber
+        brand
+        color
+        size
+        type
+        quantityOnHand
+        isDeleted
+        createdAt
+        updatedAt
+        __typename
+      }
+      quantityChange
+      id
+      createdAt
+      updatedAt
+      purchaseOrderChangeHistoryId
+      purchaseOrderChangeTshirtStyleNumber
       __typename
     }
   }
@@ -137,6 +239,7 @@ export const createTShirtOrder = /* GraphQL */ `
       updatedAt
       purchaseOrderOrderedItemsId
       customerOrderOrderedItemsId
+      tShirtOrderTshirtStyleNumber
       __typename
     }
   }
@@ -165,6 +268,7 @@ export const updateTShirtOrder = /* GraphQL */ `
       updatedAt
       purchaseOrderOrderedItemsId
       customerOrderOrderedItemsId
+      tShirtOrderTshirtStyleNumber
       __typename
     }
   }
@@ -193,6 +297,7 @@ export const deleteTShirtOrder = /* GraphQL */ `
       updatedAt
       purchaseOrderOrderedItemsId
       customerOrderOrderedItemsId
+      tShirtOrderTshirtStyleNumber
       __typename
     }
   }

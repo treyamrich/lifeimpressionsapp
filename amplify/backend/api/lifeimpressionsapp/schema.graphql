@@ -42,12 +42,25 @@ enum TShirtType {
 
 type PurchaseOrder @model {
   id: ID!
+  orderNumber: String # Optional for admin to track
   vendor: String!
   orderedItems: [TShirtOrder!]! @hasMany
+  status: POStatus!
+  changeHistory: [PurchaseOrderChange!] @hasMany
+}
+
+enum POStatus {
+  Open
+  Closed
+}
+
+type PurchaseOrderChange @model {
+  tshirt: TShirt! @hasOne
+  quantityChange: Int! # the delta
 }
 
 type TShirtOrder @model {
-  tshirt: TShirt!
+  tshirt: TShirt! @hasOne
   quantity: Int!
 }
 

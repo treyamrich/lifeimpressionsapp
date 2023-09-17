@@ -1,32 +1,17 @@
 {
   "api": {
     "lifeimpressionsapp": {
-      "dependsOn": [
-        {
-          "attributes": [
-            "UserPoolId"
-          ],
-          "category": "auth",
-          "resourceName": "lifeimpressionsappbfbe04f2"
-        }
-      ],
+      "dependsOn": [],
       "output": {
         "authConfig": {
-          "additionalAuthenticationProviders": [
-            {
-              "apiKeyConfig": {
-                "apiKeyExpirationDate": "2023-08-28T02:17:14.750Z",
-                "apiKeyExpirationDays": 7,
-                "description": ""
-              },
-              "authenticationType": "API_KEY"
-            }
-          ],
+          "additionalAuthenticationProviders": [],
           "defaultAuthentication": {
-            "authenticationType": "AMAZON_COGNITO_USER_POOLS",
-            "userPoolConfig": {
-              "userPoolId": "authlifeimpressionsappbfbe04f2"
-            }
+            "apiKeyConfig": {
+              "apiKeyExpirationDate": "2024-09-16T03:00:42.830Z",
+              "apiKeyExpirationDays": 365,
+              "description": "dev"
+            },
+            "authenticationType": "API_KEY"
           }
         }
       },

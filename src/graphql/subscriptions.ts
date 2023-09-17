@@ -56,8 +56,14 @@ export const onCreatePurchaseOrder = /* GraphQL */ `
   ) {
     onCreatePurchaseOrder(filter: $filter) {
       id
+      orderNumber
       vendor
       orderedItems {
+        nextToken
+        __typename
+      }
+      status
+      changeHistory {
         nextToken
         __typename
       }
@@ -73,8 +79,14 @@ export const onUpdatePurchaseOrder = /* GraphQL */ `
   ) {
     onUpdatePurchaseOrder(filter: $filter) {
       id
+      orderNumber
       vendor
       orderedItems {
+        nextToken
+        __typename
+      }
+      status
+      changeHistory {
         nextToken
         __typename
       }
@@ -90,13 +102,100 @@ export const onDeletePurchaseOrder = /* GraphQL */ `
   ) {
     onDeletePurchaseOrder(filter: $filter) {
       id
+      orderNumber
       vendor
       orderedItems {
         nextToken
         __typename
       }
+      status
+      changeHistory {
+        nextToken
+        __typename
+      }
       createdAt
       updatedAt
+      __typename
+    }
+  }
+`;
+export const onCreatePurchaseOrderChange = /* GraphQL */ `
+  subscription OnCreatePurchaseOrderChange(
+    $filter: ModelSubscriptionPurchaseOrderChangeFilterInput
+  ) {
+    onCreatePurchaseOrderChange(filter: $filter) {
+      tshirt {
+        styleNumber
+        brand
+        color
+        size
+        type
+        quantityOnHand
+        isDeleted
+        createdAt
+        updatedAt
+        __typename
+      }
+      quantityChange
+      id
+      createdAt
+      updatedAt
+      purchaseOrderChangeHistoryId
+      purchaseOrderChangeTshirtStyleNumber
+      __typename
+    }
+  }
+`;
+export const onUpdatePurchaseOrderChange = /* GraphQL */ `
+  subscription OnUpdatePurchaseOrderChange(
+    $filter: ModelSubscriptionPurchaseOrderChangeFilterInput
+  ) {
+    onUpdatePurchaseOrderChange(filter: $filter) {
+      tshirt {
+        styleNumber
+        brand
+        color
+        size
+        type
+        quantityOnHand
+        isDeleted
+        createdAt
+        updatedAt
+        __typename
+      }
+      quantityChange
+      id
+      createdAt
+      updatedAt
+      purchaseOrderChangeHistoryId
+      purchaseOrderChangeTshirtStyleNumber
+      __typename
+    }
+  }
+`;
+export const onDeletePurchaseOrderChange = /* GraphQL */ `
+  subscription OnDeletePurchaseOrderChange(
+    $filter: ModelSubscriptionPurchaseOrderChangeFilterInput
+  ) {
+    onDeletePurchaseOrderChange(filter: $filter) {
+      tshirt {
+        styleNumber
+        brand
+        color
+        size
+        type
+        quantityOnHand
+        isDeleted
+        createdAt
+        updatedAt
+        __typename
+      }
+      quantityChange
+      id
+      createdAt
+      updatedAt
+      purchaseOrderChangeHistoryId
+      purchaseOrderChangeTshirtStyleNumber
       __typename
     }
   }
@@ -124,6 +223,7 @@ export const onCreateTShirtOrder = /* GraphQL */ `
       updatedAt
       purchaseOrderOrderedItemsId
       customerOrderOrderedItemsId
+      tShirtOrderTshirtStyleNumber
       __typename
     }
   }
@@ -151,6 +251,7 @@ export const onUpdateTShirtOrder = /* GraphQL */ `
       updatedAt
       purchaseOrderOrderedItemsId
       customerOrderOrderedItemsId
+      tShirtOrderTshirtStyleNumber
       __typename
     }
   }
@@ -178,6 +279,7 @@ export const onDeleteTShirtOrder = /* GraphQL */ `
       updatedAt
       purchaseOrderOrderedItemsId
       customerOrderOrderedItemsId
+      tShirtOrderTshirtStyleNumber
       __typename
     }
   }

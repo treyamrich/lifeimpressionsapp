@@ -54,8 +54,14 @@ export const getPurchaseOrder = /* GraphQL */ `
   query GetPurchaseOrder($id: ID!) {
     getPurchaseOrder(id: $id) {
       id
+      orderNumber
       vendor
       orderedItems {
+        nextToken
+        __typename
+      }
+      status
+      changeHistory {
         nextToken
         __typename
       }
@@ -74,9 +80,61 @@ export const listPurchaseOrders = /* GraphQL */ `
     listPurchaseOrders(filter: $filter, limit: $limit, nextToken: $nextToken) {
       items {
         id
+        orderNumber
         vendor
+        status
         createdAt
         updatedAt
+        __typename
+      }
+      nextToken
+      __typename
+    }
+  }
+`;
+export const getPurchaseOrderChange = /* GraphQL */ `
+  query GetPurchaseOrderChange($id: ID!) {
+    getPurchaseOrderChange(id: $id) {
+      tshirt {
+        styleNumber
+        brand
+        color
+        size
+        type
+        quantityOnHand
+        isDeleted
+        createdAt
+        updatedAt
+        __typename
+      }
+      quantityChange
+      id
+      createdAt
+      updatedAt
+      purchaseOrderChangeHistoryId
+      purchaseOrderChangeTshirtStyleNumber
+      __typename
+    }
+  }
+`;
+export const listPurchaseOrderChanges = /* GraphQL */ `
+  query ListPurchaseOrderChanges(
+    $filter: ModelPurchaseOrderChangeFilterInput
+    $limit: Int
+    $nextToken: String
+  ) {
+    listPurchaseOrderChanges(
+      filter: $filter
+      limit: $limit
+      nextToken: $nextToken
+    ) {
+      items {
+        quantityChange
+        id
+        createdAt
+        updatedAt
+        purchaseOrderChangeHistoryId
+        purchaseOrderChangeTshirtStyleNumber
         __typename
       }
       nextToken
@@ -105,6 +163,7 @@ export const getTShirtOrder = /* GraphQL */ `
       updatedAt
       purchaseOrderOrderedItemsId
       customerOrderOrderedItemsId
+      tShirtOrderTshirtStyleNumber
       __typename
     }
   }
@@ -123,6 +182,7 @@ export const listTShirtOrders = /* GraphQL */ `
         updatedAt
         purchaseOrderOrderedItemsId
         customerOrderOrderedItemsId
+        tShirtOrderTshirtStyleNumber
         __typename
       }
       nextToken
