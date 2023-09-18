@@ -1,7 +1,8 @@
 import { CreatePurchaseOrderInput, CreatePurchaseOrderMutation, CreateTShirtInput, CreateTShirtMutation, PurchaseOrder, TShirt } from "@/API";
 import { API } from "aws-amplify";
-import { GraphQLQuery, GRAPHQL_AUTH_MODE } from "@aws-amplify/api";
+import { GraphQLQuery } from "@aws-amplify/api";
 import { createPurchaseOrder, createTShirt } from "@/graphql/mutations";
+import { configuredAuthMode } from "./auth-mode";
 
 export const createTShirtAPI = async (
   tshirt: CreateTShirtInput
@@ -9,7 +10,7 @@ export const createTShirtAPI = async (
   const resp = await API.graphql<GraphQLQuery<CreateTShirtMutation>>({
     query: createTShirt,
     variables: { input: tshirt },
-    authMode: GRAPHQL_AUTH_MODE.API_KEY,
+    authMode: configuredAuthMode,
   })
     .then((res) => res.data?.createTShirt as TShirt)
     .catch((e) => {
@@ -25,7 +26,7 @@ export const createPurchaseOrderAPI = async (
   const resp = await API.graphql<GraphQLQuery<CreatePurchaseOrderMutation>>({
     query: createPurchaseOrder,
     variables: { input: po },
-    authMode: GRAPHQL_AUTH_MODE.API_KEY
+    authMode: configuredAuthMode
   })
     .then(res => res.data?.createPurchaseOrder as PurchaseOrder)
     .catch(e => {

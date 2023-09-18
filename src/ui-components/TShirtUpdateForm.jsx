@@ -1,0 +1,545 @@
+/***************************************************************************
+ * The contents of this file were generated with Amplify Studio.           *
+ * Please refrain from making any modifications to this file.              *
+ * Any changes to this file will be overwritten when running amplify pull. *
+ **************************************************************************/
+
+/* eslint-disable */
+import * as React from "react";
+import {
+  Button,
+  Flex,
+  Grid,
+  SelectField,
+  SwitchField,
+  TextField,
+} from "@aws-amplify/ui-react";
+import { getOverrideProps } from "@aws-amplify/ui-react/internal";
+import { fetchByPath, validateField } from "./utils";
+import { API } from "aws-amplify";
+import { getTShirt } from "../graphql/queries";
+import { updateTShirt } from "../graphql/mutations";
+export default function TShirtUpdateForm(props) {
+  const {
+    styleNumber: styleNumberProp,
+    tShirt: tShirtModelProp,
+    onSuccess,
+    onError,
+    onSubmit,
+    onValidate,
+    onChange,
+    overrides,
+    ...rest
+  } = props;
+  const initialValues = {
+    styleNumber: "",
+    brand: "",
+    color: "",
+    size: "",
+    type: "",
+    quantityOnHand: "",
+    isDeleted: false,
+  };
+  const [styleNumber, setStyleNumber] = React.useState(
+    initialValues.styleNumber
+  );
+  const [brand, setBrand] = React.useState(initialValues.brand);
+  const [color, setColor] = React.useState(initialValues.color);
+  const [size, setSize] = React.useState(initialValues.size);
+  const [type, setType] = React.useState(initialValues.type);
+  const [quantityOnHand, setQuantityOnHand] = React.useState(
+    initialValues.quantityOnHand
+  );
+  const [isDeleted, setIsDeleted] = React.useState(initialValues.isDeleted);
+  const [errors, setErrors] = React.useState({});
+  const resetStateValues = () => {
+    const cleanValues = tShirtRecord
+      ? { ...initialValues, ...tShirtRecord }
+      : initialValues;
+    setStyleNumber(cleanValues.styleNumber);
+    setBrand(cleanValues.brand);
+    setColor(cleanValues.color);
+    setSize(cleanValues.size);
+    setType(cleanValues.type);
+    setQuantityOnHand(cleanValues.quantityOnHand);
+    setIsDeleted(cleanValues.isDeleted);
+    setErrors({});
+  };
+  const [tShirtRecord, setTShirtRecord] = React.useState(tShirtModelProp);
+  React.useEffect(() => {
+    const queryData = async () => {
+      const record = styleNumberProp
+        ? (
+            await API.graphql({
+              query: getTShirt,
+              variables: { styleNumber: styleNumberProp },
+            })
+          )?.data?.getTShirt
+        : tShirtModelProp;
+      setTShirtRecord(record);
+    };
+    queryData();
+  }, [styleNumberProp, tShirtModelProp]);
+  React.useEffect(resetStateValues, [tShirtRecord]);
+  const validations = {
+    styleNumber: [{ type: "Required" }],
+    brand: [{ type: "Required" }],
+    color: [{ type: "Required" }],
+    size: [{ type: "Required" }],
+    type: [{ type: "Required" }],
+    quantityOnHand: [],
+    isDeleted: [],
+  };
+  const runValidationTasks = async (
+    fieldName,
+    currentValue,
+    getDisplayValue
+  ) => {
+    const value =
+      currentValue && getDisplayValue
+        ? getDisplayValue(currentValue)
+        : currentValue;
+    let validationResponse = validateField(value, validations[fieldName]);
+    const customValidator = fetchByPath(onValidate, fieldName);
+    if (customValidator) {
+      validationResponse = await customValidator(value, validationResponse);
+    }
+    setErrors((errors) => ({ ...errors, [fieldName]: validationResponse }));
+    return validationResponse;
+  };
+  return (
+    <Grid
+      as="form"
+      rowGap="15px"
+      columnGap="15px"
+      padding="20px"
+      onSubmit={async (event) => {
+        event.preventDefault();
+        let modelFields = {
+          styleNumber,
+          brand,
+          color,
+          size,
+          type,
+          quantityOnHand: quantityOnHand ?? null,
+          isDeleted: isDeleted ?? null,
+        };
+        const validationResponses = await Promise.all(
+          Object.keys(validations).reduce((promises, fieldName) => {
+            if (Array.isArray(modelFields[fieldName])) {
+              promises.push(
+                ...modelFields[fieldName].map((item) =>
+                  runValidationTasks(fieldName, item)
+                )
+              );
+              return promises;
+            }
+            promises.push(
+              runValidationTasks(fieldName, modelFields[fieldName])
+            );
+            return promises;
+          }, [])
+        );
+        if (validationResponses.some((r) => r.hasError)) {
+          return;
+        }
+        if (onSubmit) {
+          modelFields = onSubmit(modelFields);
+        }
+        try {
+          Object.entries(modelFields).forEach(([key, value]) => {
+            if (typeof value === "string" && value === "") {
+              modelFields[key] = null;
+            }
+          });
+          await API.graphql({
+            query: updateTShirt,
+            variables: {
+              input: {
+                styleNumber: tShirtRecord.styleNumber,
+                ...modelFields,
+              },
+            },
+          });
+          if (onSuccess) {
+            onSuccess(modelFields);
+          }
+        } catch (err) {
+          if (onError) {
+            const messages = err.errors.map((e) => e.message).join("\n");
+            onError(modelFields, messages);
+          }
+        }
+      }}
+      {...getOverrideProps(overrides, "TShirtUpdateForm")}
+      {...rest}
+    >
+      <TextField
+        label="Style number"
+        isRequired={true}
+        isReadOnly={true}
+        value={styleNumber}
+        onChange={(e) => {
+          let { value } = e.target;
+          if (onChange) {
+            const modelFields = {
+              styleNumber: value,
+              brand,
+              color,
+              size,
+              type,
+              quantityOnHand,
+              isDeleted,
+            };
+            const result = onChange(modelFields);
+            value = result?.styleNumber ?? value;
+          }
+          if (errors.styleNumber?.hasError) {
+            runValidationTasks("styleNumber", value);
+          }
+          setStyleNumber(value);
+        }}
+        onBlur={() => runValidationTasks("styleNumber", styleNumber)}
+        errorMessage={errors.styleNumber?.errorMessage}
+        hasError={errors.styleNumber?.hasError}
+        {...getOverrideProps(overrides, "styleNumber")}
+      ></TextField>
+      <TextField
+        label="Brand"
+        isRequired={true}
+        isReadOnly={false}
+        value={brand}
+        onChange={(e) => {
+          let { value } = e.target;
+          if (onChange) {
+            const modelFields = {
+              styleNumber,
+              brand: value,
+              color,
+              size,
+              type,
+              quantityOnHand,
+              isDeleted,
+            };
+            const result = onChange(modelFields);
+            value = result?.brand ?? value;
+          }
+          if (errors.brand?.hasError) {
+            runValidationTasks("brand", value);
+          }
+          setBrand(value);
+        }}
+        onBlur={() => runValidationTasks("brand", brand)}
+        errorMessage={errors.brand?.errorMessage}
+        hasError={errors.brand?.hasError}
+        {...getOverrideProps(overrides, "brand")}
+      ></TextField>
+      <TextField
+        label="Color"
+        isRequired={true}
+        isReadOnly={false}
+        value={color}
+        onChange={(e) => {
+          let { value } = e.target;
+          if (onChange) {
+            const modelFields = {
+              styleNumber,
+              brand,
+              color: value,
+              size,
+              type,
+              quantityOnHand,
+              isDeleted,
+            };
+            const result = onChange(modelFields);
+            value = result?.color ?? value;
+          }
+          if (errors.color?.hasError) {
+            runValidationTasks("color", value);
+          }
+          setColor(value);
+        }}
+        onBlur={() => runValidationTasks("color", color)}
+        errorMessage={errors.color?.errorMessage}
+        hasError={errors.color?.hasError}
+        {...getOverrideProps(overrides, "color")}
+      ></TextField>
+      <SelectField
+        label="Size"
+        placeholder="Please select an option"
+        isDisabled={false}
+        value={size}
+        onChange={(e) => {
+          let { value } = e.target;
+          if (onChange) {
+            const modelFields = {
+              styleNumber,
+              brand,
+              color,
+              size: value,
+              type,
+              quantityOnHand,
+              isDeleted,
+            };
+            const result = onChange(modelFields);
+            value = result?.size ?? value;
+          }
+          if (errors.size?.hasError) {
+            runValidationTasks("size", value);
+          }
+          setSize(value);
+        }}
+        onBlur={() => runValidationTasks("size", size)}
+        errorMessage={errors.size?.errorMessage}
+        hasError={errors.size?.hasError}
+        {...getOverrideProps(overrides, "size")}
+      >
+        <option
+          children="Nb"
+          value="NB"
+          {...getOverrideProps(overrides, "sizeoption0")}
+        ></option>
+        <option
+          children="Six months"
+          value="SixMonths"
+          {...getOverrideProps(overrides, "sizeoption1")}
+        ></option>
+        <option
+          children="Twelve months"
+          value="TwelveMonths"
+          {...getOverrideProps(overrides, "sizeoption2")}
+        ></option>
+        <option
+          children="Eighteen months"
+          value="EighteenMonths"
+          {...getOverrideProps(overrides, "sizeoption3")}
+        ></option>
+        <option
+          children="Two t"
+          value="TwoT"
+          {...getOverrideProps(overrides, "sizeoption4")}
+        ></option>
+        <option
+          children="Three t"
+          value="ThreeT"
+          {...getOverrideProps(overrides, "sizeoption5")}
+        ></option>
+        <option
+          children="Four t"
+          value="FourT"
+          {...getOverrideProps(overrides, "sizeoption6")}
+        ></option>
+        <option
+          children="Five t"
+          value="FiveT"
+          {...getOverrideProps(overrides, "sizeoption7")}
+        ></option>
+        <option
+          children="Yxs"
+          value="YXS"
+          {...getOverrideProps(overrides, "sizeoption8")}
+        ></option>
+        <option
+          children="Ys"
+          value="YS"
+          {...getOverrideProps(overrides, "sizeoption9")}
+        ></option>
+        <option
+          children="Ym"
+          value="YM"
+          {...getOverrideProps(overrides, "sizeoption10")}
+        ></option>
+        <option
+          children="Yl"
+          value="YL"
+          {...getOverrideProps(overrides, "sizeoption11")}
+        ></option>
+        <option
+          children="Yxl"
+          value="YXL"
+          {...getOverrideProps(overrides, "sizeoption12")}
+        ></option>
+        <option
+          children="As"
+          value="AS"
+          {...getOverrideProps(overrides, "sizeoption13")}
+        ></option>
+        <option
+          children="Am"
+          value="AM"
+          {...getOverrideProps(overrides, "sizeoption14")}
+        ></option>
+        <option
+          children="Al"
+          value="AL"
+          {...getOverrideProps(overrides, "sizeoption15")}
+        ></option>
+        <option
+          children="Axl"
+          value="AXL"
+          {...getOverrideProps(overrides, "sizeoption16")}
+        ></option>
+        <option
+          children="Two x"
+          value="TwoX"
+          {...getOverrideProps(overrides, "sizeoption17")}
+        ></option>
+        <option
+          children="Three x"
+          value="ThreeX"
+          {...getOverrideProps(overrides, "sizeoption18")}
+        ></option>
+        <option
+          children="Four x"
+          value="FourX"
+          {...getOverrideProps(overrides, "sizeoption19")}
+        ></option>
+        <option
+          children="Five x"
+          value="FiveX"
+          {...getOverrideProps(overrides, "sizeoption20")}
+        ></option>
+      </SelectField>
+      <SelectField
+        label="Type"
+        placeholder="Please select an option"
+        isDisabled={false}
+        value={type}
+        onChange={(e) => {
+          let { value } = e.target;
+          if (onChange) {
+            const modelFields = {
+              styleNumber,
+              brand,
+              color,
+              size,
+              type: value,
+              quantityOnHand,
+              isDeleted,
+            };
+            const result = onChange(modelFields);
+            value = result?.type ?? value;
+          }
+          if (errors.type?.hasError) {
+            runValidationTasks("type", value);
+          }
+          setType(value);
+        }}
+        onBlur={() => runValidationTasks("type", type)}
+        errorMessage={errors.type?.errorMessage}
+        hasError={errors.type?.hasError}
+        {...getOverrideProps(overrides, "type")}
+      >
+        <option
+          children="Cotton"
+          value="Cotton"
+          {...getOverrideProps(overrides, "typeoption0")}
+        ></option>
+        <option
+          children="Drifit"
+          value="Drifit"
+          {...getOverrideProps(overrides, "typeoption1")}
+        ></option>
+        <option
+          children="Blend"
+          value="Blend"
+          {...getOverrideProps(overrides, "typeoption2")}
+        ></option>
+      </SelectField>
+      <TextField
+        label="Quantity on hand"
+        isRequired={false}
+        isReadOnly={false}
+        type="number"
+        step="any"
+        value={quantityOnHand}
+        onChange={(e) => {
+          let value = isNaN(parseInt(e.target.value))
+            ? e.target.value
+            : parseInt(e.target.value);
+          if (onChange) {
+            const modelFields = {
+              styleNumber,
+              brand,
+              color,
+              size,
+              type,
+              quantityOnHand: value,
+              isDeleted,
+            };
+            const result = onChange(modelFields);
+            value = result?.quantityOnHand ?? value;
+          }
+          if (errors.quantityOnHand?.hasError) {
+            runValidationTasks("quantityOnHand", value);
+          }
+          setQuantityOnHand(value);
+        }}
+        onBlur={() => runValidationTasks("quantityOnHand", quantityOnHand)}
+        errorMessage={errors.quantityOnHand?.errorMessage}
+        hasError={errors.quantityOnHand?.hasError}
+        {...getOverrideProps(overrides, "quantityOnHand")}
+      ></TextField>
+      <SwitchField
+        label="Is deleted"
+        defaultChecked={false}
+        isDisabled={false}
+        isChecked={isDeleted}
+        onChange={(e) => {
+          let value = e.target.checked;
+          if (onChange) {
+            const modelFields = {
+              styleNumber,
+              brand,
+              color,
+              size,
+              type,
+              quantityOnHand,
+              isDeleted: value,
+            };
+            const result = onChange(modelFields);
+            value = result?.isDeleted ?? value;
+          }
+          if (errors.isDeleted?.hasError) {
+            runValidationTasks("isDeleted", value);
+          }
+          setIsDeleted(value);
+        }}
+        onBlur={() => runValidationTasks("isDeleted", isDeleted)}
+        errorMessage={errors.isDeleted?.errorMessage}
+        hasError={errors.isDeleted?.hasError}
+        {...getOverrideProps(overrides, "isDeleted")}
+      ></SwitchField>
+      <Flex
+        justifyContent="space-between"
+        {...getOverrideProps(overrides, "CTAFlex")}
+      >
+        <Button
+          children="Reset"
+          type="reset"
+          onClick={(event) => {
+            event.preventDefault();
+            resetStateValues();
+          }}
+          isDisabled={!(styleNumberProp || tShirtModelProp)}
+          {...getOverrideProps(overrides, "ResetButton")}
+        ></Button>
+        <Flex
+          gap="15px"
+          {...getOverrideProps(overrides, "RightAlignCTASubFlex")}
+        >
+          <Button
+            children="Submit"
+            type="submit"
+            variation="primary"
+            isDisabled={
+              !(styleNumberProp || tShirtModelProp) ||
+              Object.values(errors).some((e) => e?.hasError)
+            }
+            {...getOverrideProps(overrides, "SubmitButton")}
+          ></Button>
+        </Flex>
+      </Flex>
+    </Grid>
+  );
+}

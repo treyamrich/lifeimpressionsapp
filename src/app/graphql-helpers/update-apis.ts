@@ -1,7 +1,8 @@
 import { UpdateTShirtInput, UpdateTShirtMutation, TShirt, UpdatePurchaseOrderInput, PurchaseOrder, UpdatePurchaseOrderMutation } from "@/API";
 import { API } from "aws-amplify";
-import { GraphQLQuery, GRAPHQL_AUTH_MODE } from "@aws-amplify/api";
+import { GraphQLQuery } from "@aws-amplify/api";
 import { updatePurchaseOrder, updateTShirt } from "@/graphql/mutations";
+import { configuredAuthMode } from "./auth-mode";
 
 const cleanObjectForUpdate = (obj: any) => {
   return {
@@ -20,7 +21,7 @@ export const updateTShirtAPI = async (
   const resp = await API.graphql<GraphQLQuery<UpdateTShirtMutation>>({
     query: updateTShirt,
     variables: { input: updatedTShirt },
-    authMode: GRAPHQL_AUTH_MODE.API_KEY,
+    authMode: configuredAuthMode
   })
     .then((res) => res.data?.updateTShirt as TShirt)
     .catch((e) => {
@@ -38,7 +39,7 @@ export const updatePurchaseOrderAPI = async (
   const resp = await API.graphql<GraphQLQuery<UpdatePurchaseOrderMutation>>({
     query: updatePurchaseOrder,
     variables: { input: updatedPO },
-    authMode: GRAPHQL_AUTH_MODE.API_KEY,
+    authMode: configuredAuthMode
   })
     .then((res) => res.data?.updatePurchaseOrder as PurchaseOrder)
     .catch((e) => {

@@ -1,7 +1,8 @@
 import { ListTShirtsQuery, TShirt, ModelTShirtFilterInput, ModelPurchaseOrderFilterInput, ListPurchaseOrdersQuery, PurchaseOrder } from "@/API";
 import { API } from "aws-amplify";
-import { GraphQLQuery, GRAPHQL_AUTH_MODE } from "@aws-amplify/api";
+import { GraphQLQuery } from "@aws-amplify/api";
 import { listPurchaseOrders, listTShirts } from "@/graphql/queries";
+import { configuredAuthMode } from "./auth-mode";
 
 export const listTShirtAPI = async (filters: ModelTShirtFilterInput): Promise<TShirt[]> => {
   const resp = await API.graphql<GraphQLQuery<ListTShirtsQuery>>({
@@ -9,7 +10,7 @@ export const listTShirtAPI = async (filters: ModelTShirtFilterInput): Promise<TS
     variables: {
       filter: filters
     },
-    authMode: GRAPHQL_AUTH_MODE.API_KEY,
+    authMode: configuredAuthMode
   })
     .then((res) => res.data?.listTShirts?.items as TShirt[])
     .catch((e) => {
@@ -25,7 +26,7 @@ export const listPurchaseOrderAPI = async (filters: ModelPurchaseOrderFilterInpu
     variables: {
       filter: filters
     },
-    authMode: GRAPHQL_AUTH_MODE.API_KEY
+    authMode: configuredAuthMode
   })
     .then((res) => res.data?.listPurchaseOrders?.items as PurchaseOrder[])
     .catch((e) => {

@@ -13,7 +13,6 @@ export const getTableColumns = (
       header: "Style No.",
       muiTableHeadCellProps: { sx: { color: "green" } }, //custom props
       enableEditing: false,
-      helperText: "1",
     } as MRT_ColumnDef<TShirt>,
     {
       accessorKey: "quantityOnHand",
@@ -89,7 +88,7 @@ export const mockData: TShirt[] = [
   {
     __typename: "TShirt",
     id: "Jan",
-    styleNumber: "1234",
+    styleNumber: "12345",
     brand: "adidas",
     color: "red",
     size: TShirtSize.AL,
