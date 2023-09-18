@@ -39,6 +39,7 @@ import {
   type MRT_PaginationState,
   type MRT_SortingState,
 } from "material-react-table";
+import { listPurchaseOrders } from "@/graphql/queries";
 
 const PurchaseOrders = () => {
   const { push } = useRouter();
@@ -88,6 +89,7 @@ const PurchaseOrders = () => {
   );
 
   const fetchPurchaseOrders = () => {
+    console.log(listPurchaseOrders);
     rescueDBOperation(
       () => listPurchaseOrderAPI({}),
       setDBOperationError,

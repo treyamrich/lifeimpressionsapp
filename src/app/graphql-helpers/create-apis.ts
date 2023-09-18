@@ -1,4 +1,4 @@
-import { CreatePurchaseOrderInput, CreatePurchaseOrderMutation, CreateTShirtInput, CreateTShirtMutation, CreateTShirtOrderMutation, CustomerOrder, PurchaseOrder, TShirt, TShirtOrder } from "@/API";
+import { CreatePurchaseOrderMutation, CreateTShirtInput, CreateTShirtMutation, CreateTShirtOrderMutation, CustomerOrder, PurchaseOrder, TShirt, TShirtOrder } from "@/API";
 import { API } from "aws-amplify";
 import { GraphQLQuery } from "@aws-amplify/api";
 import { createPurchaseOrder, createTShirt, createTShirtOrder } from "@/graphql/mutations";
@@ -41,12 +41,12 @@ export const createPurchaseOrderAPI = async (
 type PurchaseOrderOrCustomerOrder = PurchaseOrder | CustomerOrder;
 
 export const createTShirtOrderAPI = async (
-  parentObject: PurchaseOrderOrCustomerOrder
+  parentObject: PurchaseOrderOrCustomerOrder,
+  orderedItems: TShirtOrder[]
 ): Promise<TShirtOrder[]> => {
+  console.log(parentObject);
   const requests: Promise<TShirtOrder | void>[] = [];
   const errors: string[] = [];
-  // In the UI the items are stored in an array, not using the connection type which nests the items
-  const orderedItems = parentObject.orderedItems as unknown as TShirtOrder[];
   orderedItems.forEach((tshirtOrder: TShirtOrder) => {
     // Populate the foreign key
     const tshirtToAdd = { ...tshirtOrder };

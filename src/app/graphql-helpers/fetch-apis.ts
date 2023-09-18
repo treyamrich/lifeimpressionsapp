@@ -33,6 +33,5 @@ export const listPurchaseOrderAPI = async (filters: ModelPurchaseOrderFilterInpu
       console.log(e);
       throw new Error("Failed to fetch Purchase Orders");
     });
-    console.log(resp);
   return resp;
 }

@@ -27,7 +27,7 @@ import {
     isRequiredField
 } from "../table-constants";
 import { MRT_ColumnDef } from "material-react-table";
-import { PurchaseOrder } from "@/API";
+import { PurchaseOrder, TShirtOrder } from "@/API";
 import TShirtOrderTable from "../../components/tshirt-order-table/TShirtOrderTable";
 import { createPurchaseOrderAPI, createTShirtOrderAPI } from "@/app/graphql-helpers/create-apis";
 import ConfirmPopup from "../../components/forms/confirm-popup/ConfirmPopup";
@@ -81,9 +81,9 @@ const CreatePurchaseOrderForm = ({ setDBOperationError }: CreatePurchaseOrderFor
         setErrorMap(getInitialPurchaseOrderFormErrorMap());
     };
 
-    const handleCreateTShirtOrders = (po: PurchaseOrder) => {
+    const handleCreateTShirtOrders = (po: PurchaseOrder, orderedItems: TShirtOrder[]) => {
         rescueDBOperation(
-            () => createTShirtOrderAPI(po),
+            () => createTShirtOrderAPI(po, orderedItems),
             setDBOperationError,
             DBOperation.CREATE,
             () => {
@@ -102,7 +102,7 @@ const CreatePurchaseOrderForm = ({ setDBOperationError }: CreatePurchaseOrderFor
             DBOperation.CREATE,
             (resp: PurchaseOrder) => {
                 // Important to use the original PO since it has the orderedItems field
-                handleCreateTShirtOrders(po);
+                handleCreateTShirtOrders(resp, po.orderedItems as unknown as TShirtOrder[]);
             }
         );
     }
