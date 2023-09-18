@@ -14,6 +14,8 @@ import {
     TextField,
     Stack,
     MenuItem,
+    Box,
+    Button,
 } from "@mui/material";
 import {
     initialPurchaseOrderFormState,
@@ -27,6 +29,9 @@ import {
 import { MRT_ColumnDef } from "material-react-table";
 import { PurchaseOrder } from "@/API";
 import TShirtOrderTable from "../../components/tshirt-order-table/TShirtOrderTable";
+import { createPurchaseOrderAPI, createTShirtOrderAPI } from "@/app/graphql-helpers/create-apis";
+import ConfirmPopup from "../../components/forms/confirm-popup/ConfirmPopup";
+import { useRouter } from "next/navigation";
 
 const CreatePurchaseOrderPage = () => {
     const [dbOperationError, setDBOperationError] = useState({
@@ -46,7 +51,7 @@ const CreatePurchaseOrderPage = () => {
                 <></>
             )}
             <DashboardCard title="New Purchase Order">
-                <CreatePurchaseOrderForm />
+                <CreatePurchaseOrderForm setDBOperationError={setDBOperationError} />
             </DashboardCard>
         </PageContainer>
     )
@@ -54,7 +59,12 @@ const CreatePurchaseOrderPage = () => {
 
 export default CreatePurchaseOrderPage;
 
-const CreatePurchaseOrderForm = () => {
+interface CreatePurchaseOrderFormProps {
+    setDBOperationError: React.Dispatch<React.SetStateAction<DBOperationError>>;
+};
+
+const CreatePurchaseOrderForm = ({ setDBOperationError }: CreatePurchaseOrderFormProps) => {
+    const { push } = useRouter();
     const [values, setValues] = useState<any>(() => {
         return { ...initialPurchaseOrderFormState };
     });
@@ -64,12 +74,38 @@ const CreatePurchaseOrderForm = () => {
                 Object.keys(initialPurchaseOrderFormState).map((key) => [key, ""])
             )
     );
+    const [showContinue, setShowContinue] = useState<boolean>(false);
 
     const resetForm = () => {
         setValues({ ...initialPurchaseOrderFormState });
         setErrorMap(getInitialPurchaseOrderFormErrorMap());
     };
 
+    const handleCreateTShirtOrders = (po: PurchaseOrder) => {
+        rescueDBOperation(
+            () => createTShirtOrderAPI(po),
+            setDBOperationError,
+            DBOperation.CREATE,
+            () => {
+                // All operations (create PO and all TShirtOrders) were a success
+                setShowContinue(true);
+                resetForm();
+            }
+        )
+    }
+    const handleCreatePO = (po: PurchaseOrder) => {
+        //Remove the fields from a standard PO that isn't needed for creation
+        const poToCreate = { ...po, orderedItems: undefined, changeHistory: undefined };
+        rescueDBOperation(
+            () => createPurchaseOrderAPI(poToCreate),
+            setDBOperationError,
+            DBOperation.CREATE,
+            (resp: PurchaseOrder) => {
+                // Important to use the original PO since it has the orderedItems field
+                handleCreateTShirtOrders(po);
+            }
+        );
+    }
     const handleSubmit = () => {
         //Validate input
         const newErrors = new Map<string, string>(errorMap);
@@ -77,9 +113,7 @@ const CreatePurchaseOrderForm = () => {
         Object.keys(values).forEach((key) => {
             let errMsg = "";
             let value = values[key];
-            if (key === "quantityOnHand" && value < 0) {
-                errMsg = "Qty. must be non-negative";
-            } else if (isRequiredField(key) && value.toString().length < 1) {
+            if (isRequiredField(key) && value.toString().length < 1) {
                 errMsg = "Field is required";
             }
             newErrors.set(key, errMsg);
@@ -88,7 +122,7 @@ const CreatePurchaseOrderForm = () => {
         setErrorMap(newErrors);
 
         if (allValid) {
-            resetForm();
+            handleCreatePO(values);
         }
     };
 
@@ -136,18 +170,38 @@ const CreatePurchaseOrderForm = () => {
                         </TextField>
                     ))}
                 <TShirtOrderTable
-                    tableData={[]}
-                    setTableData={() => { }}
+                    tableData={values.orderedItems}
+                    setTableData={newValues => setValues({ ...values, orderedItems: newValues })}
+                />
+                <Box>
+                    <Button
+                        color="primary"
+                        variant="contained"
+                        size="large"
+                        fullWidth
+                        onClick={handleSubmit}
+                        type="submit"
+                    >
+                        Submit
+                    </Button>
+                </Box>
+                
+                <ConfirmPopup
+                    confirmationMsg="Your purchase order was created. Would you like to continue creating purchase orders?"
+                    submitButtonMsg="Yes"
+                    cancelButtonMsg="No"
+                    title="Continue Creating Purchase Orders?"
+                    onClose={() => {
+                        setShowContinue(false);
+                        push('/purchase-orders');
+                    }}
+                    onSubmit={() => setShowContinue(false)}
+                    open={showContinue}
                 />
             </Stack>
         </form>
     );
 }
-
-const validateRequired = (value: string) => !!value.length;
-const validateQuantity = (qty: number) => {
-    return qty >= 0;
-};
 
 const isSelectInputField = (
     fieldName: string | number | symbol | undefined

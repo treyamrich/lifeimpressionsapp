@@ -26,15 +26,8 @@ import {
   Alert,
   Box,
   Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
   IconButton,
-  Stack,
-  TextField,
   Tooltip,
-  MenuItem,
 } from "@mui/material";
 import {
   MaterialReactTable,
@@ -101,12 +94,11 @@ const PurchaseOrders = () => {
       DBOperation.LIST,
       (resp: PurchaseOrder[]) => {
         setTableData(
-          resp.map((PurchaseOrder: PurchaseOrder) => {
-            console.log(resp);
+          resp.map((po: PurchaseOrder) => {
             return {
-              ...PurchaseOrder,
-              updatedAt: toReadableDateTime(PurchaseOrder.updatedAt),
-              createdAt: toReadableDateTime(PurchaseOrder.createdAt)
+              ...po,
+              updatedAt: toReadableDateTime(po.updatedAt),
+              createdAt: toReadableDateTime(po.createdAt)
             };
           })
         );

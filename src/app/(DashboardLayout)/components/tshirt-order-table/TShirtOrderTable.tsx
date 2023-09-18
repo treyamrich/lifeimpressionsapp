@@ -84,20 +84,13 @@ const TShirtOrderTable = ({ tableData, setTableData }: TShirtOrderTableProps) =>
         (row: MRT_Row<TShirtOrder>) => {
             if (
                 !confirm(
-                    `Are you sure you want to delete ${row.getValue(tablePrimaryKey)}`
+                    `Are you sure you want to remove from order`
                 )
             ) {
                 return;
             }
-            rescueDBOperation(
-                () => deleteTShirtOrderAPI({ id: row.original.id }),
-                setDBOperationError,
-                DBOperation.DELETE,
-                () => {
-                    tableData.splice(row.index, 1);
-                    setTableData([...tableData]);
-                }
-            );
+            tableData.splice(row.index, 1);
+            setTableData([...tableData]);
         },
         [tableData]
     );

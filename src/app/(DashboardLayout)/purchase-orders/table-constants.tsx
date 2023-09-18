@@ -10,6 +10,7 @@ export const tablePrimaryKey = "id"
 export const entityName = "Purchase Order"
 
 export const initialPurchaseOrderFormState: any = {
+  __typename: "PurchaseOrder",
   orderNumber: "",
   vendor: "",
   orderedItems: [],

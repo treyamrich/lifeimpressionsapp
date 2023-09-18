@@ -3,21 +3,13 @@ import { API } from "aws-amplify";
 import { GraphQLQuery } from "@aws-amplify/api";
 import { updatePurchaseOrder, updateTShirt } from "@/graphql/mutations";
 import { configuredAuthMode } from "./auth-mode";
-
-const cleanObjectForUpdate = (obj: any) => {
-  return {
-    ...obj,
-    updatedAt: undefined,
-    createdAt: undefined,
-    __typename: undefined,
-  };
-};
+import { cleanObjectFields } from "./util";
 
 export const updateTShirtAPI = async (
   tshirt: UpdateTShirtInput
 ): Promise<TShirt> => {
   //Clean up the data by removing fields not defined in the graphql request
-  const updatedTShirt = cleanObjectForUpdate(tshirt);
+  const updatedTShirt = cleanObjectFields(tshirt);
   const resp = await API.graphql<GraphQLQuery<UpdateTShirtMutation>>({
     query: updateTShirt,
     variables: { input: updatedTShirt },
@@ -35,7 +27,7 @@ export const updatePurchaseOrderAPI = async (
   po: UpdatePurchaseOrderInput
 ): Promise<PurchaseOrder> => {
   //Clean up the data by removing fields not defined in the graphql request
-  const updatedPO = cleanObjectForUpdate(po);
+  const updatedPO = cleanObjectFields(po);
   const resp = await API.graphql<GraphQLQuery<UpdatePurchaseOrderMutation>>({
     query: updatePurchaseOrder,
     variables: { input: updatedPO },

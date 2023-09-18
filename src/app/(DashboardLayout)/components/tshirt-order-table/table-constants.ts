@@ -15,8 +15,7 @@ export interface TShirtOrderFormError {
 export const initialTShirtOrderFormState: any = {
     tShirtOrderTshirtStyleNumber: "", // associated tshirt
     quantity: 0,
-    amountReceived: 0,
-    parentId: "" // uuid of the parent purchase order or customer order
+    amountReceived: 0
 };
 
 export const getInitialTShirtOrderFormErrorMap = () =>

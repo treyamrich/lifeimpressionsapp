@@ -1,8 +1,9 @@
-import { CreatePurchaseOrderInput, CreatePurchaseOrderMutation, CreateTShirtInput, CreateTShirtMutation, PurchaseOrder, TShirt } from "@/API";
+import { CreatePurchaseOrderInput, CreatePurchaseOrderMutation, CreateTShirtInput, CreateTShirtMutation, CreateTShirtOrderMutation, CustomerOrder, PurchaseOrder, TShirt, TShirtOrder } from "@/API";
 import { API } from "aws-amplify";
 import { GraphQLQuery } from "@aws-amplify/api";
-import { createPurchaseOrder, createTShirt } from "@/graphql/mutations";
+import { createPurchaseOrder, createTShirt, createTShirtOrder } from "@/graphql/mutations";
 import { configuredAuthMode } from "./auth-mode";
+import { cleanObjectFields } from "./util";
 
 export const createTShirtAPI = async (
   tshirt: CreateTShirtInput
@@ -21,11 +22,12 @@ export const createTShirtAPI = async (
 };
 
 export const createPurchaseOrderAPI = async (
-  po: CreatePurchaseOrderInput
+  po: PurchaseOrder
 ): Promise<PurchaseOrder> => {
+  const cleanPO = cleanObjectFields(po);
   const resp = await API.graphql<GraphQLQuery<CreatePurchaseOrderMutation>>({
     query: createPurchaseOrder,
-    variables: { input: po },
+    variables: { input: cleanPO },
     authMode: configuredAuthMode
   })
     .then(res => res.data?.createPurchaseOrder as PurchaseOrder)
@@ -34,4 +36,41 @@ export const createPurchaseOrderAPI = async (
       throw new Error("Failed to create new Purchase Order");
     });
   return resp
+}
+
+type PurchaseOrderOrCustomerOrder = PurchaseOrder | CustomerOrder;
+
+export const createTShirtOrderAPI = async (
+  parentObject: PurchaseOrderOrCustomerOrder
+): Promise<TShirtOrder[]> => {
+  const requests: Promise<TShirtOrder | void>[] = [];
+  const errors: string[] = [];
+  // In the UI the items are stored in an array, not using the connection type which nests the items
+  const orderedItems = parentObject.orderedItems as unknown as TShirtOrder[];
+  orderedItems.forEach((tshirtOrder: TShirtOrder) => {
+    // Populate the foreign key
+    const tshirtToAdd = { ...tshirtOrder };
+    if (parentObject.__typename === "PurchaseOrder") {
+      tshirtToAdd["purchaseOrderOrderedItemsId"] = parentObject.id;
+    } else if (parentObject.__typename === "CustomerOrder") {
+      tshirtToAdd["customerOrderOrderedItemsId"] = parentObject.id;
+    }
+    const resp = API.graphql<GraphQLQuery<CreateTShirtOrderMutation>>({
+      query: createTShirtOrder,
+      variables: { input: tshirtToAdd },
+      authMode: configuredAuthMode
+    })
+      .then(res => res.data?.createTShirtOrder as TShirtOrder)
+      .catch(e => {
+        console.log(e);
+        errors.push(tshirtToAdd.tShirtOrderTshirtStyleNumber);
+      });
+    requests.push(resp);
+  });
+
+  const results = await Promise.all(requests);
+  if (errors.length > 0) {
+    throw new Error(`Purchase order created but, failed to add TShirt(s): ${errors.toString()} to purchase order`);
+  }
+  return results as TShirtOrder[];
 }
