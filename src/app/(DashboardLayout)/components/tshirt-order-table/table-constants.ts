@@ -6,7 +6,7 @@ export const modalTitle = "Add to Order";
 
 //Exclude these fields when creating. TShirt style number is hard coded in the form for input
 export const excludeOnCreateFields: string[] = ["tShirtOrderTshirtStyleNumber", "updatedAt", "createdAt"];
-export const numberInputFields = new Set<string>(["quantity", "numReceived"]); 
+export const numberInputFields = new Set<string>(["quantity", "amountReceived"]); 
 
 export interface TShirtOrderFormError {
     message: string;
@@ -16,7 +16,7 @@ export const initialTShirtOrderFormState: any = {
     tShirtOrderTshirtStyleNumber: "", // associated tshirt
     quantity: 0,
     amountReceived: 0,
-    foreignKey: "" // uuid of the parent purchase order or customer order
+    parentId: "" // uuid of the parent purchase order or customer order
 };
 
 export const getInitialTShirtOrderFormErrorMap = () =>

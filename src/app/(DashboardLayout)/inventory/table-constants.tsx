@@ -1,7 +1,7 @@
 import { TShirt, TShirtSize, TShirtType } from "@/API";
 import { MRT_ColumnDef, MRT_Cell } from "material-react-table";
 
-export const tablePrimaryKey = "styleNumber";
+export const tshirtPrimaryKey = "styleNumber";
 export const entityName = "TShirt";
 
 export const getTableColumns = (

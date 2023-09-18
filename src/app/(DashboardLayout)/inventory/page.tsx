@@ -17,7 +17,7 @@ import {
   DBOperation,
 } from "@/app/graphql-helpers/graphql-errors";
 import {
-  tablePrimaryKey,
+  tshirtPrimaryKey,
   entityName,
   getTableColumns,
 } from "./table-constants";
@@ -84,7 +84,7 @@ const Inventory = () => {
     (row: MRT_Row<TShirt>) => {
       if (
         !confirm(
-          `Are you sure you want to delete ${row.getValue(tablePrimaryKey)}`
+          `Are you sure you want to delete ${row.getValue(tshirtPrimaryKey)}`
         )
       ) {
         return;

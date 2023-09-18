@@ -14,9 +14,6 @@ import {
     TextField,
     Stack,
     MenuItem,
-    Card,
-    CardContent,
-    Typography,
 } from "@mui/material";
 import {
     initialPurchaseOrderFormState,
@@ -24,8 +21,6 @@ import {
     selectInputFields,
     type SelectValue,
     getInitialPurchaseOrderFormErrorMap,
-    tablePrimaryKey,
-    entityName,
     getTableColumns,
     isRequiredField
 } from "../table-constants";

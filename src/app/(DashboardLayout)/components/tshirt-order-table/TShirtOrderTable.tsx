@@ -1,7 +1,7 @@
 "use client";
 
 import { TShirt, TShirtOrder } from "@/API";
-import React, { useMemo, useState, useCallback } from "react";
+import React, { useMemo, useState, useCallback, useEffect } from "react";
 import { Delete, Edit } from "@mui/icons-material";
 import { deleteTShirtOrderAPI } from "@/app/graphql-helpers/delete-apis";
 import {
@@ -31,6 +31,9 @@ import {
     TextField,
     Autocomplete,
     Tooltip,
+    Alert,
+    AutocompleteRenderInputParams,
+    Chip,
 } from "@mui/material";
 import {
     MaterialReactTable,
@@ -40,7 +43,7 @@ import {
     type MRT_Row,
     type MRT_ColumnFiltersState,
 } from "material-react-table";
-import { mockData } from "../../inventory/table-constants";
+import { listTShirtAPI } from "@/app/graphql-helpers/fetch-apis";
 
 interface TShirtOrderTableProps {
     tableData: TShirtOrder[],
@@ -58,6 +61,7 @@ const TShirtOrderTable = ({ tableData, setTableData }: TShirtOrderTableProps) =>
     const [dbOperationError, setDBOperationError] = useState({
         ...defaultDBOperationError,
     } as DBOperationError);
+    const [tshirtChoices, setTShirtChoices] = useState<TShirt[]>([]);
 
     const handleCreateNewRow = (values: TShirtOrder) => {
         setTableData([...tableData, values]);
@@ -138,6 +142,20 @@ const TShirtOrderTable = ({ tableData, setTableData }: TShirtOrderTableProps) =>
         [getCommonEditTextFieldProps]
     );
 
+    const fetchTShirts = () => {
+        const deletedFilter = { isDeleted: { ne: true } };
+        rescueDBOperation(
+            () => listTShirtAPI(deletedFilter),
+            setDBOperationError,
+            DBOperation.LIST,
+            (resp: TShirt[]) => setTShirtChoices(resp)
+        );
+    };
+
+    useEffect(() => {
+        fetchTShirts();
+    }, []);
+
     return (
         <>
             <MaterialReactTable
@@ -193,7 +211,7 @@ const TShirtOrderTable = ({ tableData, setTableData }: TShirtOrderTableProps) =>
                 open={createModalOpen}
                 onClose={() => setCreateModalOpen(false)}
                 onSubmit={handleCreateNewRow}
-                records={tableData}
+                tshirtChoices={tshirtChoices}
             />
         </>
     );
@@ -206,7 +224,7 @@ interface CreateTShirtOrderModal<TShirtOrder extends Record<string, any>> {
     onClose: () => void;
     onSubmit: (values: TShirtOrder) => void;
     open: boolean;
-    records: TShirtOrder[];
+    tshirtChoices: TShirt[];
 }
 
 const CreateTShirtOrderModal = <TShirtOrder extends Record<string, any>>({
@@ -214,7 +232,7 @@ const CreateTShirtOrderModal = <TShirtOrder extends Record<string, any>>({
     columns,
     onClose,
     onSubmit,
-    records,
+    tshirtChoices,
 }: CreateTShirtOrderModal<TShirtOrder>) => {
     //Initial TShirtOrder values
     const [values, setValues] = useState<any>(() => {
@@ -227,10 +245,12 @@ const CreateTShirtOrderModal = <TShirtOrder extends Record<string, any>>({
             )
     );
     const [autoCompleteInputVal, setAutoCompleteInputVal] = useState('');
-
+    const [selectedTShirt, setSelectedTShirt] = useState<TShirt | null>(null);
 
     const resetForm = () => {
         setValues({ ...initialTShirtOrderFormState });
+        setSelectedTShirt(null);
+        setAutoCompleteInputVal('');
         setErrorMap(getInitialTShirtOrderFormErrorMap());
     };
     const handleClose = () => {
@@ -242,28 +262,19 @@ const CreateTShirtOrderModal = <TShirtOrder extends Record<string, any>>({
         //Validate input
         const newErrors = new Map<string, string>(errorMap);
         let allValid = true;
+
         Object.keys(values).forEach((key) => {
             let errMsg = "";
             let value = values[key];
-            if (key === "quantityOnHand" && value < 0) {
-                errMsg = "Qty. must be non-negative";
-            } else if (value.toString().length < 1) {
-                errMsg = "Field is required";
-            } else if (
-                key === "styleNumber" &&
-                records.reduce(
-                    (prev, curr) => prev || curr.styleNumber === value,
-                    false
-                )
-            ) {
-                //Enforce primary key attribute
-                errMsg = "Duplicate style numbers not allowed";
+            if (isNumberInputField(key) && value < 0) {
+                errMsg = "Number must be non-negative";
+            } else if (key === "tShirtOrderTshirtStyleNumber" && value.toString().length < 1) {
+                errMsg = "TShirt is not selected";
             }
             newErrors.set(key, errMsg);
             allValid = allValid && errMsg === "";
         });
         setErrorMap(newErrors);
-
         if (allValid) {
             onSubmit(values);
             resetForm();
@@ -304,13 +315,37 @@ const CreateTShirtOrderModal = <TShirtOrder extends Record<string, any>>({
                         ))}
                         <Autocomplete
                             id="auto-complete"
-                            options={mockData}
+                            options={tshirtChoices}
                             getOptionLabel={(option: TShirt) => option.styleNumber}
                             autoComplete
-                            renderInput={(params) => (
+                            renderInput={(params: AutocompleteRenderInputParams) => (
                                 <TextField {...params} label="TShirt Style No." variant="standard" />
                             )}
+                            value={selectedTShirt}
+                            onChange={(event, newValue) => {
+                                setValues({ ...values, tShirtOrderTshirtStyleNumber: newValue?.styleNumber });
+                                setSelectedTShirt(newValue);
+                            }}
+                            inputValue={autoCompleteInputVal}
+                            onInputChange={(event, newInputValue) => {
+                                setAutoCompleteInputVal(newInputValue);
+                            }}
+                            renderOption={(props, option) => {
+                                return (
+                                    <li {...props} key={option.styleNumber}>
+                                        {option.styleNumber}
+                                    </li>
+                                );
+                            }}
+                            renderTags={(tagValue, getTagProps) => {
+                                return tagValue.map((option, index) => (
+                                    <Chip {...getTagProps({ index })} key={option.styleNumber} label={option.styleNumber} />
+                                ))
+                            }}
                         />
+                        {errorMap.get("tShirtOrderTshirtStyleNumber") !== "" && (
+                            <Alert severity="error">TShirt not selected.</Alert>
+                        )}
                     </Stack>
                 </form>
             </DialogContent>
@@ -331,7 +366,7 @@ const validateQuantity = (qty: number) => {
 
 const isNumberInputField = (
     fieldName: string | number | symbol | undefined
-  ) => {
+) => {
     let nameOfField = fieldName ? fieldName.toString() : "";
     return numberInputFields.has(nameOfField);
-  }
+}
