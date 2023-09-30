@@ -6,7 +6,6 @@ import { PurchaseOrder } from "@/API";
 import React, { useEffect, useMemo, useState, useCallback } from "react";
 import { useRouter } from 'next/navigation';
 import { Delete, Edit } from "@mui/icons-material";
-import { createPurchaseOrderAPI } from "@/app/graphql-helpers/create-apis";
 import { listPurchaseOrderAPI } from "@/app/graphql-helpers/fetch-apis";
 import { updatePurchaseOrderAPI } from "@/app/graphql-helpers/update-apis";
 import { toReadableDateTime } from "@/utils/datetimeConversions";
@@ -31,15 +30,10 @@ import {
 } from "@mui/material";
 import {
   MaterialReactTable,
-  type MaterialReactTableProps,
   type MRT_ColumnDef,
-  type MRT_Cell,
   type MRT_Row,
   type MRT_ColumnFiltersState,
-  type MRT_PaginationState,
-  type MRT_SortingState,
 } from "material-react-table";
-import { listPurchaseOrders } from "@/graphql/queries";
 
 const PurchaseOrders = () => {
   const { push } = useRouter();
@@ -50,15 +44,6 @@ const PurchaseOrders = () => {
   const [dbOperationError, setDBOperationError] = useState({
     ...defaultDBOperationError,
   } as DBOperationError);
-
-  const handleCreateNewRow = (values: PurchaseOrder) => {
-    rescueDBOperation(
-      () => createPurchaseOrderAPI(values),
-      setDBOperationError,
-      DBOperation.CREATE,
-      (resp: PurchaseOrder) => setTableData([...tableData, resp])
-    );
-  };
 
   const handleDeleteRow = useCallback(
     (row: MRT_Row<PurchaseOrder>) => {
@@ -89,7 +74,6 @@ const PurchaseOrders = () => {
   );
 
   const fetchPurchaseOrders = () => {
-    console.log(listPurchaseOrders);
     rescueDBOperation(
       () => listPurchaseOrderAPI({}),
       setDBOperationError,
@@ -134,6 +118,15 @@ const PurchaseOrders = () => {
                 size: 120,
               },
             }}
+            muiTableBodyRowProps={({ row }) => ({
+              onClick: (event) => {
+                const poId = row.getValue('id')
+                push(`purchase-orders/view/${poId}`)
+              },
+              sx: {
+                cursor: 'pointer', //you might want to change the cursor too when adding an onClick
+              },
+            })}
             columns={columns}
             data={tableData}
             initialState={{ showColumnFilters: true }}
