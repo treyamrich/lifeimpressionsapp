@@ -219,7 +219,7 @@ const Inventory = () => {
             )}
             renderTopToolbarCustomActions={() => (
               <Button
-                color="secondary"
+                color="primary"
                 onClick={() => setCreateModalOpen(true)}
                 variant="contained"
               >

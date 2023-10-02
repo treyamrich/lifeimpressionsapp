@@ -156,7 +156,7 @@ const PurchaseOrders = () => {
             )}
             renderTopToolbarCustomActions={() => (
               <Button
-                color="secondary"
+                color="primary"
                 onClick={() => push('/purchase-orders/create')}
                 variant="contained"
               >
