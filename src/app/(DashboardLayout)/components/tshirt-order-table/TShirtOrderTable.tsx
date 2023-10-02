@@ -1,6 +1,11 @@
 "use client";
 
-import { TShirt, TShirtOrder } from "@/API";
+import {
+  CreatePurchaseOrderChangeInput,
+  PurchaseOrderChange,
+  TShirt,
+  TShirtOrder,
+} from "@/API";
 import React, { useMemo, useState, useCallback, useEffect } from "react";
 import { Delete, Edit } from "@mui/icons-material";
 import { deleteTShirtOrderAPI } from "@/app/graphql-helpers/delete-apis";
@@ -23,6 +28,7 @@ import {
 import { listTShirtAPI } from "@/app/graphql-helpers/fetch-apis";
 import CreateTShirtOrderModal from "./CreateTShirtOrderModal";
 import EditRowPopup from "./EditRowPopup";
+import { createPurchaseOrderChangeAPI } from "@/app/graphql-helpers/create-apis";
 
 interface TShirtOrderTableProps {
   tableData: TShirtOrder[];
@@ -30,16 +36,19 @@ interface TShirtOrderTableProps {
 }
 
 type EditMode = {
-    show: boolean;
-    row: MRT_Row<TShirtOrder> | undefined;
-}
+  show: boolean;
+  row: MRT_Row<TShirtOrder> | undefined;
+};
 
 const TShirtOrderTable = ({
   tableData,
   setTableData,
 }: TShirtOrderTableProps) => {
   const [createModalOpen, setCreateModalOpen] = useState(false);
-  const [editMode, setEditMode] = useState<EditMode>({ show: false, row: undefined});
+  const [editMode, setEditMode] = useState<EditMode>({
+    show: false,
+    row: undefined,
+  });
   const [validationErrors, setValidationErrors] = useState<{
     [cellId: string]: string;
   }>({});
@@ -68,9 +77,26 @@ const TShirtOrderTable = ({
     setValidationErrors({});
   };
 
-  const handleEditRowAudit = () => {
-    console.log("The user edited this row");
-    setEditMode({...editMode, show: false});
+  const handleEditRowAudit = (poChange: CreatePurchaseOrderChangeInput) => {
+    const row = editMode.row;
+    if (!row) return;
+
+    rescueDBOperation(
+      () => createPurchaseOrderChangeAPI(poChange),
+      setDBOperationError,
+      DBOperation.CREATE,
+      (resp: PurchaseOrderChange) => {
+        const prev = row.original;
+        const prevAmt = prev.amountReceived ? prev.amountReceived : 0;
+        tableData[row.index] = {
+          ...prev,
+          amountReceived: resp.quantityChange + prevAmt,
+        };
+        setTableData([...tableData]);
+      }
+    );
+
+    setEditMode({ show: false, row: undefined });
   };
 
   const handleDeleteRow = useCallback(
@@ -159,13 +185,13 @@ const TShirtOrderTable = ({
           columnFilters,
         }}
         muiTableBodyRowProps={({ row }) => ({
-            onClick: (event) => {
-              setEditMode({ show: true, row: row });
-            },
-            sx: {
-              cursor: 'pointer', //you might want to change the cursor too when adding an onClick
-            },
-          })}
+          onClick: (event) => {
+            setEditMode({ show: true, row: row });
+          },
+          sx: {
+            cursor: "pointer", //you might want to change the cursor too when adding an onClick
+          },
+        })}
         enableEditing={undefined}
         onEditingRowSave={handleSaveRowEdits}
         onEditingRowCancel={handleCancelRowEdits}

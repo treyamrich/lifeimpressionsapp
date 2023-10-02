@@ -15,10 +15,10 @@ import {
 import BlankCard from "../shared/BlankCard";
 import { useState } from "react";
 import { MRT_Row } from "material-react-table";
-import { TShirtOrder } from "@/API";
+import { CreatePurchaseOrderChangeInput, TShirtOrder } from "@/API";
 
 interface EditRowPopupProps {
-  onSubmit: () => void;
+  onSubmit: (poChange: CreatePurchaseOrderChangeInput) => void;
   onClose: () => void;
   open: boolean;
   row: MRT_Row<TShirtOrder> | undefined;
@@ -45,7 +45,14 @@ const EditRowPopup = ({
       setOtherInputError(true);
       return;
     }
-    onSubmit();
+    const tshirtStyleNo: string = row ? row.getValue("tShirtOrderTshirtStyleNumber") : "";
+    const poChange: CreatePurchaseOrderChangeInput = {
+        quantityChange: newAmtReceived,
+        reason: editReason,
+        purchaseOrderChangeTshirtStyleNumber: tshirtStyleNo,
+
+    };
+    onSubmit(poChange);
     resetForm();
   };
 
