@@ -137,6 +137,7 @@ export const onCreatePurchaseOrderChange = /* GraphQL */ `
         __typename
       }
       quantityChange
+      reason
       id
       createdAt
       updatedAt
@@ -164,6 +165,7 @@ export const onUpdatePurchaseOrderChange = /* GraphQL */ `
         __typename
       }
       quantityChange
+      reason
       id
       createdAt
       updatedAt
@@ -191,6 +193,7 @@ export const onDeletePurchaseOrderChange = /* GraphQL */ `
         __typename
       }
       quantityChange
+      reason
       id
       createdAt
       updatedAt

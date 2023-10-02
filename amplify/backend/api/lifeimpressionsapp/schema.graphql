@@ -57,6 +57,7 @@ enum POStatus {
 type PurchaseOrderChange @model {
   tshirt: TShirt! @hasOne
   quantityChange: Int! # the delta
+  reason: String!
 }
 
 type TShirtOrder @model {

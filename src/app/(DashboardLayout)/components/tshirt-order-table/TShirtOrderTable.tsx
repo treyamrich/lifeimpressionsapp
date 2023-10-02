@@ -29,12 +29,17 @@ interface TShirtOrderTableProps {
   setTableData: React.Dispatch<React.SetStateAction<TShirtOrder[]>>;
 }
 
+type EditMode = {
+    show: boolean;
+    row: MRT_Row<TShirtOrder> | undefined;
+}
+
 const TShirtOrderTable = ({
   tableData,
   setTableData,
 }: TShirtOrderTableProps) => {
   const [createModalOpen, setCreateModalOpen] = useState(false);
-  const [afterEditRowModalOpen, setAfterEditRowModalOpen] = useState(false);
+  const [editMode, setEditMode] = useState<EditMode>({ show: false, row: undefined});
   const [validationErrors, setValidationErrors] = useState<{
     [cellId: string]: string;
   }>({});
@@ -57,7 +62,6 @@ const TShirtOrderTable = ({
       tableData[row.index] = values;
       setTableData([...tableData]);
       exitEditingMode(); //required to exit editing mode and close modal
-      setAfterEditRowModalOpen(true);
     };
 
   const handleCancelRowEdits = () => {
@@ -66,7 +70,7 @@ const TShirtOrderTable = ({
 
   const handleEditRowAudit = () => {
     console.log("The user edited this row");
-    setAfterEditRowModalOpen(false);
+    setEditMode({...editMode, show: false});
   };
 
   const handleDeleteRow = useCallback(
@@ -154,7 +158,15 @@ const TShirtOrderTable = ({
         state={{
           columnFilters,
         }}
-        enableEditing
+        muiTableBodyRowProps={({ row }) => ({
+            onClick: (event) => {
+              setEditMode({ show: true, row: row });
+            },
+            sx: {
+              cursor: 'pointer', //you might want to change the cursor too when adding an onClick
+            },
+          })}
+        enableEditing={undefined}
         onEditingRowSave={handleSaveRowEdits}
         onEditingRowCancel={handleCancelRowEdits}
         renderRowActions={({ row, table }) => (
@@ -189,9 +201,11 @@ const TShirtOrderTable = ({
         tshirtChoices={tshirtChoices}
       />
       <EditRowPopup
-        open={afterEditRowModalOpen}
+        open={editMode.show}
+        row={editMode.row}
         onSubmit={handleEditRowAudit}
-        title="Audit editing purchase order"
+        onClose={() => setEditMode({ show: false, row: undefined })}
+        title="Edit"
       />
     </>
   );

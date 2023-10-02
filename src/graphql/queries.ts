@@ -108,6 +108,7 @@ export const getPurchaseOrderChange = /* GraphQL */ `
         __typename
       }
       quantityChange
+      reason
       id
       createdAt
       updatedAt
@@ -130,6 +131,7 @@ export const listPurchaseOrderChanges = /* GraphQL */ `
     ) {
       items {
         quantityChange
+        reason
         id
         createdAt
         updatedAt
