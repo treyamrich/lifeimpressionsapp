@@ -57,7 +57,7 @@ const ViewPurchaseOrder = ({ params }: ViewPurchaseOrderProps) => {
             (res: PurchaseOrder) => {
                 const changeHistory = res.changeHistory?.items;
                 if (changeHistory) {
-                    changeHistory.map((change) => {
+                    const newChangeHistory: PurchaseOrderChange[] = changeHistory.map((change) => {
                         if (change) {
                             change = {
                                 ...change,
@@ -65,10 +65,8 @@ const ViewPurchaseOrder = ({ params }: ViewPurchaseOrderProps) => {
                             };
                         }
                         return change;
-                    });
-                    setEditHistory(
-                        changeHistory ? (changeHistory as PurchaseOrderChange[]) : []
-                    );
+                    }) as PurchaseOrderChange[];
+                    setEditHistory(newChangeHistory);
                 }
                 setPo(res);
                 const orderedItems = res.orderedItems ? res.orderedItems.items : [];
