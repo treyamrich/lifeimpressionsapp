@@ -7,7 +7,6 @@ import {
 } from "@/API";
 import React, { useMemo, useState, useCallback, useEffect } from "react";
 import { Delete, Edit } from "@mui/icons-material";
-import { deleteTShirtOrderAPI } from "@/app/graphql-helpers/delete-apis";
 import {
   type DBOperationError,
   defaultDBOperationError,
@@ -27,7 +26,6 @@ import {
 import { listTShirtAPI } from "@/app/graphql-helpers/fetch-apis";
 import CreateTShirtOrderModal from "./CreateTShirtOrderModal";
 import EditRowPopup from "./EditRowPopup";
-import { createPurchaseOrderChangeAPI } from "@/app/graphql-helpers/create-apis";
 
 interface TShirtOrderTableProps {
   tableData: TShirtOrder[];
@@ -38,6 +36,10 @@ interface TShirtOrderTableProps {
     poChange: CreatePurchaseOrderChangeInput,
     setDBOperationError: React.Dispatch<React.SetStateAction<DBOperationError>>,
     exitEditingMode: () => void
+  ) => void | undefined;
+  onRowAdd: (
+    newRowValue: TShirtOrder,
+    setDBOperationError: React.Dispatch<React.SetStateAction<DBOperationError>>,
   ) => void | undefined;
 }
 
@@ -51,6 +53,7 @@ const TShirtOrderTable = ({
   setTableData,
   parentOrderId,
   onRowEdit,
+  onRowAdd
 }: TShirtOrderTableProps) => {
   const [createModalOpen, setCreateModalOpen] = useState(false);
   const [editMode, setEditMode] = useState<EditMode>({
@@ -70,6 +73,7 @@ const TShirtOrderTable = ({
 
   const handleCreateNewRow = (values: TShirtOrder) => {
     setTableData([...tableData, values]);
+    onRowAdd(values, setDBOperationError);
   };
 
   const handleSaveRowEdits: MaterialReactTableProps<TShirtOrder>["onEditingRowSave"] =
@@ -175,6 +179,7 @@ const TShirtOrderTable = ({
         onColumnFiltersChange={setColumnFilters}
         state={{
           columnFilters,
+          columnVisibility: { id: false }
         }}
         muiTableBodyRowProps={({ row }) => ({
           onClick: (event) => {

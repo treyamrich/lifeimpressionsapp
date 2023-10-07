@@ -185,7 +185,8 @@ const CreatePurchaseOrderForm = ({
             setValues({ ...values, orderedItems: newValues })
           }
           parentOrderId={undefined}
-          onRowEdit={undefined}
+          onRowEdit={() => {}}
+          onRowAdd={() => {}}
         />
         <Box>
           <Button

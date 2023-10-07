@@ -5,7 +5,7 @@ export const tablePrimaryKey = "id";
 export const modalTitle = "Add to Order";
 
 //Exclude these fields when creating. TShirt style number is hard coded in the form for input
-export const excludeOnCreateFields: string[] = ["tShirtOrderTshirtStyleNumber", "updatedAt", "createdAt"];
+export const excludeOnCreateFields: string[] = ["tShirtOrderTshirtStyleNumber", "updatedAt", "createdAt", "id"];
 export const numberInputFields = new Set<string>(["quantity", "amountReceived"]); 
 
 export interface TShirtOrderFormError {

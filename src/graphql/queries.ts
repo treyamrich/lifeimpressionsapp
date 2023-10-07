@@ -57,11 +57,32 @@ export const getPurchaseOrder = /* GraphQL */ `
       orderNumber
       vendor
       orderedItems {
+        items {
+          quantity
+          amountReceived
+          id
+          createdAt
+          updatedAt
+          purchaseOrderOrderedItemsId
+          customerOrderOrderedItemsId
+          tShirtOrderTshirtStyleNumber
+          __typename
+        }
         nextToken
         __typename
       }
       status
       changeHistory {
+        items {
+          quantityChange
+          reason
+          id
+          createdAt
+          updatedAt
+          purchaseOrderChangeHistoryId
+          purchaseOrderChangeTshirtStyleNumber
+          __typename
+        }
         nextToken
         __typename
       }
@@ -82,7 +103,15 @@ export const listPurchaseOrders = /* GraphQL */ `
         id
         orderNumber
         vendor
+        orderedItems {
+          nextToken
+          __typename
+        }
         status
+        changeHistory {
+          nextToken
+          __typename
+        }
         createdAt
         updatedAt
         __typename
@@ -130,6 +159,18 @@ export const listPurchaseOrderChanges = /* GraphQL */ `
       nextToken: $nextToken
     ) {
       items {
+        tshirt {
+          styleNumber
+          brand
+          color
+          size
+          type
+          quantityOnHand
+          isDeleted
+          createdAt
+          updatedAt
+          __typename
+        }
         quantityChange
         reason
         id
@@ -179,6 +220,18 @@ export const listTShirtOrders = /* GraphQL */ `
   ) {
     listTShirtOrders(filter: $filter, limit: $limit, nextToken: $nextToken) {
       items {
+        tshirt {
+          styleNumber
+          brand
+          color
+          size
+          type
+          quantityOnHand
+          isDeleted
+          createdAt
+          updatedAt
+          __typename
+        }
         quantity
         amountReceived
         id
@@ -207,6 +260,17 @@ export const getCustomerOrder = /* GraphQL */ `
       orderDate
       dateNeededBy
       orderedItems {
+        items {
+          quantity
+          amountReceived
+          id
+          createdAt
+          updatedAt
+          purchaseOrderOrderedItemsId
+          customerOrderOrderedItemsId
+          tShirtOrderTshirtStyleNumber
+          __typename
+        }
         nextToken
         __typename
       }
@@ -225,8 +289,18 @@ export const listCustomerOrders = /* GraphQL */ `
     listCustomerOrders(filter: $filter, limit: $limit, nextToken: $nextToken) {
       items {
         id
+        contact {
+          name
+          email
+          phoneNumber
+          __typename
+        }
         orderDate
         dateNeededBy
+        orderedItems {
+          nextToken
+          __typename
+        }
         createdAt
         updatedAt
         __typename

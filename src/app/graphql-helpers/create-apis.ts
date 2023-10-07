@@ -85,7 +85,7 @@ export const createTShirtOrderAPI = async (
 
   const results = await Promise.all(requests);
   if (errors.length > 0) {
-    throw new Error(`Purchase order created but, failed to add TShirt(s): ${errors.toString()} to purchase order`);
+    throw new Error(`Failed to add TShirt(s): ${errors.toString()} to purchase order`);
   }
   return results as TShirtOrder[];
 }
