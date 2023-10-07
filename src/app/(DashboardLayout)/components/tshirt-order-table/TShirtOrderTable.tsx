@@ -2,7 +2,6 @@
 
 import {
   CreatePurchaseOrderChangeInput,
-  PurchaseOrderChange,
   TShirt,
   TShirtOrder,
 } from "@/API";
@@ -33,6 +32,13 @@ import { createPurchaseOrderChangeAPI } from "@/app/graphql-helpers/create-apis"
 interface TShirtOrderTableProps {
   tableData: TShirtOrder[];
   setTableData: React.Dispatch<React.SetStateAction<TShirtOrder[]>>;
+  parentOrderId: string | undefined;
+  onRowEdit: (
+    row: MRT_Row<TShirtOrder>,
+    poChange: CreatePurchaseOrderChangeInput,
+    setDBOperationError: React.Dispatch<React.SetStateAction<DBOperationError>>,
+    exitEditingMode: () => void
+  ) => void | undefined;
 }
 
 type EditMode = {
@@ -43,6 +49,8 @@ type EditMode = {
 const TShirtOrderTable = ({
   tableData,
   setTableData,
+  parentOrderId,
+  onRowEdit,
 }: TShirtOrderTableProps) => {
   const [createModalOpen, setCreateModalOpen] = useState(false);
   const [editMode, setEditMode] = useState<EditMode>({
@@ -80,23 +88,7 @@ const TShirtOrderTable = ({
   const handleEditRowAudit = (poChange: CreatePurchaseOrderChangeInput) => {
     const row = editMode.row;
     if (!row) return;
-
-    rescueDBOperation(
-      () => createPurchaseOrderChangeAPI(poChange),
-      setDBOperationError,
-      DBOperation.CREATE,
-      (resp: PurchaseOrderChange) => {
-        const prev = row.original;
-        const prevAmt = prev.amountReceived ? prev.amountReceived : 0;
-        tableData[row.index] = {
-          ...prev,
-          amountReceived: resp.quantityChange + prevAmt,
-        };
-        setTableData([...tableData]);
-      }
-    );
-
-    setEditMode({ show: false, row: undefined });
+    onRowEdit(row, poChange, setDBOperationError, () => setEditMode({ show: false, row: undefined }));
   };
 
   const handleDeleteRow = useCallback(
@@ -232,6 +224,7 @@ const TShirtOrderTable = ({
         onSubmit={handleEditRowAudit}
         onClose={() => setEditMode({ show: false, row: undefined })}
         title="Edit"
+        purchaseOrderId={parentOrderId}
       />
     </>
   );

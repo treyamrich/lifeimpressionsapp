@@ -48,6 +48,10 @@ export const getTableColumns = (
                 ...getCommonEditTextFieldProps(cell),
                 type: "number",
             }),
+        } as MRT_ColumnDef<TShirtOrder>,
+        {
+            accessorKey: "id",
+            header: "Id"
         } as MRT_ColumnDef<TShirtOrder>
     ];
 };

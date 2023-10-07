@@ -1,6 +1,14 @@
 "use client";
 
-import { PurchaseOrder, PurchaseOrderChange, TShirtOrder } from "@/API";
+import {
+  CreatePurchaseOrderChangeInput,
+  PurchaseOrder,
+  PurchaseOrderChange,
+  TShirt,
+  TShirtOrder,
+  UpdateTShirtInput,
+  UpdateTShirtOrderInput,
+} from "@/API";
 import PageContainer from "@/app/(DashboardLayout)/components/container/PageContainer";
 import BlankCard from "@/app/(DashboardLayout)/components/shared/BlankCard";
 import DashboardCard from "@/app/(DashboardLayout)/components/shared/DashboardCard";
@@ -13,10 +21,17 @@ import {
   rescueDBOperation,
 } from "@/app/graphql-helpers/graphql-errors";
 
-import { Typography, Grid, CardContent, Alert, Button } from "@mui/material";
+import { Typography, Grid, CardContent, Alert } from "@mui/material";
 import { useState, useEffect } from "react";
 import ViewPOHeaderFields from "./ViewPOHeaders";
 import POChangeHistoryTable from "@/app/(DashboardLayout)/components/po-change-history-table/POChangeHistoryTable";
+import { toReadableDateTime } from "@/utils/datetimeConversions";
+import { createPurchaseOrderChangeAPI } from "@/app/graphql-helpers/create-apis";
+import { MRT_Row } from "material-react-table";
+import {
+  updateTShirtAPI,
+  updateTShirtOrderAPI,
+} from "@/app/graphql-helpers/update-apis";
 
 type ViewPurchaseOrderProps = {
   params: { id: string };
@@ -41,12 +56,22 @@ const ViewPurchaseOrder = ({ params }: ViewPurchaseOrderProps) => {
       setDBOperationError,
       DBOperation.GET,
       (res: PurchaseOrder) => {
+        const changeHistory = res.changeHistory?.items;
+        if (changeHistory) {
+          changeHistory.map((change) => {
+            if (change) {
+              change = {
+                ...change,
+                createdAt: toReadableDateTime(change.createdAt),
+              };
+            }
+            return change;
+          });
+          setEditHistory(
+            changeHistory ? (changeHistory as PurchaseOrderChange[]) : []
+          );
+        }
         setPo(res);
-        setEditHistory(
-          res.changeHistory
-            ? (res.changeHistory.items as PurchaseOrderChange[])
-            : []
-        );
       }
     );
   };
@@ -86,6 +111,9 @@ const ViewPurchaseOrder = ({ params }: ViewPurchaseOrderProps) => {
                 <OrderedItemsTable
                   tableData={updatedOrderedItems}
                   setTableData={setUpdatedOrderedItems}
+                  purchaseOrderId={id}
+                  changeHistory={editHistory}
+                  setChangeHistory={setEditHistory}
                 />
               </Grid>
             </Grid>
@@ -98,7 +126,7 @@ const ViewPurchaseOrder = ({ params }: ViewPurchaseOrderProps) => {
                 </Typography>
               </Grid>
               <Grid item>
-                <ChangeHistoryTable changeHistory={editHistory}/>
+                <ChangeHistoryTable changeHistory={editHistory} />
               </Grid>
             </Grid>
           </Grid>
@@ -113,16 +141,79 @@ export default ViewPurchaseOrder;
 type OrderedItemsTableProps = {
   tableData: TShirtOrder[];
   setTableData: React.Dispatch<React.SetStateAction<TShirtOrder[]>>;
+  purchaseOrderId: string;
+  changeHistory: PurchaseOrderChange[];
+  setChangeHistory: React.Dispatch<React.SetStateAction<PurchaseOrderChange[]>>;
 };
 
 const OrderedItemsTable = ({
   tableData,
   setTableData,
+  purchaseOrderId,
+  changeHistory,
+  setChangeHistory,
 }: OrderedItemsTableProps) => {
+  const handleAfterRowEdit = (
+    row: MRT_Row<TShirtOrder>,
+    poChange: CreatePurchaseOrderChangeInput,
+    setDBOperationError: React.Dispatch<React.SetStateAction<DBOperationError>>,
+    exitEditingMode: () => void
+  ) => {
+    rescueDBOperation(
+      () => createPurchaseOrderChangeAPI(poChange),
+      setDBOperationError,
+      DBOperation.CREATE,
+      (resp: PurchaseOrderChange) => {
+        // Update TShirtOrder DB table
+        const prev = row.original;
+        const prevAmt = prev.amountReceived ? prev.amountReceived : 0;
+        const newAmt = resp.quantityChange + prevAmt;
+        const newTShirtOrder = {
+          ...prev,
+          amountReceived: newAmt,
+        };
+
+        rescueDBOperation(
+          () => updateTShirtOrderAPI(newTShirtOrder),
+          setDBOperationError,
+          DBOperation.UPDATE,
+          (resp: TShirtOrder) => {
+            tableData[row.index] = resp;
+            setTableData([...tableData]);
+          }
+        );
+
+        // Update inventory
+        const newTShirt: UpdateTShirtInput = {
+          styleNumber: prev.tshirt.styleNumber,
+          quantityOnHand: newAmt,
+        };
+        rescueDBOperation(
+          () => updateTShirtAPI(newTShirt),
+          setDBOperationError,
+          DBOperation.UPDATE,
+          (resp: TShirt) => {}
+        );
+
+        // Update local PO change history table
+        const changePo = {
+          ...resp,
+          createdAt: toReadableDateTime(resp.createdAt),
+        };
+        setChangeHistory([changePo, ...changeHistory]);
+      }
+    );
+    exitEditingMode();
+  };
   return (
     <BlankCard>
       <CardContent>
-        <TShirtOrderTable tableData={tableData} setTableData={setTableData} />
+        <TShirtOrderTable
+          tableData={tableData}
+          setTableData={setTableData}
+          parentOrderId={purchaseOrderId}
+          onRowEdit={handleAfterRowEdit}
+        />
       </CardContent>
     </BlankCard>
   );

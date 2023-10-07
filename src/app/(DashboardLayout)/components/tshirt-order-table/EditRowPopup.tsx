@@ -22,6 +22,7 @@ interface EditRowPopupProps {
   onClose: () => void;
   open: boolean;
   row: MRT_Row<TShirtOrder> | undefined;
+  purchaseOrderId: string | undefined;
   title: string;
 }
 
@@ -30,6 +31,7 @@ const amtReceivedField = "amountReceived";
 const EditRowPopup = ({
   open,
   row,
+  purchaseOrderId,
   onSubmit,
   onClose,
   title,
@@ -50,7 +52,7 @@ const EditRowPopup = ({
         quantityChange: newAmtReceived,
         reason: editReason,
         purchaseOrderChangeTshirtStyleNumber: tshirtStyleNo,
-
+        purchaseOrderChangeHistoryId: purchaseOrderId
     };
     onSubmit(poChange);
     resetForm();
