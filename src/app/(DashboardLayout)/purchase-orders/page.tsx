@@ -3,7 +3,7 @@
 import PageContainer from "@/app/(DashboardLayout)/components/container/PageContainer";
 import DashboardCard from "@/app/(DashboardLayout)/components/shared/DashboardCard";
 import { PurchaseOrder } from "@/API";
-import React, { useEffect, useMemo, useState, useCallback } from "react";
+import React, { useEffect, useMemo, useState, useCallback, SetStateAction } from "react";
 import { useRouter } from 'next/navigation';
 import { Delete, Edit } from "@mui/icons-material";
 import { listPurchaseOrderAPI } from "@/app/graphql-helpers/fetch-apis";
@@ -34,27 +34,19 @@ import {
   type MRT_Row,
   type MRT_ColumnFiltersState,
 } from "material-react-table";
+import OrderViewAddPage from "../components/order-view-add-page/OrderViewAddPage";
 
 const PurchaseOrders = () => {
   const { push } = useRouter();
   const [tableData, setTableData] = useState<PurchaseOrder[]>([]);
-  const [columnFilters, setColumnFilters] = useState<MRT_ColumnFiltersState>(
-    []
-  );
-  const [dbOperationError, setDBOperationError] = useState({
-    ...defaultDBOperationError,
-  } as DBOperationError);
 
-  const handleDeleteRow = useCallback(
-    (row: MRT_Row<PurchaseOrder>) => {
-      if (
-        !confirm(
-          `Are you sure you want to delete ${row.getValue(tablePrimaryKey)}`
-        )
-      ) {
-        return;
-      }
-      const deletedPurchaseOrder = { ...row.original, isDeleted: true };
+  const handleRowClick = (row: MRT_Row<PurchaseOrder>) => {
+    const poId = row.getValue('id')
+    push(`purchase-orders/view/${poId}`);
+  }
+  const handleAddRow = () => push('/purchase-orders/create');
+  const handleDeleteRow = (row: MRT_Row<PurchaseOrder>, setDBOperationError: React.Dispatch<SetStateAction<DBOperationError>>) => {
+    const deletedPurchaseOrder = { ...row.original, isDeleted: true };
       rescueDBOperation(
         () => updatePurchaseOrderAPI(deletedPurchaseOrder),
         setDBOperationError,
@@ -64,16 +56,8 @@ const PurchaseOrders = () => {
           setTableData([...tableData]);
         }
       );
-    },
-    [tableData]
-  );
-
-  const columns = useMemo<MRT_ColumnDef<PurchaseOrder>[]>(
-    () => getTableColumns(),
-    []
-  );
-
-  const fetchPurchaseOrders = () => {
+  }
+  const handleFetchPurchaseOrders = (setDBOperationError: React.Dispatch<SetStateAction<DBOperationError>>) => {
     rescueDBOperation(
       () => listPurchaseOrderAPI({}),
       setDBOperationError,
@@ -90,84 +74,19 @@ const PurchaseOrders = () => {
         );
       }
     );
-  };
-
-  useEffect(() => {
-    fetchPurchaseOrders();
-  }, []);
+  }
   return (
-    <PageContainer title="Purchase Orders" description="this is Purchase Orders page">
-      {dbOperationError.errorMessage !== undefined ? (
-        <Alert
-          severity="error"
-          onClose={() => setDBOperationError({ ...defaultDBOperationError })}
-        >
-          {dbOperationError.errorMessage}
-        </Alert>
-      ) : (
-        <></>
-      )}
-      <DashboardCard title="Purchase Orders">
-        <>
-          <MaterialReactTable
-            displayColumnDefOptions={{
-              "mrt-row-actions": {
-                muiTableHeadCellProps: {
-                  align: "center",
-                },
-                size: 120,
-              },
-            }}
-            muiTableBodyRowProps={({ row }) => ({
-              onClick: (event) => {
-                const poId = row.getValue('id')
-                push(`purchase-orders/view/${poId}`)
-              },
-              sx: {
-                cursor: 'pointer', //you might want to change the cursor too when adding an onClick
-              },
-            })}
-            columns={columns}
-            data={tableData}
-            initialState={{ showColumnFilters: true }}
-            editingMode="modal" //default
-            enableColumnOrdering
-            enableHiding={false}
-            onColumnFiltersChange={setColumnFilters}
-            state={{
-              columnFilters,
-            }}
-            renderRowActions={({ row, table }) => (
-              <Box sx={{ display: "flex", gap: "1rem" }}>
-                <Tooltip arrow placement="left" title="Edit">
-                  <IconButton onClick={() => table.setEditingRow(row)}>
-                    <Edit />
-                  </IconButton>
-                </Tooltip>
-                <Tooltip arrow placement="right" title="Delete">
-                  <IconButton
-                    color="error"
-                    onClick={() => handleDeleteRow(row)}
-                  >
-                    <Delete />
-                  </IconButton>
-                </Tooltip>
-              </Box>
-            )}
-            renderTopToolbarCustomActions={() => (
-              <Button
-                color="primary"
-                onClick={() => push('/purchase-orders/create')}
-                variant="contained"
-              >
-                Create New {entityName}
-              </Button>
-            )}
-          />
-        </>
-      </DashboardCard>
-    </PageContainer>
-  );
-};
+    <OrderViewAddPage 
+      tableData={tableData}
+      onRowClick={handleRowClick}
+      onAddRow={handleAddRow}
+      onFetchTableData={handleFetchPurchaseOrders}
+      pageTitle="Purchase Orders"
+      tablePrimaryKey={tablePrimaryKey}
+      entityName={entityName}
+      getTableColumns={getTableColumns}
+    />
+  )
+}
 
 export default PurchaseOrders;
