@@ -3,7 +3,7 @@
 import { CustomerOrder } from "@/API";
 import React, { useState, SetStateAction } from "react";
 import { useRouter } from 'next/navigation';
-import { listPurchaseOrderAPI } from "@/app/graphql-helpers/fetch-apis";
+import { listCustomerOrderAPI, listPurchaseOrderAPI } from "@/app/graphql-helpers/fetch-apis";
 import { toReadableDateTime } from "@/utils/datetimeConversions";
 
 import {
@@ -29,10 +29,10 @@ const CustomerOrders = () => {
     push(`orders/view/${orderId}`);
   }
   const handleAddRow = () => push('/orders/create');
-  const handleFetchPurchaseOrders = (setDBOperationError: React.Dispatch<SetStateAction<DBOperationError>>) => {
+  const handleFetchCustomerOrders = (setDBOperationError: React.Dispatch<SetStateAction<DBOperationError>>) => {
     const deletedFilter = { isDeleted: { ne: true } };
     rescueDBOperation(
-      () => listPurchaseOrderAPI(deletedFilter),
+      () => listCustomerOrderAPI(deletedFilter),
       setDBOperationError,
       DBOperation.LIST,
       (resp: CustomerOrder[]) => {
@@ -53,8 +53,8 @@ const CustomerOrders = () => {
       tableData={tableData}
       onRowClick={handleRowClick}
       onAddRow={handleAddRow}
-      onFetchTableData={handleFetchPurchaseOrders}
-      pageTitle="Purchase Orders"
+      onFetchTableData={handleFetchCustomerOrders}
+      pageTitle="Customer Orders"
       entityName={entityName}
       getTableColumns={getTableColumns}
     />

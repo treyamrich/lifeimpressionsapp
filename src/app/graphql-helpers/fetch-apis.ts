@@ -1,7 +1,7 @@
-import { ListTShirtsQuery, TShirt, ModelTShirtFilterInput, ModelPurchaseOrderFilterInput, ListPurchaseOrdersQuery, PurchaseOrder, GetPurchaseOrderQueryVariables, GetPurchaseOrderQuery } from "@/API";
+import { ListTShirtsQuery, TShirt, ModelTShirtFilterInput, ModelPurchaseOrderFilterInput, ListPurchaseOrdersQuery, PurchaseOrder, GetPurchaseOrderQueryVariables, GetPurchaseOrderQuery, ListCustomerOrdersQuery, ModelCustomerOrderFilterInput, CustomerOrder } from "@/API";
 import { API } from "aws-amplify";
 import { GraphQLQuery } from "@aws-amplify/api";
-import { getPurchaseOrder, listPurchaseOrders, listTShirts } from "@/graphql/queries";
+import { getPurchaseOrder, listCustomerOrders, listPurchaseOrders, listTShirts } from "@/graphql/queries";
 import { configuredAuthMode } from "./auth-mode";
 
 export const listTShirtAPI = async (filters: ModelTShirtFilterInput): Promise<TShirt[]> => {
@@ -32,6 +32,22 @@ export const listPurchaseOrderAPI = async (filters: ModelPurchaseOrderFilterInpu
     .catch((e) => {
       console.log(e);
       throw new Error("Failed to fetch Purchase Orders");
+    });
+  return resp;
+}
+
+export const listCustomerOrderAPI = async (filters: ModelCustomerOrderFilterInput): Promise<CustomerOrder[]> => {
+  const resp = await API.graphql<GraphQLQuery<ListCustomerOrdersQuery>>({
+    query: listCustomerOrders,
+    variables: {
+      filter: filters
+    },
+    authMode: configuredAuthMode
+  })
+    .then((res) => res.data?.listCustomerOrders?.items as CustomerOrder[])
+    .catch((e) => {
+      console.log(e);
+      throw new Error("Failed to fetch Customer Orders");
     });
   return resp;
 }

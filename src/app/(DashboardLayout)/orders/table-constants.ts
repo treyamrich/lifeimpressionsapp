@@ -2,7 +2,7 @@ import { CustomerOrder, CustomerOrderStatus } from "@/API";
 import { MRT_ColumnDef } from "material-react-table";
 
 export const tablePrimaryKey = "id";
-export const entityName = "Purchase Order";
+export const entityName = "Customer Order";
 
 export const initialCustomerOrderFormState: any = {
   __typename: "CustomerOrder",
