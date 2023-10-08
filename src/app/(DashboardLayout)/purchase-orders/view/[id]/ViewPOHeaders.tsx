@@ -1,6 +1,6 @@
 import { POStatus, PurchaseOrder, UpdatePurchaseOrderInput } from "@/API";
 import BlankCard from "@/app/(DashboardLayout)/components/shared/BlankCard";
-import { DBOperation, DBOperationError, rescueDBOperation } from "@/app/graphql-helpers/graphql-errors";
+import { DBOperation, rescueDBOperation } from "@/app/graphql-helpers/graphql-errors";
 import { updatePurchaseOrderAPI } from "@/app/graphql-helpers/update-apis";
 import { toReadableDateTime } from "@/utils/datetimeConversions";
 import { Button, CardContent, Grid, Typography } from "@mui/material";
@@ -9,10 +9,9 @@ import { useRouter } from "next/navigation";
 type ViewPOHeaderFieldsProps = {
   po: PurchaseOrder;
   setPo: React.Dispatch<React.SetStateAction<PurchaseOrder>>;
-  setDBOperationError: React.Dispatch<React.SetStateAction<DBOperationError>>
 };
 
-const ViewPOHeaderFields = ({ po, setPo, setDBOperationError }: ViewPOHeaderFieldsProps) => {
+const ViewPOHeaderFields = ({ po, setPo }: ViewPOHeaderFieldsProps) => {
   const { push } = useRouter();
   const { vendor, createdAt, updatedAt, status } = po;
 
@@ -25,7 +24,6 @@ const ViewPOHeaderFields = ({ po, setPo, setDBOperationError }: ViewPOHeaderFiel
     };
     rescueDBOperation(
       () => updatePurchaseOrderAPI(cleanedUpdatedPo),
-      setDBOperationError,
       DBOperation.UPDATE,
       (resp: PurchaseOrder) => {
         setPo(resp);
@@ -40,7 +38,6 @@ const ViewPOHeaderFields = ({ po, setPo, setDBOperationError }: ViewPOHeaderFiel
     const deletedPurchaseOrder: UpdatePurchaseOrderInput = { id: po.id, isDeleted: true };
     rescueDBOperation(
       () => updatePurchaseOrderAPI(deletedPurchaseOrder),
-      setDBOperationError,
       DBOperation.DELETE,
       () => {
         push('/purchase-orders/');

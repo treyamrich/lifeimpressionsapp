@@ -16,8 +16,6 @@ import TShirtOrderTable from "@/app/(DashboardLayout)/components/tshirt-order-ta
 import { getPurchaseOrderAPI } from "@/app/graphql-helpers/fetch-apis";
 import {
     DBOperation,
-    DBOperationError,
-    defaultDBOperationError,
     rescueDBOperation,
 } from "@/app/graphql-helpers/graphql-errors";
 
@@ -46,14 +44,10 @@ const ViewPurchaseOrder = ({ params }: ViewPurchaseOrderProps) => {
             return po.orderedItems ? (po.orderedItems.items as TShirtOrder[]) : [];
         }
     );
-    const [dbOperationError, setDBOperationError] = useState({
-        ...defaultDBOperationError,
-    } as DBOperationError);
 
     const fetchPurchaseOrder = () => {
         rescueDBOperation(
             () => getPurchaseOrderAPI({ id }),
-            setDBOperationError,
             DBOperation.GET,
             (res: PurchaseOrder) => {
                 const changeHistory = res.changeHistory?.items;
@@ -88,20 +82,10 @@ const ViewPurchaseOrder = ({ params }: ViewPurchaseOrderProps) => {
             title="View Purchase Order"
             description="this is View Purchase Order"
         >
-            {dbOperationError.errorMessage !== undefined ? (
-                <Alert
-                    severity="error"
-                    onClose={() => setDBOperationError({ ...defaultDBOperationError })}
-                >
-                    {dbOperationError.errorMessage}
-                </Alert>
-            ) : (
-                <></>
-            )}
             <DashboardCard title={`Purchase Order: ${po.orderNumber}`}>
                 <Grid container spacing={3} direction="column" padding={2}>
                     <Grid item>
-                        <ViewPOHeaderFields po={po} setPo={setPo} setDBOperationError={setDBOperationError} />
+                        <ViewPOHeaderFields po={po} setPo={setPo} />
                     </Grid>
                     <Grid item>
                         <Grid container direction="column" spacing={1}>
@@ -159,7 +143,6 @@ const OrderedItemsTable = ({
     const handleAfterRowEdit = (
         row: MRT_Row<TShirtOrder>,
         poChange: CreatePurchaseOrderChangeInput,
-        setDBOperationError: React.Dispatch<React.SetStateAction<DBOperationError>>,
         exitEditingMode: () => void
     ) => {
         const prev = row.original;
@@ -175,7 +158,6 @@ const OrderedItemsTable = ({
         };
         rescueDBOperation(
             () => updateTShirtAPI(newTShirt),
-            setDBOperationError,
             DBOperation.UPDATE,
             (_: TShirt) => {
                 // Update TShirtOrder DB table
@@ -186,7 +168,6 @@ const OrderedItemsTable = ({
                 };
                 rescueDBOperation(
                     () => updateTShirtOrderAPI(newTShirtOrder),
-                    setDBOperationError,
                     DBOperation.UPDATE,
                     (resp: TShirtOrder) => {
                         // Update local TShirtOrder table
@@ -197,7 +178,6 @@ const OrderedItemsTable = ({
                 // Update PO change DB table
                 rescueDBOperation(
                     () => createPurchaseOrderChangeAPI(poChange),
-                    setDBOperationError,
                     DBOperation.CREATE,
                     (poChangeResp: PurchaseOrderChange) => {
                         // Update local PO change history table
@@ -213,13 +193,12 @@ const OrderedItemsTable = ({
         exitEditingMode();
     };
 
-    const handleAfterRowAdd = (newTShirtOrder: TShirtOrder, setDBOperationError: React.Dispatch<React.SetStateAction<DBOperationError>>) => {
+    const handleAfterRowAdd = (newTShirtOrder: TShirtOrder) => {
         if (newTShirtOrder.id) return; // Only create new tshirt orders
 
         // Update the purchase order with the new added item
         rescueDBOperation(
             () => createTShirtOrderAPI(parentPurchaseOrder, [newTShirtOrder]),
-            setDBOperationError,
             DBOperation.CREATE,
             (resp: TShirtOrder) => {}
         )

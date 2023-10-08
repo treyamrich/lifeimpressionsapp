@@ -1,3 +1,5 @@
+import { useDBOperationContext } from "@/contexts/DBErrorContext";
+
 export enum DBOperation {
   CREATE = "Create",
   UPDATE = "Update",
@@ -16,9 +18,10 @@ export const defaultDBOperationError: DBOperationError = {
   errorMessage: undefined,
 };
 
+const { setDBOperationError } = useDBOperationContext();
+
 export const rescueDBOperation = async (
   func: any,
-  setDBError: React.Dispatch<React.SetStateAction<DBOperationError>>,
   operation: DBOperation,
   onSuccess: any,
   customErrorMessage: string = ""
@@ -29,7 +32,7 @@ export const rescueDBOperation = async (
     onSuccess(resp);
   } catch (err: any) {
     console.log(err);
-    setDBError({
+    setDBOperationError({
       errorMessage: customErrorMessage ? customErrorMessage : err?.message,
       operationName: operation,
     } as DBOperationError);

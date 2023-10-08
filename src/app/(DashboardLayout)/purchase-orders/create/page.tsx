@@ -4,8 +4,6 @@ import PageContainer from "@/app/(DashboardLayout)/components/container/PageCont
 import DashboardCard from "@/app/(DashboardLayout)/components/shared/DashboardCard";
 import React, { useMemo, useState } from "react";
 import {
-  type DBOperationError,
-  defaultDBOperationError,
   rescueDBOperation,
   DBOperation,
 } from "@/app/graphql-helpers/graphql-errors";
@@ -29,42 +27,20 @@ import {
 import ConfirmPopup from "../../components/forms/confirm-popup/ConfirmPopup";
 import { useRouter } from "next/navigation";
 
-const CreatePurchaseOrderPage = () => {
-  const [dbOperationError, setDBOperationError] = useState({
-    ...defaultDBOperationError,
-  } as DBOperationError);
-
-  return (
-    <PageContainer
-      title="New Purchase Order"
-      description="this is New Purchase Order page"
-    >
-      {dbOperationError.errorMessage !== undefined ? (
-        <Alert
-          severity="error"
-          onClose={() => setDBOperationError({ ...defaultDBOperationError })}
-        >
-          {dbOperationError.errorMessage}
-        </Alert>
-      ) : (
-        <></>
-      )}
-      <DashboardCard title="New Purchase Order">
-        <CreatePurchaseOrderForm setDBOperationError={setDBOperationError} />
-      </DashboardCard>
-    </PageContainer>
-  );
-};
+const CreatePurchaseOrderPage = () => (
+  <PageContainer
+    title="New Purchase Order"
+    description="this is New Purchase Order page"
+  >
+    <DashboardCard title="New Purchase Order">
+      <CreatePurchaseOrderForm />
+    </DashboardCard>
+  </PageContainer>
+);
 
 export default CreatePurchaseOrderPage;
 
-interface CreatePurchaseOrderFormProps {
-  setDBOperationError: React.Dispatch<React.SetStateAction<DBOperationError>>;
-}
-
-const CreatePurchaseOrderForm = ({
-  setDBOperationError,
-}: CreatePurchaseOrderFormProps) => {
+const CreatePurchaseOrderForm = () => {
   const { push } = useRouter();
   const [values, setValues] = useState<any>(() => {
     return { ...initialPurchaseOrderFormState };
@@ -88,7 +64,6 @@ const CreatePurchaseOrderForm = ({
   ) => {
     rescueDBOperation(
       () => createTShirtOrderAPI(po, orderedItems),
-      setDBOperationError,
       DBOperation.CREATE,
       () => {
         // All operations (create PO and all TShirtOrders) were a success
@@ -106,7 +81,6 @@ const CreatePurchaseOrderForm = ({
     };
     rescueDBOperation(
       () => createPurchaseOrderAPI(poToCreate),
-      setDBOperationError,
       DBOperation.CREATE,
       (resp: PurchaseOrder) => {
         // Important to use the original PO since it has the orderedItems field
@@ -185,8 +159,8 @@ const CreatePurchaseOrderForm = ({
             setValues({ ...values, orderedItems: newValues })
           }
           parentOrderId={undefined}
-          onRowEdit={() => {}}
-          onRowAdd={() => {}}
+          onRowEdit={() => { }}
+          onRowAdd={() => { }}
         />
         <Box>
           <Button

@@ -29,11 +29,10 @@ const PurchaseOrders = () => {
     push(`purchase-orders/view/${poId}`);
   }
   const handleAddRow = () => push('/purchase-orders/create');
-  const handleFetchPurchaseOrders = (setDBOperationError: React.Dispatch<SetStateAction<DBOperationError>>) => {
+  const handleFetchPurchaseOrders = () => {
     const deletedFilter = { isDeleted: { ne: true } };
     rescueDBOperation(
       () => listPurchaseOrderAPI(deletedFilter),
-      setDBOperationError,
       DBOperation.LIST,
       (resp: PurchaseOrder[]) => {
         setTableData(

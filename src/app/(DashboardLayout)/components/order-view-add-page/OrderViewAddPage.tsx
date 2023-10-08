@@ -2,14 +2,9 @@
 
 import PageContainer from "@/app/(DashboardLayout)/components/container/PageContainer";
 import DashboardCard from "@/app/(DashboardLayout)/components/shared/DashboardCard";
-import React, { useEffect, useMemo, useState, SetStateAction } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 
 import {
-    type DBOperationError,
-    defaultDBOperationError,
-} from "@/app/graphql-helpers/graphql-errors";
-import {
-    Alert,
     Button,
 } from "@mui/material";
 import {
@@ -32,7 +27,7 @@ function OrderViewAddPage<T extends Record<any, any>>({
     tableData: T[],
     onRowClick: (row: MRT_Row<T>) => void,
     onAddRow: () => void,
-    onFetchTableData: (setDBOperationError: React.Dispatch<SetStateAction<DBOperationError>>) => void,
+    onFetchTableData: () => void,
     pageTitle: string,
     entityName: string,
     getTableColumns: () => MRT_ColumnDef<T>[]
@@ -40,9 +35,6 @@ function OrderViewAddPage<T extends Record<any, any>>({
     const [columnFilters, setColumnFilters] = useState<MRT_ColumnFiltersState>(
         []
     );
-    const [dbOperationError, setDBOperationError] = useState({
-        ...defaultDBOperationError,
-    } as DBOperationError);
 
     const columns = useMemo<MRT_ColumnDef<T>[]>(
         () => getTableColumns(),
@@ -50,20 +42,10 @@ function OrderViewAddPage<T extends Record<any, any>>({
     );
 
     useEffect(() => {
-        onFetchTableData(setDBOperationError);
+        onFetchTableData();
     }, []);
     return (
         <PageContainer title={`${pageTitle}`} description={`this is ${pageTitle} page`}>
-            {dbOperationError.errorMessage !== undefined ? (
-                <Alert
-                    severity="error"
-                    onClose={() => setDBOperationError({ ...defaultDBOperationError })}
-                >
-                    {dbOperationError.errorMessage}
-                </Alert>
-            ) : (
-                <></>
-            )}
             <DashboardCard title={`${pageTitle}`}>
                 <>
                     <MaterialReactTable

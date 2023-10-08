@@ -11,8 +11,6 @@ import { updateTShirtAPI } from "@/app/graphql-helpers/update-apis";
 import { toReadableDateTime } from "@/utils/datetimeConversions";
 
 import {
-  type DBOperationError,
-  defaultDBOperationError,
   rescueDBOperation,
   DBOperation,
 } from "@/app/graphql-helpers/graphql-errors";
@@ -22,7 +20,6 @@ import {
   getTableColumns,
 } from "./table-constants";
 import {
-  Alert,
   Box,
   Button,
   IconButton,
@@ -47,14 +44,10 @@ const Inventory = () => {
   const [columnFilters, setColumnFilters] = useState<MRT_ColumnFiltersState>(
     []
   );
-  const [dbOperationError, setDBOperationError] = useState({
-    ...defaultDBOperationError,
-  } as DBOperationError);
 
   const handleCreateNewRow = (values: TShirt) => {
     rescueDBOperation(
       () => createTShirtAPI(values),
-      setDBOperationError,
       DBOperation.CREATE,
       (resp: TShirt) => setTableData([...tableData, resp])
     );
@@ -65,7 +58,6 @@ const Inventory = () => {
       if (!Object.keys(validationErrors).length) {
         rescueDBOperation(
           () => updateTShirtAPI(values),
-          setDBOperationError,
           DBOperation.UPDATE,
           (resp: TShirt) => {
             tableData[row.index] = resp;
@@ -92,7 +84,6 @@ const Inventory = () => {
       const deletedTShirt = { ...row.original, isDeleted: true };
       rescueDBOperation(
         () => updateTShirtAPI(deletedTShirt),
-        setDBOperationError,
         DBOperation.DELETE,
         () => {
           tableData.splice(row.index, 1);
@@ -147,7 +138,6 @@ const Inventory = () => {
     const deletedFilter = { isDeleted: { ne: true } };
     rescueDBOperation(
       () => listTShirtAPI(deletedFilter),
-      setDBOperationError,
       DBOperation.LIST,
       (resp: TShirt[]) => {
         setTableData(
@@ -167,16 +157,6 @@ const Inventory = () => {
   }, []);
   return (
     <PageContainer title="Inventory" description="this is Inventory">
-      {dbOperationError.errorMessage !== undefined ? (
-        <Alert
-          severity="error"
-          onClose={() => setDBOperationError({ ...defaultDBOperationError })}
-        >
-          {dbOperationError.errorMessage}
-        </Alert>
-      ) : (
-        <></>
-      )}
       <DashboardCard title="Inventory">
         <>
           <MaterialReactTable

@@ -8,8 +8,6 @@ import {
 import React, { useMemo, useState, useCallback, useEffect } from "react";
 import { Delete, Edit } from "@mui/icons-material";
 import {
-  type DBOperationError,
-  defaultDBOperationError,
   rescueDBOperation,
   DBOperation,
 } from "@/app/graphql-helpers/graphql-errors";
@@ -34,12 +32,10 @@ interface TShirtOrderTableProps {
   onRowEdit: (
     row: MRT_Row<TShirtOrder>,
     poChange: CreatePurchaseOrderChangeInput,
-    setDBOperationError: React.Dispatch<React.SetStateAction<DBOperationError>>,
     exitEditingMode: () => void
   ) => void | undefined;
   onRowAdd: (
     newRowValue: TShirtOrder,
-    setDBOperationError: React.Dispatch<React.SetStateAction<DBOperationError>>,
   ) => void | undefined;
 }
 
@@ -66,14 +62,11 @@ const TShirtOrderTable = ({
   const [columnFilters, setColumnFilters] = useState<MRT_ColumnFiltersState>(
     []
   );
-  const [dbOperationError, setDBOperationError] = useState({
-    ...defaultDBOperationError,
-  } as DBOperationError);
   const [tshirtChoices, setTShirtChoices] = useState<TShirt[]>([]);
 
   const handleCreateNewRow = (values: TShirtOrder) => {
     setTableData([...tableData, values]);
-    onRowAdd(values, setDBOperationError);
+    onRowAdd(values);
   };
 
   const handleSaveRowEdits: MaterialReactTableProps<TShirtOrder>["onEditingRowSave"] =
@@ -92,7 +85,7 @@ const TShirtOrderTable = ({
   const handleEditRowAudit = (poChange: CreatePurchaseOrderChangeInput) => {
     const row = editMode.row;
     if (!row) return;
-    onRowEdit(row, poChange, setDBOperationError, () => setEditMode({ show: false, row: undefined }));
+    onRowEdit(row, poChange, () => setEditMode({ show: false, row: undefined }));
   };
 
   const handleDeleteRow = useCallback(
@@ -151,7 +144,6 @@ const TShirtOrderTable = ({
     const deletedFilter = { isDeleted: { ne: true } };
     rescueDBOperation(
       () => listTShirtAPI(deletedFilter),
-      setDBOperationError,
       DBOperation.LIST,
       (resp: TShirt[]) => setTShirtChoices(resp)
     );
