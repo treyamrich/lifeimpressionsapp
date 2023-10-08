@@ -54,7 +54,9 @@ export type ColumnInfo = {
   selectFields: undefined | SelectValue[];
   excludeOnCreate: boolean | undefined;
   isDatetimeField: boolean | undefined;
+  isPhoneNumField: boolean | undefined;
   hideInTable: boolean | undefined;
+  placeholderText: string | undefined;
 };
 
 export const columnInfo = new Map<string | number | symbol | undefined, ColumnInfo>([

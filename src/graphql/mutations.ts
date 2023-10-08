@@ -387,15 +387,9 @@ export const createCustomerOrder = /* GraphQL */ `
   ) {
     createCustomerOrder(input: $input, condition: $condition) {
       id
-      contact {
-        name
-        email
-        phoneNumber
-        __typename
-      }
-      orderNumber
-      orderStatus
-      dateNeededBy
+      customerName
+      customerEmail
+      customerPhoneNumber
       orderedItems {
         items {
           quantity
@@ -411,7 +405,10 @@ export const createCustomerOrder = /* GraphQL */ `
         nextToken
         __typename
       }
+      orderNumber
+      orderStatus
       orderNotes
+      dateNeededBy
       isDeleted
       createdAt
       updatedAt
@@ -426,15 +423,9 @@ export const updateCustomerOrder = /* GraphQL */ `
   ) {
     updateCustomerOrder(input: $input, condition: $condition) {
       id
-      contact {
-        name
-        email
-        phoneNumber
-        __typename
-      }
-      orderNumber
-      orderStatus
-      dateNeededBy
+      customerName
+      customerEmail
+      customerPhoneNumber
       orderedItems {
         items {
           quantity
@@ -450,7 +441,10 @@ export const updateCustomerOrder = /* GraphQL */ `
         nextToken
         __typename
       }
+      orderNumber
+      orderStatus
       orderNotes
+      dateNeededBy
       isDeleted
       createdAt
       updatedAt
@@ -465,15 +459,9 @@ export const deleteCustomerOrder = /* GraphQL */ `
   ) {
     deleteCustomerOrder(input: $input, condition: $condition) {
       id
-      contact {
-        name
-        email
-        phoneNumber
-        __typename
-      }
-      orderNumber
-      orderStatus
-      dateNeededBy
+      customerName
+      customerEmail
+      customerPhoneNumber
       orderedItems {
         items {
           quantity
@@ -489,7 +477,10 @@ export const deleteCustomerOrder = /* GraphQL */ `
         nextToken
         __typename
       }
+      orderNumber
+      orderStatus
       orderNotes
+      dateNeededBy
       isDeleted
       createdAt
       updatedAt

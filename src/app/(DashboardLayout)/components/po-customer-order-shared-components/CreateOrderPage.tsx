@@ -16,7 +16,7 @@ import ConfirmPopup from "../../components/forms/confirm-popup/ConfirmPopup";
 import { useRouter } from "next/navigation";
 import { ColumnInfo, SelectValue } from "../../purchase-orders/table-constants";
 import { DateTimePicker } from "@mui/x-date-pickers";
-import { getStartOfTomorrow } from "@/utils/datetimeConversions";
+import { getStartOfTomorrow, toAWSDateTime } from "@/utils/datetimeConversions";
 import { Dayjs } from "dayjs";
 
 export enum EntityType {
@@ -84,13 +84,19 @@ function CreateOrderPage<T extends Record<any, any>>({
 
     const handleSubmit = () => {
         //Validate input
-        const newErrors = new Map<string, string>(errorMap);
+        const newErrors = new Map<string, string>(getInitialOrderFormErrorMap());
         let allValid = true;
         Object.keys(values).forEach((key) => {
             let errMsg = "";
             let value = values[key];
             if (columnInfo.get(key)?.isRequired && value.toString().length < 1) {
                 errMsg = "Field is required";
+            }
+            else if (columnInfo.get(key)?.isPhoneNumField && value !== "") {
+                const dashSplit = value.split('-');
+                const whitespaceSplit = value.split(' ');
+                if(dashSplit.length !== 3 && whitespaceSplit.length !== 3)
+                    errMsg = "Phone Number format must conform to either: xxx-xxx-xxxx or xxx xxx xxxx"
             }
             newErrors.set(key, errMsg);
             allValid = allValid && errMsg === "";
@@ -103,12 +109,21 @@ function CreateOrderPage<T extends Record<any, any>>({
             Object.keys(values).forEach((key: string) => {
                 if (columnInfo.get(key)?.isDatetimeField) {
                     const datetime = values[key] as Dayjs;
-                    order[key] = datetime.utc();
-                } else {
+                    order[key] = toAWSDateTime(datetime);
+                } 
+                else if (columnInfo.get(key)?.isPhoneNumField && values[key] !== "") {
+                    order[key] = "+1" + values[key];
+                    console.log(order[key])
+                }
+                // This field had to be optional
+                else if (values[key] === "") {
+                    order[key] = undefined;
+                }
+                else {
                     order[key] = values[key];
                 }
             });
-            handleCreateOrder(values, handleCreateTShirtOrders);
+            handleCreateOrder(order, handleCreateTShirtOrders);
         }
     };
 
@@ -164,7 +179,9 @@ function CreateOrderPage<T extends Record<any, any>>({
                                         value={values[column.accessorKey as string]}
                                         required={colInfo?.isRequired}
                                         error={hasError}
-                                        helperText={errMsg}>
+                                        helperText={errMsg}
+                                        placeholder={colInfo?.placeholderText}
+                                        >
                                         {/* Select field options */}
                                         {colInfo?.selectFields
                                             ?.map((selectValue: SelectValue, idx: number) => (

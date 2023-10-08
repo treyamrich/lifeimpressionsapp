@@ -368,15 +368,9 @@ export const onCreateCustomerOrder = /* GraphQL */ `
   ) {
     onCreateCustomerOrder(filter: $filter) {
       id
-      contact {
-        name
-        email
-        phoneNumber
-        __typename
-      }
-      orderNumber
-      orderStatus
-      dateNeededBy
+      customerName
+      customerEmail
+      customerPhoneNumber
       orderedItems {
         items {
           quantity
@@ -392,7 +386,10 @@ export const onCreateCustomerOrder = /* GraphQL */ `
         nextToken
         __typename
       }
+      orderNumber
+      orderStatus
       orderNotes
+      dateNeededBy
       isDeleted
       createdAt
       updatedAt
@@ -406,15 +403,9 @@ export const onUpdateCustomerOrder = /* GraphQL */ `
   ) {
     onUpdateCustomerOrder(filter: $filter) {
       id
-      contact {
-        name
-        email
-        phoneNumber
-        __typename
-      }
-      orderNumber
-      orderStatus
-      dateNeededBy
+      customerName
+      customerEmail
+      customerPhoneNumber
       orderedItems {
         items {
           quantity
@@ -430,7 +421,10 @@ export const onUpdateCustomerOrder = /* GraphQL */ `
         nextToken
         __typename
       }
+      orderNumber
+      orderStatus
       orderNotes
+      dateNeededBy
       isDeleted
       createdAt
       updatedAt
@@ -444,15 +438,9 @@ export const onDeleteCustomerOrder = /* GraphQL */ `
   ) {
     onDeleteCustomerOrder(filter: $filter) {
       id
-      contact {
-        name
-        email
-        phoneNumber
-        __typename
-      }
-      orderNumber
-      orderStatus
-      dateNeededBy
+      customerName
+      customerEmail
+      customerPhoneNumber
       orderedItems {
         items {
           quantity
@@ -468,7 +456,10 @@ export const onDeleteCustomerOrder = /* GraphQL */ `
         nextToken
         __typename
       }
+      orderNumber
+      orderStatus
       orderNotes
+      dateNeededBy
       isDeleted
       createdAt
       updatedAt

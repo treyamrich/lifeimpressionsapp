@@ -70,19 +70,19 @@ type TShirtOrder @model {
 
 type CustomerOrder @model {
   id: ID!
-  contact: CustomerContact!
+
+  customerName: String!
+  customerEmail: AWSEmail
+  customerPhoneNumber: AWSPhone
+
+  orderedItems: [TShirtOrder!] @hasMany
   orderNumber: String!
   orderStatus: CustomerOrderStatus!
-  dateNeededBy: AWSDate
-  orderedItems: [TShirtOrder!] @hasMany
   orderNotes: String
-  isDeleted: Boolean @default(value: "false")
-}
 
-type CustomerContact {
-  name: String!
-  email: String
-  phoneNumber: AWSPhone
+  dateNeededBy: AWSDateTime
+  
+  isDeleted: Boolean @default(value: "false")
 }
 
 enum CustomerOrderStatus {

@@ -1,6 +1,6 @@
 "use client";
 
-import { CustomerOrder } from "@/API";
+import { CustomerOrder, CustomerOrderStatus } from "@/API";
 import React, { useState } from "react";
 import { useRouter } from 'next/navigation';
 import { listCustomerOrderAPI } from "@/app/graphql-helpers/fetch-apis";
@@ -13,6 +13,7 @@ import {
     columnInfo,
   entityName,
   getTableColumns,
+  orderStatusMap,
 } from "./table-constants";
 import {
   type MRT_Row,
@@ -26,9 +27,9 @@ const CustomerOrders = () => {
 
   const handleRowClick = (row: MRT_Row<CustomerOrder>) => {
     const orderId = row.getValue('id')
-    push(`orders/view/${orderId}`);
+    push(`customer-orders/view/${orderId}`);
   }
-  const handleAddRow = () => push('/orders/create');
+  const handleAddRow = () => push('/customer-orders/create');
   const handleFetchCustomerOrders = () => {
     const deletedFilter = { isDeleted: { ne: true } };
     rescueDBOperation(
@@ -40,7 +41,9 @@ const CustomerOrders = () => {
             return {
               ...order,
               updatedAt: toReadableDateTime(order.updatedAt),
-              createdAt: toReadableDateTime(order.createdAt)
+              createdAt: toReadableDateTime(order.createdAt),
+              dateNeededBy: toReadableDateTime(order.dateNeededBy ? order.dateNeededBy : ""),
+              orderStatus: orderStatusMap[order.orderStatus] as CustomerOrderStatus
             };
           })
         );

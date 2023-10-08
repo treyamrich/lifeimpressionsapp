@@ -256,15 +256,9 @@ export const getCustomerOrder = /* GraphQL */ `
   query GetCustomerOrder($id: ID!) {
     getCustomerOrder(id: $id) {
       id
-      contact {
-        name
-        email
-        phoneNumber
-        __typename
-      }
-      orderNumber
-      orderStatus
-      dateNeededBy
+      customerName
+      customerEmail
+      customerPhoneNumber
       orderedItems {
         items {
           quantity
@@ -280,7 +274,10 @@ export const getCustomerOrder = /* GraphQL */ `
         nextToken
         __typename
       }
+      orderNumber
+      orderStatus
       orderNotes
+      dateNeededBy
       isDeleted
       createdAt
       updatedAt
@@ -297,20 +294,17 @@ export const listCustomerOrders = /* GraphQL */ `
     listCustomerOrders(filter: $filter, limit: $limit, nextToken: $nextToken) {
       items {
         id
-        contact {
-          name
-          email
-          phoneNumber
-          __typename
-        }
-        orderNumber
-        orderStatus
-        dateNeededBy
+        customerName
+        customerEmail
+        customerPhoneNumber
         orderedItems {
           nextToken
           __typename
         }
+        orderNumber
+        orderStatus
         orderNotes
+        dateNeededBy
         isDeleted
         createdAt
         updatedAt

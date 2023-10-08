@@ -1,6 +1,6 @@
 import { CustomerOrder, CustomerOrderStatus } from "@/API";
 import { MRT_ColumnDef } from "material-react-table";
-import { ColumnInfo, SelectValue } from "../purchase-orders/table-constants";
+import { ColumnInfo } from "../purchase-orders/table-constants";
 import dayjs from "dayjs";
 
 export const tablePrimaryKey = "id";
@@ -8,12 +8,14 @@ export const entityName = "Customer Order";
 
 export const initialCustomerOrderFormState: any = {
   __typename: "CustomerOrder",
-  contact: {},
   orderStatus: CustomerOrderStatus.NEW,
   dateNeededBy: dayjs(),
   orderedItems: [],
   orderNotes: "",
-  orderNumber: ""
+  orderNumber: "",
+  customerName: "",
+  customerEmail: "",
+  customerPhoneNumber: ""
 };
 
 export const getTableColumns = (): MRT_ColumnDef<CustomerOrder>[] => {
@@ -48,8 +50,16 @@ export const getTableColumns = (): MRT_ColumnDef<CustomerOrder>[] => {
       header: "Notes",
     } as MRT_ColumnDef<CustomerOrder>,
     {
-      accessorKey: "contact",
-      header: "Customer Contact",
+      accessorKey: "customerName",
+      header: "Customer Name",
+    } as MRT_ColumnDef<CustomerOrder>,
+    {
+      accessorKey: "customerEmail",
+      header: "Customer Email",
+    } as MRT_ColumnDef<CustomerOrder>,
+    {
+      accessorKey: "customerPhoneNumber",
+      header: "Customer Phone Number",
     } as MRT_ColumnDef<CustomerOrder>,
   ];
 };
@@ -62,5 +72,14 @@ export const columnInfo = new Map<string | number | symbol | undefined, ColumnIn
   ["orderStatus", { disabledOnCreate: true } as ColumnInfo],
   ["orderNotes", { hideInTable: true } as ColumnInfo],
   ["dateNeededBy", { isRequired: true, isDatetimeField: true } as ColumnInfo],
-  ["contact", { hideInTable: true } as ColumnInfo],
+  ["customerName", { hideInTable: true, isRequired: true} as ColumnInfo],
+  ["customerEmail", { hideInTable: true, placeholderText: "john@gmail.com" } as ColumnInfo],
+  ["customerPhoneNumber", { hideInTable: true, isPhoneNumField: true, placeholderText: "XXX-XXX-XXXX" } as ColumnInfo],
 ]);
+
+export const orderStatusMap = {
+  [CustomerOrderStatus.NEW]: "New",
+  [CustomerOrderStatus.IN_PROGRESS]: "In Progress",
+  [CustomerOrderStatus.BLOCKED]: "Blocked",
+  [CustomerOrderStatus.COMPLETED]: "Completed",
+}

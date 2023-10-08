@@ -31,9 +31,9 @@ const Menuitems = [
   },
   {
     id: uniqueId(),
-    title: "Orders",
+    title: "Customer Orders",
     icon: IconLayoutDashboard,
-    href: "/orders",
+    href: "/customer-orders",
   },
   {
     navlabel: true,
