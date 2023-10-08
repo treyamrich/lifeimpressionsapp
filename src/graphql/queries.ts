@@ -262,8 +262,8 @@ export const getCustomerOrder = /* GraphQL */ `
         phoneNumber
         __typename
       }
+      orderNumber
       orderStatus
-      orderDate
       dateNeededBy
       orderedItems {
         items {
@@ -303,8 +303,8 @@ export const listCustomerOrders = /* GraphQL */ `
           phoneNumber
           __typename
         }
+        orderNumber
         orderStatus
-        orderDate
         dateNeededBy
         orderedItems {
           nextToken

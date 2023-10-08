@@ -1,4 +1,4 @@
-import { POStatus, PurchaseOrder, TShirtSize, TShirtType } from "@/API";
+import { POStatus, PurchaseOrder } from "@/API";
 import { MRT_ColumnDef } from "material-react-table";
 
 export interface SelectValue {

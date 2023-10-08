@@ -42,7 +42,7 @@ enum TShirtType {
 
 type PurchaseOrder @model {
   id: ID!
-  orderNumber: String # Optional for admin to track
+  orderNumber: String! # Optional for admin to track
   vendor: String!
   orderedItems: [TShirtOrder!] @hasMany
   status: POStatus!
@@ -71,8 +71,8 @@ type TShirtOrder @model {
 type CustomerOrder @model {
   id: ID!
   contact: CustomerContact!
+  orderNumber: String!
   orderStatus: CustomerOrderStatus!
-  orderDate: AWSDate!
   dateNeededBy: AWSDate
   orderedItems: [TShirtOrder!] @hasMany
   orderNotes: String

@@ -393,8 +393,8 @@ export const createCustomerOrder = /* GraphQL */ `
         phoneNumber
         __typename
       }
+      orderNumber
       orderStatus
-      orderDate
       dateNeededBy
       orderedItems {
         items {
@@ -432,8 +432,8 @@ export const updateCustomerOrder = /* GraphQL */ `
         phoneNumber
         __typename
       }
+      orderNumber
       orderStatus
-      orderDate
       dateNeededBy
       orderedItems {
         items {
@@ -471,8 +471,8 @@ export const deleteCustomerOrder = /* GraphQL */ `
         phoneNumber
         __typename
       }
+      orderNumber
       orderStatus
-      orderDate
       dateNeededBy
       orderedItems {
         items {
