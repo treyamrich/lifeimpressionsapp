@@ -3,10 +3,11 @@ import { MRT_ColumnDef, MRT_Cell } from "material-react-table";
 
 export const tablePrimaryKey = "id";
 export const modalTitle = "Add to Order";
+export const amountReceivedField = "amountReceived";
 
 //Exclude these fields when creating. TShirt style number is hard coded in the form for input
 export const excludeOnCreateFields: string[] = ["tShirtOrderTshirtStyleNumber", "updatedAt", "createdAt", "id"];
-export const numberInputFields = new Set<string>(["quantity", "amountReceived"]); 
+export const numberInputFields = new Set<string>(["quantity", amountReceivedField]); 
 
 export interface TShirtOrderFormError {
     message: string;

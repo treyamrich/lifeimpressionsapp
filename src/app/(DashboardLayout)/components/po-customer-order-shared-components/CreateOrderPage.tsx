@@ -201,6 +201,7 @@ function CreateOrderPage<T extends Record<any, any>>({
                             parentOrderId={undefined}
                             onRowEdit={() => { }}
                             onRowAdd={() => { }}
+                            entityType={entityType}
                         />
                         <Box>
                             <Button

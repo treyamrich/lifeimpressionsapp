@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
+  amountReceivedField,
   excludeOnCreateFields,
   getInitialTShirtOrderFormErrorMap,
   initialTShirtOrderFormState,
@@ -23,6 +24,7 @@ import {
 } from "@mui/material";
 import { TShirt } from "@/API";
 import { MRT_ColumnDef } from "material-react-table";
+import { EntityType } from "../po-customer-order-shared-components/CreateOrderPage";
 
 interface CreateTShirtOrderModal<TShirtOrder extends Record<string, any>> {
   columns: MRT_ColumnDef<TShirtOrder>[];
@@ -31,6 +33,7 @@ interface CreateTShirtOrderModal<TShirtOrder extends Record<string, any>> {
   open: boolean;
   tshirtChoices: TShirt[];
   tableData: TShirtOrder[];
+  entityType: EntityType;
 }
 
 const CreateTShirtOrderModal = <TShirtOrder extends Record<string, any>>({
@@ -39,18 +42,14 @@ const CreateTShirtOrderModal = <TShirtOrder extends Record<string, any>>({
   onClose,
   onSubmit,
   tshirtChoices,
-  tableData
+  tableData,
+  entityType
 }: CreateTShirtOrderModal<TShirtOrder>) => {
   //Initial TShirtOrder values
   const [values, setValues] = useState<any>(() => {
     return { ...initialTShirtOrderFormState };
   });
-  const [errorMap, setErrorMap] = useState(
-    () =>
-      new Map<string, string>(
-        Object.keys(initialTShirtOrderFormState).map((key) => [key, ""])
-      )
-  );
+  const [errorMap, setErrorMap] = useState(() => getInitialTShirtOrderFormErrorMap());
   const [autoCompleteInputVal, setAutoCompleteInputVal] = useState("");
   const [selectedTShirt, setSelectedTShirt] = useState<TShirt | null>(null);
 
@@ -98,6 +97,14 @@ const CreateTShirtOrderModal = <TShirtOrder extends Record<string, any>>({
     }
   };
 
+  const newExcludedOnCreateFields = useRef(() => {
+    const newFields = [...excludeOnCreateFields];
+    if(entityType === EntityType.CustomerOrder) {
+      newFields.push(amountReceivedField);
+    }
+    return newFields;
+  });
+
   return (
     <Dialog open={open}>
       <DialogTitle textAlign="center">{modalTitle}</DialogTitle>
@@ -113,14 +120,14 @@ const CreateTShirtOrderModal = <TShirtOrder extends Record<string, any>>({
             {columns
               .filter(
                 (col) =>
-                  !excludeOnCreateFields.includes(col.accessorKey as string)
+                  !newExcludedOnCreateFields.current().includes(col.accessorKey as string)
               )
               .map((column) => (
                 <TextField
                   key={column.accessorKey as React.Key}
                   label={column.header}
                   name={column.accessorKey as string}
-                  onChange={(e) =>
+                  onChange={(e: any) =>
                     setValues({ ...values, [e.target.name]: e.target.value })
                   }
                   type={

@@ -29,6 +29,7 @@ import {
     updateTShirtAPI,
     updateTShirtOrderAPI,
 } from "@/app/graphql-helpers/update-apis";
+import { EntityType } from "@/app/(DashboardLayout)/components/po-customer-order-shared-components/CreateOrderPage";
 
 type ViewPurchaseOrderProps = {
     params: { id: string };
@@ -214,6 +215,7 @@ const OrderedItemsTable = ({
                     parentOrderId={parentPurchaseOrder.id}
                     onRowEdit={handleAfterRowEdit}
                     onRowAdd={handleAfterRowAdd}
+                    entityType={EntityType.PurchaseOrder}
                 />
             </CardContent>
         </BlankCard>

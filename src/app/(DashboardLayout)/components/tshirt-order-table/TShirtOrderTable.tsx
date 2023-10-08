@@ -7,7 +7,7 @@ import {
 } from "@/API";
 import React, { useMemo, useState, useCallback, useEffect } from "react";
 import { Delete, Edit } from "@mui/icons-material";
-import { modalTitle, getTableColumns } from "./table-constants";
+import { modalTitle, getTableColumns, amountReceivedField } from "./table-constants";
 import { Box, Button, IconButton, Tooltip } from "@mui/material";
 import {
   MaterialReactTable,
@@ -21,6 +21,7 @@ import { listTShirtAPI } from "@/app/graphql-helpers/fetch-apis";
 import CreateTShirtOrderModal from "./CreateTShirtOrderModal";
 import EditRowPopup from "./EditRowPopup";
 import { useDBOperationContext, DBOperation } from "@/contexts/DBErrorContext";
+import { EntityType } from "../po-customer-order-shared-components/CreateOrderPage";
 
 interface TShirtOrderTableProps {
   tableData: TShirtOrder[];
@@ -34,6 +35,7 @@ interface TShirtOrderTableProps {
   onRowAdd: (
     newRowValue: TShirtOrder,
   ) => void | undefined;
+  entityType: EntityType;
 }
 
 type EditMode = {
@@ -46,7 +48,8 @@ const TShirtOrderTable = ({
   setTableData,
   parentOrderId,
   onRowEdit,
-  onRowAdd
+  onRowAdd,
+  entityType
 }: TShirtOrderTableProps) => {
   const { rescueDBOperation } = useDBOperationContext();
   const [createModalOpen, setCreateModalOpen] = useState(false);
@@ -151,6 +154,11 @@ const TShirtOrderTable = ({
     fetchTShirts();
   }, []);
 
+  const hiddenColumns = { id: false } as any;
+  if(entityType === EntityType.CustomerOrder) {
+    hiddenColumns[amountReceivedField] = false;
+  }
+  
   return (
     <>
       <MaterialReactTable
@@ -170,10 +178,10 @@ const TShirtOrderTable = ({
         onColumnFiltersChange={setColumnFilters}
         state={{
           columnFilters,
-          columnVisibility: { id: false }
+          columnVisibility: hiddenColumns
         }}
-        muiTableBodyRowProps={({ row }) => ({
-          onClick: (event) => {
+        muiTableBodyRowProps={({ row }: {row: any}) => ({
+          onClick: () => {
             setEditMode({ show: true, row: row });
           },
           sx: {
@@ -214,6 +222,7 @@ const TShirtOrderTable = ({
         onSubmit={handleCreateNewRow}
         tshirtChoices={tshirtChoices}
         tableData={tableData}
+        entityType={entityType}
       />
       <EditRowPopup
         open={editMode.show}
