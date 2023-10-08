@@ -54,7 +54,7 @@ const EditRowPopup = ({
     setNewAmtReceived(0);
     setNewAmtOrdered(0);
   };
-  
+
   const handleSubmit = () => {
     if (editReason === "other" && !otherInput.length) {
       setOtherInputError(true);
@@ -238,54 +238,58 @@ type QuantityChangerProps = {
   currentQty: number;
 };
 
-const QuantityChanger = ({ newQty, setNewQty, title, currentQty }: QuantityChangerProps) => (
-  <Grid container direction="column" spacing={1}>
-    <Grid item>
-      <Grid container direction="column">
-        <Grid item>
-          <FormLabel id={`title-label-${title}`}>
-            <Typography variant="h6">
-              {title}
-            </Typography>
-          </FormLabel>
+const QuantityChanger = ({ newQty, setNewQty, title, currentQty }: QuantityChangerProps) => {
+  const newTotal = newQty + currentQty;
+  return (
+    <Grid container direction="column" spacing={1}>
+      <Grid item>
+        <Grid container direction="column">
+          <Grid item>
+            <FormLabel id={`title-label-${title}`}>
+              <Typography variant="h6">
+                {title}
+              </Typography>
+            </FormLabel>
+          </Grid>
         </Grid>
       </Grid>
-    </Grid>
-    <Grid item>
-      <Grid container alignItems={"center"} spacing={2}>
-        <Grid item>
-          New Total: {newQty + currentQty}
-        </Grid>
-        <Grid item>
-          <Grid container spacing={2} alignItems={"center"}>
-            <Grid item>
-              <Button
-                color="error"
-                variant="contained"
-                size="small"
-                onClick={() =>
-                  setNewQty((prev: number) => prev - 1)
-                }
-              >
-                -
-              </Button>
-            </Grid>
-            <Grid item>{newQty}</Grid>
-            <Grid item>
-              <Button
-                color="success"
-                variant="contained"
-                size="small"
-                onClick={() =>
-                  setNewQty((prev: number) => prev + 1)
-                }
-              >
-                +
-              </Button>
+      <Grid item>
+        <Grid container alignItems={"center"} spacing={2}>
+          <Grid item>
+            New Total: {newTotal}
+          </Grid>
+          <Grid item>
+            <Grid container spacing={2} alignItems={"center"}>
+              <Grid item>
+                <Button
+                  color="error"
+                  variant="contained"
+                  size="small"
+                  disabled={newTotal === 0}
+                  onClick={() =>
+                    setNewQty((prev: number) => prev - 1)
+                  }
+                >
+                  -
+                </Button>
+              </Grid>
+              <Grid item>{newQty}</Grid>
+              <Grid item>
+                <Button
+                  color="success"
+                  variant="contained"
+                  size="small"
+                  onClick={() =>
+                    setNewQty((prev: number) => prev + 1)
+                  }
+                >
+                  +
+                </Button>
+              </Grid>
             </Grid>
           </Grid>
         </Grid>
       </Grid>
     </Grid>
-  </Grid>
-);
+  )
+};
