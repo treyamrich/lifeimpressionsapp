@@ -10,6 +10,7 @@ import {
   DBOperation, useDBOperationContext,
 } from "@/contexts/DBErrorContext";
 import {
+    columnInfo,
   entityName,
   getTableColumns,
 } from "./table-constants";
@@ -55,6 +56,7 @@ const CustomerOrders = () => {
       pageTitle="Customer Orders"
       entityName={entityName}
       getTableColumns={getTableColumns}
+      columnInfo={columnInfo}
     />
   )
 }

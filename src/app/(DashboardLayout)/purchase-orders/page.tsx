@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { listPurchaseOrderAPI } from "@/app/graphql-helpers/fetch-apis";
 import { toReadableDateTime } from "@/utils/datetimeConversions";
 import {
+  columnInfo,
   entityName,
   getTableColumns,
 } from "./table-constants";
@@ -52,6 +53,7 @@ const PurchaseOrders = () => {
       pageTitle="Purchase Orders"
       entityName={entityName}
       getTableColumns={getTableColumns}
+      columnInfo={columnInfo}
     />
   )
 }

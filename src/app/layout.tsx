@@ -8,6 +8,8 @@ import awsConfig from "../../src/aws-exports";
 import ProtectedRoute from "./(DashboardLayout)/ProtectedRoute";
 import { ReactElement } from "react";
 import { DBOperationContextProvider } from "@/contexts/DBErrorContext";
+import { LocalizationProvider } from "@mui/x-date-pickers";
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 
 if (typeof window !== "undefined") {
   const isLocalhost = Boolean(
@@ -55,6 +57,7 @@ export default function RootLayout({
       <body>
         <AuthContextProvider>
           <DBOperationContextProvider>
+            <LocalizationProvider dateAdapter={AdapterDayjs}>
             <ThemeProvider theme={baselightTheme}>
               {/* CssBaseline kickstart an elegant, consistent, and simple baseline to build upon. */}
               <CssBaseline />
@@ -62,6 +65,7 @@ export default function RootLayout({
                 {children}
               </ProtectedRoute>
             </ThemeProvider>
+            </LocalizationProvider>
           </DBOperationContextProvider>
         </AuthContextProvider>
       </body>

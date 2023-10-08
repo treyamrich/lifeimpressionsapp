@@ -6,11 +6,8 @@ import {
 } from "@/contexts/DBErrorContext";
 import {
   initialPurchaseOrderFormState,
-  excludeOnCreateFields,
-  selectInputFields,
   getTableColumns,
-  isRequiredField,
-  isSelectInputField
+  columnInfo,
 } from "../table-constants";
 import { PurchaseOrder, TShirtOrder } from "@/API";
 import {
@@ -45,10 +42,7 @@ const CreatePurchaseOrderPage = () => {
     entityType={EntityType.PurchaseOrder}
     initialOrderFormState={initialPurchaseOrderFormState}
     getTableColumns={getTableColumns}
-    isRequiredField={isRequiredField}
-    excludeOnCreateFields={excludeOnCreateFields}
-    isSelectInputField={isSelectInputField}
-    selectInputFields={selectInputFields}
+    columnInfo={columnInfo}
     handleCreateOrder={handleCreatePO}
   />
 )};

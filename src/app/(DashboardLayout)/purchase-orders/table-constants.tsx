@@ -31,8 +31,7 @@ export const getTableColumns = (): MRT_ColumnDef<PurchaseOrder>[] => {
     } as MRT_ColumnDef<PurchaseOrder>,
     {
       accessorKey: "vendor",
-      header: "Vendor",
-      isRequired: true,
+      header: "Vendor"
     } as MRT_ColumnDef<PurchaseOrder>,
     {
       accessorKey: "status",
@@ -49,33 +48,29 @@ export const getTableColumns = (): MRT_ColumnDef<PurchaseOrder>[] => {
   ];
 };
 
-//Exclude these fields when creating
-export const excludeOnCreateFields: string[] = ["id", "updatedAt", "createdAt"];
-const requiredCreateFields: string[] = ["vendor"];
-export const isRequiredField = (field: string): boolean =>
-  requiredCreateFields.includes(field);
+export type ColumnInfo = {
+  disabledOnCreate: boolean | undefined;
+  isRequired: boolean | undefined;
+  selectFields: undefined | SelectValue[];
+  excludeOnCreate: boolean | undefined;
+  isDatetimeField: boolean | undefined;
+  hideInTable: boolean | undefined;
+};
+
+export const columnInfo = new Map<string | number | symbol | undefined, ColumnInfo>([
+  ["id", { excludeOnCreate: true } as ColumnInfo],
+  ["updatedAt", { excludeOnCreate: true } as ColumnInfo],
+  ["createdAt", { excludeOnCreate: true } as ColumnInfo],
+  ["vendor", { isRequired: true } as ColumnInfo],
+  ["status", {
+    selectFields: [
+      { label: POStatus.Open, value: POStatus.Open },
+      { label: POStatus.Closed, value: POStatus.Closed },
+    ]
+  } as ColumnInfo],
+]);
 
 export const getInitialPurchaseOrderFormErrorMap = () =>
   new Map<string, string>(
     Object.keys(initialPurchaseOrderFormState).map((key) => [key, ""])
   );
-
-export const selectInputFields = new Map<
-  string | number | symbol | undefined,
-  SelectValue[]
->([
-  [
-    "status",
-    [
-      { label: POStatus.Open, value: POStatus.Open },
-      { label: POStatus.Closed, value: POStatus.Closed },
-    ],
-  ],
-]);
-
-export const isSelectInputField = (
-  fieldName: string | number | symbol | undefined
-) => {
-  let nameOfField = fieldName ? fieldName.toString() : "";
-  return selectInputFields.has(nameOfField);
-};

@@ -3,8 +3,7 @@ import { styled, Container, Box, Alert } from "@mui/material";
 import React, { useState } from "react";
 import Header from "@/app/(DashboardLayout)/layout/header/Header";
 import Sidebar from "@/app/(DashboardLayout)/layout/sidebar/Sidebar";
-import { useDBOperationContext } from "@/contexts/DBErrorContext";
-import { defaultDBOperationError } from "../graphql-helpers/graphql-errors";
+import { useDBOperationContext, defaultDBOperationError } from "@/contexts/DBErrorContext";
 
 const MainWrapper = styled("div")(() => ({
   display: "flex",

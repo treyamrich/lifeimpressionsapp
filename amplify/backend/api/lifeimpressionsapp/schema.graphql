@@ -65,7 +65,7 @@ type PurchaseOrderChange @model {
 type TShirtOrder @model {
   tshirt: TShirt! @hasOne
   quantity: Int!
-  amountReceived: Int @default(value: "0")
+  amountReceived: Int @default(value: "0") # This is only used for PurchaseOrder
 }
 
 type CustomerOrder @model {
