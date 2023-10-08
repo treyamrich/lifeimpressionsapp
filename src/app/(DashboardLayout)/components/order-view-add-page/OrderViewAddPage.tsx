@@ -26,7 +26,6 @@ function OrderViewAddPage<T extends Record<any, any>>({
     onAddRow,
     onFetchTableData,
     pageTitle,
-    tablePrimaryKey,
     entityName,
     getTableColumns
 }: {
@@ -35,7 +34,6 @@ function OrderViewAddPage<T extends Record<any, any>>({
     onAddRow: () => void,
     onFetchTableData: (setDBOperationError: React.Dispatch<SetStateAction<DBOperationError>>) => void,
     pageTitle: string,
-    tablePrimaryKey: string,
     entityName: string,
     getTableColumns: () => MRT_ColumnDef<T>[]
 }) {

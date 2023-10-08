@@ -12,7 +12,6 @@ import {
   DBOperation,
 } from "@/app/graphql-helpers/graphql-errors";
 import {
-  tablePrimaryKey,
   entityName,
   getTableColumns,
 } from "./table-constants";
@@ -56,7 +55,6 @@ const PurchaseOrders = () => {
       onAddRow={handleAddRow}
       onFetchTableData={handleFetchPurchaseOrders}
       pageTitle="Purchase Orders"
-      tablePrimaryKey={tablePrimaryKey}
       entityName={entityName}
       getTableColumns={getTableColumns}
     />

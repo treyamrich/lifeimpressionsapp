@@ -71,9 +71,12 @@ type TShirtOrder @model {
 type CustomerOrder @model {
   id: ID!
   contact: CustomerContact!
+  orderStatus: CustomerOrderStatus!
   orderDate: AWSDate!
   dateNeededBy: AWSDate
   orderedItems: [TShirtOrder!] @hasMany
+  orderNotes: String
+  isDeleted: Boolean @default(value: "false")
 }
 
 type CustomerContact {
@@ -82,3 +85,9 @@ type CustomerContact {
   phoneNumber: AWSPhone
 }
 
+enum CustomerOrderStatus {
+  NEW
+  IN_PROGRESS
+  BLOCKED
+  COMPLETED
+}

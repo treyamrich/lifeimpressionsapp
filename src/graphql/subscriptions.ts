@@ -374,6 +374,7 @@ export const onCreateCustomerOrder = /* GraphQL */ `
         phoneNumber
         __typename
       }
+      orderStatus
       orderDate
       dateNeededBy
       orderedItems {
@@ -391,6 +392,8 @@ export const onCreateCustomerOrder = /* GraphQL */ `
         nextToken
         __typename
       }
+      orderNotes
+      isDeleted
       createdAt
       updatedAt
       __typename
@@ -409,6 +412,7 @@ export const onUpdateCustomerOrder = /* GraphQL */ `
         phoneNumber
         __typename
       }
+      orderStatus
       orderDate
       dateNeededBy
       orderedItems {
@@ -426,6 +430,8 @@ export const onUpdateCustomerOrder = /* GraphQL */ `
         nextToken
         __typename
       }
+      orderNotes
+      isDeleted
       createdAt
       updatedAt
       __typename
@@ -444,6 +450,7 @@ export const onDeleteCustomerOrder = /* GraphQL */ `
         phoneNumber
         __typename
       }
+      orderStatus
       orderDate
       dateNeededBy
       orderedItems {
@@ -461,6 +468,8 @@ export const onDeleteCustomerOrder = /* GraphQL */ `
         nextToken
         __typename
       }
+      orderNotes
+      isDeleted
       createdAt
       updatedAt
       __typename

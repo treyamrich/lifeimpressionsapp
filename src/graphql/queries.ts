@@ -262,6 +262,7 @@ export const getCustomerOrder = /* GraphQL */ `
         phoneNumber
         __typename
       }
+      orderStatus
       orderDate
       dateNeededBy
       orderedItems {
@@ -279,6 +280,8 @@ export const getCustomerOrder = /* GraphQL */ `
         nextToken
         __typename
       }
+      orderNotes
+      isDeleted
       createdAt
       updatedAt
       __typename
@@ -300,12 +303,15 @@ export const listCustomerOrders = /* GraphQL */ `
           phoneNumber
           __typename
         }
+        orderStatus
         orderDate
         dateNeededBy
         orderedItems {
           nextToken
           __typename
         }
+        orderNotes
+        isDeleted
         createdAt
         updatedAt
         __typename

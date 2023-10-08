@@ -329,8 +329,11 @@ export type DeleteTShirtOrderInput = {
 export type CreateCustomerOrderInput = {
   id?: string | null,
   contact: CustomerContactInput,
+  orderStatus: CustomerOrderStatus,
   orderDate: string,
   dateNeededBy?: string | null,
+  orderNotes?: string | null,
+  isDeleted?: boolean | null,
 };
 
 export type CustomerContactInput = {
@@ -339,21 +342,40 @@ export type CustomerContactInput = {
   phoneNumber?: string | null,
 };
 
+export enum CustomerOrderStatus {
+  NEW = "NEW",
+  IN_PROGRESS = "IN_PROGRESS",
+  BLOCKED = "BLOCKED",
+  COMPLETED = "COMPLETED",
+}
+
+
 export type ModelCustomerOrderConditionInput = {
+  orderStatus?: ModelCustomerOrderStatusInput | null,
   orderDate?: ModelStringInput | null,
   dateNeededBy?: ModelStringInput | null,
+  orderNotes?: ModelStringInput | null,
+  isDeleted?: ModelBooleanInput | null,
   and?: Array< ModelCustomerOrderConditionInput | null > | null,
   or?: Array< ModelCustomerOrderConditionInput | null > | null,
   not?: ModelCustomerOrderConditionInput | null,
+};
+
+export type ModelCustomerOrderStatusInput = {
+  eq?: CustomerOrderStatus | null,
+  ne?: CustomerOrderStatus | null,
 };
 
 export type CustomerOrder = {
   __typename: "CustomerOrder",
   id: string,
   contact: CustomerContact,
+  orderStatus: CustomerOrderStatus,
   orderDate: string,
   dateNeededBy?: string | null,
   orderedItems?: ModelTShirtOrderConnection | null,
+  orderNotes?: string | null,
+  isDeleted?: boolean | null,
   createdAt: string,
   updatedAt: string,
 };
@@ -368,8 +390,11 @@ export type CustomerContact = {
 export type UpdateCustomerOrderInput = {
   id: string,
   contact?: CustomerContactInput | null,
+  orderStatus?: CustomerOrderStatus | null,
   orderDate?: string | null,
   dateNeededBy?: string | null,
+  orderNotes?: string | null,
+  isDeleted?: boolean | null,
 };
 
 export type DeleteCustomerOrderInput = {
@@ -442,8 +467,11 @@ export type ModelTShirtOrderFilterInput = {
 
 export type ModelCustomerOrderFilterInput = {
   id?: ModelIDInput | null,
+  orderStatus?: ModelCustomerOrderStatusInput | null,
   orderDate?: ModelStringInput | null,
   dateNeededBy?: ModelStringInput | null,
+  orderNotes?: ModelStringInput | null,
+  isDeleted?: ModelBooleanInput | null,
   and?: Array< ModelCustomerOrderFilterInput | null > | null,
   or?: Array< ModelCustomerOrderFilterInput | null > | null,
   not?: ModelCustomerOrderFilterInput | null,
@@ -541,8 +569,11 @@ export type ModelSubscriptionTShirtOrderFilterInput = {
 
 export type ModelSubscriptionCustomerOrderFilterInput = {
   id?: ModelSubscriptionIDInput | null,
+  orderStatus?: ModelSubscriptionStringInput | null,
   orderDate?: ModelSubscriptionStringInput | null,
   dateNeededBy?: ModelSubscriptionStringInput | null,
+  orderNotes?: ModelSubscriptionStringInput | null,
+  isDeleted?: ModelSubscriptionBooleanInput | null,
   and?: Array< ModelSubscriptionCustomerOrderFilterInput | null > | null,
   or?: Array< ModelSubscriptionCustomerOrderFilterInput | null > | null,
 };
@@ -952,6 +983,7 @@ export type CreateCustomerOrderMutation = {
       email?: string | null,
       phoneNumber?: string | null,
     },
+    orderStatus: CustomerOrderStatus,
     orderDate: string,
     dateNeededBy?: string | null,
     orderedItems?:  {
@@ -969,6 +1001,8 @@ export type CreateCustomerOrderMutation = {
       } | null >,
       nextToken?: string | null,
     } | null,
+    orderNotes?: string | null,
+    isDeleted?: boolean | null,
     createdAt: string,
     updatedAt: string,
   } | null,
@@ -989,6 +1023,7 @@ export type UpdateCustomerOrderMutation = {
       email?: string | null,
       phoneNumber?: string | null,
     },
+    orderStatus: CustomerOrderStatus,
     orderDate: string,
     dateNeededBy?: string | null,
     orderedItems?:  {
@@ -1006,6 +1041,8 @@ export type UpdateCustomerOrderMutation = {
       } | null >,
       nextToken?: string | null,
     } | null,
+    orderNotes?: string | null,
+    isDeleted?: boolean | null,
     createdAt: string,
     updatedAt: string,
   } | null,
@@ -1026,6 +1063,7 @@ export type DeleteCustomerOrderMutation = {
       email?: string | null,
       phoneNumber?: string | null,
     },
+    orderStatus: CustomerOrderStatus,
     orderDate: string,
     dateNeededBy?: string | null,
     orderedItems?:  {
@@ -1043,6 +1081,8 @@ export type DeleteCustomerOrderMutation = {
       } | null >,
       nextToken?: string | null,
     } | null,
+    orderNotes?: string | null,
+    isDeleted?: boolean | null,
     createdAt: string,
     updatedAt: string,
   } | null,
@@ -1318,6 +1358,7 @@ export type GetCustomerOrderQuery = {
       email?: string | null,
       phoneNumber?: string | null,
     },
+    orderStatus: CustomerOrderStatus,
     orderDate: string,
     dateNeededBy?: string | null,
     orderedItems?:  {
@@ -1335,6 +1376,8 @@ export type GetCustomerOrderQuery = {
       } | null >,
       nextToken?: string | null,
     } | null,
+    orderNotes?: string | null,
+    isDeleted?: boolean | null,
     createdAt: string,
     updatedAt: string,
   } | null,
@@ -1358,12 +1401,15 @@ export type ListCustomerOrdersQuery = {
         email?: string | null,
         phoneNumber?: string | null,
       },
+      orderStatus: CustomerOrderStatus,
       orderDate: string,
       dateNeededBy?: string | null,
       orderedItems?:  {
         __typename: "ModelTShirtOrderConnection",
         nextToken?: string | null,
       } | null,
+      orderNotes?: string | null,
+      isDeleted?: boolean | null,
       createdAt: string,
       updatedAt: string,
     } | null >,
@@ -1763,6 +1809,7 @@ export type OnCreateCustomerOrderSubscription = {
       email?: string | null,
       phoneNumber?: string | null,
     },
+    orderStatus: CustomerOrderStatus,
     orderDate: string,
     dateNeededBy?: string | null,
     orderedItems?:  {
@@ -1780,6 +1827,8 @@ export type OnCreateCustomerOrderSubscription = {
       } | null >,
       nextToken?: string | null,
     } | null,
+    orderNotes?: string | null,
+    isDeleted?: boolean | null,
     createdAt: string,
     updatedAt: string,
   } | null,
@@ -1799,6 +1848,7 @@ export type OnUpdateCustomerOrderSubscription = {
       email?: string | null,
       phoneNumber?: string | null,
     },
+    orderStatus: CustomerOrderStatus,
     orderDate: string,
     dateNeededBy?: string | null,
     orderedItems?:  {
@@ -1816,6 +1866,8 @@ export type OnUpdateCustomerOrderSubscription = {
       } | null >,
       nextToken?: string | null,
     } | null,
+    orderNotes?: string | null,
+    isDeleted?: boolean | null,
     createdAt: string,
     updatedAt: string,
   } | null,
@@ -1835,6 +1887,7 @@ export type OnDeleteCustomerOrderSubscription = {
       email?: string | null,
       phoneNumber?: string | null,
     },
+    orderStatus: CustomerOrderStatus,
     orderDate: string,
     dateNeededBy?: string | null,
     orderedItems?:  {
@@ -1852,6 +1905,8 @@ export type OnDeleteCustomerOrderSubscription = {
       } | null >,
       nextToken?: string | null,
     } | null,
+    orderNotes?: string | null,
+    isDeleted?: boolean | null,
     createdAt: string,
     updatedAt: string,
   } | null,
