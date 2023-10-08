@@ -1,13 +1,12 @@
 "use client";
 
 import { CustomerOrder } from "@/API";
-import React, { useState, SetStateAction } from "react";
+import React, { useState } from "react";
 import { useRouter } from 'next/navigation';
-import { listCustomerOrderAPI, listPurchaseOrderAPI } from "@/app/graphql-helpers/fetch-apis";
+import { listCustomerOrderAPI } from "@/app/graphql-helpers/fetch-apis";
 import { toReadableDateTime } from "@/utils/datetimeConversions";
 
 import {
-  type DBOperationError,
   rescueDBOperation,
   DBOperation,
 } from "@/app/graphql-helpers/graphql-errors";
@@ -29,11 +28,10 @@ const CustomerOrders = () => {
     push(`orders/view/${orderId}`);
   }
   const handleAddRow = () => push('/orders/create');
-  const handleFetchCustomerOrders = (setDBOperationError: React.Dispatch<SetStateAction<DBOperationError>>) => {
+  const handleFetchCustomerOrders = () => {
     const deletedFilter = { isDeleted: { ne: true } };
     rescueDBOperation(
       () => listCustomerOrderAPI(deletedFilter),
-      setDBOperationError,
       DBOperation.LIST,
       (resp: CustomerOrder[]) => {
         setTableData(

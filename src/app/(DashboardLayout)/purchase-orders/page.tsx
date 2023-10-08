@@ -7,7 +7,6 @@ import { listPurchaseOrderAPI } from "@/app/graphql-helpers/fetch-apis";
 import { toReadableDateTime } from "@/utils/datetimeConversions";
 
 import {
-  type DBOperationError,
   rescueDBOperation,
   DBOperation,
 } from "@/app/graphql-helpers/graphql-errors";
