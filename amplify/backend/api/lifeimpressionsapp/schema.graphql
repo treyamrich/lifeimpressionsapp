@@ -47,6 +47,7 @@ type PurchaseOrder @model {
   orderedItems: [TShirtOrder!] @hasMany
   status: POStatus!
   changeHistory: [PurchaseOrderChange!] @hasMany
+  isDeleted: Boolean @default(value: "false")
 }
 
 enum POStatus {

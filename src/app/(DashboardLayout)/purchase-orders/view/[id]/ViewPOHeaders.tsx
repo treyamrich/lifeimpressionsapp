@@ -1,9 +1,10 @@
-import { POStatus, PurchaseOrder } from "@/API";
+import { POStatus, PurchaseOrder, UpdatePurchaseOrderInput } from "@/API";
 import BlankCard from "@/app/(DashboardLayout)/components/shared/BlankCard";
 import { DBOperation, DBOperationError, rescueDBOperation } from "@/app/graphql-helpers/graphql-errors";
 import { updatePurchaseOrderAPI } from "@/app/graphql-helpers/update-apis";
 import { toReadableDateTime } from "@/utils/datetimeConversions";
 import { Button, CardContent, Grid, Typography } from "@mui/material";
+import { useRouter } from "next/navigation";
 
 type ViewPOHeaderFieldsProps = {
   po: PurchaseOrder;
@@ -12,6 +13,7 @@ type ViewPOHeaderFieldsProps = {
 };
 
 const ViewPOHeaderFields = ({ po, setPo, setDBOperationError }: ViewPOHeaderFieldsProps) => {
+  const { push } = useRouter();
   const { vendor, createdAt, updatedAt, status } = po;
 
   const handleChangePOStatus = () => {
@@ -31,11 +33,26 @@ const ViewPOHeaderFields = ({ po, setPo, setDBOperationError }: ViewPOHeaderFiel
     )
   }
 
+  const handleDeletePurchaseOrder = () => {
+    if (!confirm(`Are you sure you want to delete this purchase order?`)) {
+      return;
+    }
+    const deletedPurchaseOrder: UpdatePurchaseOrderInput = { id: po.id, isDeleted: true };
+    rescueDBOperation(
+      () => updatePurchaseOrderAPI(deletedPurchaseOrder),
+      setDBOperationError,
+      DBOperation.DELETE,
+      () => {
+        push('/purchase-orders/');
+      }
+    );
+  }
+
   const columnHeaderSpacing = 1;
   return (
     <BlankCard>
       <CardContent>
-        <Grid container spacing={3}>
+        <Grid container spacing={3} alignItems={"center"}>
           <Grid item xs={2}>
             <Grid container direction="column" spacing={columnHeaderSpacing}>
               <Grid item>
@@ -70,7 +87,7 @@ const ViewPOHeaderFields = ({ po, setPo, setDBOperationError }: ViewPOHeaderFiel
               </Grid>
             </Grid>
           </Grid>
-          <Grid item xs={4}>
+          <Grid item xs={3}>
             <Grid container direction="column" spacing={columnHeaderSpacing}>
               <Grid item>
                 <Typography variant="h6" color="textSecondary">
@@ -84,7 +101,7 @@ const ViewPOHeaderFields = ({ po, setPo, setDBOperationError }: ViewPOHeaderFiel
               </Grid>
             </Grid>
           </Grid>
-          <Grid item xs={4}>
+          <Grid item xs={3}>
             <Grid container direction="column" spacing={columnHeaderSpacing}>
               <Grid item>
                 <Typography variant="h6" color="textSecondary">
@@ -97,6 +114,17 @@ const ViewPOHeaderFields = ({ po, setPo, setDBOperationError }: ViewPOHeaderFiel
                 </Typography>
               </Grid>
             </Grid>
+          </Grid>
+          <Grid item xs={2}>
+            <Button
+              id="delete-po-button"
+              color={"error"}
+              variant="contained"
+              size="small"
+              onClick={handleDeletePurchaseOrder}
+            >
+              Delete Purchase Order
+            </Button>
           </Grid>
         </Grid>
       </CardContent>

@@ -99,6 +99,7 @@ export const createPurchaseOrder = /* GraphQL */ `
         nextToken
         __typename
       }
+      isDeleted
       createdAt
       updatedAt
       __typename
@@ -145,6 +146,7 @@ export const updatePurchaseOrder = /* GraphQL */ `
         nextToken
         __typename
       }
+      isDeleted
       createdAt
       updatedAt
       __typename
@@ -191,6 +193,7 @@ export const deletePurchaseOrder = /* GraphQL */ `
         nextToken
         __typename
       }
+      isDeleted
       createdAt
       updatedAt
       __typename

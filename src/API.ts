@@ -157,6 +157,7 @@ export type CreatePurchaseOrderInput = {
   orderNumber?: string | null,
   vendor: string,
   status: POStatus,
+  isDeleted?: boolean | null,
 };
 
 export enum POStatus {
@@ -169,6 +170,7 @@ export type ModelPurchaseOrderConditionInput = {
   orderNumber?: ModelStringInput | null,
   vendor?: ModelStringInput | null,
   status?: ModelPOStatusInput | null,
+  isDeleted?: ModelBooleanInput | null,
   and?: Array< ModelPurchaseOrderConditionInput | null > | null,
   or?: Array< ModelPurchaseOrderConditionInput | null > | null,
   not?: ModelPurchaseOrderConditionInput | null,
@@ -187,6 +189,7 @@ export type PurchaseOrder = {
   orderedItems?: ModelTShirtOrderConnection | null,
   status: POStatus,
   changeHistory?: ModelPurchaseOrderChangeConnection | null,
+  isDeleted?: boolean | null,
   createdAt: string,
   updatedAt: string,
 };
@@ -234,6 +237,7 @@ export type UpdatePurchaseOrderInput = {
   orderNumber?: string | null,
   vendor?: string | null,
   status?: POStatus | null,
+  isDeleted?: boolean | null,
 };
 
 export type DeletePurchaseOrderInput = {
@@ -402,6 +406,7 @@ export type ModelPurchaseOrderFilterInput = {
   orderNumber?: ModelStringInput | null,
   vendor?: ModelStringInput | null,
   status?: ModelPOStatusInput | null,
+  isDeleted?: ModelBooleanInput | null,
   and?: Array< ModelPurchaseOrderFilterInput | null > | null,
   or?: Array< ModelPurchaseOrderFilterInput | null > | null,
   not?: ModelPurchaseOrderFilterInput | null,
@@ -499,6 +504,7 @@ export type ModelSubscriptionPurchaseOrderFilterInput = {
   orderNumber?: ModelSubscriptionStringInput | null,
   vendor?: ModelSubscriptionStringInput | null,
   status?: ModelSubscriptionStringInput | null,
+  isDeleted?: ModelSubscriptionBooleanInput | null,
   and?: Array< ModelSubscriptionPurchaseOrderFilterInput | null > | null,
   or?: Array< ModelSubscriptionPurchaseOrderFilterInput | null > | null,
 };
@@ -643,6 +649,7 @@ export type CreatePurchaseOrderMutation = {
       } | null >,
       nextToken?: string | null,
     } | null,
+    isDeleted?: boolean | null,
     createdAt: string,
     updatedAt: string,
   } | null,
@@ -690,6 +697,7 @@ export type UpdatePurchaseOrderMutation = {
       } | null >,
       nextToken?: string | null,
     } | null,
+    isDeleted?: boolean | null,
     createdAt: string,
     updatedAt: string,
   } | null,
@@ -737,6 +745,7 @@ export type DeletePurchaseOrderMutation = {
       } | null >,
       nextToken?: string | null,
     } | null,
+    isDeleted?: boolean | null,
     createdAt: string,
     updatedAt: string,
   } | null,
@@ -1126,6 +1135,7 @@ export type GetPurchaseOrderQuery = {
       } | null >,
       nextToken?: string | null,
     } | null,
+    isDeleted?: boolean | null,
     createdAt: string,
     updatedAt: string,
   } | null,
@@ -1154,6 +1164,7 @@ export type ListPurchaseOrdersQuery = {
         __typename: "ModelPurchaseOrderChangeConnection",
         nextToken?: string | null,
       } | null,
+      isDeleted?: boolean | null,
       createdAt: string,
       updatedAt: string,
     } | null >,
@@ -1458,6 +1469,7 @@ export type OnCreatePurchaseOrderSubscription = {
       } | null >,
       nextToken?: string | null,
     } | null,
+    isDeleted?: boolean | null,
     createdAt: string,
     updatedAt: string,
   } | null,
@@ -1504,6 +1516,7 @@ export type OnUpdatePurchaseOrderSubscription = {
       } | null >,
       nextToken?: string | null,
     } | null,
+    isDeleted?: boolean | null,
     createdAt: string,
     updatedAt: string,
   } | null,
@@ -1550,6 +1563,7 @@ export type OnDeletePurchaseOrderSubscription = {
       } | null >,
       nextToken?: string | null,
     } | null,
+    isDeleted?: boolean | null,
     createdAt: string,
     updatedAt: string,
   } | null,
