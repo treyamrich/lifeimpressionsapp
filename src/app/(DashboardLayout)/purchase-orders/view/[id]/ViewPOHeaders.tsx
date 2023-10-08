@@ -1,17 +1,35 @@
 import { POStatus, PurchaseOrder } from "@/API";
 import BlankCard from "@/app/(DashboardLayout)/components/shared/BlankCard";
+import { DBOperation, DBOperationError, rescueDBOperation } from "@/app/graphql-helpers/graphql-errors";
+import { updatePurchaseOrderAPI } from "@/app/graphql-helpers/update-apis";
 import { toReadableDateTime } from "@/utils/datetimeConversions";
 import { Button, CardContent, Grid, Typography } from "@mui/material";
 
 type ViewPOHeaderFieldsProps = {
   po: PurchaseOrder;
   setPo: React.Dispatch<React.SetStateAction<PurchaseOrder>>;
+  setDBOperationError: React.Dispatch<React.SetStateAction<DBOperationError>>
 };
 
-const ViewPOHeaderFields = ({ po, setPo }: ViewPOHeaderFieldsProps) => {
+const ViewPOHeaderFields = ({ po, setPo, setDBOperationError }: ViewPOHeaderFieldsProps) => {
   const { vendor, createdAt, updatedAt, status } = po;
-  const flipPOStatus = (status: POStatus) =>
-    status === POStatus.Open ? POStatus.Closed : POStatus.Open;
+
+  const handleChangePOStatus = () => {
+    const cleanedUpdatedPo: PurchaseOrder = {
+      ...po,
+      orderedItems: undefined,
+      changeHistory: undefined,
+      status: po.status === POStatus.Open ? POStatus.Closed : POStatus.Open
+    };
+    rescueDBOperation(
+      () => updatePurchaseOrderAPI(cleanedUpdatedPo),
+      setDBOperationError,
+      DBOperation.UPDATE,
+      (resp: PurchaseOrder) => {
+        setPo(resp);
+      }
+    )
+  }
 
   const columnHeaderSpacing = 1;
   return (
@@ -31,11 +49,7 @@ const ViewPOHeaderFields = ({ po, setPo }: ViewPOHeaderFieldsProps) => {
                   color={status === POStatus.Open ? "success" : "error"}
                   variant="contained"
                   size="small"
-                  onClick={() =>
-                    setPo((prevPo: PurchaseOrder) => {
-                      return { ...prevPo, status: flipPOStatus(prevPo.status) };
-                    })
-                  }
+                  onClick={handleChangePOStatus}
                 >
                   {status}
                 </Button>

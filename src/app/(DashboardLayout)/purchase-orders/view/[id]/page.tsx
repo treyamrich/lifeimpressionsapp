@@ -100,7 +100,7 @@ const ViewPurchaseOrder = ({ params }: ViewPurchaseOrderProps) => {
             <DashboardCard title={`Purchase Order: ${po.orderNumber}`}>
                 <Grid container spacing={3} direction="column" padding={2}>
                     <Grid item>
-                        <ViewPOHeaderFields po={po} setPo={setPo} />
+                        <ViewPOHeaderFields po={po} setPo={setPo} setDBOperationError={setDBOperationError} />
                     </Grid>
                     <Grid item>
                         <Grid container direction="column" spacing={1}>
@@ -194,9 +194,7 @@ const OrderedItemsTable = ({
                     () => updateTShirtAPI(newTShirt),
                     setDBOperationError,
                     DBOperation.UPDATE,
-                    (resp: TShirt) => {
-                        console.log(resp)
-                    }
+                    (resp: TShirt) => {}
                 );
 
                 // Update local PO change history table
