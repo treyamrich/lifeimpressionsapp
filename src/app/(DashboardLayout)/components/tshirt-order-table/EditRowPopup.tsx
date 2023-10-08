@@ -11,9 +11,10 @@ import {
   Radio,
   RadioGroup,
   TextField,
+  Typography,
 } from "@mui/material";
 import BlankCard from "../shared/BlankCard";
-import { useState } from "react";
+import { SetStateAction, useState } from "react";
 import { MRT_Row } from "material-react-table";
 import { CreatePurchaseOrderChangeInput, TShirtOrder } from "@/API";
 
@@ -27,6 +28,8 @@ interface EditRowPopupProps {
 }
 
 const amtReceivedField = "amountReceived";
+const amtOrderedField = "quantity";
+const initialEditReasonState = "Received Item";
 
 const EditRowPopup = ({
   open,
@@ -38,32 +41,38 @@ const EditRowPopup = ({
 }: EditRowPopupProps) => {
   const [newAmtReceived, setNewAmtReceived] = useState<number>(0);
   const currentAmtReceived: number = row ? row.getValue(amtReceivedField) : 0;
-  const [editReason, setEditReason] = useState("received-item");
+  const [newAmtOrdered, setNewAmtOrdered] = useState<number>(0);
+  const currentAmtOrdered: number = row ? row.getValue(amtOrderedField) : 0;
+  const [editReason, setEditReason] = useState(initialEditReasonState);
   const [otherInput, setOtherInput] = useState(""); // When user selects "other"
   const [otherInputError, setOtherInputError] = useState(false);
 
+  const resetForm = () => {
+    setOtherInputError(false);
+    setOtherInput("");
+    setEditReason(initialEditReasonState);
+    setNewAmtReceived(0);
+    setNewAmtOrdered(0);
+  };
+  
   const handleSubmit = () => {
     if (editReason === "other" && !otherInput.length) {
       setOtherInputError(true);
       return;
     }
     const tshirtStyleNo: string = row ? row.getValue("tShirtOrderTshirtStyleNumber") : "";
+    const editReasonMsg = editReason === "other" ? otherInput : editReason;
     const poChange: CreatePurchaseOrderChangeInput = {
-        quantityChange: newAmtReceived,
-        reason: editReason,
-        purchaseOrderChangeTshirtStyleNumber: tshirtStyleNo,
-        purchaseOrderChangeHistoryId: purchaseOrderId
+      quantityChange: newAmtReceived,
+      orderedQuantityChange: newAmtOrdered,
+      reason: editReasonMsg,
+      purchaseOrderChangeTshirtStyleNumber: tshirtStyleNo,
+      purchaseOrderChangeHistoryId: purchaseOrderId
     };
     onSubmit(poChange);
     resetForm();
   };
 
-  const resetForm = () => {
-    setOtherInputError(false);
-    setOtherInput("");
-    setEditReason("received-item");
-    setNewAmtReceived(0);
-  };
   return (
     <Dialog open={open} maxWidth="md">
       <DialogTitle textAlign="center">{title}</DialogTitle>
@@ -74,6 +83,9 @@ const EditRowPopup = ({
               currentAmtReceived={currentAmtReceived}
               newAmtReceived={newAmtReceived}
               setNewAmtReceived={setNewAmtReceived}
+              currentAmtOrdered={currentAmtOrdered}
+              newAmtOrdered={newAmtOrdered}
+              setNewAmtOrdered={setNewAmtOrdered}
               editReason={editReason}
               setEditReason={setEditReason}
               otherInput={otherInput}
@@ -122,8 +134,14 @@ type EditCardProps = {
   currentAmtReceived: number;
   newAmtReceived: number;
   setNewAmtReceived: React.Dispatch<React.SetStateAction<number>>;
+
+  currentAmtOrdered: number;
+  newAmtOrdered: number;
+  setNewAmtOrdered: React.Dispatch<React.SetStateAction<number>>;
+
   editReason: string;
   setEditReason: React.Dispatch<React.SetStateAction<string>>;
+
   otherInput: string;
   setOtherInput: React.Dispatch<React.SetStateAction<string>>;
   setOtherInputError: React.Dispatch<React.SetStateAction<boolean>>;
@@ -134,6 +152,9 @@ const EditCard = ({
   currentAmtReceived,
   newAmtReceived,
   setNewAmtReceived,
+  currentAmtOrdered,
+  newAmtOrdered,
+  setNewAmtOrdered,
   editReason,
   setEditReason,
   otherInput,
@@ -151,42 +172,20 @@ const EditCard = ({
         <FormControl>
           <Grid container direction="column" spacing={2}>
             <Grid item>
-              <FormLabel id="total-amount-received">
-                New Total Amount Received
-              </FormLabel>
-              <Grid container>
-                <Grid item>{newAmtReceived + currentAmtReceived}</Grid>
-              </Grid>
+              <QuantityChanger
+                title="Amount Received"
+                newQty={newAmtReceived}
+                setNewQty={setNewAmtReceived}
+                currentQty={currentAmtReceived}
+              />
             </Grid>
             <Grid item>
-              <FormLabel id="amount-received">Received Amount Change</FormLabel>
-              <Grid container spacing={3} alignItems={"center"}>
-                <Grid item>
-                  <Button
-                    color="error"
-                    variant="contained"
-                    size="small"
-                    onClick={() =>
-                      setNewAmtReceived((prev: number) => prev - 1)
-                    }
-                  >
-                    -
-                  </Button>
-                </Grid>
-                <Grid item>{newAmtReceived}</Grid>
-                <Grid item>
-                  <Button
-                    color="success"
-                    variant="contained"
-                    size="small"
-                    onClick={() =>
-                      setNewAmtReceived((prev: number) => prev + 1)
-                    }
-                  >
-                    +
-                  </Button>
-                </Grid>
-              </Grid>
+              <QuantityChanger
+                title="Amount Ordered"
+                newQty={newAmtOrdered}
+                setNewQty={setNewAmtOrdered}
+                currentQty={currentAmtOrdered}
+              />
             </Grid>
             <Grid item>
               <FormLabel id="radio-buttons-group-label">
@@ -199,12 +198,12 @@ const EditCard = ({
                 onChange={(e) => handleChangeEditReason(e.target.value)}
               >
                 <FormControlLabel
-                  value="received-item"
+                  value="Received Item"
                   control={<Radio />}
                   label="Received Item"
                 />
                 <FormControlLabel
-                  value="damaged-item"
+                  value="Damaged Item"
                   control={<Radio />}
                   label="Damaged Item"
                 />
@@ -231,3 +230,62 @@ const EditCard = ({
     </BlankCard>
   );
 };
+
+type QuantityChangerProps = {
+  newQty: number;
+  setNewQty: React.Dispatch<SetStateAction<number>>;
+  title: String;
+  currentQty: number;
+};
+
+const QuantityChanger = ({ newQty, setNewQty, title, currentQty }: QuantityChangerProps) => (
+  <Grid container direction="column" spacing={1}>
+    <Grid item>
+      <Grid container direction="column">
+        <Grid item>
+          <FormLabel id={`title-label-${title}`}>
+            <Typography variant="h6">
+              {title}
+            </Typography>
+          </FormLabel>
+        </Grid>
+      </Grid>
+    </Grid>
+    <Grid item>
+      <Grid container alignItems={"center"} spacing={2}>
+        <Grid item>
+          New Total: {newQty + currentQty}
+        </Grid>
+        <Grid item>
+          <Grid container spacing={2} alignItems={"center"}>
+            <Grid item>
+              <Button
+                color="error"
+                variant="contained"
+                size="small"
+                onClick={() =>
+                  setNewQty((prev: number) => prev - 1)
+                }
+              >
+                -
+              </Button>
+            </Grid>
+            <Grid item>{newQty}</Grid>
+            <Grid item>
+              <Button
+                color="success"
+                variant="contained"
+                size="small"
+                onClick={() =>
+                  setNewQty((prev: number) => prev + 1)
+                }
+              >
+                +
+              </Button>
+            </Grid>
+          </Grid>
+        </Grid>
+      </Grid>
+    </Grid>
+  </Grid>
+);

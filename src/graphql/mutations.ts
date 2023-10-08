@@ -87,6 +87,7 @@ export const createPurchaseOrder = /* GraphQL */ `
       changeHistory {
         items {
           quantityChange
+          orderedQuantityChange
           reason
           id
           createdAt
@@ -132,6 +133,7 @@ export const updatePurchaseOrder = /* GraphQL */ `
       changeHistory {
         items {
           quantityChange
+          orderedQuantityChange
           reason
           id
           createdAt
@@ -177,6 +179,7 @@ export const deletePurchaseOrder = /* GraphQL */ `
       changeHistory {
         items {
           quantityChange
+          orderedQuantityChange
           reason
           id
           createdAt
@@ -213,6 +216,7 @@ export const createPurchaseOrderChange = /* GraphQL */ `
         __typename
       }
       quantityChange
+      orderedQuantityChange
       reason
       id
       createdAt
@@ -242,6 +246,7 @@ export const updatePurchaseOrderChange = /* GraphQL */ `
         __typename
       }
       quantityChange
+      orderedQuantityChange
       reason
       id
       createdAt
@@ -271,6 +276,7 @@ export const deletePurchaseOrderChange = /* GraphQL */ `
         __typename
       }
       quantityChange
+      orderedQuantityChange
       reason
       id
       createdAt

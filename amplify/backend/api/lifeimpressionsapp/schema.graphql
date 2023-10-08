@@ -56,7 +56,8 @@ enum POStatus {
 
 type PurchaseOrderChange @model {
   tshirt: TShirt! @hasOne
-  quantityChange: Int! # the delta
+  quantityChange: Int! # the delta for qtyOnHand
+  orderedQuantityChange: Int!
   reason: String!
 }
 

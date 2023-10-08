@@ -6,3 +6,4 @@ export const cleanObjectFields = (obj: any) => {
         __typename: undefined,
     };
 };
+  

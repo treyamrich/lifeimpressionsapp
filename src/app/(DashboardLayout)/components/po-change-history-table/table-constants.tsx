@@ -10,8 +10,12 @@ export const getTableColumns = (): MRT_ColumnDef<PurchaseOrderChange>[] => {
         muiTableHeadCellProps: { sx: { color: "green" } }, //custom props
       } as MRT_ColumnDef<PurchaseOrderChange>,
       {
+        accessorKey: "orderedQuantityChange",
+        header: "Amt. Ordered Change",
+      } as MRT_ColumnDef<PurchaseOrderChange>,
+      {
         accessorKey: "quantityChange",
-        header: "Change Amt.",
+        header: "Amt. On Hand Change",
       } as MRT_ColumnDef<PurchaseOrderChange>,
       {
         accessorKey: "reason",

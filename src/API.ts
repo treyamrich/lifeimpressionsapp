@@ -220,6 +220,7 @@ export type PurchaseOrderChange = {
   __typename: "PurchaseOrderChange",
   tshirt: TShirt,
   quantityChange: number,
+  orderedQuantityChange: number,
   reason: string,
   id: string,
   createdAt: string,
@@ -241,6 +242,7 @@ export type DeletePurchaseOrderInput = {
 
 export type CreatePurchaseOrderChangeInput = {
   quantityChange: number,
+  orderedQuantityChange: number,
   reason: string,
   id?: string | null,
   purchaseOrderChangeHistoryId?: string | null,
@@ -249,6 +251,7 @@ export type CreatePurchaseOrderChangeInput = {
 
 export type ModelPurchaseOrderChangeConditionInput = {
   quantityChange?: ModelIntInput | null,
+  orderedQuantityChange?: ModelIntInput | null,
   reason?: ModelStringInput | null,
   and?: Array< ModelPurchaseOrderChangeConditionInput | null > | null,
   or?: Array< ModelPurchaseOrderChangeConditionInput | null > | null,
@@ -275,6 +278,7 @@ export type ModelIDInput = {
 
 export type UpdatePurchaseOrderChangeInput = {
   quantityChange?: number | null,
+  orderedQuantityChange?: number | null,
   reason?: string | null,
   id: string,
   purchaseOrderChangeHistoryId?: string | null,
@@ -411,6 +415,7 @@ export type ModelPurchaseOrderConnection = {
 
 export type ModelPurchaseOrderChangeFilterInput = {
   quantityChange?: ModelIntInput | null,
+  orderedQuantityChange?: ModelIntInput | null,
   reason?: ModelStringInput | null,
   and?: Array< ModelPurchaseOrderChangeFilterInput | null > | null,
   or?: Array< ModelPurchaseOrderChangeFilterInput | null > | null,
@@ -515,6 +520,7 @@ export type ModelSubscriptionIDInput = {
 
 export type ModelSubscriptionPurchaseOrderChangeFilterInput = {
   quantityChange?: ModelSubscriptionIntInput | null,
+  orderedQuantityChange?: ModelSubscriptionIntInput | null,
   reason?: ModelSubscriptionStringInput | null,
   and?: Array< ModelSubscriptionPurchaseOrderChangeFilterInput | null > | null,
   or?: Array< ModelSubscriptionPurchaseOrderChangeFilterInput | null > | null,
@@ -627,6 +633,7 @@ export type CreatePurchaseOrderMutation = {
       items:  Array< {
         __typename: "PurchaseOrderChange",
         quantityChange: number,
+        orderedQuantityChange: number,
         reason: string,
         id: string,
         createdAt: string,
@@ -673,6 +680,7 @@ export type UpdatePurchaseOrderMutation = {
       items:  Array< {
         __typename: "PurchaseOrderChange",
         quantityChange: number,
+        orderedQuantityChange: number,
         reason: string,
         id: string,
         createdAt: string,
@@ -719,6 +727,7 @@ export type DeletePurchaseOrderMutation = {
       items:  Array< {
         __typename: "PurchaseOrderChange",
         quantityChange: number,
+        orderedQuantityChange: number,
         reason: string,
         id: string,
         createdAt: string,
@@ -754,6 +763,7 @@ export type CreatePurchaseOrderChangeMutation = {
       updatedAt: string,
     },
     quantityChange: number,
+    orderedQuantityChange: number,
     reason: string,
     id: string,
     createdAt: string,
@@ -784,6 +794,7 @@ export type UpdatePurchaseOrderChangeMutation = {
       updatedAt: string,
     },
     quantityChange: number,
+    orderedQuantityChange: number,
     reason: string,
     id: string,
     createdAt: string,
@@ -814,6 +825,7 @@ export type DeletePurchaseOrderChangeMutation = {
       updatedAt: string,
     },
     quantityChange: number,
+    orderedQuantityChange: number,
     reason: string,
     id: string,
     createdAt: string,
@@ -1104,6 +1116,7 @@ export type GetPurchaseOrderQuery = {
       items:  Array< {
         __typename: "PurchaseOrderChange",
         quantityChange: number,
+        orderedQuantityChange: number,
         reason: string,
         id: string,
         createdAt: string,
@@ -1168,6 +1181,7 @@ export type GetPurchaseOrderChangeQuery = {
       updatedAt: string,
     },
     quantityChange: number,
+    orderedQuantityChange: number,
     reason: string,
     id: string,
     createdAt: string,
@@ -1201,6 +1215,7 @@ export type ListPurchaseOrderChangesQuery = {
         updatedAt: string,
       },
       quantityChange: number,
+      orderedQuantityChange: number,
       reason: string,
       id: string,
       createdAt: string,
@@ -1433,6 +1448,7 @@ export type OnCreatePurchaseOrderSubscription = {
       items:  Array< {
         __typename: "PurchaseOrderChange",
         quantityChange: number,
+        orderedQuantityChange: number,
         reason: string,
         id: string,
         createdAt: string,
@@ -1478,6 +1494,7 @@ export type OnUpdatePurchaseOrderSubscription = {
       items:  Array< {
         __typename: "PurchaseOrderChange",
         quantityChange: number,
+        orderedQuantityChange: number,
         reason: string,
         id: string,
         createdAt: string,
@@ -1523,6 +1540,7 @@ export type OnDeletePurchaseOrderSubscription = {
       items:  Array< {
         __typename: "PurchaseOrderChange",
         quantityChange: number,
+        orderedQuantityChange: number,
         reason: string,
         id: string,
         createdAt: string,
@@ -1557,6 +1575,7 @@ export type OnCreatePurchaseOrderChangeSubscription = {
       updatedAt: string,
     },
     quantityChange: number,
+    orderedQuantityChange: number,
     reason: string,
     id: string,
     createdAt: string,
@@ -1586,6 +1605,7 @@ export type OnUpdatePurchaseOrderChangeSubscription = {
       updatedAt: string,
     },
     quantityChange: number,
+    orderedQuantityChange: number,
     reason: string,
     id: string,
     createdAt: string,
@@ -1615,6 +1635,7 @@ export type OnDeletePurchaseOrderChangeSubscription = {
       updatedAt: string,
     },
     quantityChange: number,
+    orderedQuantityChange: number,
     reason: string,
     id: string,
     createdAt: string,

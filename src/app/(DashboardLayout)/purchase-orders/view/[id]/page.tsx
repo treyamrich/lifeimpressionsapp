@@ -7,6 +7,7 @@ import {
     TShirt,
     TShirtOrder,
     UpdateTShirtInput,
+    UpdateTShirtOrderInput,
 } from "@/API";
 import PageContainer from "@/app/(DashboardLayout)/components/container/PageContainer";
 import BlankCard from "@/app/(DashboardLayout)/components/shared/BlankCard";
@@ -161,20 +162,28 @@ const OrderedItemsTable = ({
         setDBOperationError: React.Dispatch<React.SetStateAction<DBOperationError>>,
         exitEditingMode: () => void
     ) => {
-        rescueDBOperation(
-            () => createPurchaseOrderChangeAPI(poChange),
-            setDBOperationError,
-            DBOperation.CREATE,
-            (resp: PurchaseOrderChange) => {
-                // Update TShirtOrder DB table
-                const prev = row.original;
-                const prevAmt = prev.amountReceived ? prev.amountReceived : 0;
-                const newAmt = resp.quantityChange + prevAmt;
-                const newTShirtOrder = {
-                    ...prev,
-                    amountReceived: newAmt,
-                };
+        const prev = row.original;
+        const prevAmtOnHand = prev.amountReceived ? prev.amountReceived : 0;
+        const newAmtOnHand = poChange.quantityChange + prevAmtOnHand;
+        const prevAmtOrdered = prev.quantity ? prev.quantity : 0;
+        const newAmtOrdered = poChange.orderedQuantityChange + prevAmtOrdered;
 
+        // Update inventory
+        const newTShirt: UpdateTShirtInput = {
+            styleNumber: prev.tShirtOrderTshirtStyleNumber,
+            quantityOnHand: newAmtOnHand,
+        };
+        rescueDBOperation(
+            () => updateTShirtAPI(newTShirt),
+            setDBOperationError,
+            DBOperation.UPDATE,
+            (_: TShirt) => {
+                // Update TShirtOrder DB table
+                const newTShirtOrder: UpdateTShirtOrderInput = {
+                    id: prev.id,
+                    amountReceived: newAmtOnHand,
+                    quantity: newAmtOrdered
+                };
                 rescueDBOperation(
                     () => updateTShirtOrderAPI(newTShirtOrder),
                     setDBOperationError,
@@ -184,25 +193,20 @@ const OrderedItemsTable = ({
                         setTableData([...tableData]);
                     }
                 );
-
-                // Update inventory
-                const newTShirt: UpdateTShirtInput = {
-                    styleNumber: prev.tShirtOrderTshirtStyleNumber,
-                    quantityOnHand: newAmt,
-                };
+                // Update PO change DB table
                 rescueDBOperation(
-                    () => updateTShirtAPI(newTShirt),
+                    () => createPurchaseOrderChangeAPI(poChange),
                     setDBOperationError,
-                    DBOperation.UPDATE,
-                    (resp: TShirt) => {}
+                    DBOperation.CREATE,
+                    (poChangeResp: PurchaseOrderChange) => {
+                        // Update local PO change history table
+                        const changePo = {
+                            ...poChangeResp,
+                            createdAt: toReadableDateTime(poChangeResp.createdAt),
+                        };
+                        setChangeHistory([changePo, ...changeHistory]);
+                    }
                 );
-
-                // Update local PO change history table
-                const changePo = {
-                    ...resp,
-                    createdAt: toReadableDateTime(resp.createdAt),
-                };
-                setChangeHistory([changePo, ...changeHistory]);
             }
         );
         exitEditingMode();

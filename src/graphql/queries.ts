@@ -75,6 +75,7 @@ export const getPurchaseOrder = /* GraphQL */ `
       changeHistory {
         items {
           quantityChange
+          orderedQuantityChange
           reason
           id
           createdAt
@@ -137,6 +138,7 @@ export const getPurchaseOrderChange = /* GraphQL */ `
         __typename
       }
       quantityChange
+      orderedQuantityChange
       reason
       id
       createdAt
@@ -172,6 +174,7 @@ export const listPurchaseOrderChanges = /* GraphQL */ `
           __typename
         }
         quantityChange
+        orderedQuantityChange
         reason
         id
         createdAt
