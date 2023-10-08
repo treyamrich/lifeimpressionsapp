@@ -36,8 +36,8 @@ const CreatePurchaseOrderPage = () => {
 
   return (
     <PageContainer
-      title="Purchase Orders"
-      description="this is Purchase Orders page"
+      title="New Purchase Order"
+      description="this is New Purchase Order page"
     >
       {dbOperationError.errorMessage !== undefined ? (
         <Alert
