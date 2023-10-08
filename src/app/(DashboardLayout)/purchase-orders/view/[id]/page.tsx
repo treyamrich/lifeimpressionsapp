@@ -189,6 +189,7 @@ const OrderedItemsTable = ({
                     setDBOperationError,
                     DBOperation.UPDATE,
                     (resp: TShirtOrder) => {
+                        // Update local TShirtOrder table
                         tableData[row.index] = resp;
                         setTableData([...tableData]);
                     }
