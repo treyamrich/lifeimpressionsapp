@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   excludeOnCreateFields,
   getInitialTShirtOrderFormErrorMap,
@@ -30,6 +30,7 @@ interface CreateTShirtOrderModal<TShirtOrder extends Record<string, any>> {
   onSubmit: (values: TShirtOrder) => void;
   open: boolean;
   tshirtChoices: TShirt[];
+  tableData: TShirtOrder[];
 }
 
 const CreateTShirtOrderModal = <TShirtOrder extends Record<string, any>>({
@@ -38,6 +39,7 @@ const CreateTShirtOrderModal = <TShirtOrder extends Record<string, any>>({
   onClose,
   onSubmit,
   tshirtChoices,
+  tableData
 }: CreateTShirtOrderModal<TShirtOrder>) => {
   //Initial TShirtOrder values
   const [values, setValues] = useState<any>(() => {
@@ -51,6 +53,12 @@ const CreateTShirtOrderModal = <TShirtOrder extends Record<string, any>>({
   );
   const [autoCompleteInputVal, setAutoCompleteInputVal] = useState("");
   const [selectedTShirt, setSelectedTShirt] = useState<TShirt | null>(null);
+
+  // Used to prevent duplicate TShirtOrders in a PurchaseOrder
+  const [tshirtSet, setTShirtSet] = useState<Set<String>>(new Set<String>());
+  useEffect(() => {
+    setTShirtSet(new Set(tableData.map(tshirtOrder => tshirtOrder.tShirtOrderTshirtStyleNumber)));
+  }, [tableData]);
 
   const resetForm = () => {
     setValues({ ...initialTShirtOrderFormState });
@@ -131,6 +139,7 @@ const CreateTShirtOrderModal = <TShirtOrder extends Record<string, any>>({
               id="auto-complete"
               options={tshirtChoices}
               getOptionLabel={(option: TShirt) => option.styleNumber}
+              getOptionDisabled={(option: TShirt) => tshirtSet.has(option.styleNumber)}
               autoComplete
               renderInput={(params: AutocompleteRenderInputParams) => (
                 <TextField

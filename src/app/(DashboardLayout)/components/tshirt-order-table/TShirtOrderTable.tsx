@@ -106,6 +106,7 @@ const TShirtOrderTable = ({
     [tableData]
   );
 
+  // These are for editing using Material React Table edit modal component
   const getCommonEditTextFieldProps = useCallback(
     (
       cell: MRT_Cell<TShirtOrder>
@@ -222,6 +223,7 @@ const TShirtOrderTable = ({
         onClose={() => setCreateModalOpen(false)}
         onSubmit={handleCreateNewRow}
         tshirtChoices={tshirtChoices}
+        tableData={tableData}
       />
       <EditRowPopup
         open={editMode.show}
