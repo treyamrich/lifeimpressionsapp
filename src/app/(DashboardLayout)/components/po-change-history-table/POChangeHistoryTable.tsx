@@ -32,7 +32,13 @@ const POChangeHistoryTable = ({ changeHistory }: POChangeHistoryTableProps) => {
       }}
       columns={columns}
       data={changeHistory}
-      initialState={{ showColumnFilters: true }}
+      initialState={{
+        showColumnFilters: true,
+        sorting: [{
+          id: 'createdAt',
+          desc: true,
+        }]
+      }}
       editingMode="modal" //default
       enableColumnOrdering
       enableHiding={false}
