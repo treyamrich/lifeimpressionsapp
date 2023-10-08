@@ -15,9 +15,8 @@ import DashboardCard from "@/app/(DashboardLayout)/components/shared/DashboardCa
 import TShirtOrderTable from "@/app/(DashboardLayout)/components/tshirt-order-table/TShirtOrderTable";
 import { getPurchaseOrderAPI } from "@/app/graphql-helpers/fetch-apis";
 import {
-    DBOperation,
-    rescueDBOperation,
-} from "@/app/graphql-helpers/graphql-errors";
+    DBOperation, useDBOperationContext,
+} from "@/contexts/DBErrorContext";
 
 import { Typography, Grid, CardContent, Alert } from "@mui/material";
 import { useState, useEffect } from "react";
@@ -37,6 +36,7 @@ type ViewPurchaseOrderProps = {
 
 const ViewPurchaseOrder = ({ params }: ViewPurchaseOrderProps) => {
     const { id } = params;
+    const { rescueDBOperation } = useDBOperationContext();
     const [po, setPo] = useState<PurchaseOrder>({} as PurchaseOrder);
     const [editHistory, setEditHistory] = useState<PurchaseOrderChange[]>([]);
     const [updatedOrderedItems, setUpdatedOrderedItems] = useState<TShirtOrder[]>(
@@ -140,6 +140,7 @@ const OrderedItemsTable = ({
     changeHistory,
     setChangeHistory,
 }: OrderedItemsTableProps) => {
+    const { rescueDBOperation } = useDBOperationContext();
     const handleAfterRowEdit = (
         row: MRT_Row<TShirtOrder>,
         poChange: CreatePurchaseOrderChangeInput,

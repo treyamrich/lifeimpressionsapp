@@ -7,9 +7,8 @@ import { listCustomerOrderAPI } from "@/app/graphql-helpers/fetch-apis";
 import { toReadableDateTime } from "@/utils/datetimeConversions";
 
 import {
-  rescueDBOperation,
-  DBOperation,
-} from "@/app/graphql-helpers/graphql-errors";
+  DBOperation, useDBOperationContext,
+} from "@/contexts/DBErrorContext";
 import {
   entityName,
   getTableColumns,
@@ -17,9 +16,10 @@ import {
 import {
   type MRT_Row,
 } from "material-react-table";
-import OrderViewAddPage from "../components/order-view-add-page/OrderViewAddPage";
+import OrderViewAddPage from "../components/po-customer-order-shared-components/ViewOrdersPage";
 
 const CustomerOrders = () => {
+  const { rescueDBOperation } = useDBOperationContext();
   const { push } = useRouter();
   const [tableData, setTableData] = useState<CustomerOrder[]>([]);
 

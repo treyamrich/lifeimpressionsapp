@@ -72,3 +72,10 @@ export const selectInputFields = new Map<
     ],
   ],
 ]);
+
+export const isSelectInputField = (
+  fieldName: string | number | symbol | undefined
+) => {
+  let nameOfField = fieldName ? fieldName.toString() : "";
+  return selectInputFields.has(nameOfField);
+};

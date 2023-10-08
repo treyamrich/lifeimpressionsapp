@@ -5,11 +5,6 @@ import React, { useState, SetStateAction } from "react";
 import { useRouter } from 'next/navigation';
 import { listPurchaseOrderAPI } from "@/app/graphql-helpers/fetch-apis";
 import { toReadableDateTime } from "@/utils/datetimeConversions";
-
-import {
-  rescueDBOperation,
-  DBOperation,
-} from "@/app/graphql-helpers/graphql-errors";
 import {
   entityName,
   getTableColumns,
@@ -17,9 +12,11 @@ import {
 import {
   type MRT_Row,
 } from "material-react-table";
-import OrderViewAddPage from "../components/order-view-add-page/OrderViewAddPage";
+import OrderViewAddPage from "../components/po-customer-order-shared-components/ViewOrdersPage";
+import { useDBOperationContext, DBOperation } from "@/contexts/DBErrorContext";
 
 const PurchaseOrders = () => {
+  const { rescueDBOperation } = useDBOperationContext();
   const { push } = useRouter();
   const [tableData, setTableData] = useState<PurchaseOrder[]>([]);
 

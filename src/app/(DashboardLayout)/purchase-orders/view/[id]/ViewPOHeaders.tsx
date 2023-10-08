@@ -1,6 +1,6 @@
 import { POStatus, PurchaseOrder, UpdatePurchaseOrderInput } from "@/API";
 import BlankCard from "@/app/(DashboardLayout)/components/shared/BlankCard";
-import { DBOperation, rescueDBOperation } from "@/app/graphql-helpers/graphql-errors";
+import { DBOperation, useDBOperationContext } from "@/contexts/DBErrorContext";
 import { updatePurchaseOrderAPI } from "@/app/graphql-helpers/update-apis";
 import { toReadableDateTime } from "@/utils/datetimeConversions";
 import { Button, CardContent, Grid, Typography } from "@mui/material";
@@ -13,6 +13,7 @@ type ViewPOHeaderFieldsProps = {
 
 const ViewPOHeaderFields = ({ po, setPo }: ViewPOHeaderFieldsProps) => {
   const { push } = useRouter();
+  const { rescueDBOperation } = useDBOperationContext();
   const { vendor, createdAt, updatedAt, status } = po;
 
   const handleChangePOStatus = () => {

@@ -11,9 +11,8 @@ import { updateTShirtAPI } from "@/app/graphql-helpers/update-apis";
 import { toReadableDateTime } from "@/utils/datetimeConversions";
 
 import {
-  rescueDBOperation,
-  DBOperation,
-} from "@/app/graphql-helpers/graphql-errors";
+  DBOperation, useDBOperationContext,
+} from "@/contexts/DBErrorContext";
 import {
   tshirtPrimaryKey,
   entityName,
@@ -36,6 +35,7 @@ import {
 import CreateTShirtModal from "../components/forms/create-entity-forms/tshirt/CreateTShirtModal";
 
 const Inventory = () => {
+  const { rescueDBOperation } = useDBOperationContext();
   const [createModalOpen, setCreateModalOpen] = useState(false);
   const [tableData, setTableData] = useState<TShirt[]>([]);
   const [validationErrors, setValidationErrors] = useState<{

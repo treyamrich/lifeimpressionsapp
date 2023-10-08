@@ -54,7 +54,7 @@ export const createPurchaseOrderChangeAPI = async (
   return resp;
 }
 
-type PurchaseOrderOrCustomerOrder = PurchaseOrder | CustomerOrder;
+export type PurchaseOrderOrCustomerOrder = PurchaseOrder | CustomerOrder;
 
 export const createTShirtOrderAPI = async (
   parentObject: PurchaseOrderOrCustomerOrder,

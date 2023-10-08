@@ -7,10 +7,6 @@ import {
 } from "@/API";
 import React, { useMemo, useState, useCallback, useEffect } from "react";
 import { Delete, Edit } from "@mui/icons-material";
-import {
-  rescueDBOperation,
-  DBOperation,
-} from "@/app/graphql-helpers/graphql-errors";
 import { modalTitle, getTableColumns } from "./table-constants";
 import { Box, Button, IconButton, Tooltip } from "@mui/material";
 import {
@@ -24,6 +20,7 @@ import {
 import { listTShirtAPI } from "@/app/graphql-helpers/fetch-apis";
 import CreateTShirtOrderModal from "./CreateTShirtOrderModal";
 import EditRowPopup from "./EditRowPopup";
+import { useDBOperationContext, DBOperation } from "@/contexts/DBErrorContext";
 
 interface TShirtOrderTableProps {
   tableData: TShirtOrder[];
@@ -51,6 +48,7 @@ const TShirtOrderTable = ({
   onRowEdit,
   onRowAdd
 }: TShirtOrderTableProps) => {
+  const { rescueDBOperation } = useDBOperationContext();
   const [createModalOpen, setCreateModalOpen] = useState(false);
   const [editMode, setEditMode] = useState<EditMode>({
     show: false,
