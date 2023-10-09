@@ -50,6 +50,7 @@ export const getTableColumns = (): MRT_ColumnDef<PurchaseOrder>[] => {
 
 export type ColumnInfo = {
   disabledOnCreate: boolean | undefined;
+  disabledOnEdit: boolean | undefined;
   isRequired: boolean | undefined;
   selectFields: undefined | SelectValue[];
   excludeOnCreate: boolean | undefined;
@@ -57,6 +58,8 @@ export type ColumnInfo = {
   isPhoneNumField: boolean | undefined;
   hideInTable: boolean | undefined;
   placeholderText: string | undefined;
+  isEditable: boolean | undefined;
+  multilineTextInfo: { numRows: number } | undefined;
 };
 
 export const columnInfo = new Map<string | number | symbol | undefined, ColumnInfo>([

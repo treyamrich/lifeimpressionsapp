@@ -113,7 +113,6 @@ function CreateOrderPage<T extends Record<any, any>>({
                 } 
                 else if (columnInfo.get(key)?.isPhoneNumField && values[key] !== "") {
                     order[key] = "+1" + values[key];
-                    console.log(order[key])
                 }
                 // This field had to be optional
                 else if (values[key] === "") {
@@ -181,6 +180,8 @@ function CreateOrderPage<T extends Record<any, any>>({
                                         error={hasError}
                                         helperText={errMsg}
                                         placeholder={colInfo?.placeholderText}
+                                        multiline={colInfo?.multilineTextInfo !== undefined}
+                                        rows={colInfo?.multilineTextInfo?.numRows}
                                         >
                                         {/* Select field options */}
                                         {colInfo?.selectFields

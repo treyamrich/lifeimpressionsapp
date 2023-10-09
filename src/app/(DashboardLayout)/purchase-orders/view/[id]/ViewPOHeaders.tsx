@@ -2,7 +2,6 @@ import { POStatus, PurchaseOrder, UpdatePurchaseOrderInput } from "@/API";
 import BlankCard from "@/app/(DashboardLayout)/components/shared/BlankCard";
 import { DBOperation, useDBOperationContext } from "@/contexts/DBErrorContext";
 import { updatePurchaseOrderAPI } from "@/app/graphql-helpers/update-apis";
-import { toReadableDateTime } from "@/utils/datetimeConversions";
 import { Button, CardContent, Grid, Typography } from "@mui/material";
 import { useRouter } from "next/navigation";
 
@@ -94,7 +93,7 @@ const ViewPOHeaderFields = ({ po, setPo }: ViewPOHeaderFieldsProps) => {
               </Grid>
               <Grid item>
                 <Typography variant="body1" color="textSecondary">
-                  {toReadableDateTime(createdAt)}
+                  {createdAt}
                 </Typography>
               </Grid>
             </Grid>
@@ -108,7 +107,7 @@ const ViewPOHeaderFields = ({ po, setPo }: ViewPOHeaderFieldsProps) => {
               </Grid>
               <Grid item>
                 <Typography variant="body1" color="textSecondary">
-                  {toReadableDateTime(updatedAt)}
+                  {updatedAt}
                 </Typography>
               </Grid>
             </Grid>

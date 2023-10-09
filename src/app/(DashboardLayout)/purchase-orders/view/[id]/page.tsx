@@ -18,7 +18,7 @@ import {
     DBOperation, useDBOperationContext,
 } from "@/contexts/DBErrorContext";
 
-import { Typography, Grid, CardContent, Alert } from "@mui/material";
+import { Typography, Grid, CardContent } from "@mui/material";
 import { useState, useEffect } from "react";
 import ViewPOHeaderFields from "./ViewPOHeaders";
 import POChangeHistoryTable from "@/app/(DashboardLayout)/components/po-change-history-table/POChangeHistoryTable";
@@ -64,7 +64,11 @@ const ViewPurchaseOrder = ({ params }: ViewPurchaseOrderProps) => {
                     }) as PurchaseOrderChange[];
                     setEditHistory(newChangeHistory);
                 }
-                setPo(res);
+                setPo({
+                    ...res,
+                    updatedAt: toReadableDateTime(res.updatedAt),
+                    createdAt: toReadableDateTime(res.createdAt)
+                });
                 const orderedItems = res.orderedItems ? res.orderedItems.items : [];
                 setUpdatedOrderedItems(orderedItems.filter(v => v !== null) as TShirtOrder[]);
             }

@@ -19,10 +19,15 @@ export const toDateObj = (dateString: string): Date => {
     return dayjs(dateString, readableTimeFormat).toDate();
 }
 
+// Takes a date string that comes from toReadableDateTime function and converts to a Date object
+export const toDayjs = (dateString: string): Dayjs => {
+    return dayjs(dateString, readableTimeFormat).tz(configuredTimeZone);
+}
+
 export const getStartOfTomorrow = () => {
     return dayjs().tz(configuredTimeZone).startOf('day').add(1, 'day');
 }
 
 export const toAWSDateTime = (datetime: Dayjs): string => {
-    return datetime.utc().format("YYYY-MM-DDTHH:mm:ss.SSS[Z]").toString()
+    return datetime.utc().format().toString()
 }

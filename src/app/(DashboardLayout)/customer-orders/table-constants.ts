@@ -3,6 +3,11 @@ import { MRT_ColumnDef } from "material-react-table";
 import { ColumnInfo } from "../purchase-orders/table-constants";
 import dayjs from "dayjs";
 
+export interface SelectValue {
+  label: string;
+  value: any;
+}
+
 export const tablePrimaryKey = "id";
 export const entityName = "Customer Order";
 
@@ -64,22 +69,52 @@ export const getTableColumns = (): MRT_ColumnDef<CustomerOrder>[] => {
   ];
 };
 
-export const columnInfo = new Map<string | number | symbol | undefined, ColumnInfo>([
-  ["id", { excludeOnCreate: true } as ColumnInfo],
-  ["updatedAt", { excludeOnCreate: true } as ColumnInfo],
-  ["createdAt", { excludeOnCreate: true } as ColumnInfo],
-  ["orderNumber", { isRequired: true } as ColumnInfo],
-  ["orderStatus", { disabledOnCreate: true } as ColumnInfo],
-  ["orderNotes", { hideInTable: true } as ColumnInfo],
-  ["dateNeededBy", { isRequired: true, isDatetimeField: true } as ColumnInfo],
-  ["customerName", { hideInTable: true, isRequired: true} as ColumnInfo],
-  ["customerEmail", { hideInTable: true, placeholderText: "john@gmail.com" } as ColumnInfo],
-  ["customerPhoneNumber", { hideInTable: true, isPhoneNumField: true, placeholderText: "XXX-XXX-XXXX" } as ColumnInfo],
-]);
-
 export const orderStatusMap = {
   [CustomerOrderStatus.NEW]: "New",
   [CustomerOrderStatus.IN_PROGRESS]: "In Progress",
   [CustomerOrderStatus.BLOCKED]: "Blocked",
   [CustomerOrderStatus.COMPLETED]: "Completed",
-}
+} as any;
+
+
+export const columnInfo = new Map<string | number | symbol | undefined, ColumnInfo>([
+  ["id", { excludeOnCreate: true } as ColumnInfo],
+  ["updatedAt", { excludeOnCreate: true } as ColumnInfo],
+  ["createdAt", { excludeOnCreate: true } as ColumnInfo],
+  ["orderNumber", { isRequired: true } as ColumnInfo],
+  ["orderStatus", {
+    disabledOnCreate: true,
+    isEditable: true,
+    selectFields: Object.keys(orderStatusMap).map((key: string) => {
+      return { label: orderStatusMap[key], value: key }
+    })
+  } as ColumnInfo],
+  ["orderNotes", {
+    hideInTable: true,
+    isEditable: true,
+    multilineTextInfo: {
+      numRows: 4
+    }
+  } as ColumnInfo],
+  ["dateNeededBy", {
+    isRequired: true,
+    isDatetimeField: true,
+    isEditable: true
+  } as ColumnInfo],
+  ["customerName", {
+    hideInTable: true,
+    isRequired: true,
+    isEditable: true
+  } as ColumnInfo],
+  ["customerEmail", {
+    hideInTable: true,
+    placeholderText: "john@gmail.com",
+    isEditable: true
+  } as ColumnInfo],
+  ["customerPhoneNumber", {
+    hideInTable: true,
+    isPhoneNumField: true,
+    placeholderText: "XXX-XXX-XXXX",
+    isEditable: true
+  } as ColumnInfo],
+]);
