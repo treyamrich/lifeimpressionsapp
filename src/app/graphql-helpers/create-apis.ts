@@ -1,7 +1,7 @@
-import { CreateCustomerOrderInput, CreateCustomerOrderMutation, CreatePurchaseOrderChangeInput, CreatePurchaseOrderChangeMutation, CreatePurchaseOrderMutation, CreateTShirtInput, CreateTShirtMutation, CreateTShirtOrderMutation, CustomerOrder, PurchaseOrder, PurchaseOrderChange, TShirt, TShirtOrder } from "@/API";
+import { CreateCustomerOrderChangeInput, CreateCustomerOrderChangeMutation, CreateCustomerOrderInput, CreateCustomerOrderMutation, CreatePurchaseOrderChangeInput, CreatePurchaseOrderChangeMutation, CreatePurchaseOrderMutation, CreateTShirtInput, CreateTShirtMutation, CreateTShirtOrderMutation, CustomerOrder, CustomerOrderChange, PurchaseOrder, PurchaseOrderChange, TShirt, TShirtOrder } from "@/API";
 import { API } from "aws-amplify";
 import { GraphQLQuery } from "@aws-amplify/api";
-import { createCustomerOrder, createPurchaseOrder, createPurchaseOrderChange, createTShirt, createTShirtOrder } from "@/graphql/mutations";
+import { createCustomerOrder, createCustomerOrderChange, createPurchaseOrder, createPurchaseOrderChange, createTShirt, createTShirtOrder } from "@/graphql/mutations";
 import { configuredAuthMode } from "./auth-mode";
 import { cleanObjectFields } from "./util";
 
@@ -67,6 +67,22 @@ export const createPurchaseOrderChangeAPI = async (
     .catch((e) => {
       console.log(e);
       throw new Error("Failed to create Purchase Order Change");
+    });
+  return resp;
+}
+
+export const createCustomerOrderChangeAPI = async (
+  coChange: CreateCustomerOrderChangeInput
+): Promise<CustomerOrderChange> => {
+  const resp = await API.graphql<GraphQLQuery<CreateCustomerOrderChangeMutation>>({
+    query: createCustomerOrderChange,
+    variables: { input: coChange },
+    authMode: configuredAuthMode,
+  })
+    .then((res) => res.data?.createCustomerOrderChange as CustomerOrderChange)
+    .catch((e) => {
+      console.log(e);
+      throw new Error("Failed to create Customer Order Change");
     });
   return resp;
 }

@@ -190,6 +190,70 @@ export const listPurchaseOrderChanges = /* GraphQL */ `
     }
   }
 `;
+export const getCustomerOrderChange = /* GraphQL */ `
+  query GetCustomerOrderChange($id: ID!) {
+    getCustomerOrderChange(id: $id) {
+      tshirt {
+        styleNumber
+        brand
+        color
+        size
+        type
+        quantityOnHand
+        isDeleted
+        createdAt
+        updatedAt
+        __typename
+      }
+      orderedQuantityChange
+      reason
+      id
+      createdAt
+      updatedAt
+      customerOrderChangeHistoryId
+      customerOrderChangeTshirtStyleNumber
+      __typename
+    }
+  }
+`;
+export const listCustomerOrderChanges = /* GraphQL */ `
+  query ListCustomerOrderChanges(
+    $filter: ModelCustomerOrderChangeFilterInput
+    $limit: Int
+    $nextToken: String
+  ) {
+    listCustomerOrderChanges(
+      filter: $filter
+      limit: $limit
+      nextToken: $nextToken
+    ) {
+      items {
+        tshirt {
+          styleNumber
+          brand
+          color
+          size
+          type
+          quantityOnHand
+          isDeleted
+          createdAt
+          updatedAt
+          __typename
+        }
+        orderedQuantityChange
+        reason
+        id
+        createdAt
+        updatedAt
+        customerOrderChangeHistoryId
+        customerOrderChangeTshirtStyleNumber
+        __typename
+      }
+      nextToken
+      __typename
+    }
+  }
+`;
 export const getTShirtOrder = /* GraphQL */ `
   query GetTShirtOrder($id: ID!) {
     getTShirtOrder(id: $id) {
@@ -278,6 +342,20 @@ export const getCustomerOrder = /* GraphQL */ `
       orderStatus
       orderNotes
       dateNeededBy
+      changeHistory {
+        items {
+          orderedQuantityChange
+          reason
+          id
+          createdAt
+          updatedAt
+          customerOrderChangeHistoryId
+          customerOrderChangeTshirtStyleNumber
+          __typename
+        }
+        nextToken
+        __typename
+      }
       isDeleted
       createdAt
       updatedAt
@@ -305,6 +383,10 @@ export const listCustomerOrders = /* GraphQL */ `
         orderStatus
         orderNotes
         dateNeededBy
+        changeHistory {
+          nextToken
+          __typename
+        }
         isDeleted
         createdAt
         updatedAt

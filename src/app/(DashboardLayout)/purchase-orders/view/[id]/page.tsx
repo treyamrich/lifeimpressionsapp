@@ -21,7 +21,6 @@ import {
 import { Typography, Grid, CardContent } from "@mui/material";
 import { useState, useEffect } from "react";
 import ViewPOHeaderFields from "./ViewPOHeaders";
-import POChangeHistoryTable from "@/app/(DashboardLayout)/components/po-change-history-table/POChangeHistoryTable";
 import { toReadableDateTime } from "@/utils/datetimeConversions";
 import { createPurchaseOrderChangeAPI, createTShirtOrderAPI } from "@/app/graphql-helpers/create-apis";
 import { MRT_Row } from "material-react-table";
@@ -30,6 +29,8 @@ import {
     updateTShirtOrderAPI,
 } from "@/app/graphql-helpers/update-apis";
 import { EntityType } from "@/app/(DashboardLayout)/components/po-customer-order-shared-components/CreateOrderPage";
+import { CreateOrderChangeInput } from "@/app/(DashboardLayout)/components/tshirt-order-table/table-constants";
+import POChangeHistoryTable from "@/app/(DashboardLayout)/components/order-change-history-table/POChangeHistoryTable";
 
 type ViewPurchaseOrderProps = {
     params: { id: string };
@@ -148,9 +149,10 @@ const OrderedItemsTable = ({
     const { rescueDBOperation } = useDBOperationContext();
     const handleAfterRowEdit = (
         row: MRT_Row<TShirtOrder>,
-        poChange: CreatePurchaseOrderChangeInput,
+        orderChange: CreateOrderChangeInput,
         exitEditingMode: () => void
     ) => {
+        const poChange = orderChange as CreatePurchaseOrderChangeInput;
         const prev = row.original;
         const prevAmtOnHand = prev.amountReceived ? prev.amountReceived : 0;
         const newAmtOnHand = poChange.quantityChange + prevAmtOnHand;

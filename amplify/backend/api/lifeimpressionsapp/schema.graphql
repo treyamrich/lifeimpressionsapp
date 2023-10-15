@@ -62,13 +62,11 @@ type PurchaseOrderChange @model {
   reason: String!
 }
 
-# For both Purchase and Customer orders
-# type OrderChange @model {
-#   tshirt: TShirt! @hasOne
-#   quantityChange: Int! # the delta for qtyOnHand
-#   orderedQuantityChange: Int!
-#   reason: String!
-# }
+type CustomerOrderChange @model {
+  tshirt: TShirt! @hasOne
+  orderedQuantityChange: Int!
+  reason: String!
+}
 
 type TShirtOrder @model {
   tshirt: TShirt! @hasOne
@@ -89,7 +87,8 @@ type CustomerOrder @model {
   orderNotes: String
 
   dateNeededBy: AWSDateTime!
-  
+  changeHistory: [CustomerOrderChange!] @hasMany
+
   isDeleted: Boolean @default(value: "false")
 }
 

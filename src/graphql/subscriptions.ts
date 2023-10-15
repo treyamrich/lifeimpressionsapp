@@ -275,6 +275,90 @@ export const onDeletePurchaseOrderChange = /* GraphQL */ `
     }
   }
 `;
+export const onCreateCustomerOrderChange = /* GraphQL */ `
+  subscription OnCreateCustomerOrderChange(
+    $filter: ModelSubscriptionCustomerOrderChangeFilterInput
+  ) {
+    onCreateCustomerOrderChange(filter: $filter) {
+      tshirt {
+        styleNumber
+        brand
+        color
+        size
+        type
+        quantityOnHand
+        isDeleted
+        createdAt
+        updatedAt
+        __typename
+      }
+      orderedQuantityChange
+      reason
+      id
+      createdAt
+      updatedAt
+      customerOrderChangeHistoryId
+      customerOrderChangeTshirtStyleNumber
+      __typename
+    }
+  }
+`;
+export const onUpdateCustomerOrderChange = /* GraphQL */ `
+  subscription OnUpdateCustomerOrderChange(
+    $filter: ModelSubscriptionCustomerOrderChangeFilterInput
+  ) {
+    onUpdateCustomerOrderChange(filter: $filter) {
+      tshirt {
+        styleNumber
+        brand
+        color
+        size
+        type
+        quantityOnHand
+        isDeleted
+        createdAt
+        updatedAt
+        __typename
+      }
+      orderedQuantityChange
+      reason
+      id
+      createdAt
+      updatedAt
+      customerOrderChangeHistoryId
+      customerOrderChangeTshirtStyleNumber
+      __typename
+    }
+  }
+`;
+export const onDeleteCustomerOrderChange = /* GraphQL */ `
+  subscription OnDeleteCustomerOrderChange(
+    $filter: ModelSubscriptionCustomerOrderChangeFilterInput
+  ) {
+    onDeleteCustomerOrderChange(filter: $filter) {
+      tshirt {
+        styleNumber
+        brand
+        color
+        size
+        type
+        quantityOnHand
+        isDeleted
+        createdAt
+        updatedAt
+        __typename
+      }
+      orderedQuantityChange
+      reason
+      id
+      createdAt
+      updatedAt
+      customerOrderChangeHistoryId
+      customerOrderChangeTshirtStyleNumber
+      __typename
+    }
+  }
+`;
 export const onCreateTShirtOrder = /* GraphQL */ `
   subscription OnCreateTShirtOrder(
     $filter: ModelSubscriptionTShirtOrderFilterInput
@@ -390,6 +474,20 @@ export const onCreateCustomerOrder = /* GraphQL */ `
       orderStatus
       orderNotes
       dateNeededBy
+      changeHistory {
+        items {
+          orderedQuantityChange
+          reason
+          id
+          createdAt
+          updatedAt
+          customerOrderChangeHistoryId
+          customerOrderChangeTshirtStyleNumber
+          __typename
+        }
+        nextToken
+        __typename
+      }
       isDeleted
       createdAt
       updatedAt
@@ -425,6 +523,20 @@ export const onUpdateCustomerOrder = /* GraphQL */ `
       orderStatus
       orderNotes
       dateNeededBy
+      changeHistory {
+        items {
+          orderedQuantityChange
+          reason
+          id
+          createdAt
+          updatedAt
+          customerOrderChangeHistoryId
+          customerOrderChangeTshirtStyleNumber
+          __typename
+        }
+        nextToken
+        __typename
+      }
       isDeleted
       createdAt
       updatedAt
@@ -460,6 +572,20 @@ export const onDeleteCustomerOrder = /* GraphQL */ `
       orderStatus
       orderNotes
       dateNeededBy
+      changeHistory {
+        items {
+          orderedQuantityChange
+          reason
+          id
+          createdAt
+          updatedAt
+          customerOrderChangeHistoryId
+          customerOrderChangeTshirtStyleNumber
+          __typename
+        }
+        nextToken
+        __typename
+      }
       isDeleted
       createdAt
       updatedAt

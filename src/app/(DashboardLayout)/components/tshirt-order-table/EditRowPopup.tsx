@@ -16,15 +16,18 @@ import {
 import BlankCard from "../shared/BlankCard";
 import { SetStateAction, useState } from "react";
 import { MRT_Row } from "material-react-table";
-import { CreatePurchaseOrderChangeInput, TShirtOrder } from "@/API";
+import { CreateCustomerOrderChangeInput, CreatePurchaseOrderChangeInput, TShirtOrder } from "@/API";
+import { EntityType } from "../po-customer-order-shared-components/CreateOrderPage";
+import { CreateOrderChangeInput } from "./table-constants";
 
 interface EditRowPopupProps {
-  onSubmit: (poChange: CreatePurchaseOrderChangeInput) => void;
+  onSubmit: (orderChange: CreateOrderChangeInput) => void;
   onClose: () => void;
   open: boolean;
   row: MRT_Row<TShirtOrder> | undefined;
-  purchaseOrderId: string | undefined;
+  parentOrderId: string | undefined;
   title: string;
+  entityType: EntityType;
 }
 
 const amtReceivedField = "amountReceived";
@@ -34,10 +37,11 @@ const initialEditReasonState = "Received Item";
 const EditRowPopup = ({
   open,
   row,
-  purchaseOrderId,
+  parentOrderId,
   onSubmit,
   onClose,
   title,
+  entityType
 }: EditRowPopupProps) => {
   const [newAmtReceived, setNewAmtReceived] = useState<number>(0);
   const currentAmtReceived: number = row ? row.getValue(amtReceivedField) : 0;
@@ -62,14 +66,24 @@ const EditRowPopup = ({
     }
     const tshirtStyleNo: string = row ? row.getValue("tShirtOrderTshirtStyleNumber") : "";
     const editReasonMsg = editReason === "other" ? otherInput : editReason;
-    const poChange: CreatePurchaseOrderChangeInput = {
+
+    const orderChange: any = {
       quantityChange: newAmtReceived,
       orderedQuantityChange: newAmtOrdered,
       reason: editReasonMsg,
-      purchaseOrderChangeTshirtStyleNumber: tshirtStyleNo,
-      purchaseOrderChangeHistoryId: purchaseOrderId
     };
-    onSubmit(poChange);
+    if (entityType === EntityType.PurchaseOrder) {
+      const poChange: CreatePurchaseOrderChangeInput = { ...orderChange };
+      poChange.purchaseOrderChangeHistoryId = parentOrderId;
+      poChange.purchaseOrderChangeTshirtStyleNumber = tshirtStyleNo;
+      onSubmit(poChange);
+    } else {
+      const coChange: CreateCustomerOrderChangeInput = { ...orderChange };
+      coChange.customerOrderChangeHistoryId = parentOrderId;
+      coChange.customerOrderChangeTshirtStyleNumber = tshirtStyleNo;
+      onSubmit(coChange);
+    }
+
     resetForm();
   };
 
@@ -92,6 +106,7 @@ const EditRowPopup = ({
               setOtherInput={setOtherInput}
               otherInputError={otherInputError}
               setOtherInputError={setOtherInputError}
+              entityType={entityType}
             />
           </Grid>
           <Grid item>
@@ -146,6 +161,8 @@ type EditCardProps = {
   setOtherInput: React.Dispatch<React.SetStateAction<string>>;
   setOtherInputError: React.Dispatch<React.SetStateAction<boolean>>;
   otherInputError: boolean;
+
+  entityType: EntityType;
 };
 
 const EditCard = ({
@@ -161,6 +178,7 @@ const EditCard = ({
   setOtherInput,
   otherInputError,
   setOtherInputError,
+  entityType
 }: EditCardProps) => {
   const handleChangeEditReason = (newReason: string) => {
     setEditReason(newReason);
@@ -171,14 +189,16 @@ const EditCard = ({
       <CardContent>
         <FormControl>
           <Grid container direction="column" spacing={2}>
-            <Grid item>
-              <QuantityChanger
-                title="Amount Received"
-                newQty={newAmtReceived}
-                setNewQty={setNewAmtReceived}
-                currentQty={currentAmtReceived}
-              />
-            </Grid>
+            {entityType === EntityType.PurchaseOrder && (
+              <Grid item>
+                <QuantityChanger
+                  title="Amount Received"
+                  newQty={newAmtReceived}
+                  setNewQty={setNewAmtReceived}
+                  currentQty={currentAmtReceived}
+                />
+              </Grid>
+            )}
             <Grid item>
               <QuantityChanger
                 title="Amount Ordered"
@@ -197,16 +217,20 @@ const EditCard = ({
                 value={editReason}
                 onChange={(e) => handleChangeEditReason(e.target.value)}
               >
-                <FormControlLabel
-                  value="Received Item"
-                  control={<Radio />}
-                  label="Received Item"
-                />
-                <FormControlLabel
-                  value="Damaged Item"
-                  control={<Radio />}
-                  label="Damaged Item"
-                />
+                {entityType === EntityType.PurchaseOrder && (
+                  <>
+                    <FormControlLabel
+                      value="Received Item"
+                      control={<Radio />}
+                      label="Received Item"
+                    />
+                    <FormControlLabel
+                      value="Damaged Item"
+                      control={<Radio />}
+                      label="Damaged Item"
+                    />
+                  </>
+                )}
                 <FormControlLabel
                   value="other"
                   control={<Radio />}

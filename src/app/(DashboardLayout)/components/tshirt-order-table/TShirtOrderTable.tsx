@@ -1,13 +1,12 @@
 "use client";
 
 import {
-  CreatePurchaseOrderChangeInput,
   TShirt,
   TShirtOrder,
 } from "@/API";
 import React, { useMemo, useState, useCallback, useEffect } from "react";
 import { Delete, Edit } from "@mui/icons-material";
-import { modalTitle, getTableColumns, amountReceivedField } from "./table-constants";
+import { modalTitle, getTableColumns, amountReceivedField, CreateOrderChangeInput } from "./table-constants";
 import { Box, Button, IconButton, Tooltip } from "@mui/material";
 import {
   MaterialReactTable,
@@ -29,7 +28,7 @@ interface TShirtOrderTableProps {
   parentOrderId: string | undefined;
   onRowEdit: (
     row: MRT_Row<TShirtOrder>,
-    poChange: CreatePurchaseOrderChangeInput,
+    orderChange: CreateOrderChangeInput,
     exitEditingMode: () => void
   ) => void | undefined;
   onRowAdd: (
@@ -83,10 +82,10 @@ const TShirtOrderTable = ({
     setValidationErrors({});
   };
 
-  const handleEditRowAudit = (poChange: CreatePurchaseOrderChangeInput) => {
+  const handleEditRowAudit = (orderChange: CreateOrderChangeInput) => {
     const row = editMode.row;
     if (!row) return;
-    onRowEdit(row, poChange, () => setEditMode({ show: false, row: undefined }));
+    onRowEdit(row, orderChange, () => setEditMode({ show: false, row: undefined }));
   };
 
   const handleDeleteRow = useCallback(
@@ -230,7 +229,8 @@ const TShirtOrderTable = ({
         onSubmit={handleEditRowAudit}
         onClose={() => setEditMode({ show: false, row: undefined })}
         title="Edit"
-        purchaseOrderId={parentOrderId}
+        parentOrderId={parentOrderId}
+        entityType={entityType}
       />
     </>
   );

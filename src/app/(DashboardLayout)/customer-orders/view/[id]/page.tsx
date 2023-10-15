@@ -1,9 +1,9 @@
 "use client";
 
 import {
-    CreatePurchaseOrderChangeInput,
+    CreateCustomerOrderChangeInput,
     CustomerOrder,
-    PurchaseOrderChange,
+    CustomerOrderChange,
     TShirt,
     TShirtOrder,
     UpdateTShirtInput,
@@ -21,9 +21,8 @@ import {
 import { Typography, Grid, CardContent } from "@mui/material";
 import { useState, useEffect } from "react";
 
-import POChangeHistoryTable from "@/app/(DashboardLayout)/components/po-change-history-table/POChangeHistoryTable";
 import { toReadableDateTime } from "@/utils/datetimeConversions";
-import { createPurchaseOrderChangeAPI, createTShirtOrderAPI } from "@/app/graphql-helpers/create-apis";
+import { createCustomerOrderChangeAPI, createTShirtOrderAPI } from "@/app/graphql-helpers/create-apis";
 import { MRT_Row } from "material-react-table";
 import {
     updateTShirtAPI,
@@ -31,6 +30,8 @@ import {
 } from "@/app/graphql-helpers/update-apis";
 import { EntityType } from "@/app/(DashboardLayout)/components/po-customer-order-shared-components/CreateOrderPage";
 import ViewCOHeaderFields from "./ViewCOHeaderFields";
+import COChangeHistoryTable from "@/app/(DashboardLayout)/components/order-change-history-table/COChangeHistoryTable";
+import { CreateOrderChangeInput } from "@/app/(DashboardLayout)/components/tshirt-order-table/table-constants";
 
 type ViewCustomerOrderProps = {
     params: { id: string };
@@ -40,7 +41,7 @@ const ViewCustomerOrder = ({ params }: ViewCustomerOrderProps) => {
     const { id } = params;
     const { rescueDBOperation } = useDBOperationContext();
     const [co, setCo] = useState<CustomerOrder>({} as CustomerOrder);
-    const [editHistory, setEditHistory] = useState<PurchaseOrderChange[]>([]);
+    const [editHistory, setEditHistory] = useState<CustomerOrderChange[]>([]);
     const [updatedOrderedItems, setUpdatedOrderedItems] = useState<TShirtOrder[]>(
         () => {
             return co.orderedItems ? (co.orderedItems.items as TShirtOrder[]) : [];
@@ -54,7 +55,7 @@ const ViewCustomerOrder = ({ params }: ViewCustomerOrderProps) => {
             (res: CustomerOrder) => {
                 // const changeHistory = res.changeHistory?.items;
                 // if (changeHistory) {
-                //     const newChangeHistory: PurchaseOrderChange[] = changeHistory.map((change) => {
+                //     const newChangeHistory: CustomerOrderChange[] = changeHistory.map((change) => {
                 //         if (change) {
                 //             change = {
                 //                 ...change,
@@ -62,7 +63,7 @@ const ViewCustomerOrder = ({ params }: ViewCustomerOrderProps) => {
                 //             };
                 //         }
                 //         return change;
-                //     }) as PurchaseOrderChange[];
+                //     }) as CustomerOrderChange[];
                 //     setEditHistory(newChangeHistory);
                 // }
                 setCo({
@@ -102,7 +103,6 @@ const ViewCustomerOrder = ({ params }: ViewCustomerOrderProps) => {
                                 </Typography>
                             </Grid>
                             <Grid item>
-                                {/*
                                 <OrderedItemsTable
                                     tableData={updatedOrderedItems}
                                     setTableData={setUpdatedOrderedItems}
@@ -110,7 +110,6 @@ const ViewCustomerOrder = ({ params }: ViewCustomerOrderProps) => {
                                     changeHistory={editHistory}
                                     setChangeHistory={setEditHistory}
                                 />
-                                */}
                             </Grid>
                         </Grid>
                     </Grid>
@@ -122,9 +121,7 @@ const ViewCustomerOrder = ({ params }: ViewCustomerOrderProps) => {
                                 </Typography>
                             </Grid>
                             <Grid item>
-                                {/*
                                 <ChangeHistoryTable changeHistory={editHistory} />
-                                */}
                             </Grid>
                         </Grid>
                     </Grid>
@@ -140,8 +137,8 @@ type OrderedItemsTableProps = {
     tableData: TShirtOrder[];
     setTableData: React.Dispatch<React.SetStateAction<TShirtOrder[]>>;
     parentCustomerOrder: CustomerOrder;
-    changeHistory: PurchaseOrderChange[];
-    setChangeHistory: React.Dispatch<React.SetStateAction<PurchaseOrderChange[]>>;
+    changeHistory: CustomerOrderChange[];
+    setChangeHistory: React.Dispatch<React.SetStateAction<CustomerOrderChange[]>>;
 };
 
 const OrderedItemsTable = ({
@@ -154,19 +151,18 @@ const OrderedItemsTable = ({
     const { rescueDBOperation } = useDBOperationContext();
     const handleAfterRowEdit = (
         row: MRT_Row<TShirtOrder>,
-        poChange: CreatePurchaseOrderChangeInput,
+        orderChange: CreateOrderChangeInput,
         exitEditingMode: () => void
     ) => {
-        const prev = row.original;
-        const prevAmtOnHand = prev.amountReceived ? prev.amountReceived : 0;
-        const newAmtOnHand = poChange.quantityChange + prevAmtOnHand;
-        const prevAmtOrdered = prev.quantity ? prev.quantity : 0;
-        const newAmtOrdered = poChange.orderedQuantityChange + prevAmtOrdered;
+        const coChange = orderChange as CreateCustomerOrderChangeInput;
+        const prevTShirtOrder = row.original;
+        const prevAmtOrdered = prevTShirtOrder.quantity ? prevTShirtOrder.quantity : 0;
+        const newAmtOrdered = coChange.orderedQuantityChange + prevAmtOrdered;
 
         // Update inventory
         const newTShirt: UpdateTShirtInput = {
-            styleNumber: prev.tShirtOrderTshirtStyleNumber,
-            quantityOnHand: newAmtOnHand,
+            styleNumber: prevTShirtOrder.tShirtOrderTshirtStyleNumber,
+            quantityOnHand: newAmtOrdered,
         };
         rescueDBOperation(
             () => updateTShirtAPI(newTShirt),
@@ -174,8 +170,7 @@ const OrderedItemsTable = ({
             (_: TShirt) => {
                 // Update TShirtOrder DB table
                 const newTShirtOrder: UpdateTShirtOrderInput = {
-                    id: prev.id,
-                    amountReceived: newAmtOnHand,
+                    id: prevTShirtOrder.id,
                     quantity: newAmtOrdered
                 };
                 rescueDBOperation(
@@ -187,17 +182,17 @@ const OrderedItemsTable = ({
                         setTableData([...tableData]);
                     }
                 );
-                // Update PO change DB table
+                // Update CO change DB table
                 rescueDBOperation(
-                    () => createPurchaseOrderChangeAPI(poChange),
+                    () => createCustomerOrderChangeAPI(coChange),
                     DBOperation.CREATE,
-                    (poChangeResp: PurchaseOrderChange) => {
-                        // Update local PO change history table
-                        const changePo = {
-                            ...poChangeResp,
-                            createdAt: toReadableDateTime(poChangeResp.createdAt),
+                    (coChangeResp: CustomerOrderChange) => {
+                        // Update local CO change history table
+                        const changeCo = {
+                            ...coChangeResp,
+                            createdAt: toReadableDateTime(coChangeResp.createdAt),
                         };
-                        setChangeHistory([changePo, ...changeHistory]);
+                        setChangeHistory([changeCo, ...changeHistory]);
                     }
                 );
             }
@@ -225,7 +220,7 @@ const OrderedItemsTable = ({
                     parentOrderId={parentCustomerOrder.id}
                     onRowEdit={handleAfterRowEdit}
                     onRowAdd={handleAfterRowAdd}
-                    entityType={EntityType.PurchaseOrder}
+                    entityType={EntityType.CustomerOrder}
                 />
             </CardContent>
         </BlankCard>
@@ -233,14 +228,14 @@ const OrderedItemsTable = ({
 };
 
 type ChangeHistoryTableProps = {
-    changeHistory: PurchaseOrderChange[];
+    changeHistory: CustomerOrderChange[];
 };
 
 const ChangeHistoryTable = ({ changeHistory }: ChangeHistoryTableProps) => {
     return (
         <BlankCard>
             <CardContent>
-                <POChangeHistoryTable changeHistory={changeHistory} />
+                <COChangeHistoryTable changeHistory={changeHistory} />
             </CardContent>
         </BlankCard>
     );
