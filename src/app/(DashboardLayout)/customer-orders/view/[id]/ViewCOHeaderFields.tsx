@@ -37,8 +37,6 @@ const ViewCOHeaderFields = ({ co, setCo }: ViewCOHeaderFieldsProps) => {
                     dateNeededBy: toReadableDateTime(resp.dateNeededBy)
                 });
                 setShowEditPopup(false);
-
-                // Audit this change
             }
         )
     }
