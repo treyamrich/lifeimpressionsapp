@@ -112,12 +112,12 @@ export const updateCustomerOrderTransactionAPI = async (input: UpdateOrderTransa
   const qtyDelta2Str = quantityDelta2 ? quantityDelta2.toString() : "0";
   const entitySpecificStatement = entityType === EntityType.CustomerOrder ?
     {
-      Statement: `INSERT INTO "${customerOrderChangeTable.tableName}" value {'orderedQuantityChange': '?', 'reason': '?', 'customerOrderChangeHistoryId': '?', 'customerOrderChangeTshirtStyleNumber': '?'}`,
+      Statement: `INSERT INTO "${customerOrderChangeTable.tableName}" value {'orderedQuantityChange': '?', 'reason': '?', '${entityType}OrderChangeHistoryId': '?', '${entityType}OrderChangeTshirtStyleNumber': '?'}`,
       Parameters: [
         { N: qtyDeltaStr }, { S: reason }, { S: customerOrderId }, { S: tshirtStyleNumber }
       ]
     } : {
-      Statement: `INSERT INTO "${purchaseOrderChangeTable.tableName}" value {'orderedQuantityChange': '?', 'quantityChange': '?', 'reason': '?', 'customerOrderChangeHistoryId': '?', 'customerOrderChangeTshirtStyleNumber': '?'}`,
+      Statement: `INSERT INTO "${purchaseOrderChangeTable.tableName}" value {'orderedQuantityChange': '?', 'quantityChange': '?', 'reason': '?', '${entityType}OrderChangeHistoryId': '?', '${entityType}OrderChangeTshirtStyleNumber': '?'}`,
       Parameters: [
         { N: qtyDeltaStr }, { N: qtyDelta2Str }, { S: reason }, { S: customerOrderId }, { S: tshirtStyleNumber }
       ]
@@ -126,13 +126,13 @@ export const updateCustomerOrderTransactionAPI = async (input: UpdateOrderTransa
   const command = new ExecuteTransactionCommand({
     TransactStatements: [
       {
-        Statement: `UPDATE "${tshirtTable.tableName}" SET ${tshirtTable.quantityFieldName}=${tshirtTable.quantityFieldName}-? WHERE ${tshirtTable.pkFieldName}=? AND ${tshirtTable.quantityFieldName} >= ?`,
+        Statement: `UPDATE "${tshirtTable.tableName}" SET ${tshirtTable.quantityFieldName}=${tshirtTable.quantityFieldName} + ? WHERE ${tshirtTable.pkFieldName} = ? AND ${tshirtTable.quantityFieldName} >= ?`,
         Parameters: [
           { N: qtyDeltaStr }, { S: tshirtStyleNumber }, { N: qtyDeltaStr }
         ]
       },
       {
-        Statement: `UPDATE "${tshirtOrderTable.tableName}" SET ${tshirtOrderTable.quantityFieldName}=${tshirtOrderTable.quantityFieldName}-? WHERE ${tshirtOrderTable.pkFieldName}=? AND ${tshirtOrderTable.quantityFieldName} >= ?`,
+        Statement: `UPDATE "${tshirtOrderTable.tableName}" SET ${tshirtOrderTable.quantityFieldName}=${tshirtOrderTable.quantityFieldName} + ? WHERE ${tshirtOrderTable.pkFieldName} = ? AND ${tshirtOrderTable.quantityFieldName} >= ?`,
         Parameters: [
           { N: qtyDeltaStr }, { S: tshirtOrderId }, { N: qtyDeltaStr }
         ]
@@ -140,5 +140,10 @@ export const updateCustomerOrderTransactionAPI = async (input: UpdateOrderTransa
       entitySpecificStatement
     ]
   });
-  return dynamodbClient.send(command);
+  return dynamodbClient.send(command)
+    .then(onFulfilled => console.log(onFulfilled))
+    .catch((e) => {
+      console.log(e);
+      throw new Error("Failed to update Customer Order");
+    });
 }

@@ -19,32 +19,35 @@ export const createDynamoDBObj = async () => {
         region: REGION,
         credentials: creds
     });
-
+    
     return dynamodbClient;
 }
+
+const tableNameSuffix = "-curfv2qbgze2dfrl5r7wrynenq-dev"
 
 export interface DynamoDBTableInfo {
     tableName: string;
     quantityFieldName: string[];
     pkFieldName: string | undefined;
 }
+
 export const customerOrderChangeTable: DynamoDBTableInfo = {
-    tableName: "CustomerOrderChange-curfv2qbgze2dfrl5r7wrynenq-dev",
+    tableName: `CustomerOrderChange${tableNameSuffix}`,
     quantityFieldName: ["orderedQuantityChange"],
     pkFieldName: undefined
 }
 export const purchaseOrderChangeTable: DynamoDBTableInfo = {
-    tableName: "PurchaseOrderChange-curfv2qbgze2dfrl5r7wrynenq-dev",
+    tableName: `PurchaseOrderChange${tableNameSuffix}`,
     quantityFieldName: ["orderedQuantityChange", "quantityChange"],
     pkFieldName: undefined
 }
 export const tshirtTable: DynamoDBTableInfo = {
-    tableName: "TShirt-curfv2qbgze2dfrl5r7wrynenq-dev",
+    tableName: `TShirt${tableNameSuffix}`,
     quantityFieldName: ["quantityOnHand"],
     pkFieldName: "styleNumber"
 }
 export const tshirtOrderTable: DynamoDBTableInfo = {
-    tableName: "TShirtOrder-curfv2qbgze2dfrl5r7wrynenq-dev",
+    tableName: `TShirtOrder${tableNameSuffix}`,
     quantityFieldName: ["quantity", "amountReceived"],
     pkFieldName: "id"
 }

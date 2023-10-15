@@ -25,6 +25,9 @@ import { toReadableDateTime } from "@/utils/datetimeConversions";
 import { createCustomerOrderChangeAPI, createTShirtOrderAPI } from "@/app/graphql-helpers/create-apis";
 import { MRT_Row } from "material-react-table";
 import {
+    UpdateOrderTransactionInput,
+    updateCustomerOrderAPI,
+    updateCustomerOrderTransactionAPI,
     updateTShirtAPI,
     updateTShirtOrderAPI,
 } from "@/app/graphql-helpers/update-apis";
@@ -159,45 +162,68 @@ const OrderedItemsTable = ({
         const prevTShirtOrder = row.original;
         const prevAmtOrdered = prevTShirtOrder.quantity ? prevTShirtOrder.quantity : 0;
         const newAmtOrdered = coChange.orderedQuantityChange + prevAmtOrdered;
-
+        
         // Update inventory
         const newTShirt: UpdateTShirtInput = {
             styleNumber: prevTShirtOrder.tShirtOrderTshirtStyleNumber,
             quantityOnHand: newAmtOrdered,
         };
+        const newTShirtOrder: UpdateTShirtOrderInput = {
+            id: prevTShirtOrder.id,
+            quantity: newAmtOrdered
+        };
+
+        const updateCOInput: UpdateOrderTransactionInput = {
+            tshirtStyleNumber: prevTShirtOrder.tShirtOrderTshirtStyleNumber,
+            tshirtOrderId: prevTShirtOrder.id,
+            customerOrderId: coChange.customerOrderChangeHistoryId ? coChange.customerOrderChangeHistoryId : "" as string,
+            reason: coChange.reason,
+            quantityDelta: coChange.orderedQuantityChange,
+            quantityDelta2: undefined
+        };
         rescueDBOperation(
-            () => updateTShirtAPI(newTShirt),
+            () => updateCustomerOrderTransactionAPI(updateCOInput, EntityType.CustomerOrder),
             DBOperation.UPDATE,
-            (_: TShirt) => {
-                // Update TShirtOrder DB table
-                const newTShirtOrder: UpdateTShirtOrderInput = {
-                    id: prevTShirtOrder.id,
-                    quantity: newAmtOrdered
-                };
-                rescueDBOperation(
-                    () => updateTShirtOrderAPI(newTShirtOrder),
-                    DBOperation.UPDATE,
-                    (resp: TShirtOrder) => {
-                        // Update local TShirtOrder table
-                        tableData[row.index] = resp;
-                        setTableData([...tableData]);
-                    }
-                );
-                // Update CO change DB table
-                rescueDBOperation(
-                    () => createCustomerOrderChangeAPI(coChange),
-                    DBOperation.CREATE,
-                    (coChangeResp: CustomerOrderChange) => {
-                        // Update local CO change history table
-                        const changeCo = {
-                            ...coChangeResp,
-                            createdAt: toReadableDateTime(coChangeResp.createdAt),
-                        };
-                        setChangeHistory([changeCo, ...changeHistory]);
-                    }
-                );
-            }
-        );
+            (resp: any) => {
+                console.log(resp)
+
+                // Update local TShirtOrderTable
+                tableData[row.index] = resp;
+                setTableData([...tableData]);
+
+                // Update local change history table
+                setChangeHistory([coChange, ...changeHistory]);
+            },
+        )
+        // rescueDBOperation(
+        //     () => updateTShirtAPI(newTShirt),
+        //     DBOperation.UPDATE,
+        //     (_: TShirt) => {
+        //         // Update TShirtOrder DB table
+        //         rescueDBOperation(
+        //             () => updateTShirtOrderAPI(newTShirtOrder),
+        //             DBOperation.UPDATE,
+        //             (resp: TShirtOrder) => {
+        //                 // Update local TShirtOrder table
+        //                 tableData[row.index] = resp;
+        //                 setTableData([...tableData]);
+        //             }
+        //         );
+        //         // Update CO change DB table
+        //         rescueDBOperation(
+        //             () => createCustomerOrderChangeAPI(coChange),
+        //             DBOperation.CREATE,
+        //             (coChangeResp: CustomerOrderChange) => {
+        //                 // Update local CO change history table
+        //                 const changeCo = {
+        //                     ...coChangeResp,
+        //                     createdAt: toReadableDateTime(coChangeResp.createdAt),
+        //                 };
+        //                 setChangeHistory([changeCo, ...changeHistory]);
+        //             }
+        //         );
+        //     }
+        // );
         exitEditingMode();
     };
 
