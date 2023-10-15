@@ -1,4 +1,6 @@
-import React from "react";
+"use client";
+
+import React, { useState } from "react";
 import {
   Box,
   Typography,
@@ -8,9 +10,10 @@ import {
   Stack,
   Checkbox,
 } from "@mui/material";
-import { useAuthContext } from "@/contexts/AuthContext";
+import { LoginCredentials, useAuthContext } from "@/contexts/AuthContext";
 
 import CustomTextField from "@/app/(DashboardLayout)/components/forms/theme-elements/CustomTextField";
+import Link from "next/link";
 
 interface loginType {
   title?: string;
@@ -18,9 +21,21 @@ interface loginType {
   subtext?: JSX.Element | JSX.Element[];
 }
 
+const initialLoginCredsState: LoginCredentials = {
+  username: "",
+  password: ""
+}
+
 const AuthLogin = ({ title, subtitle, subtext }: loginType) => {
   const { login } = useAuthContext();
-
+  const [loginCreds, setLoginCreds] = useState<LoginCredentials>({ ...initialLoginCredsState });
+  const resetForm = () => {
+    setLoginCreds({ ...initialLoginCredsState })
+  }
+  const onSubmit = () => {
+    login(loginCreds);
+    resetForm();
+  }
   return (
     <>
       {title ? (
@@ -31,21 +46,26 @@ const AuthLogin = ({ title, subtitle, subtext }: loginType) => {
 
       {subtext}
 
-      {/* <Stack>
+      <Stack>
         <Box>
           <Typography
             variant="subtitle1"
             fontWeight={600}
             component="label"
-            htmlFor="username"
+            htmlFor="email"
             mb="5px"
           >
-            Username
+            Email
           </Typography>
-          <CustomTextField variant="outlined" fullWidth />
+          <CustomTextField id="email"
+            variant="outlined" 
+            fullWidth 
+            value={loginCreds.username}
+            onChange={(e: any) => setLoginCreds({...loginCreds, username: e.target.value})}
+          />
         </Box>
         <Box mt="25px">
-          <Typography
+          <Typography id="password"
             variant="subtitle1"
             fontWeight={600}
             component="label"
@@ -54,23 +74,29 @@ const AuthLogin = ({ title, subtitle, subtext }: loginType) => {
           >
             Password
           </Typography>
-          <CustomTextField type="password" variant="outlined" fullWidth />
+          <CustomTextField
+            type="password"
+            variant="outlined"
+            fullWidth
+            value={loginCreds.password}
+            onChange={(e: any) => setLoginCreds({...loginCreds, password: e.target.value})}
+          />
         </Box>
         <Stack
-          justifyContent="space-between"
+          justifyContent="end"
           direction="row"
           alignItems="center"
           my={2}
         >
-          <FormGroup>
+          {/*<FormGroup>
             <FormControlLabel
               control={<Checkbox defaultChecked />}
-              label="Remeber this Device"
+              label="Remember this Device"
             />
-          </FormGroup>
+        </FormGroup>*/}
           <Typography
             component={Link}
-            href="/"
+            href="/authentication/forgot"
             fontWeight="500"
             sx={{
               textDecoration: "none",
@@ -80,17 +106,17 @@ const AuthLogin = ({ title, subtitle, subtext }: loginType) => {
             Forgot Password ?
           </Typography>
         </Stack>
-      </Stack> */}
+      </Stack>
       <Box>
         <Button
           color="primary"
           variant="contained"
           size="large"
           fullWidth
-          onClick={() => login()}
+          onClick={onSubmit}
           type="submit"
         >
-          Sign In with Google
+          Sign In
         </Button>
       </Box>
       {subtitle}

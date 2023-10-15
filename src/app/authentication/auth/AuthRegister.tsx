@@ -1,46 +1,99 @@
-import React from 'react';
+"use client";
+
+import React, { useState } from 'react';
 import { Box, Typography, Button } from '@mui/material';
-import Link  from 'next/link';
 
 import CustomTextField from '@/app/(DashboardLayout)/components/forms/theme-elements/CustomTextField';
 import { Stack } from '@mui/system';
+import { RegisterCredentials, useAuthContext } from '@/contexts/AuthContext';
 
 interface registerType {
     title?: string;
     subtitle?: JSX.Element | JSX.Element[];
     subtext?: JSX.Element | JSX.Element[];
-  }
+}
 
-const AuthRegister = ({ title, subtitle, subtext }: registerType) => (
-    <>
-        {title ? (
-            <Typography fontWeight="700" variant="h2" mb={1}>
-                {title}
-            </Typography>
-        ) : null}
+const initialRegisterCredentials: RegisterCredentials = {
+    username: "",
+    password: "",
+    confirmPassword: "",
+    name: "",
+    email: ""
+}
+const AuthRegister = ({ title, subtitle, subtext }: registerType) => {
+    const { register } = useAuthContext();
+    const [registerCreds, setRegisterCreds] = useState<RegisterCredentials>({ ...initialRegisterCredentials });
+    const resetForm = () => setRegisterCreds({ ...initialRegisterCredentials });
+    const onSubmit = () => {
+        register(registerCreds);
+        resetForm();
+    }
+    return (
+        <>
+            {title ? (
+                <Typography fontWeight="700" variant="h2" mb={1}>
+                    {title}
+                </Typography>
+            ) : null}
 
-        {subtext}
+            {subtext}
 
-        <Box>
-            <Stack mb={3}>
-                <Typography variant="subtitle1"
-                    fontWeight={600} component="label" htmlFor='name' mb="5px">Name</Typography>
-                <CustomTextField id="name" variant="outlined" fullWidth />
+            <Box>
+                <Stack mb={3}>
+                    <Typography variant="subtitle1"
+                        fontWeight={600} component="label" htmlFor='name' mb="5px">Name</Typography>
+                    <CustomTextField id="name"
+                        variant="outlined"
+                        fullWidth
+                        value={registerCreds.name}
+                        onChange={(e: any) => setRegisterCreds({...registerCreds, name: e.target.value})}
+                    />
 
-                <Typography variant="subtitle1"
-                    fontWeight={600} component="label" htmlFor='email' mb="5px" mt="25px">Email Address</Typography>
-                <CustomTextField id="email" variant="outlined" fullWidth />
+                    <Typography variant="subtitle1"
+                        fontWeight={600} component="label" htmlFor='email' mb="5px" mt="25px">Email Address</Typography>
+                    <CustomTextField id="email"
+                        variant="outlined"
+                        fullWidth
+                        value={registerCreds.email}
+                        onChange={(e: any) => setRegisterCreds({...registerCreds, username: e.target.value, email: e.target.value})}
+                    />
 
-                <Typography variant="subtitle1"
-                    fontWeight={600} component="label" htmlFor='password' mb="5px" mt="25px">Password</Typography>
-                <CustomTextField id="password" variant="outlined" fullWidth />
-            </Stack>
-            <Button color="primary" variant="contained" size="large" fullWidth component={Link} href="/authentication/login">
-                Sign Up
-            </Button>
-        </Box>
-        {subtitle}
-    </>
-);
+                    <Typography variant="subtitle1"
+                        fontWeight={600} component="label" htmlFor='password' mb="5px" mt="25px">Password</Typography>
+                    <CustomTextField id="password"
+                        variant="outlined"
+                        fullWidth
+                        value={registerCreds.password}
+                        onChange={(e: any) => setRegisterCreds({...registerCreds, password: e.target.value})}
+                        type="password"
+                    />
+
+                    <Typography variant="subtitle1"
+                        fontWeight={600} component="label" htmlFor='confirm-password' mb="5px" mt="25px">Confirm Password</Typography>
+                    <CustomTextField id="confirm-password"
+                        variant="outlined"
+                        fullWidth
+                        value={registerCreds.confirmPassword}
+                        onChange={(e: any) => setRegisterCreds({...registerCreds, confirmPassword: e.target.value})}
+                        type="password"
+                    />
+                </Stack>
+                <Box>
+                    <Button
+                        color="primary"
+                        variant="contained"
+                        size="large"
+                        fullWidth
+                        onClick={onSubmit}
+                        type="submit"
+                    >
+                        Sign Up
+                    </Button>
+                </Box>
+            </Box>
+            {subtitle}
+        </>
+    );
+}
 
 export default AuthRegister;

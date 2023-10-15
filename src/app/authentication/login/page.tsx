@@ -1,4 +1,5 @@
 "use client";
+
 import Link from "next/link";
 import { Grid, Box, Card, Stack, Typography } from "@mui/material";
 // components
@@ -58,33 +59,33 @@ const Login2 = () => {
                     Sign into LifeImpressions App
                   </Typography>
                 }
-                // subtitle={
-                //   <Stack
-                //     direction="row"
-                //     spacing={1}
-                //     justifyContent="center"
-                //     mt={3}
-                //   >
-                //     <Typography
-                //       color="textSecondary"
-                //       variant="h6"
-                //       fontWeight="500"
-                //     >
-                //       New to LifeImpressionsHI?
-                //     </Typography>
-                //     <Typography
-                //       component={Link}
-                //       href="/authentication/register"
-                //       fontWeight="500"
-                //       sx={{
-                //         textDecoration: "none",
-                //         color: "primary.main",
-                //       }}
-                //     >
-                //       Create an account
-                //     </Typography>
-                //   </Stack>
-                // }
+                subtitle={
+                  <Stack
+                    direction="row"
+                    spacing={1}
+                    justifyContent="center"
+                    mt={3}
+                  >
+                    <Typography
+                      color="textSecondary"
+                      variant="h6"
+                      fontWeight="500"
+                    >
+                      New to LifeImpressionsHI?
+                    </Typography>
+                    <Typography
+                      component={Link}
+                      href="/authentication/register"
+                      fontWeight="500"
+                      sx={{
+                        textDecoration: "none",
+                        color: "primary.main",
+                      }}
+                    >
+                      Create an account
+                    </Typography>
+                  </Stack>
+                }
               />
             </Card>
           </Grid>

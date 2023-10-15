@@ -11,39 +11,7 @@ import { DBOperationContextProvider } from "@/contexts/DBErrorContext";
 import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 
-if (typeof window !== "undefined") {
-  const isLocalhost = Boolean(
-    window.location.hostname === 'localhost' ||
-    // [::1] is the IPv6 localhost address.
-    window.location.hostname === '[::1]' ||
-    // 127.0.0.1/8 is considered localhost for IPv4.
-    window.location.hostname.match(
-      /^127(?:\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}$/
-    )
-  );
-
-  const [
-    productionRedirectSignIn,
-    localRedirectSignIn
-  ] = awsConfig.oauth.redirectSignIn.split(',');
-
-  const [
-    productionRedirectSignOut,
-    localRedirectSignOut
-  ] = awsConfig.oauth.redirectSignOut.split(',');
-
-  const updatedAwsConfig = {
-    ...awsConfig,
-    oauth: {
-      ...awsConfig.oauth,
-      redirectSignIn: isLocalhost ? localRedirectSignIn : productionRedirectSignIn,
-      redirectSignOut: isLocalhost ? localRedirectSignOut : productionRedirectSignOut,
-    },
-    ssr: true // for next.js
-  }
-
-  Amplify.configure(updatedAwsConfig);
-}
+Amplify.configure({...awsConfig, ssr: true});
 
 type Props = {
   children: ReactElement
@@ -61,7 +29,7 @@ export default function RootLayout({
             <ThemeProvider theme={baselightTheme}>
               {/* CssBaseline kickstart an elegant, consistent, and simple baseline to build upon. */}
               <CssBaseline />
-              <ProtectedRoute unprotectedRoutes={['/authentication/login', '/authentication/loggedin']}>
+              <ProtectedRoute unprotectedRoutes={['/authentication/login', '/authentication/register', '/authentication/register/confirm', '/authentication/forgot', '/authentication/forgot/confirm']}>
                 {children}
               </ProtectedRoute>
             </ThemeProvider>

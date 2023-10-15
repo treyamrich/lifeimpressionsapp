@@ -2,7 +2,7 @@
 
 import { useAuthContext } from '@/contexts/AuthContext';
 import { usePathname } from 'next/navigation';
-import { ReactElement, useEffect } from 'react';
+import { ReactElement, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Auth, Hub } from 'aws-amplify';
 
@@ -23,22 +23,20 @@ const ProtectedRoute = ( { children, unprotectedRoutes } : PathProps ) => {
   const { setUser, login } = useAuthContext();
   const pathName = usePathname();
   const router = useRouter();
+  const [isLoading, setIsLoading] = useState<boolean>(true);
 
-  useEffect(()=> {
+  useEffect(() => {
     checkUser();
   }, []);
   useEffect(() => {
     const unsubscribe = Hub.listen("auth", ({ payload: { event, data }}) => {
+      //console.log(`auth event: ${event}`)
       switch (event) {
         case "cognitoHostedUI":
         case "signIn":
           router.push("/");
           checkUser();
           break;
-      }
-      //Retry login
-      if(event.includes("_failure")) {
-        router.push("/authentication/login/failure");
       }
     });
     checkUser();
@@ -49,6 +47,7 @@ const ProtectedRoute = ( { children, unprotectedRoutes } : PathProps ) => {
     try {
       const userData = await Auth.currentAuthenticatedUser();
       setUser(userData);
+      setIsLoading(false);
     } catch(error) {
       setUser(null);
       if(isProtectedRoute(pathName, unprotectedRoutes)) {
@@ -57,6 +56,7 @@ const ProtectedRoute = ( { children, unprotectedRoutes } : PathProps ) => {
     }
   };
 
+  if(isLoading && isProtectedRoute(pathName, unprotectedRoutes)) return <></>
   return (
     <> {children} </>
   )
