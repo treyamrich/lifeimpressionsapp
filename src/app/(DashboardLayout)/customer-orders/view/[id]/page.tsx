@@ -53,19 +53,19 @@ const ViewCustomerOrder = ({ params }: ViewCustomerOrderProps) => {
             () => getCustomerOrderAPI({ id }),
             DBOperation.GET,
             (res: CustomerOrder) => {
-                // const changeHistory = res.changeHistory?.items;
-                // if (changeHistory) {
-                //     const newChangeHistory: CustomerOrderChange[] = changeHistory.map((change) => {
-                //         if (change) {
-                //             change = {
-                //                 ...change,
-                //                 createdAt: toReadableDateTime(change.createdAt),
-                //             };
-                //         }
-                //         return change;
-                //     }) as CustomerOrderChange[];
-                //     setEditHistory(newChangeHistory);
-                // }
+                const changeHistory = res.changeHistory?.items;
+                if (changeHistory) {
+                    const newChangeHistory: CustomerOrderChange[] = changeHistory.map((change) => {
+                        if (change) {
+                            change = {
+                                ...change,
+                                createdAt: toReadableDateTime(change.createdAt),
+                            };
+                        }
+                        return change;
+                    }) as CustomerOrderChange[];
+                    setEditHistory(newChangeHistory);
+                }
                 setCo({
                     ...res,
                     createdAt: toReadableDateTime(res.createdAt),
@@ -154,7 +154,8 @@ const OrderedItemsTable = ({
         orderChange: CreateOrderChangeInput,
         exitEditingMode: () => void
     ) => {
-        const coChange = orderChange as CreateCustomerOrderChangeInput;
+        // quantityChange is only for PurchaseOrders
+        const coChange = {...orderChange, quantityChange: undefined} as any as CreateCustomerOrderChangeInput;
         const prevTShirtOrder = row.original;
         const prevAmtOrdered = prevTShirtOrder.quantity ? prevTShirtOrder.quantity : 0;
         const newAmtOrdered = coChange.orderedQuantityChange + prevAmtOrdered;

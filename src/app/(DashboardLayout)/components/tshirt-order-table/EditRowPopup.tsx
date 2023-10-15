@@ -32,7 +32,7 @@ interface EditRowPopupProps {
 
 const amtReceivedField = "amountReceived";
 const amtOrderedField = "quantity";
-const initialEditReasonState = "Received Item";
+const initialEditReasonState = "other"; // This provides easy form validation for both purchase/customer order edit forms
 
 const EditRowPopup = ({
   open,
