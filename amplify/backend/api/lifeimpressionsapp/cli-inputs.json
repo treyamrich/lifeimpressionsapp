@@ -9,7 +9,12 @@
       "apiKeyExpirationDate": "2024-09-16T03:00:42.830Z",
       "keyDescription": "dev"
     },
-    "additionalAuthTypes": [],
+    "additionalAuthTypes": [
+      {
+        "mode": "AMAZON_COGNITO_USER_POOLS",
+        "cognitoUserPoolId": "authlifeimpresionsauth"
+      }
+    ],
     "conflictResolution": {}
   }
 }

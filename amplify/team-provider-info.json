@@ -18,13 +18,6 @@
       },
       "auth": {
         "lifeimpresionsauth": {}
-      },
-      "function": {
-        "lifeimpresionsauthPostConfirmation": {
-          "GROUP": "admin",
-          "deploymentBucketName": "amplify-lifeimpressionsapp-dev-82555-deployment",
-          "s3Key": "amplify-builds/lifeimpresionsauthPostConfirmation-324a45675979556e3766-build.zip"
-        }
       }
     }
   }

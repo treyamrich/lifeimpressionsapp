@@ -29,7 +29,7 @@ export default function RootLayout({
             <ThemeProvider theme={baselightTheme}>
               {/* CssBaseline kickstart an elegant, consistent, and simple baseline to build upon. */}
               <CssBaseline />
-              <ProtectedRoute unprotectedRoutes={['/authentication/login', '/authentication/register', '/authentication/register/confirm', '/authentication/forgot', '/authentication/forgot/confirm']}>
+              <ProtectedRoute unprotectedRoutes={['/authentication/login', '/authentication/register', '/authentication/register/confirm', '/authentication/forgot', '/authentication/forgot/confirm', '/unauthorized']}>
                 {children}
               </ProtectedRoute>
             </ThemeProvider>

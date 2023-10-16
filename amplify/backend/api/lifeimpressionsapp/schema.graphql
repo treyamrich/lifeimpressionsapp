@@ -1,6 +1,5 @@
-input AMPLIFY { globalAuthRule: AuthRule = { allow: public } } # FOR TESTING ONLY!
-
-type TShirt @model {
+type TShirt @model @auth(rules: [
+  { allow: groups, groups: ["admin"], provider: userPools}]) {
   styleNumber: String! @primaryKey
   brand: String!
   color: String!
@@ -40,7 +39,8 @@ enum TShirtType {
   Blend
 }
 
-type PurchaseOrder @model {
+type PurchaseOrder @model @auth(rules: [
+  { allow: groups, groups: ["admin"], provider: userPools}]) {
   id: ID!
   orderNumber: String! # Optional for admin to track
   vendor: String!
@@ -55,26 +55,30 @@ enum POStatus {
   Closed
 }
 
-type PurchaseOrderChange @model {
+type PurchaseOrderChange @model @auth(rules: [
+  { allow: groups, groups: ["admin"], provider: userPools}]) {
   tshirt: TShirt! @hasOne
   quantityChange: Int! # the delta for qtyOnHand
   orderedQuantityChange: Int!
   reason: String!
 }
 
-type CustomerOrderChange @model {
+type CustomerOrderChange @model @auth(rules: [
+  { allow: groups, groups: ["admin"], provider: userPools}]) {
   tshirt: TShirt! @hasOne
   orderedQuantityChange: Int!
   reason: String!
 }
 
-type TShirtOrder @model {
+type TShirtOrder @model @auth(rules: [
+  { allow: groups, groups: ["admin"], provider: userPools}]) {
   tshirt: TShirt! @hasOne
   quantity: Int!
   amountReceived: Int @default(value: "0") # This is only used for PurchaseOrder
 }
 
-type CustomerOrder @model {
+type CustomerOrder @model @auth(rules: [
+  { allow: groups, groups: ["admin"], provider: userPools}]) {
   id: ID!
 
   customerName: String!

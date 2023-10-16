@@ -82,7 +82,7 @@ export const AuthContextProvider = ({ children }: Props) => {
   }
   const logout = async () => {
     await Auth.signOut()
-      .then(() => window.location.reload())
+      .then(() => router.push('/authentication/login'))
       .catch(e => console.log('Error signing out:', e));
   }
 

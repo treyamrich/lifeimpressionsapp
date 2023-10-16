@@ -11,6 +11,7 @@ import {
   UpdateCustomerOrderInput,
   UpdateCustomerOrderMutation,
   CustomerOrder,
+  PurchaseOrderChange,
 } from "@/API";
 import { ExecuteTransactionCommand } from "@aws-sdk/client-dynamodb";
 import { API } from "aws-amplify";
@@ -25,6 +26,11 @@ import { configuredAuthMode } from "./auth-mode";
 import { cleanObjectFields } from "./util";
 import { createDynamoDBObj, customerOrderChangeTable, purchaseOrderChangeTable, tshirtOrderTable, tshirtTable } from './dynamodb';
 import { EntityType } from "../(DashboardLayout)/components/po-customer-order-shared-components/CreateOrderPage";
+import { CognitoUser } from '@aws-amplify/auth';
+import { toAWSDateTime } from "@/utils/datetimeConversions";
+import dayjs from "dayjs";
+import { uuid } from 'uuidv4';
+import { OrderChange } from "../(DashboardLayout)/components/tshirt-order-table/table-constants";
 
 export const updateTShirtAPI = async (
   tshirt: UpdateTShirtInput
@@ -99,51 +105,123 @@ export const updateCustomerOrderAPI = async (
 
 
 export type UpdateOrderTransactionInput = {
-  tshirtStyleNumber: string;
-  tshirtOrderId: string;
-  customerOrderId: string;
+  tshirtOrder: TShirtOrder;
+  orderId: string;
   reason: string;
   quantityDelta: number;
   quantityDelta2: number | undefined;
 }
-export const updateCustomerOrderTransactionAPI = async (input: UpdateOrderTransactionInput, entityType: EntityType) => {
-  const { tshirtStyleNumber, tshirtOrderId, customerOrderId, reason, quantityDelta, quantityDelta2 } = input;
-  const qtyDeltaStr = quantityDelta.toString();
+
+export const updateOrderTransactionAPI = async (input: UpdateOrderTransactionInput, entityType: EntityType, user: CognitoUser): Promise<OrderChange> => {
+  const { tshirtOrder, orderId, reason, quantityDelta, quantityDelta2 } = input;
+  const tshirtOrderId = tshirtOrder.id;
+  const tshirtStyleNumber = tshirtOrder.tShirtOrderTshirtStyleNumber;
+
+  let qtyDelta = entityType === EntityType.CustomerOrder ? -quantityDelta : quantityDelta; 
+  const qtyDeltaStr = qtyDelta.toString();
   const qtyDelta2Str = quantityDelta2 ? quantityDelta2.toString() : "0";
-  const entitySpecificStatement = entityType === EntityType.CustomerOrder ?
+
+  // Insertion fields for new OrderChange
+  const createdAtTimestamp = toAWSDateTime(dayjs());
+  const orderChangeUuid = uuid();
+  const typename = entityType === EntityType.CustomerOrder ? "CustomerOrderChange" : "PurchaseOrderChange";
+  const parentOrderIdFieldName = `${entityType}OrderChangeHistoryId`
+  const associatedTShirtStyleNumberFieldName = `${entityType}OrderChangeTshirtStyleNumber`
+
+  const transactionStatements = [
     {
-      Statement: `INSERT INTO "${customerOrderChangeTable.tableName}" value {'orderedQuantityChange': '?', 'reason': '?', '${entityType}OrderChangeHistoryId': '?', '${entityType}OrderChangeTshirtStyleNumber': '?'}`,
+      Statement: `
+        UPDATE "${tshirtTable.tableName}"
+        SET ${tshirtTable.quantityFieldName[0]} = ${tshirtTable.quantityFieldName[0]} + ?
+        WHERE ${tshirtTable.pkFieldName} = ? AND ${tshirtTable.quantityFieldName[0]} >= ?`,
       Parameters: [
-        { N: qtyDeltaStr }, { S: reason }, { S: customerOrderId }, { S: tshirtStyleNumber }
+        { N: qtyDeltaStr }, { S: tshirtStyleNumber }, { N: qtyDeltaStr }
       ]
-    } : {
-      Statement: `INSERT INTO "${purchaseOrderChangeTable.tableName}" value {'orderedQuantityChange': '?', 'quantityChange': '?', 'reason': '?', '${entityType}OrderChangeHistoryId': '?', '${entityType}OrderChangeTshirtStyleNumber': '?'}`,
+    },
+    {
+      Statement: `
+      UPDATE "${tshirtOrderTable.tableName}"
+      SET ${tshirtOrderTable.quantityFieldName[0]} = ${tshirtOrderTable.quantityFieldName[0]} + ?
+      SET ${tshirtOrderTable.quantityFieldName[1]} = ${tshirtOrderTable.quantityFieldName[1]} + ?
+      WHERE ${tshirtOrderTable.pkFieldName} = ? AND ${tshirtOrderTable.quantityFieldName[1]} >= ?`,
       Parameters: [
-        { N: qtyDeltaStr }, { N: qtyDelta2Str }, { S: reason }, { S: customerOrderId }, { S: tshirtStyleNumber }
+        { N: qtyDeltaStr }, { N: qtyDelta2Str }, { S: tshirtOrderId }, { N: qtyDelta2Str } //qtyDelta2Str should be amountReceived column
       ]
-    }
-  const dynamodbClient = await createDynamoDBObj();
+    },
+    entityType === EntityType.CustomerOrder ?
+      {
+        Statement: `
+        INSERT INTO "${customerOrderChangeTable.tableName}"
+        value {
+          'id': ?,
+          '__typename': ?,
+          'orderedQuantityChange': ?,
+          'reason': ?,
+          '${parentOrderIdFieldName}': ?,
+          '${associatedTShirtStyleNumberFieldName}': ?,
+          'createdAt': ?,
+          'updatedAt': ?
+        }`,
+        Parameters: [
+          { S: orderChangeUuid },
+          { S: typename },
+          { N: qtyDeltaStr },
+          { S: reason },
+          { S: orderId },
+          { S: tshirtStyleNumber },
+          { S: createdAtTimestamp },
+          { S: createdAtTimestamp }
+        ]
+      } : {
+        Statement: `INSERT INTO "${purchaseOrderChangeTable.tableName}"
+        value {
+          'id': ?,
+          '__typename': ?,
+          'orderedQuantityChange': ?, 
+          'quantityChange': ?, 
+          'reason': ?, 
+          '${parentOrderIdFieldName}': ?, 
+          '${associatedTShirtStyleNumberFieldName}': ?,
+          'createdAt': ?,
+          'updatedAt': ?
+        }`,
+        Parameters: [
+          { S: orderChangeUuid },
+          { S: typename },
+          { N: qtyDeltaStr },
+          { N: qtyDelta2Str },
+          { S: reason },
+          { S: orderId },
+          { S: tshirtStyleNumber },
+          { S: createdAtTimestamp },
+          { S: createdAtTimestamp }
+        ]
+      }
+  ];
+
   const command = new ExecuteTransactionCommand({
-    TransactStatements: [
-      {
-        Statement: `UPDATE "${tshirtTable.tableName}" SET ${tshirtTable.quantityFieldName}=${tshirtTable.quantityFieldName} + ? WHERE ${tshirtTable.pkFieldName} = ? AND ${tshirtTable.quantityFieldName} >= ?`,
-        Parameters: [
-          { N: qtyDeltaStr }, { S: tshirtStyleNumber }, { N: qtyDeltaStr }
-        ]
-      },
-      {
-        Statement: `UPDATE "${tshirtOrderTable.tableName}" SET ${tshirtOrderTable.quantityFieldName}=${tshirtOrderTable.quantityFieldName} + ? WHERE ${tshirtOrderTable.pkFieldName} = ? AND ${tshirtOrderTable.quantityFieldName} >= ?`,
-        Parameters: [
-          { N: qtyDeltaStr }, { S: tshirtOrderId }, { N: qtyDeltaStr }
-        ]
-      },
-      entitySpecificStatement
-    ]
+    TransactStatements: transactionStatements
   });
+  const dynamodbClient = await createDynamoDBObj(user);
   return dynamodbClient.send(command)
-    .then(onFulfilled => console.log(onFulfilled))
+    .then((onFulfilled) => {
+      const orderChange = {
+        __typename: typename,
+        id: orderChangeUuid,
+        createdAt: createdAtTimestamp,
+        updatedAt: createdAtTimestamp,
+        [parentOrderIdFieldName]: orderId,
+        [associatedTShirtStyleNumberFieldName]: tshirtStyleNumber,
+        orderedQuantityChange: quantityDelta,
+        tshirt: {}
+      };
+      if (entityType === EntityType.PurchaseOrder) {
+        orderChange.quantityChange = quantityDelta2 ? quantityDelta2 : 0;
+      }
+      return orderChange as OrderChange;
+    })
     .catch((e) => {
       console.log(e);
-      throw new Error("Failed to update Customer Order");
+      throw new Error(`Failed to update ${entityType}`);
     });
 }

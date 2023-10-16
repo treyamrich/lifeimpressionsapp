@@ -9,9 +9,8 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@aws-sdk/client-cognito-identity": "^3.428.0",
-    "@aws-sdk/client-dynamodb": "^3.428.0",
-    "@aws-sdk/credential-provider-cognito-identity": "^3.428.0",
+    "@aws-sdk/client-dynamodb": "^3.284.0",
+    "@aws-sdk/credential-providers": "^3.282.0",
     "@emotion/cache": "latest",
     "@emotion/react": "latest",
     "@emotion/server": "latest",
@@ -37,7 +36,8 @@
     "react-apexcharts": "^1.4.0",
     "react-dom": "18.2.0",
     "react-helmet-async": "^1.3.0",
-    "typescript": "5.0.4"
+    "typescript": "5.0.4",
+    "uuidv4": "^6.2.13"
   },
   "devDependencies": {
     "@types/lodash": "^4.14.194",

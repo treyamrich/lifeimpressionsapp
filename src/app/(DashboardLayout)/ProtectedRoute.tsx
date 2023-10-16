@@ -20,7 +20,7 @@ const isProtectedRoute = (currRoute: string, unprotectedRoutes?: string[]) => {
 }
 
 const ProtectedRoute = ( { children, unprotectedRoutes } : PathProps ) => {
-  const { setUser, login } = useAuthContext();
+  const { setUser, logout } = useAuthContext();
   const pathName = usePathname();
   const router = useRouter();
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -46,9 +46,14 @@ const ProtectedRoute = ( { children, unprotectedRoutes } : PathProps ) => {
   const checkUser = async (): Promise<void> => {
     try {
       const userData = await Auth.currentAuthenticatedUser();
+      const groups = userData.signInUserSession.accessToken.payload["cognito:groups"];
+      if(!groups || !groups.includes("admin")) {
+        router.push('/unauthorized');
+        throw Error('User is not admin')
+      }
       setUser(userData);
       setIsLoading(false);
-    } catch(error) {
+    } catch(error: any) {
       setUser(null);
       if(isProtectedRoute(pathName, unprotectedRoutes)) {
         router.push('/authentication/login')
@@ -56,7 +61,9 @@ const ProtectedRoute = ( { children, unprotectedRoutes } : PathProps ) => {
     }
   };
 
-  if(isLoading && isProtectedRoute(pathName, unprotectedRoutes)) return <></>
+  if(isLoading && isProtectedRoute(pathName, unprotectedRoutes)) {
+    return <></>
+  };
   return (
     <> {children} </>
   )
