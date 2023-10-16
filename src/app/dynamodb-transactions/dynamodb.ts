@@ -1,4 +1,4 @@
-import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
+import { AttributeValue, DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { fromCognitoIdentityPool } from "@aws-sdk/credential-providers"
 import awsmobile from "@/aws-exports";
 import { CognitoUser } from '@aws-amplify/auth';
@@ -54,3 +54,7 @@ export const tshirtOrderTable: DynamoDBTableInfo = {
 
 export const purchaseOrderTable = `PurchaseOrder${tableNameSuffix}`;
 export const customerOrderTable = `CustomerOrder${tableNameSuffix}`;
+
+export const getStrOrNull = (str: string | undefined | null): AttributeValue => {
+    return str ? { S: str } : { NULL: true };
+}

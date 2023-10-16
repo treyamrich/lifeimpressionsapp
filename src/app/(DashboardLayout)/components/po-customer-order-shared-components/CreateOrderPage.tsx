@@ -3,15 +3,11 @@
 import PageContainer from "@/app/(DashboardLayout)/components/container/PageContainer";
 import DashboardCard from "@/app/(DashboardLayout)/components/shared/DashboardCard";
 import React, { useMemo, useState } from "react";
-import {
-    DBOperation, useDBOperationContext,
-} from "@/contexts/DBErrorContext";
 import { TextField, Stack, MenuItem, Box, Button } from "@mui/material";
 
 import { MRT_ColumnDef, MRT_Row } from "material-react-table";
 import { TShirtOrder } from "@/API";
 import TShirtOrderTable, { TableMode } from "../../components/tshirt-order-table/TShirtOrderTable";
-import { PurchaseOrderOrCustomerOrder, createTShirtOrderAPI } from "@/app/graphql-helpers/create-apis";
 import ConfirmPopup from "../../components/forms/confirm-popup/ConfirmPopup";
 import { useRouter } from "next/navigation";
 import { ColumnInfo, SelectValue } from "../../purchase-orders/table-constants";
@@ -35,12 +31,11 @@ function CreateOrderPage<T extends Record<any, any>>({
     initialOrderFormState: any
     getTableColumns: () => MRT_ColumnDef<T>[],
     columnInfo: Map<string | number | symbol | undefined, ColumnInfo>,
-    handleCreateOrder: (order: T,
-        createTShirtOrders: (order: PurchaseOrderOrCustomerOrder,
-            orderedItems: TShirtOrder[]) => void
+    handleCreateOrder: (
+        order: T,
+        callback: () => void
     ) => void
 }) {
-    const { rescueDBOperation } = useDBOperationContext();
     const { push } = useRouter();
     const getInitialOrderFormErrorMap = () =>
         new Map<string, string>(
@@ -67,21 +62,6 @@ function CreateOrderPage<T extends Record<any, any>>({
         setErrorMap(getInitialOrderFormErrorMap());
     };
 
-    const handleCreateTShirtOrders = (
-        order: PurchaseOrderOrCustomerOrder,
-        orderedItems: TShirtOrder[]
-    ) => {
-        rescueDBOperation(
-            () => createTShirtOrderAPI(order, orderedItems),
-            DBOperation.CREATE,
-            () => {
-                // All operations (create PO or CustomerOrder and all TShirtOrders) were a success
-                setShowContinue(true);
-                resetForm();
-            }
-        );
-    };
-
     const handleSubmit = () => {
         //Validate input
         const newErrors = new Map<string, string>(getInitialOrderFormErrorMap());
@@ -95,7 +75,7 @@ function CreateOrderPage<T extends Record<any, any>>({
             else if (columnInfo.get(key)?.isPhoneNumField && value !== "") {
                 const dashSplit = value.split('-');
                 const whitespaceSplit = value.split(' ');
-                if(dashSplit.length !== 3 && whitespaceSplit.length !== 3)
+                if (dashSplit.length !== 3 && whitespaceSplit.length !== 3)
                     errMsg = "Phone Number format must conform to either: xxx-xxx-xxxx or xxx xxx xxxx"
             }
             newErrors.set(key, errMsg);
@@ -110,7 +90,7 @@ function CreateOrderPage<T extends Record<any, any>>({
                 if (columnInfo.get(key)?.isDatetimeField) {
                     const datetime = values[key] as Dayjs;
                     order[key] = toAWSDateTime(datetime);
-                } 
+                }
                 else if (columnInfo.get(key)?.isPhoneNumField && values[key] !== "") {
                     order[key] = "+1" + values[key];
                 }
@@ -122,7 +102,12 @@ function CreateOrderPage<T extends Record<any, any>>({
                     order[key] = values[key];
                 }
             });
-            handleCreateOrder(order, handleCreateTShirtOrders);
+            handleCreateOrder(
+                order,
+                () => {
+                    setShowContinue(true);
+                    resetForm();
+                });
         }
     };
 
@@ -182,7 +167,7 @@ function CreateOrderPage<T extends Record<any, any>>({
                                         placeholder={colInfo?.placeholderText}
                                         multiline={colInfo?.multilineTextInfo !== undefined}
                                         rows={colInfo?.multilineTextInfo?.numRows}
-                                        >
+                                    >
                                         {/* Select field options */}
                                         {colInfo?.selectFields
                                             ?.map((selectValue: SelectValue, idx: number) => (
@@ -209,11 +194,11 @@ function CreateOrderPage<T extends Record<any, any>>({
                                 const prevTShirtOrder = row.original;
                                 const prevAmtReceived = prevTShirtOrder.amountReceived ? prevTShirtOrder.amountReceived : 0;
                                 tableData[row.index] = {
-                                    ...prevTShirtOrder, 
-                                    quantity: prevTShirtOrder.quantity + orderChange.orderedQuantityChange, 
+                                    ...prevTShirtOrder,
+                                    quantity: prevTShirtOrder.quantity + orderChange.orderedQuantityChange,
                                     amountReceived: prevAmtReceived + orderChange.quantityChange
                                 } as TShirtOrder;
-                                setValues({...values, orderedItems: [...tableData]});
+                                setValues({ ...values, orderedItems: [...tableData] });
                                 exitEditingMode();
                             }}
                             onRowAdd={() => { }}

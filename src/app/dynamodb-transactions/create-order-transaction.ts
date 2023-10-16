@@ -4,182 +4,146 @@ import { EntityType } from "../(DashboardLayout)/components/po-customer-order-sh
 import { CognitoUser } from '@aws-amplify/auth';
 import { OrderChange } from "../(DashboardLayout)/components/tshirt-order-table/table-constants";
 import { v4 } from 'uuid';
-import { ExecuteTransactionCommand } from "@aws-sdk/client-dynamodb";
-import { CustomerOrder, CustomerOrderStatus, PurchaseOrder } from "@/API";
+import { AttributeValue, ExecuteTransactionCommand, ExecuteTransactionCommandOutput, ParameterizedStatement } from "@aws-sdk/client-dynamodb";
+import { CustomerOrder, CustomerOrderStatus, PurchaseOrder, TShirtOrder } from "@/API";
 import { PurchaseOrderOrCustomerOrder } from "../graphql-helpers/create-apis";
-import { customerOrderTable, purchaseOrderTable } from './dynamodb';
+import { createDynamoDBObj, customerOrderTable, getStrOrNull, purchaseOrderTable, tshirtOrderTable, tshirtTable } from './dynamodb';
 
-const getInsertOrderStatement = (input: CreateOrderTransactionInput, entityType: EntityType, createdAt: string) => {
-    const orderId = v4();
+const getInsertOrderStatement = (input: PurchaseOrderOrCustomerOrder, entityType: EntityType, createdAt: string, orderUuid: string): ParameterizedStatement => {
+    const typename = entityType === EntityType.CustomerOrder ? "CustomerOrder" : "PurchaseOrder";
     if (entityType === EntityType.PurchaseOrder) {
-      const purchaseOrder = input as any as PurchaseOrder;
-      return {
-        Statement: `
-          INSERT INTO "${purchaseOrderTable}"
-            __typename: ?,
-            id: ?,
-            orderNumber: ?,
-            vendor: ?,
-            status: ?,
-            isDeleted: ?,
-            createdAt: ?,
-            updatedAt: ?
+        const purchaseOrder = input as any as PurchaseOrder;
+        return {
+            Statement: `
+            INSERT INTO "${purchaseOrderTable}"
+            value {
+                '__typename': ?,
+                'id': ?,
+                'orderNumber': ?,
+                'vendor': ?,
+                'status': ?,
+                'isDeleted': ?,
+                'createdAt': ?,
+                'updatedAt': ?
+            }
         `,
-        Parameters: [
-          { S: "PurchaseOrder" },
-          { S: orderId },
-          { S: purchaseOrder.orderNumber },
-          { S: purchaseOrder.vendor },
-          { S: purchaseOrder.status },
-          { BOOL: false },
-          { S: createdAt },
-          { S: createdAt },
-        ]
-      }
+            Parameters: [
+                { S: typename },
+                { S: orderUuid },
+                { S: purchaseOrder.orderNumber },
+                { S: purchaseOrder.vendor },
+                { S: purchaseOrder.status },
+                { BOOL: false },
+                { S: createdAt },
+                { S: createdAt },
+            ]
+        }
     }
     const customerOrder = input as any as CustomerOrder;
     return {
-      Statement: `
+        Statement: `
         INSERT INTO "${customerOrderTable}"
-          __typename: ?,
-          id: ?,
-          customerName: ?,
-          customerEmail: ?,
-          customerPhoneNumber: ?
-          orderNumber: ?,
-          orderStatus: ?,
-          orderNotes: ?,
-          dateNeededBy: ?,
-          isDeleted: ?,
-          createdAt: ?,
-          updatedAt: ?
-      `,
-      Parameters: [
-        { S: "CustomerOrder" },
-        { S: orderId },
-        { S: customerOrder.customerName },
-        { S: customerOrder.customerEmail },
-        { S: customerOrder.customerPhoneNumber },
-        { S: customerOrder.orderNumber },
-        { S: CustomerOrderStatus.NEW },
-        { S: customerOrder.orderNotes ? customerOrder.orderNotes : null },
-        { S: customerOrder.dateNeededBy },
-        { BOOL: false },
-        { S: createdAt },
-        { S: createdAt },
-      ]
-    }
-  }
-  
-  const getUpdateTShirtStatement = (input, entityType, createdAt) => {
-
-  }
-
-  export type CreateOrderTransactionInput = {
-    order: PurchaseOrderOrCustomerOrder;
-  }
-  
-  export const createOrderTransactionAPI = async (input: CreateOrderTransactionInput, entityType: EntityType, user: CognitoUser): Promise<OrderChange> => {
-    // Insertion fields for new Order
-    const createdAtTimestamp = toAWSDateTime(dayjs());
-    const typename = entityType === EntityType.CustomerOrder ? "CustomerOrder" : "PurchaseOrder";
-  
-    const transactionStatements = [
-      getInsertOrderStatement(input, entityType, createdAtTimestamp),
-      {
-        Statement: `
-          UPDATE "${tshirtTable.tableName}"
-          SET ${tshirtTable.quantityFieldName[0]} = ${tshirtTable.quantityFieldName[0]} + ?
-          WHERE ${tshirtTable.pkFieldName} = ?`,
-        Parameters: [
-          { N: tshirtQtyChange },
-          { S: tshirtStyleNumber },
-          { N: tshirtQtyChange },
-        ]
-      },
-      {
-        Statement: `
-        UPDATE "${tshirtOrderTable.tableName}"
-        SET ${tshirtOrderTable.quantityFieldName[0]} = ${tshirtOrderTable.quantityFieldName[0]} + ?
-        SET ${tshirtOrderTable.quantityFieldName[1]} = ${tshirtOrderTable.quantityFieldName[1]} + ?
-        WHERE ${tshirtOrderTable.pkFieldName} = ?`,
-        Parameters: [
-          { N: qtyDeltaStr }, { N: qtyDelta2Str }, { S: tshirtOrderId },
-        ]
-      },
-      entityType === EntityType.CustomerOrder ?
-        {
-          Statement: `
-          INSERT INTO "${customerOrderChangeTable.tableName}"
-          value {
-            'id': ?,
-            '__typename': ?,
-            'orderedQuantityChange': ?,
-            'reason': ?,
-            '${parentOrderIdFieldName}': ?,
-            '${associatedTShirtStyleNumberFieldName}': ?,
-            'createdAt': ?,
-            'updatedAt': ?
-          }`,
-          Parameters: [
-            { S: orderChangeUuid },
-            { S: typename },
-            { N: qtyDeltaStr },
-            { S: reason },
-            { S: orderId },
-            { S: tshirtStyleNumber },
-            { S: createdAtTimestamp },
-            { S: createdAtTimestamp }
-          ]
-        } : {
-          Statement: `INSERT INTO "${purchaseOrderChangeTable.tableName}"
-          value {
-            'id': ?,
-            '__typename': ?,
-            'orderedQuantityChange': ?, 
-            'quantityChange': ?, 
-            'reason': ?, 
-            '${parentOrderIdFieldName}': ?, 
-            '${associatedTShirtStyleNumberFieldName}': ?,
-            'createdAt': ?,
-            'updatedAt': ?
-          }`,
-          Parameters: [
-            { S: orderChangeUuid },
-            { S: typename },
-            { N: qtyDeltaStr },
-            { N: qtyDelta2Str },
-            { S: reason },
-            { S: orderId },
-            { S: tshirtStyleNumber },
-            { S: createdAtTimestamp },
-            { S: createdAtTimestamp }
-          ]
+        value {
+          '__typename': ?,
+          'id': ?,
+          'customerName': ?,
+          'customerEmail': ?,
+          'customerPhoneNumber': ?,
+          'orderNumber': ?,
+          'orderStatus': ?,
+          'orderNotes': ?,
+          'dateNeededBy': ?,
+          'isDeleted': ?,
+          'createdAt': ?,
+          'updatedAt': ?
         }
+      `,
+        Parameters: [
+            { S: typename },
+            { S: orderUuid },
+            { S: customerOrder.customerName },
+            getStrOrNull(customerOrder.customerEmail),
+            getStrOrNull(" " + customerOrder.customerPhoneNumber),
+            { S: customerOrder.orderNumber },
+            { S: CustomerOrderStatus.NEW },
+            getStrOrNull(customerOrder.orderNotes),
+            { S: customerOrder.dateNeededBy },
+            { BOOL: false },
+            { S: createdAt },
+            { S: createdAt },
+        ]
+    }
+}
+
+const getTShirtOrdersStatements = (orderedItems: TShirtOrder[], entityType: EntityType, createdAt: string, parentOrderUuid: string): ParameterizedStatement[] => {
+    const res: ParameterizedStatement[] = [];
+    orderedItems.forEach((tshirtOrder: TShirtOrder) => {
+        // Only decrement from TShirt table when it's a customer order
+        if (entityType === EntityType.CustomerOrder) {
+            res.push({
+                Statement: `
+                UPDATE "${tshirtTable.tableName}"
+                SET ${tshirtTable.quantityFieldName[0]} = ${tshirtTable.quantityFieldName[0]} - ?
+                SET updatedAt = ?
+                WHERE ${tshirtTable.pkFieldName} = ?
+            `,
+                Parameters: [
+                    { N: tshirtOrder.quantity.toString() },
+                    { S: createdAt },
+                    { S: tshirtOrder.tShirtOrderTshirtStyleNumber },
+                ]
+            });
+        }
+        // Add to TShirtOrder table
+        res.push({
+            Statement: `
+                INSERT INTO "${tshirtOrderTable.tableName}"
+                value {
+                    '__typename': ?,
+                    'id': ?,
+                    'quantity': ?,
+                    'amountReceived': ?,
+                    '${entityType}OrderOrderedItemsId': ?,
+                    'tShirtOrderTshirtStyleNumber': ?,
+                    'createdAt': ?,
+                    'updatedAt': ?
+                }
+            `,
+            Parameters: [
+                { S: "TShirtOrder" },
+                { S: v4() },
+                { N: tshirtOrder.quantity.toString() },
+                { N: tshirtOrder.amountReceived ? tshirtOrder.amountReceived.toString() : "0" },
+                { S: parentOrderUuid },
+                { S: tshirtOrder.tShirtOrderTshirtStyleNumber },
+                { S: createdAt },
+                { S: createdAt },
+            ]
+        });
+    });
+    return res;
+};
+
+export const createOrderTransactionAPI = async (input: PurchaseOrderOrCustomerOrder, entityType: EntityType, user: CognitoUser): Promise<ExecuteTransactionCommandOutput> => {
+    console.log(input);
+
+    // Insertion fields for new Order
+    const orderId = v4();
+    const createdAtTimestamp = toAWSDateTime(dayjs());
+
+    const orderedItems = input.orderedItems as any as TShirtOrder[]; // Locally orderedItems is just an array
+    const transactionStatements: ParameterizedStatement[] = [
+        getInsertOrderStatement(input, entityType, createdAtTimestamp, orderId),
+        ...getTShirtOrdersStatements(orderedItems, entityType, createdAtTimestamp, orderId)
     ];
+    transactionStatements.forEach(s => {console.log(s.Statement); console.log(s.Parameters)});
     const command = new ExecuteTransactionCommand({
-      TransactStatements: transactionStatements
+        TransactStatements: transactionStatements
     });
     const dynamodbClient = await createDynamoDBObj(user);
     return dynamodbClient.send(command)
-      .then((onFulfilled) => {
-        const orderChange = {
-          __typename: typename,
-          id: orderChangeUuid,
-          createdAt: createdAtTimestamp,
-          updatedAt: createdAtTimestamp,
-          [parentOrderIdFieldName]: orderId,
-          [associatedTShirtStyleNumberFieldName]: tshirtStyleNumber,
-          orderedQuantityChange: quantityDelta,
-          tshirt: {}
-        };
-        if (entityType === EntityType.PurchaseOrder) {
-          orderChange.quantityChange = quantityDelta2 ? quantityDelta2 : 0;
-        }
-        return orderChange as OrderChange;
-      })
-      .catch((e) => {
-        console.log(e);
-        throw new Error(`Failed to update ${entityType} order`);
-      });
-  }
+        .catch((e) => {
+            console.log(e);
+            throw new Error(`Failed to create ${entityType} order`);
+        });
+}

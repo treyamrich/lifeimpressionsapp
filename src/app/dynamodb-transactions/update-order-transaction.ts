@@ -38,10 +38,11 @@ export const updateOrderTransactionAPI = async (input: UpdateOrderTransactionInp
     const transactionStatements = [
         {
             Statement: `
-            UPDATE "${tshirtTable.tableName}"
-            SET ${tshirtTable.quantityFieldName[0]} = ${tshirtTable.quantityFieldName[0]} + ?
-            SET updatedAt = ?
-            WHERE ${tshirtTable.pkFieldName} = ?`,
+                UPDATE "${tshirtTable.tableName}"
+                SET ${tshirtTable.quantityFieldName[0]} = ${tshirtTable.quantityFieldName[0]} + ?
+                SET updatedAt = ?
+                WHERE ${tshirtTable.pkFieldName} = ?
+            `,
             Parameters: [
                 { N: tshirtQtyChange },
                 { S: createdAtTimestamp },
@@ -50,15 +51,16 @@ export const updateOrderTransactionAPI = async (input: UpdateOrderTransactionInp
         },
         {
             Statement: `
-            UPDATE "${tshirtOrderTable.tableName}"
-            SET ${tshirtOrderTable.quantityFieldName[0]} = ${tshirtOrderTable.quantityFieldName[0]} + ?
-            SET ${tshirtOrderTable.quantityFieldName[1]} = ${tshirtOrderTable.quantityFieldName[1]} + ?
-            SET updatedAt = ?
-            WHERE ${tshirtOrderTable.pkFieldName} = ?`,
+                UPDATE "${tshirtOrderTable.tableName}"
+                SET ${tshirtOrderTable.quantityFieldName[0]} = ${tshirtOrderTable.quantityFieldName[0]} + ?
+                SET ${tshirtOrderTable.quantityFieldName[1]} = ${tshirtOrderTable.quantityFieldName[1]} + ?
+                SET updatedAt = ?
+                WHERE ${tshirtOrderTable.pkFieldName} = ?
+            `,
             Parameters: [
-                { N: qtyDeltaStr }, 
-                { N: qtyDelta2Str }, 
-                { S: createdAtTimestamp }, 
+                { N: qtyDeltaStr },
+                { N: qtyDelta2Str },
+                { S: createdAtTimestamp },
                 { S: tshirtOrderId },
             ]
         },
