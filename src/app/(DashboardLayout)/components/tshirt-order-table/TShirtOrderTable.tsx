@@ -35,7 +35,13 @@ interface TShirtOrderTableProps {
     newRowValue: TShirtOrder,
   ) => void | undefined;
   entityType: EntityType;
+  mode: TableMode;
 }
+
+export enum TableMode {
+  Create = "create",
+  Edit = "edit"
+};
 
 type EditMode = {
   show: boolean;
@@ -48,7 +54,8 @@ const TShirtOrderTable = ({
   parentOrderId,
   onRowEdit,
   onRowAdd,
-  entityType
+  entityType,
+  mode
 }: TShirtOrderTableProps) => {
   const { rescueDBOperation } = useDBOperationContext();
   const [createModalOpen, setCreateModalOpen] = useState(false);
@@ -67,19 +74,6 @@ const TShirtOrderTable = ({
   const handleCreateNewRow = (values: TShirtOrder) => {
     setTableData([...tableData, values]);
     onRowAdd(values);
-  };
-
-  const handleSaveRowEdits: MaterialReactTableProps<TShirtOrder>["onEditingRowSave"] =
-    async ({ exitEditingMode, row, values }) => {
-      if (Object.keys(validationErrors).length) return;
-
-      tableData[row.index] = values;
-      setTableData([...tableData]);
-      exitEditingMode(); //required to exit editing mode and close modal
-    };
-
-  const handleCancelRowEdits = () => {
-    setValidationErrors({});
   };
 
   const handleEditRowAudit = (orderChange: CreateOrderChangeInput) => {
@@ -109,18 +103,22 @@ const TShirtOrderTable = ({
         helperText: validationErrors[cell.id],
         onBlur: (event) => {
           let isValid = true;
+          let errMsg = "";
           switch (cell.column.id) {
-            case "quantityOnHand":
+            case "quantity":
+            case "amountReceived":
               isValid = isValid && validateQuantity(+event.target.value);
+              errMsg = "must be non-negative";
               break;
             default:
               isValid = isValid && validateRequired(event.target.value);
+              errMsg = "is required";
           }
           if (!isValid) {
             //set validation error for cell if invalid
             setValidationErrors({
               ...validationErrors,
-              [cell.id]: `${cell.column.columnDef.header} is required`,
+              [cell.id]: `${cell.column.columnDef.header} ${errMsg}`,
             });
           } else {
             //remove validation error for cell if valid
@@ -154,10 +152,10 @@ const TShirtOrderTable = ({
   }, []);
 
   const hiddenColumns = { id: false } as any;
-  if(entityType === EntityType.CustomerOrder) {
+  if (entityType === EntityType.CustomerOrder || mode === TableMode.Create) {
     hiddenColumns[amountReceivedField] = false;
   }
-  
+
   return (
     <>
       <MaterialReactTable
@@ -179,17 +177,16 @@ const TShirtOrderTable = ({
           columnFilters,
           columnVisibility: hiddenColumns
         }}
-        muiTableBodyRowProps={({ row }: {row: any}) => ({
-          onClick: () => {
-            setEditMode({ show: true, row: row });
-          },
-          sx: {
-            cursor: "pointer", //you might want to change the cursor too when adding an onClick
-          },
-        })}
+        muiTableBodyRowProps={
+          ({ row }: { row: any }) => ({
+            onClick: () => {
+              setEditMode({ show: true, row: row });
+            },
+            sx: {
+              cursor: "pointer", //you might want to change the cursor too when adding an onClick
+            },
+          })}
         enableEditing={undefined}
-        onEditingRowSave={handleSaveRowEdits}
-        onEditingRowCancel={handleCancelRowEdits}
         renderRowActions={({ row, table }) => (
           <Box sx={{ display: "flex", gap: "1rem" }}>
             <Tooltip arrow placement="left" title="Edit">
@@ -231,6 +228,7 @@ const TShirtOrderTable = ({
         title="Edit"
         parentOrderId={parentOrderId}
         entityType={entityType}
+        mode={mode}
       />
     </>
   );

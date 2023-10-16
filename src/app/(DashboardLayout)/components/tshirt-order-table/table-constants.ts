@@ -6,7 +6,7 @@ export const modalTitle = "Add to Order";
 export const amountReceivedField = "amountReceived";
 
 //Exclude these fields when creating. TShirt style number is hard coded in the form for input
-export const excludeOnCreateFields: string[] = ["tShirtOrderTshirtStyleNumber", "updatedAt", "createdAt", "id"];
+export const excludeOnCreateFields: string[] = ["tShirtOrderTshirtStyleNumber", "updatedAt", "createdAt", "id", amountReceivedField];
 export const numberInputFields = new Set<string>(["quantity", amountReceivedField]); 
 
 export type OrderChange = PurchaseOrderChange | CustomerOrderChange;
@@ -55,7 +55,8 @@ export const getTableColumns = (
         } as MRT_ColumnDef<TShirtOrder>,
         {
             accessorKey: "id",
-            header: "Id"
+            header: "Id",
+            enableEditing: false
         } as MRT_ColumnDef<TShirtOrder>
     ];
 };

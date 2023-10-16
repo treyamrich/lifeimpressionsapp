@@ -4,15 +4,12 @@ import {
     CreateCustomerOrderChangeInput,
     CustomerOrder,
     CustomerOrderChange,
-    TShirt,
     TShirtOrder,
-    UpdateTShirtInput,
-    UpdateTShirtOrderInput,
 } from "@/API";
 import PageContainer from "@/app/(DashboardLayout)/components/container/PageContainer";
 import BlankCard from "@/app/(DashboardLayout)/components/shared/BlankCard";
 import DashboardCard from "@/app/(DashboardLayout)/components/shared/DashboardCard";
-import TShirtOrderTable from "@/app/(DashboardLayout)/components/tshirt-order-table/TShirtOrderTable";
+import TShirtOrderTable, { TableMode } from "@/app/(DashboardLayout)/components/tshirt-order-table/TShirtOrderTable";
 import { getCustomerOrderAPI } from "@/app/graphql-helpers/fetch-apis";
 import {
     DBOperation, useDBOperationContext,
@@ -164,7 +161,7 @@ const OrderedItemsTable = ({
 
         const updateCOInput: UpdateOrderTransactionInput = {
             tshirtOrder: prevTShirtOrder,
-            orderId: coChange.customerOrderChangeHistoryId ? coChange.customerOrderChangeHistoryId : "" as string,
+            orderId: parentCustomerOrder.id,
             reason: coChange.reason,
             quantityDelta: coChange.orderedQuantityChange,
             quantityDelta2: undefined
@@ -176,7 +173,7 @@ const OrderedItemsTable = ({
                 const coChangeResp = resp as CustomerOrderChange;
 
                 // Update local TShirtOrderTable
-                const newTShirtOrder = { ...prevTShirtOrder, quantity: newAmtOrdered };
+                const newTShirtOrder: TShirtOrder = { ...prevTShirtOrder, quantity: newAmtOrdered };
                 tableData[row.index] = newTShirtOrder;
                 setTableData([...tableData]);
 
@@ -212,6 +209,7 @@ const OrderedItemsTable = ({
                     onRowEdit={handleAfterRowEdit}
                     onRowAdd={handleAfterRowAdd}
                     entityType={EntityType.CustomerOrder}
+                    mode={TableMode.Edit}
                 />
             </CardContent>
         </BlankCard>

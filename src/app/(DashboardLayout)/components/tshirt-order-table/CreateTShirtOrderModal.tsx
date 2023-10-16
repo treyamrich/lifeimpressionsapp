@@ -1,8 +1,7 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import {
-  amountReceivedField,
   excludeOnCreateFields,
   getInitialTShirtOrderFormErrorMap,
   initialTShirtOrderFormState,
@@ -97,13 +96,6 @@ const CreateTShirtOrderModal = <TShirtOrder extends Record<string, any>>({
     }
   };
 
-  const newExcludedOnCreateFields = useRef(() => {
-    const newFields = [...excludeOnCreateFields];
-    if(entityType === EntityType.CustomerOrder) {
-      newFields.push(amountReceivedField);
-    }
-    return newFields;
-  });
 
   return (
     <Dialog open={open}>
@@ -120,16 +112,25 @@ const CreateTShirtOrderModal = <TShirtOrder extends Record<string, any>>({
             {columns
               .filter(
                 (col) =>
-                  !newExcludedOnCreateFields.current().includes(col.accessorKey as string)
+                  !excludeOnCreateFields.includes(col.accessorKey as string)
               )
               .map((column) => (
                 <TextField
                   key={column.accessorKey as React.Key}
                   label={column.header}
                   name={column.accessorKey as string}
-                  onChange={(e: any) =>
-                    setValues({ ...values, [e.target.name]: e.target.value })
-                  }
+                  onChange={(e: any) => {{
+                    if(isNumberInputField(column.accessorKey)) {
+                      try {
+                        const v = parseInt(e.target.value, 10);
+                        setValues({ ...values, [e.target.name]: isNaN(v) ? 0 : v })
+                      } catch (e) {
+                        console.log(e)
+                      }
+                    } else {
+                      setValues({ ...values, [e.target.name]: e.target.value })
+                    }
+                  }}}
                   type={
                     isNumberInputField(column.accessorKey)
                       ? "number"

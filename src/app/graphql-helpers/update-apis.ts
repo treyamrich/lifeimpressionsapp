@@ -2,23 +2,14 @@ import {
   UpdateTShirtInput,
   UpdateTShirtMutation,
   TShirt,
-  UpdatePurchaseOrderInput,
-  PurchaseOrder,
-  UpdatePurchaseOrderMutation,
   UpdateTShirtOrderInput,
   TShirtOrder,
   UpdateTShirtOrderMutation,
-  UpdateCustomerOrderInput,
-  UpdateCustomerOrderMutation,
-  CustomerOrder,
-  PurchaseOrderChange,
 } from "@/API";
 import { ExecuteTransactionCommand } from "@aws-sdk/client-dynamodb";
 import { API } from "aws-amplify";
 import { GraphQLQuery } from "@aws-amplify/api";
 import {
-  updateCustomerOrder,
-  updatePurchaseOrder,
   updateTShirt,
   updateTShirtOrder,
 } from "@/graphql/mutations";
@@ -29,7 +20,7 @@ import { EntityType } from "../(DashboardLayout)/components/po-customer-order-sh
 import { CognitoUser } from '@aws-amplify/auth';
 import { toAWSDateTime } from "@/utils/datetimeConversions";
 import dayjs from "dayjs";
-import { uuid } from 'uuidv4';
+import { v4 } from 'uuid';
 import { OrderChange } from "../(DashboardLayout)/components/tshirt-order-table/table-constants";
 
 export const updateTShirtAPI = async (
@@ -67,43 +58,6 @@ export const updateTShirtOrderAPI = async (
   return resp;
 };
 
-export const updatePurchaseOrderAPI = async (
-  po: UpdatePurchaseOrderInput
-): Promise<PurchaseOrder> => {
-  //Clean up the data by removing fields not defined in the graphql request
-  const updatedPO = cleanObjectFields(po);
-  const resp = await API.graphql<GraphQLQuery<UpdatePurchaseOrderMutation>>({
-    query: updatePurchaseOrder,
-    variables: { input: updatedPO },
-    authMode: configuredAuthMode,
-  })
-    .then((res) => res.data?.updatePurchaseOrder as PurchaseOrder)
-    .catch((e) => {
-      console.log(e);
-      throw new Error("Failed to update Purchase Order");
-    });
-  return resp;
-};
-
-export const updateCustomerOrderAPI = async (
-  co: UpdateCustomerOrderInput
-): Promise<CustomerOrder> => {
-  //Clean up the data by removing fields not defined in the graphql request
-  const updatedCO = cleanObjectFields(co);
-  const resp = await API.graphql<GraphQLQuery<UpdateCustomerOrderMutation>>({
-    query: updateCustomerOrder,
-    variables: { input: updatedCO },
-    authMode: configuredAuthMode,
-  })
-    .then((res) => res.data?.updateCustomerOrder as CustomerOrder)
-    .catch((e) => {
-      console.log(e);
-      throw new Error("Failed to update Customer Order");
-    });
-  return resp;
-};
-
-
 export type UpdateOrderTransactionInput = {
   tshirtOrder: TShirtOrder;
   orderId: string;
@@ -117,25 +71,30 @@ export const updateOrderTransactionAPI = async (input: UpdateOrderTransactionInp
   const tshirtOrderId = tshirtOrder.id;
   const tshirtStyleNumber = tshirtOrder.tShirtOrderTshirtStyleNumber;
 
-  let qtyDelta = entityType === EntityType.CustomerOrder ? -quantityDelta : quantityDelta; 
+  let qtyDelta = entityType === EntityType.CustomerOrder ? -quantityDelta : quantityDelta;
   const qtyDeltaStr = qtyDelta.toString();
   const qtyDelta2Str = quantityDelta2 ? quantityDelta2.toString() : "0";
 
   // Insertion fields for new OrderChange
   const createdAtTimestamp = toAWSDateTime(dayjs());
-  const orderChangeUuid = uuid();
+  const orderChangeUuid = v4();
   const typename = entityType === EntityType.CustomerOrder ? "CustomerOrderChange" : "PurchaseOrderChange";
   const parentOrderIdFieldName = `${entityType}OrderChangeHistoryId`
   const associatedTShirtStyleNumberFieldName = `${entityType}OrderChangeTshirtStyleNumber`
+
+  // PurchaseOrder uses amountReceived (quantityDelta2) column as the column affecting TShirt table qty
+  const tshirtQtyChange = entityType === EntityType.CustomerOrder ? qtyDeltaStr : qtyDelta2Str;
 
   const transactionStatements = [
     {
       Statement: `
         UPDATE "${tshirtTable.tableName}"
         SET ${tshirtTable.quantityFieldName[0]} = ${tshirtTable.quantityFieldName[0]} + ?
-        WHERE ${tshirtTable.pkFieldName} = ? AND ${tshirtTable.quantityFieldName[0]} >= ?`,
+        WHERE ${tshirtTable.pkFieldName} = ?`,
       Parameters: [
-        { N: qtyDeltaStr }, { S: tshirtStyleNumber }, { N: qtyDeltaStr }
+        { N: tshirtQtyChange },
+        { S: tshirtStyleNumber },
+        { N: tshirtQtyChange },
       ]
     },
     {
@@ -143,9 +102,9 @@ export const updateOrderTransactionAPI = async (input: UpdateOrderTransactionInp
       UPDATE "${tshirtOrderTable.tableName}"
       SET ${tshirtOrderTable.quantityFieldName[0]} = ${tshirtOrderTable.quantityFieldName[0]} + ?
       SET ${tshirtOrderTable.quantityFieldName[1]} = ${tshirtOrderTable.quantityFieldName[1]} + ?
-      WHERE ${tshirtOrderTable.pkFieldName} = ? AND ${tshirtOrderTable.quantityFieldName[1]} >= ?`,
+      WHERE ${tshirtOrderTable.pkFieldName} = ?`,
       Parameters: [
-        { N: qtyDeltaStr }, { N: qtyDelta2Str }, { S: tshirtOrderId }, { N: qtyDelta2Str } //qtyDelta2Str should be amountReceived column
+        { N: qtyDeltaStr }, { N: qtyDelta2Str }, { S: tshirtOrderId },
       ]
     },
     entityType === EntityType.CustomerOrder ?
@@ -198,7 +157,6 @@ export const updateOrderTransactionAPI = async (input: UpdateOrderTransactionInp
         ]
       }
   ];
-
   const command = new ExecuteTransactionCommand({
     TransactStatements: transactionStatements
   });
@@ -222,6 +180,6 @@ export const updateOrderTransactionAPI = async (input: UpdateOrderTransactionInp
     })
     .catch((e) => {
       console.log(e);
-      throw new Error(`Failed to update ${entityType}`);
+      throw new Error(`Failed to update ${entityType} order`);
     });
 }

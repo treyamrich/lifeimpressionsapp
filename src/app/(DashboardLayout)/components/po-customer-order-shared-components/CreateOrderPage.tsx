@@ -8,9 +8,9 @@ import {
 } from "@/contexts/DBErrorContext";
 import { TextField, Stack, MenuItem, Box, Button } from "@mui/material";
 
-import { MRT_ColumnDef } from "material-react-table";
+import { MRT_ColumnDef, MRT_Row } from "material-react-table";
 import { TShirtOrder } from "@/API";
-import TShirtOrderTable from "../../components/tshirt-order-table/TShirtOrderTable";
+import TShirtOrderTable, { TableMode } from "../../components/tshirt-order-table/TShirtOrderTable";
 import { PurchaseOrderOrCustomerOrder, createTShirtOrderAPI } from "@/app/graphql-helpers/create-apis";
 import ConfirmPopup from "../../components/forms/confirm-popup/ConfirmPopup";
 import { useRouter } from "next/navigation";
@@ -200,9 +200,25 @@ function CreateOrderPage<T extends Record<any, any>>({
                                 setValues({ ...values, orderedItems: newValues })
                             }
                             parentOrderId={undefined}
-                            onRowEdit={() => { }}
+                            onRowEdit={(
+                                row: MRT_Row<TShirtOrder>,
+                                orderChange: any,
+                                exitEditingMode: () => void
+                            ) => {
+                                const tableData = values.orderedItems;
+                                const prevTShirtOrder = row.original;
+                                const prevAmtReceived = prevTShirtOrder.amountReceived ? prevTShirtOrder.amountReceived : 0;
+                                tableData[row.index] = {
+                                    ...prevTShirtOrder, 
+                                    quantity: prevTShirtOrder.quantity + orderChange.orderedQuantityChange, 
+                                    amountReceived: prevAmtReceived + orderChange.quantityChange
+                                } as TShirtOrder;
+                                setValues({...values, orderedItems: [...tableData]});
+                                exitEditingMode();
+                            }}
                             onRowAdd={() => { }}
                             entityType={entityType}
+                            mode={TableMode.Create}
                         />
                         <Box>
                             <Button

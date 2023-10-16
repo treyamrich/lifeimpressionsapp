@@ -27,7 +27,7 @@ const CustomerOrders = () => {
 
   const handleRowClick = (row: MRT_Row<CustomerOrder>) => {
     const orderId = row.getValue('id')
-    push(`customer-orders/view/${orderId}`);
+    push(`/customer-orders/view/${orderId}`);
   }
   const handleAddRow = () => push('/customer-orders/create');
   const handleFetchCustomerOrders = () => {

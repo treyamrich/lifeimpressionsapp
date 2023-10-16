@@ -23,7 +23,7 @@ const PurchaseOrders = () => {
 
   const handleRowClick = (row: MRT_Row<PurchaseOrder>) => {
     const poId = row.getValue('id')
-    push(`purchase-orders/view/${poId}`);
+    push(`/purchase-orders/view/${poId}`);
   }
   const handleAddRow = () => push('/purchase-orders/create');
   const handleFetchPurchaseOrders = () => {
