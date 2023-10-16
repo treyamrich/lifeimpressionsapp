@@ -82,60 +82,9 @@ const TShirtOrderTable = ({
     onRowEdit(row, orderChange, () => setEditMode({ show: false, row: undefined }));
   };
 
-  const handleDeleteRow = useCallback(
-    (row: MRT_Row<TShirtOrder>) => {
-      if (!confirm(`Are you sure you want to remove from order`)) {
-        return;
-      }
-      tableData.splice(row.index, 1);
-      setTableData([...tableData]);
-    },
-    [tableData]
-  );
-
-  // These are for editing using Material React Table edit modal component
-  const getCommonEditTextFieldProps = useCallback(
-    (
-      cell: MRT_Cell<TShirtOrder>
-    ): MRT_ColumnDef<TShirtOrder>["muiTableBodyCellEditTextFieldProps"] => {
-      return {
-        error: !!validationErrors[cell.id],
-        helperText: validationErrors[cell.id],
-        onBlur: (event) => {
-          let isValid = true;
-          let errMsg = "";
-          switch (cell.column.id) {
-            case "quantity":
-            case "amountReceived":
-              isValid = isValid && validateQuantity(+event.target.value);
-              errMsg = "must be non-negative";
-              break;
-            default:
-              isValid = isValid && validateRequired(event.target.value);
-              errMsg = "is required";
-          }
-          if (!isValid) {
-            //set validation error for cell if invalid
-            setValidationErrors({
-              ...validationErrors,
-              [cell.id]: `${cell.column.columnDef.header} ${errMsg}`,
-            });
-          } else {
-            //remove validation error for cell if valid
-            delete validationErrors[cell.id];
-            setValidationErrors({
-              ...validationErrors,
-            });
-          }
-        },
-      };
-    },
-    [validationErrors]
-  );
-
   const columns = useMemo<MRT_ColumnDef<TShirtOrder>[]>(
-    () => getTableColumns(getCommonEditTextFieldProps),
-    [getCommonEditTextFieldProps]
+    () => getTableColumns(),
+    []
   );
 
   const fetchTShirts = () => {
@@ -187,20 +136,6 @@ const TShirtOrderTable = ({
             },
           })}
         enableEditing={undefined}
-        renderRowActions={({ row, table }) => (
-          <Box sx={{ display: "flex", gap: "1rem" }}>
-            <Tooltip arrow placement="left" title="Edit">
-              <IconButton onClick={() => table.setEditingRow(row)}>
-                <Edit />
-              </IconButton>
-            </Tooltip>
-            <Tooltip arrow placement="right" title="Delete">
-              <IconButton color="error" onClick={() => handleDeleteRow(row)}>
-                <Delete />
-              </IconButton>
-            </Tooltip>
-          </Box>
-        )}
         renderTopToolbarCustomActions={() => (
           <Button
             color="primary"
@@ -235,8 +170,3 @@ const TShirtOrderTable = ({
 };
 
 export default TShirtOrderTable;
-
-const validateRequired = (value: string) => !!value.length;
-const validateQuantity = (qty: number) => {
-  return qty >= 0;
-};

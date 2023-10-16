@@ -27,9 +27,7 @@ export const getInitialTShirtOrderFormErrorMap = () =>
         Object.keys(initialTShirtOrderFormState).map((key) => [key, ""])
     );
 
-export const getTableColumns = (
-    getCommonEditTextFieldProps: (cell: MRT_Cell<TShirtOrder>) => MRT_ColumnDef<TShirtOrder>["muiTableBodyCellEditTextFieldProps"]
-): MRT_ColumnDef<TShirtOrder>[] => {
+export const getTableColumns = (): MRT_ColumnDef<TShirtOrder>[] => {
     return [
         {
             accessorKey: "tShirtOrderTshirtStyleNumber",
@@ -40,18 +38,10 @@ export const getTableColumns = (
         {
             accessorKey: "quantity",
             header: "Amt. Ordered",
-            muiTableBodyCellEditTextFieldProps: ({ cell }) => ({
-                ...getCommonEditTextFieldProps(cell),
-                type: "number",
-            }),
         } as MRT_ColumnDef<TShirtOrder>,
         {
             accessorKey: "amountReceived",
             header: "Amt. Received",
-            muiTableBodyCellEditTextFieldProps: ({ cell }) => ({
-                ...getCommonEditTextFieldProps(cell),
-                type: "number",
-            }),
         } as MRT_ColumnDef<TShirtOrder>,
         {
             accessorKey: "id",

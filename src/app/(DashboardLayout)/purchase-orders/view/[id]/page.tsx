@@ -24,14 +24,11 @@ import ViewPOHeaderFields from "./ViewPOHeaders";
 import { toReadableDateTime } from "@/utils/datetimeConversions";
 import { createTShirtOrderAPI } from "@/app/graphql-helpers/create-apis";
 import { MRT_Row } from "material-react-table";
-import {
-    UpdateOrderTransactionInput,
-    updateOrderTransactionAPI,
-} from "@/app/graphql-helpers/update-apis";
 import { EntityType } from "@/app/(DashboardLayout)/components/po-customer-order-shared-components/CreateOrderPage";
 import { CreateOrderChangeInput, OrderChange } from "@/app/(DashboardLayout)/components/tshirt-order-table/table-constants";
 import POChangeHistoryTable from "@/app/(DashboardLayout)/components/order-change-history-table/POChangeHistoryTable";
 import { useAuthContext } from "@/contexts/AuthContext";
+import { UpdateOrderTransactionInput, updateOrderTransactionAPI } from "@/app/dynamodb-transactions/update-order-transaction";
 
 type ViewPurchaseOrderProps = {
     params: { id: string };

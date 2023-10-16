@@ -51,3 +51,6 @@ export const tshirtOrderTable: DynamoDBTableInfo = {
     quantityFieldName: ["quantity", "amountReceived"],
     pkFieldName: "id"
 }
+
+export const purchaseOrderTable = `PurchaseOrder${tableNameSuffix}`;
+export const customerOrderTable = `CustomerOrder${tableNameSuffix}`;
