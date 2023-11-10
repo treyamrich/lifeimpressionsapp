@@ -6,7 +6,7 @@ import { Dayjs } from "dayjs";
 import { toAWSDateTime, toDayjs } from "@/utils/datetimeConversions";
 import { Button, Dialog, DialogContent, DialogTitle, Grid, MenuItem, Stack, TextField } from "@mui/material";
 import { DateTimePicker } from "@mui/x-date-pickers";
-import { validatePhoneNumber } from "@/utils/phoneValidation";
+import { validateEmail, validatePhoneNumber } from "@/utils/field-validation";
 import React from "react";
 import MyTelInput from "@/app/(DashboardLayout)/components/tel-input/MyTelInput";
 
@@ -65,6 +65,14 @@ const EditCOHeaderFieldsPopup = ({ open, co, onSubmit, onClose }: EditCOHeaderFi
                     errMsg = "Invalid phone number. Area code may be invalid (hint: XXX XXX XXXX).";
                 } else {
                     values[key] = validatedPhoneNum;
+                }
+            }
+            else if (columnInfo.get(key)?.isEmailField) {
+                const validatedEmail = validateEmail(values[key]);
+                if(validatedEmail === undefined) {
+                    errMsg = "Invalid email format.";
+                } else {
+                    values[key] = validatedEmail;
                 }
             }
             newErrors.set(key, errMsg);

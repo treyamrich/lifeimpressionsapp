@@ -15,7 +15,7 @@ import { DateTimePicker } from "@mui/x-date-pickers";
 import { getStartOfTomorrow, toAWSDateTime } from "@/utils/datetimeConversions";
 import { Dayjs } from "dayjs";
 import MyTelInput from "../tel-input/MyTelInput";
-import { validatePhoneNumber } from "@/utils/phoneValidation";
+import { validateEmail, validatePhoneNumber } from "@/utils/field-validation";
 
 export enum EntityType {
     CustomerOrder = "customer",
@@ -80,6 +80,14 @@ function CreateOrderPage<T extends Record<any, any>>({
                     errMsg = "Invalid phone number. Area code may be invalid (hint: XXX XXX XXXX).";
                 } else {
                     values[key] = validatedPhoneNum;
+                }
+            }
+            else if (columnInfo.get(key)?.isEmailField) {
+                const validatedEmail = validateEmail(values[key]);
+                if(validatedEmail === undefined) {
+                    errMsg = "Invalid email format.";
+                } else {
+                    values[key] = validatedEmail;
                 }
             }
             newErrors.set(key, errMsg);

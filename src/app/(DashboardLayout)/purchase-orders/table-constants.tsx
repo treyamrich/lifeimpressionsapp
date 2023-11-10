@@ -56,6 +56,7 @@ export type ColumnInfo = {
   excludeOnCreate: boolean | undefined;
   isDatetimeField: boolean | undefined;
   isPhoneNumField: boolean | undefined;
+  isEmailField: boolean | undefined;
   hideInTable: boolean | undefined;
   placeholderText: string | undefined;
   isEditable: boolean | undefined;

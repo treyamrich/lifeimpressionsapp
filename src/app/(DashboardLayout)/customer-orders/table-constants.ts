@@ -109,7 +109,8 @@ export const columnInfo = new Map<string | number | symbol | undefined, ColumnIn
   ["customerEmail", {
     hideInTable: true,
     placeholderText: "john@gmail.com",
-    isEditable: true
+    isEditable: true,
+    isEmailField: true
   } as ColumnInfo],
   ["customerPhoneNumber", {
     hideInTable: true,
