@@ -17,7 +17,7 @@ type ViewCOHeaderFieldsProps = {
 const ViewCOHeaderFields = ({ co, setCo }: ViewCOHeaderFieldsProps) => {
     const { push } = useRouter();
     const { rescueDBOperation } = useDBOperationContext();
-    const { customerName, customerEmail, customerPhoneNumber, dateNeededBy, orderStatus, orderNumber, orderNotes, createdAt, updatedAt } = co;
+    const { customerName, customerEmail, customerPhoneNumber, dateNeededBy, orderStatus, orderNotes, createdAt, updatedAt } = co;
     const [showEditPopup, setShowEditPopup] = useState(false);
 
     const handleUpdateCO = (newCo: CustomerOrder) => {

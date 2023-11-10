@@ -63,7 +63,7 @@ const getInsertOrderStatement = (input: PurchaseOrderOrCustomerOrder, entityType
             { S: orderUuid },
             { S: customerOrder.customerName },
             getStrOrNull(customerOrder.customerEmail),
-            getStrOrNull(" " + customerOrder.customerPhoneNumber),
+            getStrOrNull(customerOrder.customerPhoneNumber),
             { S: customerOrder.orderNumber },
             { S: CustomerOrderStatus.NEW },
             getStrOrNull(customerOrder.orderNotes),

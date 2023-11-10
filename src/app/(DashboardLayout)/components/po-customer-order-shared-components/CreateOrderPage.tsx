@@ -14,6 +14,8 @@ import { ColumnInfo, SelectValue } from "../../purchase-orders/table-constants";
 import { DateTimePicker } from "@mui/x-date-pickers";
 import { getStartOfTomorrow, toAWSDateTime } from "@/utils/datetimeConversions";
 import { Dayjs } from "dayjs";
+import MyTelInput from "../tel-input/MyTelInput";
+import { validatePhoneNumber } from "@/utils/phoneValidation";
 
 export enum EntityType {
     CustomerOrder = "customer",
@@ -72,11 +74,13 @@ function CreateOrderPage<T extends Record<any, any>>({
             if (columnInfo.get(key)?.isRequired && value.toString().length < 1) {
                 errMsg = "Field is required";
             }
-            else if (columnInfo.get(key)?.isPhoneNumField && value !== "") {
-                const dashSplit = value.split('-');
-                const whitespaceSplit = value.split(' ');
-                if (dashSplit.length !== 3 && whitespaceSplit.length !== 3)
-                    errMsg = "Phone Number format must conform to either: xxx-xxx-xxxx or xxx xxx xxxx"
+            else if (columnInfo.get(key)?.isPhoneNumField) {
+                const validatedPhoneNum = validatePhoneNumber(values[key]);
+                if (validatedPhoneNum === undefined) {
+                    errMsg = "Invalid phone number. Area code may be invalid (hint: XXX XXX XXXX).";
+                } else {
+                    values[key] = validatedPhoneNum;
+                }
             }
             newErrors.set(key, errMsg);
             allValid = allValid && errMsg === "";
@@ -90,9 +94,6 @@ function CreateOrderPage<T extends Record<any, any>>({
                 if (columnInfo.get(key)?.isDatetimeField) {
                     const datetime = values[key] as Dayjs;
                     order[key] = toAWSDateTime(datetime);
-                }
-                else if (columnInfo.get(key)?.isPhoneNumField && values[key] !== "") {
-                    order[key] = "+1" + values[key];
                 }
                 // This field had to be optional
                 else if (values[key] === "") {
@@ -135,48 +136,56 @@ function CreateOrderPage<T extends Record<any, any>>({
                             .filter(
                                 (col) => !columnInfo.get(col.accessorKey)?.excludeOnCreate
                             )
-                            .map((column) => {
+                            .map((column, index) => {
                                 const errMsg = errorMap.get(column.accessorKey as string);
                                 const hasError = errMsg !== "" && errMsg !== undefined;
                                 const colInfo = columnInfo.get(column.accessorKey);
-                                return colInfo?.isDatetimeField ? (
-                                    <DateTimePicker
-                                        key={column.accessorKey as React.Key}
-                                        label={column.header}
-                                        disabled={colInfo?.disabledOnCreate === true}
-                                        value={values[column.accessorKey as string]}
-                                        onChange={(newVal) =>
-                                            setValues({ ...values, [column.accessorKey as string]: newVal })
-                                        }
-                                        views={['year', 'month', 'day', 'hours', 'minutes', 'seconds']}
-                                    />
-                                ) : (
-                                    <TextField
-                                        select={colInfo?.selectFields !== undefined}
-                                        key={column.accessorKey as React.Key}
-                                        label={column.header}
-                                        name={column.accessorKey as string}
-                                        onChange={(e: any) =>
-                                            setValues({ ...values, [e.target.name]: e.target.value })
-                                        }
-                                        disabled={colInfo?.disabledOnCreate === true}
-                                        value={values[column.accessorKey as string]}
-                                        required={colInfo?.isRequired}
-                                        error={hasError}
-                                        helperText={errMsg}
-                                        placeholder={colInfo?.placeholderText}
-                                        multiline={colInfo?.multilineTextInfo !== undefined}
-                                        rows={colInfo?.multilineTextInfo?.numRows}
-                                    >
-                                        {/* Select field options */}
-                                        {colInfo?.selectFields
-                                            ?.map((selectValue: SelectValue, idx: number) => (
-                                                <MenuItem key={idx} value={selectValue.value}>
-                                                    {selectValue.label}
-                                                </MenuItem>
-                                            ))}
-                                    </TextField>
-                                )
+                                return (<React.Fragment key={index}>
+                                    {colInfo?.isDatetimeField && (
+                                        <DateTimePicker
+                                            label={column.header}
+                                            disabled={colInfo?.disabledOnCreate === true}
+                                            value={values[column.accessorKey as string]}
+                                            onChange={(newVal) =>
+                                                setValues({ ...values, [column.accessorKey as string]: newVal })
+                                            }
+                                            views={['year', 'month', 'day', 'hours', 'minutes', 'seconds']}
+                                        />
+                                    )}
+                                    {colInfo?.isPhoneNumField && (
+                                        <MyTelInput
+                                            value={values[column.accessorKey as string]}
+                                            onChange={newVal => setValues({ ...values, [column.accessorKey as string]: newVal })}
+                                            errorMsg={errMsg}
+                                        />
+                                    )}
+                                    {!colInfo?.isDatetimeField && !colInfo?.isPhoneNumField && (
+                                        <TextField
+                                            select={colInfo?.selectFields !== undefined}
+                                            label={column.header}
+                                            name={column.accessorKey as string}
+                                            onChange={(e: any) =>
+                                                setValues({ ...values, [e.target.name]: e.target.value })
+                                            }
+                                            disabled={colInfo?.disabledOnCreate === true}
+                                            value={values[column.accessorKey as string]}
+                                            required={colInfo?.isRequired}
+                                            error={hasError}
+                                            helperText={errMsg}
+                                            placeholder={colInfo?.placeholderText}
+                                            multiline={colInfo?.multilineTextInfo !== undefined}
+                                            rows={colInfo?.multilineTextInfo?.numRows}
+                                        >
+                                            {/* Select field options */}
+                                            {colInfo?.selectFields
+                                                ?.map((selectValue: SelectValue, idx: number) => (
+                                                    <MenuItem key={idx} value={selectValue.value}>
+                                                        {selectValue.label}
+                                                    </MenuItem>
+                                                ))}
+                                        </TextField>
+                                    )}
+                                </React.Fragment>)
                             })
                         }
                         <TShirtOrderTable

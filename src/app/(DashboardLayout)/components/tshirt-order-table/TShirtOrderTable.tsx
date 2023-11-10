@@ -63,9 +63,6 @@ const TShirtOrderTable = ({
     show: false,
     row: undefined,
   });
-  const [validationErrors, setValidationErrors] = useState<{
-    [cellId: string]: string;
-  }>({});
   const [columnFilters, setColumnFilters] = useState<MRT_ColumnFiltersState>(
     []
   );
