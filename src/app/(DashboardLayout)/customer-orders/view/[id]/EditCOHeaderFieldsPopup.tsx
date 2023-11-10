@@ -1,6 +1,6 @@
 import { CustomerOrder } from "@/API";
 import { MRT_ColumnDef } from "material-react-table";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { SelectValue, columnInfo, getTableColumns } from "../../table-constants";
 import { Dayjs } from "dayjs";
 import { toAWSDateTime, toDayjs } from "@/utils/datetimeConversions";
@@ -13,7 +13,7 @@ import MyTelInput from "@/app/(DashboardLayout)/components/tel-input/MyTelInput"
 type EditCOHeaderFieldsPopupProps = {
     open: boolean;
     co: CustomerOrder;
-    onSubmit: (newCo: CustomerOrder) => void;
+    onSubmit: (newCo: CustomerOrder, resetForm: ()=>void) => void;
     onClose: () => void;
 }
 
@@ -51,7 +51,7 @@ const EditCOHeaderFieldsPopup = ({ open, co, onSubmit, onClose }: EditCOHeaderFi
 
     const handleSubmit = () => {
         //Validate input
-        const newErrors = new Map<string, string>(getInitialOrderFormErrorMap());
+        const newErrors = getInitialOrderFormErrorMap();
         let allValid = true;
         Object.keys(values).forEach((key) => {
             let errMsg = "";
@@ -71,7 +71,7 @@ const EditCOHeaderFieldsPopup = ({ open, co, onSubmit, onClose }: EditCOHeaderFi
             allValid = allValid && errMsg === "";
         });
         setErrorMap(newErrors);
-
+        
         if (allValid) {
             // Convert the datetime that was input with user's timezone to UTC timezone
             const order = {} as any;
@@ -88,13 +88,10 @@ const EditCOHeaderFieldsPopup = ({ open, co, onSubmit, onClose }: EditCOHeaderFi
                     order[key] = values[key];
                 }
             });
-            onSubmit(order);
+            onSubmit(order, resetForm);
         }
     };
 
-    useEffect(() => {
-        setValues(getInitialFormState());
-    }, [co]);
     return (
         <Dialog open={open} maxWidth="xs">
             <DialogTitle textAlign="center">Edit Customer Order {co.orderNumber}</DialogTitle>
@@ -186,7 +183,6 @@ const EditCOHeaderFieldsPopup = ({ open, co, onSubmit, onClose }: EditCOHeaderFi
                                     fullWidth
                                     onClick={() => {
                                         handleSubmit();
-                                        resetForm();
                                     }}
                                     type="submit"
                                 >

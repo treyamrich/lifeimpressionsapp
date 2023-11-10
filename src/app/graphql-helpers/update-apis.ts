@@ -57,7 +57,14 @@ export const updateTShirtOrderAPI = async (
 export const updateCustomerOrderAPI = async (
   customerOrder: UpdateCustomerOrderInput
 ): Promise<CustomerOrder> => {
-  const updatedCustomerOrder = cleanObjectFields(customerOrder);
+  const cleanedCustomerOrder = cleanObjectFields(customerOrder);
+  const nullablePhone = cleanedCustomerOrder.customerPhoneNumber === undefined ? null : cleanedCustomerOrder.customerPhoneNumber;
+  const nullableEmail = cleanedCustomerOrder.customerEmail === undefined ? null : cleanedCustomerOrder.customerEmail;
+  const updatedCustomerOrder = {...cleanedCustomerOrder,
+    customerPhoneNumber: nullablePhone,
+    customerEmail: nullableEmail
+  };
+
   const resp = await API.graphql<GraphQLQuery<UpdateCustomerOrderMutation>>({
     query: updateCustomerOrder,
     variables: { input: updatedCustomerOrder },

@@ -24,6 +24,7 @@ const MyTelInput = ({ value, onChange, errorMsg }: MyTelInputProps) => (
             forceCallingCode
             placeholder={'234 567 8910'}
         />
+
         {errorMsg && (
             <Typography color={'error'}>
                 {errorMsg}

@@ -20,7 +20,7 @@ const ViewCOHeaderFields = ({ co, setCo }: ViewCOHeaderFieldsProps) => {
     const { customerName, customerEmail, customerPhoneNumber, dateNeededBy, orderStatus, orderNotes, createdAt, updatedAt } = co;
     const [showEditPopup, setShowEditPopup] = useState(false);
 
-    const handleUpdateCO = (newCo: CustomerOrder) => {
+    const handleUpdateCO = (newCo: CustomerOrder, resetForm: ()=>void) => {
         const cleanCo = {
             ...newCo,
             orderedItems: undefined,
@@ -37,6 +37,7 @@ const ViewCOHeaderFields = ({ co, setCo }: ViewCOHeaderFieldsProps) => {
                     dateNeededBy: toReadableDateTime(resp.dateNeededBy)
                 });
                 setShowEditPopup(false);
+                resetForm();
             }
         )
     }

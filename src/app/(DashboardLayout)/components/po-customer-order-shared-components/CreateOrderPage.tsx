@@ -66,7 +66,7 @@ function CreateOrderPage<T extends Record<any, any>>({
 
     const handleSubmit = () => {
         //Validate input
-        const newErrors = new Map<string, string>(getInitialOrderFormErrorMap());
+        const newErrors = getInitialOrderFormErrorMap();
         let allValid = true;
         Object.keys(values).forEach((key) => {
             let errMsg = "";
