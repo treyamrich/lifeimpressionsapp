@@ -165,7 +165,7 @@ const OrderedItemsTable = ({
             quantityDelta2: undefined
         };
         rescueDBOperation(
-            () => updateOrderTransactionAPI(updateCOInput, EntityType.CustomerOrder, user),
+            () => updateOrderTransactionAPI(updateCOInput, EntityType.CustomerOrder, user, false),
             DBOperation.UPDATE,
             (resp: OrderChange) => {
                 const coChangeResp = resp as CustomerOrderChange;

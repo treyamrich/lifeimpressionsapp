@@ -16,7 +16,7 @@ export type UpdateOrderTransactionInput = {
     quantityDelta2: number | undefined;
 }
 
-export const updateOrderTransactionAPI = async (input: UpdateOrderTransactionInput, entityType: EntityType, user: CognitoUser): Promise<OrderChange> => {
+export const updateOrderTransactionAPI = async (input: UpdateOrderTransactionInput, entityType: EntityType, user: CognitoUser, allowNegativeInventory: boolean): Promise<OrderChange> => {
     const { tshirtOrder, orderId, reason, quantityDelta, quantityDelta2 } = input;
     const tshirtOrderId = tshirtOrder.id;
     const tshirtStyleNumber = tshirtOrder.tShirtOrderTshirtStyleNumber;
@@ -42,11 +42,13 @@ export const updateOrderTransactionAPI = async (input: UpdateOrderTransactionInp
                 SET ${tshirtTable.quantityFieldName[0]} = ${tshirtTable.quantityFieldName[0]} + ?
                 SET updatedAt = ?
                 WHERE ${tshirtTable.pkFieldName} = ?
+                ${allowNegativeInventory ? "" : `AND ${tshirtTable.quantityFieldName[0]} >= ?`}
             `,
             Parameters: [
                 { N: tshirtQtyChange },
                 { S: createdAtTimestamp },
                 { S: tshirtStyleNumber },
+                { N: tshirtQtyChange}
             ]
         },
         {

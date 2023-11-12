@@ -75,7 +75,7 @@ const getInsertOrderStatement = (input: PurchaseOrderOrCustomerOrder, entityType
     }
 }
 
-const getTShirtOrdersStatements = (orderedItems: TShirtOrder[], entityType: EntityType, createdAt: string, parentOrderUuid: string): ParameterizedStatement[] => {
+const getTShirtOrdersStatements = (orderedItems: TShirtOrder[], entityType: EntityType, createdAt: string, parentOrderUuid: string, allowNegativeInventory: boolean): ParameterizedStatement[] => {
     const res: ParameterizedStatement[] = [];
     orderedItems.forEach((tshirtOrder: TShirtOrder) => {
         // Only decrement from TShirt table when it's a customer order
@@ -86,11 +86,13 @@ const getTShirtOrdersStatements = (orderedItems: TShirtOrder[], entityType: Enti
                 SET ${tshirtTable.quantityFieldName[0]} = ${tshirtTable.quantityFieldName[0]} - ?
                 SET updatedAt = ?
                 WHERE ${tshirtTable.pkFieldName} = ?
+                ${allowNegativeInventory ? "" : `AND ${tshirtTable.quantityFieldName[0]} >= ?`}
             `,
                 Parameters: [
                     { N: tshirtOrder.quantity.toString() },
                     { S: createdAt },
                     { S: tshirtOrder.tShirtOrderTshirtStyleNumber },
+                    { N: tshirtOrder.quantity.toString() }
                 ]
             });
         }
@@ -124,9 +126,8 @@ const getTShirtOrdersStatements = (orderedItems: TShirtOrder[], entityType: Enti
     return res;
 };
 
-export const createOrderTransactionAPI = async (input: PurchaseOrderOrCustomerOrder, entityType: EntityType, user: CognitoUser): Promise<ExecuteTransactionCommandOutput> => {
-    console.log(input);
-
+// If allow negative inventory is set to false, then an array of tshirt order style numbers will be returned that would've caused negative inventory
+export const createOrderTransactionAPI = async (input: PurchaseOrderOrCustomerOrder, entityType: EntityType, user: CognitoUser, allowNegativeInventory: boolean): Promise<Array<string>> => {
     // Insertion fields for new Order
     const orderId = v4();
     const createdAtTimestamp = toAWSDateTime(dayjs());
@@ -134,16 +135,26 @@ export const createOrderTransactionAPI = async (input: PurchaseOrderOrCustomerOr
     const orderedItems = input.orderedItems as any as TShirtOrder[]; // Locally orderedItems is just an array
     const transactionStatements: ParameterizedStatement[] = [
         getInsertOrderStatement(input, entityType, createdAtTimestamp, orderId),
-        ...getTShirtOrdersStatements(orderedItems, entityType, createdAtTimestamp, orderId)
+        ...getTShirtOrdersStatements(orderedItems, entityType, createdAtTimestamp, orderId, allowNegativeInventory)
     ];
-    transactionStatements.forEach(s => {console.log(s.Statement); console.log(s.Parameters)});
+    transactionStatements.forEach(s => { console.log(s.Statement); console.log(s.Parameters) });
     const command = new ExecuteTransactionCommand({
         TransactStatements: transactionStatements
     });
     const dynamodbClient = await createDynamoDBObj(user);
     return dynamodbClient.send(command)
         .catch((e) => {
-            console.log(e);
+            if (!allowNegativeInventory && e.CancellationReasons) {
+                const negativeInventoryShirts = e.CancellationReasons.slice(1)
+                    .map((cancellationObj: any, index: number) => {
+                        if (cancellationObj.Code === "ConditionalCheckFailed") {
+                            return orderedItems[index].tShirtOrderTshirtStyleNumber;
+                        }
+                        return null;
+                    })
+                    .filter((x: string) => x != null);
+                return negativeInventoryShirts;
+            }
             throw new Error(`Failed to create ${entityType} order`);
         });
 }
