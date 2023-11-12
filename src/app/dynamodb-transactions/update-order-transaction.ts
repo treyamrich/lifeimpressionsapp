@@ -35,6 +35,7 @@ export const updateOrderTransactionAPI = async (input: UpdateOrderTransactionInp
 
     // PurchaseOrder uses amountReceived (quantityDelta2) column as the column affecting TShirt table qty
     const tshirtQtyChange = entityType === EntityType.CustomerOrder ? qtyDeltaStr : qtyDelta2Str;
+    const tshirtOrderQtyChange = quantityDelta.toString();
 
     const transactionStatements = [
         {
@@ -84,7 +85,7 @@ export const updateOrderTransactionAPI = async (input: UpdateOrderTransactionInp
                 Parameters: [
                     { S: orderChangeUuid },
                     { S: typename },
-                    { N: qtyDeltaStr },
+                    { N: tshirtOrderQtyChange },
                     { S: reason },
                     { S: orderId },
                     { S: tshirtStyleNumber },
@@ -131,7 +132,8 @@ export const updateOrderTransactionAPI = async (input: UpdateOrderTransactionInp
                 [parentOrderIdFieldName]: orderId,
                 [associatedTShirtStyleNumberFieldName]: tshirtStyleNumber,
                 orderedQuantityChange: quantityDelta,
-                tshirt: {}
+                tshirt: {},
+                reason: reason
             };
             if (entityType === EntityType.PurchaseOrder) {
                 orderChange.quantityChange = quantityDelta2 ? quantityDelta2 : 0;

@@ -27,6 +27,8 @@ import COChangeHistoryTable from "@/app/(DashboardLayout)/components/order-chang
 import { CreateOrderChangeInput, OrderChange } from "@/app/(DashboardLayout)/components/tshirt-order-table/table-constants";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { UpdateOrderTransactionInput, updateOrderTransactionAPI } from "@/app/dynamodb-transactions/update-order-transaction";
+import NegativeInventoryConfirmPopup from "@/app/(DashboardLayout)/components/forms/confirm-popup/NegativeInventoryConfirmPopup";
+import { NegativeInventoryWarningState, initialNegativeInventoryWarningState } from "@/app/(DashboardLayout)/purchase-orders/view/[id]/page";
 
 type ViewCustomerOrderProps = {
     params: { id: string };
@@ -146,10 +148,13 @@ const OrderedItemsTable = ({
 }: OrderedItemsTableProps) => {
     const { rescueDBOperation } = useDBOperationContext();
     const { user } = useAuthContext();
+    const [negativeInventoryWarning, setNegativeInventoryWarning] = useState<NegativeInventoryWarningState>({ ...initialNegativeInventoryWarningState });
+
     const handleAfterRowEdit = (
         row: MRT_Row<TShirtOrder>,
         orderChange: CreateOrderChangeInput,
-        exitEditingMode: () => void
+        exitEditingMode: () => void,
+        allowNegativeInventory: boolean = false
     ) => {
         // quantityChange is only for PurchaseOrders
         const coChange = { ...orderChange, quantityChange: undefined } as any as CreateCustomerOrderChangeInput;
@@ -164,11 +169,25 @@ const OrderedItemsTable = ({
             quantityDelta: coChange.orderedQuantityChange,
             quantityDelta2: undefined
         };
+
+        // Only warn negative inventory when inventory will be reduced
+        allowNegativeInventory = allowNegativeInventory || coChange.orderedQuantityChange <= 0;
+
         rescueDBOperation(
-            () => updateOrderTransactionAPI(updateCOInput, EntityType.CustomerOrder, user, false),
+            () => updateOrderTransactionAPI(updateCOInput, EntityType.CustomerOrder, user, allowNegativeInventory),
             DBOperation.UPDATE,
-            (resp: OrderChange) => {
-                const coChangeResp = resp as CustomerOrderChange;
+            (resp: CustomerOrderChange) => {
+                // Transaction failed
+                if (resp === null) {
+                    setNegativeInventoryWarning({
+                        show: true,
+                        callback: exitEditingMode,
+                        prevTShirtOrder: prevTShirtOrder,
+                        cachedOrderChange: orderChange,
+                        mrtRow: row
+                    })
+                    return;
+                }
 
                 // Update local TShirtOrderTable
                 const newTShirtOrder: TShirtOrder = { ...prevTShirtOrder, quantity: newAmtOrdered };
@@ -177,16 +196,20 @@ const OrderedItemsTable = ({
 
                 // Update local change history table
                 const changeCo = {
-                    ...coChangeResp,
-                    createdAt: toReadableDateTime(coChangeResp.createdAt),
+                    ...resp,
+                    createdAt: toReadableDateTime(resp.createdAt),
                 };
                 setChangeHistory([changeCo, ...changeHistory]);
+                exitEditingMode();
+                setNegativeInventoryWarning({...initialNegativeInventoryWarningState});
             },
         );
-        exitEditingMode();
     };
 
-    const handleAfterRowAdd = (newTShirtOrder: TShirtOrder, callback: () => void) => {
+    const handleAfterRowAdd = (newTShirtOrder: TShirtOrder,
+        callback: () => void,
+        allowNegativeInventory: boolean = false
+    ) => {
         if (newTShirtOrder.id) return; // Only create new tshirt orders
 
         // Update the purchase order with the new added item
@@ -200,6 +223,19 @@ const OrderedItemsTable = ({
     return (
         <BlankCard>
             <CardContent>
+                {negativeInventoryWarning.show && (
+                    <NegativeInventoryConfirmPopup
+                        open={negativeInventoryWarning.show}
+                        onClose={() => setNegativeInventoryWarning({ ...negativeInventoryWarning, show: false })}
+                        onSubmit={() => handleAfterRowEdit(
+                            negativeInventoryWarning.mrtRow,
+                            negativeInventoryWarning.cachedOrderChange,
+                            negativeInventoryWarning.callback,
+                            true
+                        )}
+                        failedTShirts={[negativeInventoryWarning.prevTShirtOrder.tShirtOrderTshirtStyleNumber]}
+                    />
+                )}
                 <TShirtOrderTable
                     tableData={tableData}
                     setTableData={setTableData}

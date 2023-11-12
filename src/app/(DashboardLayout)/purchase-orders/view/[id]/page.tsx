@@ -128,13 +128,21 @@ const ViewPurchaseOrder = ({ params }: ViewPurchaseOrderProps) => {
 
 export default ViewPurchaseOrder;
 
-type NegativeInventoryWarningState = {
+// Shared with CustomerOrder view page
+export type NegativeInventoryWarningState = {
     show: boolean;
     callback: () => void;
     prevTShirtOrder: TShirtOrder;
     cachedOrderChange: CreateOrderChangeInput;
     mrtRow: MRT_Row<TShirtOrder>;
 }
+export const initialNegativeInventoryWarningState = {
+    show: false,
+    callback: () => { },
+    prevTShirtOrder: {} as TShirtOrder,
+    cachedOrderChange: {} as CreateOrderChangeInput,
+    mrtRow: {} as MRT_Row<TShirtOrder>
+};
 
 type OrderedItemsTableProps = {
     tableData: TShirtOrder[];
@@ -143,15 +151,6 @@ type OrderedItemsTableProps = {
     changeHistory: PurchaseOrderChange[];
     setChangeHistory: React.Dispatch<React.SetStateAction<PurchaseOrderChange[]>>;
 };
-
-const initialNegativeInventoryWarningState = {
-    show: false,
-    callback: () => { },
-    prevTShirtOrder: {} as TShirtOrder,
-    cachedOrderChange: {} as CreateOrderChangeInput,
-    mrtRow: {} as MRT_Row<TShirtOrder>
-};
-
 const OrderedItemsTable = ({
     tableData,
     setTableData,
@@ -184,13 +183,13 @@ const OrderedItemsTable = ({
             quantityDelta2: poChange.quantityChange
         };
 
-        // Only warn negative inventory when subtracting
+        // Only warn negative inventory when inventory will be reduced
         allowNegativeInventory = allowNegativeInventory || poChange.quantityChange >= 0;
 
         rescueDBOperation(
             () => updateOrderTransactionAPI(updatePOInput, EntityType.PurchaseOrder, user, allowNegativeInventory),
             DBOperation.UPDATE,
-            (resp: OrderChange) => {
+            (resp: PurchaseOrderChange) => {
                 // Transaction failed
                 if (resp === null) {
                     setNegativeInventoryWarning({
@@ -203,8 +202,6 @@ const OrderedItemsTable = ({
                     return;
                 }
 
-                const poChangeResp = resp as PurchaseOrderChange;
-
                 // Update local TShirtOrder table
                 const newTShirtOrder: TShirtOrder = {
                     ...prevTShirtOrder,
@@ -216,8 +213,8 @@ const OrderedItemsTable = ({
 
                 // Update local change history table
                 const changePo = {
-                    ...poChangeResp,
-                    createdAt: toReadableDateTime(poChangeResp.createdAt),
+                    ...resp,
+                    createdAt: toReadableDateTime(resp.createdAt),
                 };
                 setChangeHistory([changePo, ...changeHistory]);
                 exitEditingMode();
