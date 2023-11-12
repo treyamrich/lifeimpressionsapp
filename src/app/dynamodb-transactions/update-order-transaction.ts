@@ -7,6 +7,7 @@ import dayjs from "dayjs";
 import { v4 } from 'uuid';
 import { OrderChange } from "../(DashboardLayout)/components/tshirt-order-table/table-constants";
 import { TShirtOrder } from "@/API";
+import { getInsertOrderChangePartiQL, getUpdateTShirtOrderTablePartiQL, getUpdateTShirtTablePartiQL } from "./partiql-helpers";
 
 export type UpdateOrderTransactionInput = {
     tshirtOrder: TShirtOrder;
@@ -38,85 +39,32 @@ export const updateOrderTransactionAPI = async (input: UpdateOrderTransactionInp
     const tshirtOrderQtyChange = quantityDelta.toString();
 
     const transactionStatements = [
-        {
-            Statement: `
-                UPDATE "${tshirtTable.tableName}"
-                SET ${tshirtTable.quantityFieldName[0]} = ${tshirtTable.quantityFieldName[0]} + ?
-                SET updatedAt = ?
-                WHERE ${tshirtTable.pkFieldName} = ?
-                ${allowNegativeInventory ? "" : `AND ${tshirtTable.quantityFieldName[0]} >= ?`}
-            `,
-            Parameters: [
-                { N: tshirtQtyChange },
-                { S: createdAtTimestamp },
-                { S: tshirtStyleNumber },
-                { N: tshirtQtyChange}
-            ]
-        },
-        {
-            Statement: `
-                UPDATE "${tshirtOrderTable.tableName}"
-                SET ${tshirtOrderTable.quantityFieldName[0]} = ${tshirtOrderTable.quantityFieldName[0]} + ?
-                SET ${tshirtOrderTable.quantityFieldName[1]} = ${tshirtOrderTable.quantityFieldName[1]} + ?
-                SET updatedAt = ?
-                WHERE ${tshirtOrderTable.pkFieldName} = ?
-            `,
-            Parameters: [
-                { N: qtyDeltaStr },
-                { N: qtyDelta2Str },
-                { S: createdAtTimestamp },
-                { S: tshirtOrderId },
-            ]
-        },
-        entityType === EntityType.CustomerOrder ?
-            {
-                Statement: `
-          INSERT INTO "${customerOrderChangeTable.tableName}"
-          value {
-            'id': ?,
-            '__typename': ?,
-            'orderedQuantityChange': ?,
-            'reason': ?,
-            '${parentOrderIdFieldName}': ?,
-            '${associatedTShirtStyleNumberFieldName}': ?,
-            'createdAt': ?,
-            'updatedAt': ?
-          }`,
-                Parameters: [
-                    { S: orderChangeUuid },
-                    { S: typename },
-                    { N: tshirtOrderQtyChange },
-                    { S: reason },
-                    { S: orderId },
-                    { S: tshirtStyleNumber },
-                    { S: createdAtTimestamp },
-                    { S: createdAtTimestamp }
-                ]
-            } : {
-                Statement: `INSERT INTO "${purchaseOrderChangeTable.tableName}"
-          value {
-            'id': ?,
-            '__typename': ?,
-            'orderedQuantityChange': ?, 
-            'quantityChange': ?, 
-            'reason': ?, 
-            '${parentOrderIdFieldName}': ?, 
-            '${associatedTShirtStyleNumberFieldName}': ?,
-            'createdAt': ?,
-            'updatedAt': ?
-          }`,
-                Parameters: [
-                    { S: orderChangeUuid },
-                    { S: typename },
-                    { N: qtyDeltaStr },
-                    { N: qtyDelta2Str },
-                    { S: reason },
-                    { S: orderId },
-                    { S: tshirtStyleNumber },
-                    { S: createdAtTimestamp },
-                    { S: createdAtTimestamp }
-                ]
-            }
+        getUpdateTShirtTablePartiQL(
+            tshirtQtyChange,
+            allowNegativeInventory,
+            createdAtTimestamp,
+            tshirtStyleNumber
+        ),
+        getUpdateTShirtOrderTablePartiQL(
+            qtyDeltaStr,
+            qtyDelta2Str,
+            createdAtTimestamp,
+            tshirtOrderId
+        ),
+        getInsertOrderChangePartiQL(
+            entityType,
+            orderChangeUuid,
+            typename,
+            parentOrderIdFieldName,
+            associatedTShirtStyleNumberFieldName,
+            tshirtOrderQtyChange,
+            reason,
+            orderId,
+            tshirtStyleNumber,
+            createdAtTimestamp,
+            qtyDeltaStr,
+            qtyDelta2Str
+        )
     ];
     const command = new ExecuteTransactionCommand({
         TransactStatements: transactionStatements
@@ -141,7 +89,7 @@ export const updateOrderTransactionAPI = async (input: UpdateOrderTransactionInp
             return orderChange as OrderChange;
         })
         .catch((e) => {
-            if(!allowNegativeInventory) {
+            if (!allowNegativeInventory) {
                 return null;
             }
             console.log(e);
