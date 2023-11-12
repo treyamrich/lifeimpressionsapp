@@ -20,7 +20,7 @@ const CreatePurchaseOrderPage = () => {
   
   const handleCreatePurchaseOrder = (po: PurchaseOrder, callback: () => void) => {
     rescueDBOperation(
-      () => createOrderTransactionAPI(po, EntityType.PurchaseOrder, user),
+      () => createOrderTransactionAPI(po, EntityType.PurchaseOrder, user, false),
       DBOperation.CREATE,
       (resp: any) => {
         callback();
