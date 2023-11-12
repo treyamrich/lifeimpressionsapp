@@ -9,41 +9,51 @@ import {
   getTableColumns,
   columnInfo,
 } from "../table-constants";
-import { PurchaseOrder, TShirtOrder } from "@/API";
-import {
-  createPurchaseOrderAPI,
-} from "@/app/graphql-helpers/create-apis";
+import { PurchaseOrder } from "@/API";
 import CreateOrderPage, { EntityType } from "../../components/po-customer-order-shared-components/CreateOrderPage";
+import { createOrderTransactionAPI } from "@/app/dynamodb-transactions/create-order-transaction";
+import { useAuthContext } from "@/contexts/AuthContext";
 
 const CreatePurchaseOrderPage = () => {
+  const { user } = useAuthContext();
   const { rescueDBOperation } = useDBOperationContext();
   
-  const handleCreatePO = (po: PurchaseOrder, createTShirtOrders: (order: PurchaseOrder, orderedItems: TShirtOrder[]) => void) => {
-    //Remove the fields from a standard PO that isn't needed for creation
-    const poToCreate = {
-      ...po,
-      orderedItems: undefined,
-      changeHistory: undefined,
-    };
+  const handleCreatePurchaseOrder = (po: PurchaseOrder, callback: () => void) => {
     rescueDBOperation(
-      () => createPurchaseOrderAPI(poToCreate),
+      () => createOrderTransactionAPI(po, EntityType.PurchaseOrder, user),
       DBOperation.CREATE,
-      (resp: PurchaseOrder) => {
-        // Important to use the original PO since it has the orderedItems field
-        createTShirtOrders(
-          resp,
-          po.orderedItems as unknown as TShirtOrder[]
-        );
+      (resp: any) => {
+        callback();
       }
-    );
+    )
   };
+  
+  // const handleCreatePO = (po: PurchaseOrder, createTShirtOrders: (order: PurchaseOrder, orderedItems: TShirtOrder[]) => void) => {
+  //   //Remove the fields from a standard PO that isn't needed for creation
+  //   const poToCreate = {
+  //     ...po,
+  //     orderedItems: undefined,
+  //     changeHistory: undefined,
+  //   };
+  //   rescueDBOperation(
+  //     () => createPurchaseOrderAPI(poToCreate),
+  //     DBOperation.CREATE,
+  //     (resp: PurchaseOrder) => {
+  //       // Important to use the original PO since it has the orderedItems field
+  //       createTShirtOrders(
+  //         resp,
+  //         po.orderedItems as unknown as TShirtOrder[]
+  //       );
+  //     }
+  //   );
+  // };
   return (
   <CreateOrderPage 
     entityType={EntityType.PurchaseOrder}
     initialOrderFormState={initialPurchaseOrderFormState}
     getTableColumns={getTableColumns}
     columnInfo={columnInfo}
-    handleCreateOrder={handleCreatePO}
+    handleCreateOrder={handleCreatePurchaseOrder}
   />
 )};
 

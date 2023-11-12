@@ -8,11 +8,15 @@ import {
   UpdateCustomerOrderInput,
   UpdateCustomerOrderMutation,
   CustomerOrder,
+  UpdatePurchaseOrderInput,
+  PurchaseOrder,
+  UpdatePurchaseOrderMutation,
 } from "@/API";
 import { API } from "aws-amplify";
 import { GraphQLQuery } from "@aws-amplify/api";
 import {
   updateCustomerOrder,
+  updatePurchaseOrder,
   updateTShirt,
   updateTShirtOrder,
 } from "@/graphql/mutations";
@@ -74,6 +78,23 @@ export const updateCustomerOrderAPI = async (
     .catch((e) => {
       console.log(e);
       throw new Error("Failed to update CustomerOrder");
+    });
+  return resp;
+};
+
+export const updatePurchaseOrderAPI = async (
+  purchaseOrder: UpdatePurchaseOrderInput
+): Promise<PurchaseOrder> => {
+  const updatedPurchaseOrder = cleanObjectFields(purchaseOrder);
+  const resp = await API.graphql<GraphQLQuery<UpdatePurchaseOrderMutation>>({
+    query: updatePurchaseOrder,
+    variables: { input: updatedPurchaseOrder },
+    authMode: configuredAuthMode,
+  })
+    .then((res) => res.data?.updatePurchaseOrder as PurchaseOrder)
+    .catch((e) => {
+      console.log(e);
+      throw new Error("Failed to update PurchaseOrder");
     });
   return resp;
 };
