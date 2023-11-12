@@ -4,10 +4,7 @@ import {
     CreatePurchaseOrderChangeInput,
     PurchaseOrder,
     PurchaseOrderChange,
-    TShirt,
     TShirtOrder,
-    UpdateTShirtInput,
-    UpdateTShirtOrderInput,
 } from "@/API";
 import PageContainer from "@/app/(DashboardLayout)/components/container/PageContainer";
 import BlankCard from "@/app/(DashboardLayout)/components/shared/BlankCard";
@@ -22,13 +19,14 @@ import { Typography, Grid, CardContent } from "@mui/material";
 import { useState, useEffect } from "react";
 import ViewPOHeaderFields from "./ViewPOHeaders";
 import { toReadableDateTime } from "@/utils/datetimeConversions";
-import { createTShirtOrderAPI } from "@/app/graphql-helpers/create-apis";
+
 import { MRT_Row } from "material-react-table";
 import { EntityType } from "@/app/(DashboardLayout)/components/po-customer-order-shared-components/CreateOrderPage";
 import { CreateOrderChangeInput, OrderChange } from "@/app/(DashboardLayout)/components/tshirt-order-table/table-constants";
 import POChangeHistoryTable from "@/app/(DashboardLayout)/components/order-change-history-table/POChangeHistoryTable";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { UpdateOrderTransactionInput, updateOrderTransactionAPI } from "@/app/dynamodb-transactions/update-order-transaction";
+import { createTShirtOrderTransactionAPI } from "@/app/dynamodb-transactions/create-tshirtorder-transaction";
 
 type ViewPurchaseOrderProps = {
     params: { id: string };
@@ -129,6 +127,13 @@ const ViewPurchaseOrder = ({ params }: ViewPurchaseOrderProps) => {
 
 export default ViewPurchaseOrder;
 
+type NegativeInventoryWarningState = {
+    show: boolean;
+    callback: () => void;
+    purchaseOrder: PurchaseOrder;
+    failedTShirts: string[];
+  }
+
 type OrderedItemsTableProps = {
     tableData: TShirtOrder[];
     setTableData: React.Dispatch<React.SetStateAction<TShirtOrder[]>>;
@@ -146,6 +151,7 @@ const OrderedItemsTable = ({
 }: OrderedItemsTableProps) => {
     const { user } = useAuthContext();
     const { rescueDBOperation } = useDBOperationContext();
+
     const handleAfterRowEdit = (
         row: MRT_Row<TShirtOrder>,
         orderChange: CreateOrderChangeInput,
@@ -192,14 +198,19 @@ const OrderedItemsTable = ({
         exitEditingMode();
     };
 
-    const handleAfterRowAdd = (newTShirtOrder: TShirtOrder) => {
+    const handleAfterRowAdd = (newTShirtOrder: TShirtOrder, callback: () => void) => {
         if (newTShirtOrder.id) return; // Only create new tshirt orders
 
         // Update the purchase order with the new added item
         rescueDBOperation(
-            () => createTShirtOrderAPI(parentPurchaseOrder, [newTShirtOrder]),
+            () => createTShirtOrderTransactionAPI(parentPurchaseOrder.id, EntityType.PurchaseOrder, newTShirtOrder, user, false),
             DBOperation.CREATE,
-            (resp: TShirtOrder) => {}
+            (success: boolean) => {
+                if(!success) {
+                    return;
+                }
+                callback();
+            }
         )
     };
 

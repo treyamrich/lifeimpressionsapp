@@ -218,7 +218,7 @@ function CreateOrderPage<T extends Record<any, any>>({
                                 setValues({ ...values, orderedItems: [...tableData] });
                                 exitEditingMode();
                             }}
-                            onRowAdd={() => { }}
+                            onRowAdd={(tshirtOrder: TShirtOrder, callback: () => void) => callback()}
                             entityType={entityType}
                             mode={TableMode.Create}
                         />

@@ -13,7 +13,7 @@ import { CustomerOrder } from "@/API";
 import CreateOrderPage, { EntityType } from "../../components/po-customer-order-shared-components/CreateOrderPage";
 import { createOrderTransactionAPI } from "@/app/dynamodb-transactions/create-order-transaction";
 import { useAuthContext } from "@/contexts/AuthContext";
-import ConfirmPopup from "../../components/forms/confirm-popup/ConfirmPopup";
+import NegativeInventoryConfirmPopup from "../../components/forms/confirm-popup/NegativeInventoryConfirmPopup";
 
 type NegativeInventoryWarningState = {
   show: boolean;
@@ -52,14 +52,11 @@ const CreatePurchaseOrderPage = () => {
   };
   return (
     <>
-      <ConfirmPopup
+      <NegativeInventoryConfirmPopup
         open={negativeInventoryWarning.show}
         onClose={() => setNegativeInventoryWarning({ ...negativeInventoryWarning, show: false })}
         onSubmit={() => handleCreateCustomerOrder(negativeInventoryWarning.customerOrder, negativeInventoryWarning.callback, true)}
-        title="Warning Negative Inventory"
-        confirmationMsg={`The inventory values for the following tshirts will be negative: ${negativeInventoryWarning.failedTShirts.toString()}. Would you like to continue?`}
-        submitButtonMsg="Continue"
-        cancelButtonMsg="Cancel"
+        failedTShirts={negativeInventoryWarning.failedTShirts}
       />
       <CreateOrderPage
         entityType={EntityType.CustomerOrder}

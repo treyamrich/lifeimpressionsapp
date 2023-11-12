@@ -16,6 +16,7 @@ export type UpdateOrderTransactionInput = {
     quantityDelta2: number | undefined;
 }
 
+// Used when updating the TShirtOrder row in an order
 export const updateOrderTransactionAPI = async (input: UpdateOrderTransactionInput, entityType: EntityType, user: CognitoUser, allowNegativeInventory: boolean): Promise<OrderChange> => {
     const { tshirtOrder, orderId, reason, quantityDelta, quantityDelta2 } = input;
     const tshirtOrderId = tshirtOrder.id;

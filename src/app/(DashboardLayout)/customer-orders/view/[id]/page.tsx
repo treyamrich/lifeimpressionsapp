@@ -186,7 +186,7 @@ const OrderedItemsTable = ({
         exitEditingMode();
     };
 
-    const handleAfterRowAdd = (newTShirtOrder: TShirtOrder) => {
+    const handleAfterRowAdd = (newTShirtOrder: TShirtOrder, callback: () => void) => {
         if (newTShirtOrder.id) return; // Only create new tshirt orders
 
         // Update the purchase order with the new added item

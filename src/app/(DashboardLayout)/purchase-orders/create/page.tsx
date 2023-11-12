@@ -27,26 +27,6 @@ const CreatePurchaseOrderPage = () => {
       }
     )
   };
-  
-  // const handleCreatePO = (po: PurchaseOrder, createTShirtOrders: (order: PurchaseOrder, orderedItems: TShirtOrder[]) => void) => {
-  //   //Remove the fields from a standard PO that isn't needed for creation
-  //   const poToCreate = {
-  //     ...po,
-  //     orderedItems: undefined,
-  //     changeHistory: undefined,
-  //   };
-  //   rescueDBOperation(
-  //     () => createPurchaseOrderAPI(poToCreate),
-  //     DBOperation.CREATE,
-  //     (resp: PurchaseOrder) => {
-  //       // Important to use the original PO since it has the orderedItems field
-  //       createTShirtOrders(
-  //         resp,
-  //         po.orderedItems as unknown as TShirtOrder[]
-  //       );
-  //     }
-  //   );
-  // };
   return (
   <CreateOrderPage 
     entityType={EntityType.PurchaseOrder}

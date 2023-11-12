@@ -33,6 +33,7 @@ interface TShirtOrderTableProps {
   ) => void | undefined;
   onRowAdd: (
     newRowValue: TShirtOrder,
+    callback: () => void
   ) => void | undefined;
   entityType: EntityType;
   mode: TableMode;
@@ -69,8 +70,10 @@ const TShirtOrderTable = ({
   const [tshirtChoices, setTShirtChoices] = useState<TShirt[]>([]);
 
   const handleCreateNewRow = (values: TShirtOrder) => {
-    setTableData([...tableData, values]);
-    onRowAdd(values);
+    onRowAdd(
+      values,
+      () => setTableData([...tableData, values])
+    );
   };
 
   const handleEditRowAudit = (orderChange: CreateOrderChangeInput) => {

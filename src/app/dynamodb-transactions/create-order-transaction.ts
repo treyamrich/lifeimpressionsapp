@@ -2,9 +2,8 @@ import { toAWSDateTime } from "@/utils/datetimeConversions";
 import dayjs from "dayjs";
 import { EntityType } from "../(DashboardLayout)/components/po-customer-order-shared-components/CreateOrderPage";
 import { CognitoUser } from '@aws-amplify/auth';
-import { OrderChange } from "../(DashboardLayout)/components/tshirt-order-table/table-constants";
 import { v4 } from 'uuid';
-import { AttributeValue, ExecuteTransactionCommand, ExecuteTransactionCommandOutput, ParameterizedStatement } from "@aws-sdk/client-dynamodb";
+import { ExecuteTransactionCommand, ParameterizedStatement } from "@aws-sdk/client-dynamodb";
 import { CustomerOrder, CustomerOrderStatus, PurchaseOrder, TShirtOrder } from "@/API";
 import { PurchaseOrderOrCustomerOrder } from "../graphql-helpers/create-apis";
 import { createDynamoDBObj, customerOrderTable, getStrOrNull, purchaseOrderTable, tshirtOrderTable, tshirtTable } from './dynamodb';
@@ -75,7 +74,7 @@ const getInsertOrderStatement = (input: PurchaseOrderOrCustomerOrder, entityType
     }
 }
 
-const getTShirtOrdersStatements = (orderedItems: TShirtOrder[], entityType: EntityType, createdAt: string, parentOrderUuid: string, allowNegativeInventory: boolean): ParameterizedStatement[] => {
+export const getTShirtOrdersStatements = (orderedItems: TShirtOrder[], entityType: EntityType, createdAt: string, parentOrderUuid: string, allowNegativeInventory: boolean): ParameterizedStatement[] => {
     const res: ParameterizedStatement[] = [];
     orderedItems.forEach((tshirtOrder: TShirtOrder) => {
         // Only decrement from TShirt table when it's a customer order
