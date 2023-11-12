@@ -27,6 +27,7 @@ import POChangeHistoryTable from "@/app/(DashboardLayout)/components/order-chang
 import { useAuthContext } from "@/contexts/AuthContext";
 import { UpdateOrderTransactionInput, updateOrderTransactionAPI } from "@/app/dynamodb-transactions/update-order-transaction";
 import { createTShirtOrderTransactionAPI } from "@/app/dynamodb-transactions/create-tshirtorder-transaction";
+import NegativeInventoryConfirmPopup from "@/app/(DashboardLayout)/components/forms/confirm-popup/NegativeInventoryConfirmPopup";
 
 type ViewPurchaseOrderProps = {
     params: { id: string };
@@ -130,9 +131,10 @@ export default ViewPurchaseOrder;
 type NegativeInventoryWarningState = {
     show: boolean;
     callback: () => void;
-    purchaseOrder: PurchaseOrder;
-    failedTShirts: string[];
-  }
+    prevTShirtOrder: TShirtOrder;
+    cachedOrderChange: CreateOrderChangeInput;
+    mrtRow: MRT_Row<TShirtOrder>;
+}
 
 type OrderedItemsTableProps = {
     tableData: TShirtOrder[];
@@ -140,6 +142,14 @@ type OrderedItemsTableProps = {
     parentPurchaseOrder: PurchaseOrder;
     changeHistory: PurchaseOrderChange[];
     setChangeHistory: React.Dispatch<React.SetStateAction<PurchaseOrderChange[]>>;
+};
+
+const initialNegativeInventoryWarningState = {
+    show: false,
+    callback: () => { },
+    prevTShirtOrder: {} as TShirtOrder,
+    cachedOrderChange: {} as CreateOrderChangeInput,
+    mrtRow: {} as MRT_Row<TShirtOrder>
 };
 
 const OrderedItemsTable = ({
@@ -151,11 +161,13 @@ const OrderedItemsTable = ({
 }: OrderedItemsTableProps) => {
     const { user } = useAuthContext();
     const { rescueDBOperation } = useDBOperationContext();
+    const [negativeInventoryWarning, setNegativeInventoryWarning] = useState<NegativeInventoryWarningState>({...initialNegativeInventoryWarningState});
 
     const handleAfterRowEdit = (
         row: MRT_Row<TShirtOrder>,
         orderChange: CreateOrderChangeInput,
-        exitEditingMode: () => void
+        exitEditingMode: () => void,
+        allowNegativeInventory: boolean = false
     ) => {
         const poChange = orderChange as CreatePurchaseOrderChangeInput;
         const prevTShirtOrder = row.original;
@@ -172,10 +184,25 @@ const OrderedItemsTable = ({
             quantityDelta2: poChange.quantityChange
         };
 
+        // Only warn negative inventory when subtracting
+        allowNegativeInventory = allowNegativeInventory || poChange.quantityChange >= 0;
+
         rescueDBOperation(
-            () => updateOrderTransactionAPI(updatePOInput, EntityType.PurchaseOrder, user),
+            () => updateOrderTransactionAPI(updatePOInput, EntityType.PurchaseOrder, user, allowNegativeInventory),
             DBOperation.UPDATE,
             (resp: OrderChange) => {
+                // Transaction failed
+                if (resp === null) {
+                    setNegativeInventoryWarning({
+                        show: true,
+                        callback: exitEditingMode,
+                        prevTShirtOrder: prevTShirtOrder,
+                        cachedOrderChange: orderChange,
+                        mrtRow: row
+                    })
+                    return;
+                }
+
                 const poChangeResp = resp as PurchaseOrderChange;
 
                 // Update local TShirtOrder table
@@ -193,23 +220,28 @@ const OrderedItemsTable = ({
                     createdAt: toReadableDateTime(poChangeResp.createdAt),
                 };
                 setChangeHistory([changePo, ...changeHistory]);
+                exitEditingMode();
+                setNegativeInventoryWarning({...initialNegativeInventoryWarningState});
             }
         );
-        exitEditingMode();
     };
 
-    const handleAfterRowAdd = (newTShirtOrder: TShirtOrder, callback: () => void) => {
+    const handleAfterRowAdd = (newTShirtOrder: TShirtOrder, callback: () => void, allowNegativeInventory: boolean = false) => {
         if (newTShirtOrder.id) return; // Only create new tshirt orders
 
         // Update the purchase order with the new added item
         rescueDBOperation(
-            () => createTShirtOrderTransactionAPI(parentPurchaseOrder.id, EntityType.PurchaseOrder, newTShirtOrder, user, false),
+            () => createTShirtOrderTransactionAPI(parentPurchaseOrder.id, EntityType.PurchaseOrder, newTShirtOrder, user, allowNegativeInventory),
             DBOperation.CREATE,
-            (success: boolean) => {
-                if(!success) {
+            (resp: PurchaseOrderChange) => {
+                // Transaction failed
+                if (resp === null) {
+
                     return;
                 }
+                setChangeHistory([resp, ...changeHistory]);
                 callback();
+                setNegativeInventoryWarning({...initialNegativeInventoryWarningState});
             }
         )
     };
@@ -217,6 +249,19 @@ const OrderedItemsTable = ({
     return (
         <BlankCard>
             <CardContent>
+                {negativeInventoryWarning.show && (
+                    <NegativeInventoryConfirmPopup
+                        open={negativeInventoryWarning.show}
+                        onClose={() => setNegativeInventoryWarning({ ...negativeInventoryWarning, show: false })}
+                        onSubmit={() => handleAfterRowEdit(
+                            negativeInventoryWarning.mrtRow,
+                            negativeInventoryWarning.cachedOrderChange,
+                            negativeInventoryWarning.callback,
+                            true
+                        )}
+                        failedTShirts={[negativeInventoryWarning.prevTShirtOrder.tShirtOrderTshirtStyleNumber]}
+                    />
+                )}
                 <TShirtOrderTable
                     tableData={tableData}
                     setTableData={setTableData}

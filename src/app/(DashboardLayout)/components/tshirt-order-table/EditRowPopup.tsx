@@ -22,7 +22,7 @@ import { CreateOrderChangeInput } from "./table-constants";
 import { TableMode } from "./TShirtOrderTable";
 
 interface EditRowPopupProps {
-  onSubmit: (orderChange: CreateOrderChangeInput) => void;
+  onSubmit: (orderChange: CreateOrderChangeInput, resetFormCallback: () => void) => void;
   onClose: () => void;
   open: boolean;
   row: MRT_Row<TShirtOrder> | undefined;
@@ -79,15 +79,13 @@ const EditRowPopup = ({
       const poChange: CreatePurchaseOrderChangeInput = { ...orderChange };
       poChange.purchaseOrderChangeHistoryId = parentOrderId;
       poChange.purchaseOrderChangeTshirtStyleNumber = tshirtStyleNo;
-      onSubmit(poChange);
+      onSubmit(poChange, resetForm);
     } else {
       const coChange: CreateCustomerOrderChangeInput = { ...orderChange };
       coChange.customerOrderChangeHistoryId = parentOrderId;
       coChange.customerOrderChangeTshirtStyleNumber = tshirtStyleNo;
-      onSubmit(coChange);
+      onSubmit(coChange, resetForm);
     }
-
-    resetForm();
   };
 
   return (

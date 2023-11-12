@@ -76,10 +76,16 @@ const TShirtOrderTable = ({
     );
   };
 
-  const handleEditRowAudit = (orderChange: CreateOrderChangeInput) => {
+  const handleEditRowAudit = (orderChange: CreateOrderChangeInput, resetEditFormCallback: () => void) => {
     const row = editMode.row;
     if (!row) return;
-    onRowEdit(row, orderChange, () => setEditMode({ show: false, row: undefined }));
+    onRowEdit(
+      row, 
+      orderChange, 
+      () => {
+        setEditMode({ show: false, row: undefined });
+        resetEditFormCallback();
+      });
   };
 
   const columns = useMemo<MRT_ColumnDef<TShirtOrder>[]>(

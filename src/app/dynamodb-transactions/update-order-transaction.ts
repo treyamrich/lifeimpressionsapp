@@ -16,8 +16,8 @@ export type UpdateOrderTransactionInput = {
     quantityDelta2: number | undefined;
 }
 
-// Used when updating the TShirtOrder row in an order
-export const updateOrderTransactionAPI = async (input: UpdateOrderTransactionInput, entityType: EntityType, user: CognitoUser, allowNegativeInventory: boolean): Promise<OrderChange> => {
+// Used when updating the TShirtOrder row in an order. Returns null if allowNegativeInventory is false and the inventory will become negative in the TShirt table.
+export const updateOrderTransactionAPI = async (input: UpdateOrderTransactionInput, entityType: EntityType, user: CognitoUser, allowNegativeInventory: boolean): Promise<OrderChange | null> => {
     const { tshirtOrder, orderId, reason, quantityDelta, quantityDelta2 } = input;
     const tshirtOrderId = tshirtOrder.id;
     const tshirtStyleNumber = tshirtOrder.tShirtOrderTshirtStyleNumber;
@@ -139,6 +139,9 @@ export const updateOrderTransactionAPI = async (input: UpdateOrderTransactionInp
             return orderChange as OrderChange;
         })
         .catch((e) => {
+            if(!allowNegativeInventory) {
+                return null;
+            }
             console.log(e);
             throw new Error(`Failed to update ${entityType} order`);
         });
