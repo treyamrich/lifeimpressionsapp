@@ -103,18 +103,21 @@ const Inventory = () => {
         helperText: validationErrors[cell.id],
         onBlur: (event) => {
           let isValid = true;
+          let errMsg = "";
           switch (cell.column.id) {
             case "quantityOnHand":
               isValid = isValid && validateQuantity(+event.target.value);
+              errMsg = "must be non-negative";
               break;
             default:
               isValid = isValid && validateRequired(event.target.value);
+              errMsg = "is required";
           }
           if (!isValid) {
             //set validation error for cell if invalid
             setValidationErrors({
               ...validationErrors,
-              [cell.id]: `${cell.column.columnDef.header} is required`,
+              [cell.id]: `${cell.column.columnDef.header} ${errMsg}`,
             });
           } else {
             //remove validation error for cell if valid
