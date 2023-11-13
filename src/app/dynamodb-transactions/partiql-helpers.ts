@@ -14,8 +14,8 @@ export const getInsertOrderChangePartiQL = (
     orderId: string,
     tshirtStyleNumber: string,
     createdAtTimestamp: string,
-    tshirtTableQtyDelta: string,
-    orderedQtyDelta: string = ""
+    tshirtTableQtyDelta: number,
+    orderedQtyDelta: number = 0
 ): ParameterizedStatement => {
     return entityType === EntityType.CustomerOrder ?
         {
@@ -34,7 +34,7 @@ export const getInsertOrderChangePartiQL = (
             Parameters: [
                 { S: orderChangeUuid },
                 { S: typename },
-                { N: tshirtTableQtyDelta },
+                { N: tshirtTableQtyDelta.toString() },
                 { S: reason },
                 { S: orderId },
                 { S: tshirtStyleNumber },
@@ -58,8 +58,8 @@ export const getInsertOrderChangePartiQL = (
             Parameters: [
                 { S: orderChangeUuid },
                 { S: typename },
-                { N: orderedQtyDelta },
-                { N: tshirtTableQtyDelta },
+                { N: orderedQtyDelta.toString() },
+                { N: tshirtTableQtyDelta.toString() },
                 { S: reason },
                 { S: orderId },
                 { S: tshirtStyleNumber },
@@ -70,7 +70,7 @@ export const getInsertOrderChangePartiQL = (
 }
 
 export const getUpdateTShirtTablePartiQL = (
-    tshirtQtyChange: string,
+    tshirtQtyChange: number,
     allowNegativeInventory: boolean,
     createdAtTimestamp: string,
     tshirtStyleNumber: string
@@ -81,20 +81,20 @@ export const getUpdateTShirtTablePartiQL = (
             SET ${tshirtTable.quantityFieldName[0]} = ${tshirtTable.quantityFieldName[0]} + ?
             SET updatedAt = ?
             WHERE ${tshirtTable.pkFieldName} = ?
-            ${allowNegativeInventory ? "" : "AND " + tshirtTable.quantityFieldName[0] + " >= ?"}
+            ${!allowNegativeInventory && tshirtQtyChange < 0 ? `AND  ${tshirtTable.quantityFieldName[0]} >= ?` : ""}
         `,
         Parameters: [
-            { N: tshirtQtyChange },
+            { N: tshirtQtyChange.toString() },
             { S: createdAtTimestamp },
             { S: tshirtStyleNumber },
-            { N: tshirtQtyChange }
+            { N: Math.abs(tshirtQtyChange).toString() }
         ]
     }
 }
 
 export const getUpdateTShirtOrderTablePartiQL = (
-    amountOrderedDelta: string,
-    amountReceivedDelta: string,
+    amountOrderedDelta: number,
+    amountReceivedDelta: number,
     createdAtTimestamp: string,
     tshirtOrderId: string
 ): ParameterizedStatement => {
@@ -107,8 +107,8 @@ export const getUpdateTShirtOrderTablePartiQL = (
             WHERE ${tshirtOrderTable.pkFieldName} = ?
         `,
         Parameters: [
-            { N: amountOrderedDelta },
-            { N: amountReceivedDelta },
+            { N: amountOrderedDelta.toString() },
+            { N: amountReceivedDelta.toString() },
             { S: createdAtTimestamp },
             { S: tshirtOrderId },
         ]

@@ -23,7 +23,7 @@ export const getTShirtOrdersStatements = (
             const tshirtQtyChange = -tshirtOrder.quantity;
             res.push(
                 getUpdateTShirtTablePartiQL(
-                    tshirtQtyChange.toString(),
+                    tshirtQtyChange,
                     allowNegativeInventory,
                     createdAt,
                     tshirtOrder.tShirtOrderTshirtStyleNumber

@@ -42,10 +42,8 @@ export const updateOrderTransactionAPI = async (
     const tshirtOrderId = tshirtOrder.id;
     const tshirtStyleNumber = tshirtOrder.tShirtOrderTshirtStyleNumber;
 
-    let entitySpecificQtyDelta = entityType === EntityType.CustomerOrder ?
+    let entitySpecificTShirtTableQtyDelta = entityType === EntityType.CustomerOrder ?
         -tshirtTableQtyDelta : tshirtTableQtyDelta;
-    const tshirtTableQtyDeltaStr = entitySpecificQtyDelta.toString();
-    const orderedQtyDeltaStr = orderedQtyDelta ? orderedQtyDelta.toString() : "0";
 
     // Insertion fields for new OrderChange
     const createdAtTimestamp = toAWSDateTime(dayjs());
@@ -58,15 +56,15 @@ export const updateOrderTransactionAPI = async (
 
     const transactionStatements = [
         getUpdateTShirtTablePartiQL(
-            tshirtTableQtyDeltaStr,
+            entitySpecificTShirtTableQtyDelta,
             allowNegativeInventory,
             createdAtTimestamp,
             tshirtStyleNumber
         ),
         tshirtOrderTableOperation === DBOperation.UPDATE ?
             getUpdateTShirtOrderTablePartiQL(
-                orderedQtyDeltaStr,
-                tshirtTableQtyDeltaStr,
+                orderedQtyDelta ? orderedQtyDelta : 0,
+                entitySpecificTShirtTableQtyDelta,
                 createdAtTimestamp,
                 tshirtOrderId
             ) :
@@ -87,8 +85,8 @@ export const updateOrderTransactionAPI = async (
             parentOrderId,
             tshirtStyleNumber,
             createdAtTimestamp,
-            tshirtTableQtyDeltaStr,
-            orderedQtyDeltaStr
+            entitySpecificTShirtTableQtyDelta,
+            orderedQtyDelta
         )
     ];
     const command = new ExecuteTransactionCommand({
