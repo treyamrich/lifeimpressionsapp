@@ -1,7 +1,6 @@
 import { CustomerOrder, CustomerOrderStatus, PurchaseOrder, TShirtOrder } from "@/API";
 import { EntityType } from "../(DashboardLayout)/components/po-customer-order-shared-components/CreateOrderPage"
 import { customerOrderChangeTable, customerOrderTable, getStrOrNull, purchaseOrderChangeTable, purchaseOrderTable, tshirtOrderTable, tshirtTable } from "./dynamodb"
-import { v4 } from 'uuid';
 import { ParameterizedStatement } from "@aws-sdk/client-dynamodb";
 import { PurchaseOrderOrCustomerOrder } from "../graphql-helpers/create-apis";
 
@@ -11,13 +10,12 @@ export const getInsertOrderChangePartiQL = (
     typename: string,
     parentOrderIdFieldName: string,
     associatedTShirtStyleNumberFieldName: string,
-    tshirtOrderQtyChange: string,
     reason: string,
     orderId: string,
     tshirtStyleNumber: string,
     createdAtTimestamp: string,
-    qtyDeltaStr: string = "",
-    qtyDelta2Str: string = ""
+    tshirtTableQtyDelta: string,
+    orderedQtyDelta: string = ""
 ): ParameterizedStatement => {
     return entityType === EntityType.CustomerOrder ?
         {
@@ -36,7 +34,7 @@ export const getInsertOrderChangePartiQL = (
             Parameters: [
                 { S: orderChangeUuid },
                 { S: typename },
-                { N: tshirtOrderQtyChange },
+                { N: tshirtTableQtyDelta },
                 { S: reason },
                 { S: orderId },
                 { S: tshirtStyleNumber },
@@ -60,8 +58,8 @@ export const getInsertOrderChangePartiQL = (
             Parameters: [
                 { S: orderChangeUuid },
                 { S: typename },
-                { N: qtyDeltaStr },
-                { N: qtyDelta2Str },
+                { N: orderedQtyDelta },
+                { N: tshirtTableQtyDelta },
                 { S: reason },
                 { S: orderId },
                 { S: tshirtStyleNumber },
@@ -83,7 +81,7 @@ export const getUpdateTShirtTablePartiQL = (
             SET ${tshirtTable.quantityFieldName[0]} = ${tshirtTable.quantityFieldName[0]} + ?
             SET updatedAt = ?
             WHERE ${tshirtTable.pkFieldName} = ?
-            ${allowNegativeInventory ? "" : `AND ${tshirtTable.quantityFieldName[0]} >= ?`}
+            ${allowNegativeInventory ? "" : "AND " + tshirtTable.quantityFieldName[0] + " >= ?"}
         `,
         Parameters: [
             { N: tshirtQtyChange },
@@ -95,8 +93,8 @@ export const getUpdateTShirtTablePartiQL = (
 }
 
 export const getUpdateTShirtOrderTablePartiQL = (
-    qtyDeltaStr: string,
-    qtyDelta2Str: string,
+    amountOrderedDelta: string,
+    amountReceivedDelta: string,
     createdAtTimestamp: string,
     tshirtOrderId: string
 ): ParameterizedStatement => {
@@ -109,8 +107,8 @@ export const getUpdateTShirtOrderTablePartiQL = (
             WHERE ${tshirtOrderTable.pkFieldName} = ?
         `,
         Parameters: [
-            { N: qtyDeltaStr },
-            { N: qtyDelta2Str },
+            { N: amountOrderedDelta },
+            { N: amountReceivedDelta },
             { S: createdAtTimestamp },
             { S: tshirtOrderId },
         ]
@@ -121,7 +119,8 @@ export const getInsertTShirtOrderTablePartiQL = (
     entityType: EntityType,
     parentOrderUuid: string,
     createdAtTimestamp: string,
-    tshirtOrder: TShirtOrder
+    tshirtOrder: TShirtOrder,
+    tshirtOrderUuid: string
 ): ParameterizedStatement => {
     return {
         Statement: `
@@ -139,7 +138,7 @@ export const getInsertTShirtOrderTablePartiQL = (
         `,
         Parameters: [
             { S: "TShirtOrder" },
-            { S: v4() },
+            { S: tshirtOrderUuid },
             { N: tshirtOrder.quantity.toString() },
             { N: tshirtOrder.amountReceived ? tshirtOrder.amountReceived.toString() : "0" },
             { S: parentOrderUuid },

@@ -26,7 +26,7 @@ import ViewCOHeaderFields from "./ViewCOHeaderFields";
 import COChangeHistoryTable from "@/app/(DashboardLayout)/components/order-change-history-table/COChangeHistoryTable";
 import { CreateOrderChangeInput, OrderChange } from "@/app/(DashboardLayout)/components/tshirt-order-table/table-constants";
 import { useAuthContext } from "@/contexts/AuthContext";
-import { UpdateOrderTransactionInput, updateOrderTransactionAPI } from "@/app/dynamodb-transactions/update-order-transaction";
+import { UpdateOrderTransactionInput, UpdateOrderTransactionResponse, updateOrderTransactionAPI } from "@/app/dynamodb-transactions/update-order-transaction";
 import NegativeInventoryConfirmPopup from "@/app/(DashboardLayout)/components/forms/confirm-popup/NegativeInventoryConfirmPopup";
 import { NegativeInventoryWarningState, initialNegativeInventoryWarningState } from "@/app/(DashboardLayout)/purchase-orders/view/[id]/page";
 
@@ -52,15 +52,16 @@ const ViewCustomerOrder = ({ params }: ViewCustomerOrderProps) => {
             (res: CustomerOrder) => {
                 const changeHistory = res.changeHistory?.items;
                 if (changeHistory) {
-                    const newChangeHistory: CustomerOrderChange[] = changeHistory.map((change) => {
-                        if (change) {
-                            change = {
-                                ...change,
-                                createdAt: toReadableDateTime(change.createdAt),
-                            };
-                        }
-                        return change;
-                    }) as CustomerOrderChange[];
+                    const newChangeHistory: CustomerOrderChange[] =
+                        changeHistory.map((change) => {
+                            if (change) {
+                                change = {
+                                    ...change,
+                                    createdAt: toReadableDateTime(change.createdAt),
+                                };
+                            }
+                            return change;
+                        }) as CustomerOrderChange[];
                     setEditHistory(newChangeHistory);
                 }
                 setCo({
@@ -148,7 +149,8 @@ const OrderedItemsTable = ({
 }: OrderedItemsTableProps) => {
     const { rescueDBOperation } = useDBOperationContext();
     const { user } = useAuthContext();
-    const [negativeInventoryWarning, setNegativeInventoryWarning] = useState<NegativeInventoryWarningState>({ ...initialNegativeInventoryWarningState });
+    const [negativeInventoryWarning, setNegativeInventoryWarning] =
+        useState<NegativeInventoryWarningState>({ ...initialNegativeInventoryWarningState });
 
     const handleAfterRowEdit = (
         row: MRT_Row<TShirtOrder>,
@@ -157,66 +159,111 @@ const OrderedItemsTable = ({
         allowNegativeInventory: boolean = false
     ) => {
         // quantityChange is only for PurchaseOrders
-        const coChange = { ...orderChange, quantityChange: undefined } as any as CreateCustomerOrderChangeInput;
+        const coChange = {
+            ...orderChange,
+            quantityChange: undefined
+        } as any as CreateCustomerOrderChangeInput;
         const prevTShirtOrder = row.original;
         const prevAmtOrdered = prevTShirtOrder.quantity ? prevTShirtOrder.quantity : 0;
         const newAmtOrdered = coChange.orderedQuantityChange + prevAmtOrdered;
 
         const updateCOInput: UpdateOrderTransactionInput = {
             tshirtOrder: prevTShirtOrder,
-            orderId: parentCustomerOrder.id,
+            parentOrderId: parentCustomerOrder.id,
             reason: coChange.reason,
-            quantityDelta: coChange.orderedQuantityChange,
-            quantityDelta2: undefined
+            tshirtTableQtyDelta: coChange.orderedQuantityChange,
+            orderedQtyDelta: 0 // unused for CustomerOrder
         };
 
         // Only warn negative inventory when inventory will be reduced
-        allowNegativeInventory = allowNegativeInventory || coChange.orderedQuantityChange <= 0;
+        allowNegativeInventory = allowNegativeInventory ||
+            coChange.orderedQuantityChange <= 0;
 
         rescueDBOperation(
-            () => updateOrderTransactionAPI(updateCOInput, EntityType.CustomerOrder, user, allowNegativeInventory),
+            () => updateOrderTransactionAPI(
+                updateCOInput,
+                EntityType.CustomerOrder,
+                user,
+                DBOperation.UPDATE,
+                allowNegativeInventory
+            ),
             DBOperation.UPDATE,
-            (resp: CustomerOrderChange) => {
+            (resp: UpdateOrderTransactionResponse) => {
                 // Transaction failed
                 if (resp === null) {
                     setNegativeInventoryWarning({
                         show: true,
-                        callback: exitEditingMode,
-                        prevTShirtOrder: prevTShirtOrder,
-                        cachedOrderChange: orderChange,
-                        mrtRow: row
+                        cachedFunctionCall: () =>
+                            handleAfterRowEdit(row, orderChange, exitEditingMode, true),
+                        failedTShirtStyleNumber: prevTShirtOrder.tShirtOrderTshirtStyleNumber
                     })
                     return;
                 }
 
                 // Update local TShirtOrderTable
-                const newTShirtOrder: TShirtOrder = { ...prevTShirtOrder, quantity: newAmtOrdered };
+                const newTShirtOrder: TShirtOrder = {
+                    ...prevTShirtOrder,
+                    quantity: newAmtOrdered
+                };
                 tableData[row.index] = newTShirtOrder;
                 setTableData([...tableData]);
 
                 // Update local change history table
                 const changeCo = {
-                    ...resp,
-                    createdAt: toReadableDateTime(resp.createdAt),
-                };
+                    ...resp.orderChange,
+                    createdAt: toReadableDateTime(resp.orderChange.createdAt),
+                } as CustomerOrderChange;
                 setChangeHistory([changeCo, ...changeHistory]);
                 exitEditingMode();
-                setNegativeInventoryWarning({...initialNegativeInventoryWarningState});
+                setNegativeInventoryWarning({ ...initialNegativeInventoryWarningState });
             },
         );
     };
 
-    const handleAfterRowAdd = (newTShirtOrder: TShirtOrder,
-        callback: () => void,
+    const handleAfterRowAdd = (
+        newTShirtOrder: TShirtOrder,
+        callback: (newTshirtOrderId: string) => void,
         allowNegativeInventory: boolean = false
     ) => {
         if (newTShirtOrder.id) return; // Only create new tshirt orders
 
-        // Update the purchase order with the new added item
+        const updateCOInput: UpdateOrderTransactionInput = {
+            tshirtOrder: newTShirtOrder,
+            parentOrderId: parentCustomerOrder.id,
+            reason: "Added tshirt to customer order",
+            tshirtTableQtyDelta: newTShirtOrder.quantity,
+            orderedQtyDelta: 0 // unused for CustomerOrder
+        };
+
+        // Update the customer order with the new added item
         rescueDBOperation(
-            () => createTShirtOrderAPI(parentCustomerOrder, [newTShirtOrder]),
+            () => updateOrderTransactionAPI(
+                updateCOInput,
+                EntityType.CustomerOrder,
+                user,
+                DBOperation.CREATE,
+                allowNegativeInventory
+            ),
             DBOperation.CREATE,
-            (resp: TShirtOrder) => { }
+            (resp: UpdateOrderTransactionResponse) => {
+                // Transaction failed
+                if (resp === null) {
+                    setNegativeInventoryWarning({
+                        show: true,
+                        cachedFunctionCall: () =>
+                            handleAfterRowAdd(newTShirtOrder, callback, true),
+                        failedTShirtStyleNumber: newTShirtOrder.tShirtOrderTshirtStyleNumber
+                    })
+                    return;
+                }
+                const changeCo = {
+                    ...resp.orderChange,
+                    createdAt: toReadableDateTime(resp.orderChange.createdAt),
+                } as CustomerOrderChange;
+                setChangeHistory([changeCo, ...changeHistory]);
+                callback(resp.newTShirtOrderId ? resp.newTShirtOrderId : "");
+                setNegativeInventoryWarning({ ...initialNegativeInventoryWarningState });
+            }
         )
     };
 
@@ -226,14 +273,12 @@ const OrderedItemsTable = ({
                 {negativeInventoryWarning.show && (
                     <NegativeInventoryConfirmPopup
                         open={negativeInventoryWarning.show}
-                        onClose={() => setNegativeInventoryWarning({ ...negativeInventoryWarning, show: false })}
-                        onSubmit={() => handleAfterRowEdit(
-                            negativeInventoryWarning.mrtRow,
-                            negativeInventoryWarning.cachedOrderChange,
-                            negativeInventoryWarning.callback,
-                            true
-                        )}
-                        failedTShirts={[negativeInventoryWarning.prevTShirtOrder.tShirtOrderTshirtStyleNumber]}
+                        onClose={() => setNegativeInventoryWarning({
+                            ...negativeInventoryWarning,
+                            show: false
+                        })}
+                        onSubmit={negativeInventoryWarning.cachedFunctionCall}
+                        failedTShirts={[negativeInventoryWarning.failedTShirtStyleNumber]}
                     />
                 )}
                 <TShirtOrderTable

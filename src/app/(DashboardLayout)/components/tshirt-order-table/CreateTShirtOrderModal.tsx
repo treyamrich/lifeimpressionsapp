@@ -23,16 +23,14 @@ import {
 } from "@mui/material";
 import { TShirt } from "@/API";
 import { MRT_ColumnDef } from "material-react-table";
-import { EntityType } from "../po-customer-order-shared-components/CreateOrderPage";
 
-interface CreateTShirtOrderModal<TShirtOrder extends Record<string, any>> {
+interface CreateTShirtOrderModalProps<TShirtOrder extends Record<string, any>> {
   columns: MRT_ColumnDef<TShirtOrder>[];
   onClose: () => void;
-  onSubmit: (values: TShirtOrder) => void;
+  onSubmit: (values: TShirtOrder, callback: () => void) => void;
   open: boolean;
   tshirtChoices: TShirt[];
   tableData: TShirtOrder[];
-  entityType: EntityType;
 }
 
 const CreateTShirtOrderModal = <TShirtOrder extends Record<string, any>>({
@@ -42,8 +40,7 @@ const CreateTShirtOrderModal = <TShirtOrder extends Record<string, any>>({
   onSubmit,
   tshirtChoices,
   tableData,
-  entityType
-}: CreateTShirtOrderModal<TShirtOrder>) => {
+}: CreateTShirtOrderModalProps<TShirtOrder>) => {
   //Initial TShirtOrder values
   const [values, setValues] = useState<any>(() => {
     return { ...initialTShirtOrderFormState };
@@ -90,9 +87,13 @@ const CreateTShirtOrderModal = <TShirtOrder extends Record<string, any>>({
     });
     setErrorMap(newErrors);
     if (allValid) {
-      onSubmit(values);
-      resetForm();
-      onClose();
+      onSubmit(
+        values,
+        () => {
+          resetForm();
+          onClose();
+        }
+      );
     }
   };
 
@@ -119,18 +120,20 @@ const CreateTShirtOrderModal = <TShirtOrder extends Record<string, any>>({
                   key={column.accessorKey as React.Key}
                   label={column.header}
                   name={column.accessorKey as string}
-                  onChange={(e: any) => {{
-                    if(isNumberInputField(column.accessorKey)) {
-                      try {
-                        const v = parseInt(e.target.value, 10);
-                        setValues({ ...values, [e.target.name]: isNaN(v) ? 0 : v })
-                      } catch (e) {
-                        console.log(e)
+                  onChange={(e: any) => {
+                    {
+                      if (isNumberInputField(column.accessorKey)) {
+                        try {
+                          const v = parseInt(e.target.value, 10);
+                          setValues({ ...values, [e.target.name]: isNaN(v) ? 0 : v })
+                        } catch (e) {
+                          console.log(e)
+                        }
+                      } else {
+                        setValues({ ...values, [e.target.name]: e.target.value })
                       }
-                    } else {
-                      setValues({ ...values, [e.target.name]: e.target.value })
                     }
-                  }}}
+                  }}
                   type={
                     isNumberInputField(column.accessorKey)
                       ? "number"

@@ -30,12 +30,14 @@ export const getTShirtOrdersStatements = (
                 ));
         }
         // Add to TShirtOrder table
+        const tshirtOrderId = v4();
         res.push(
             getInsertTShirtOrderTablePartiQL(
                 entityType,
                 parentOrderUuid,
                 createdAt,
-                tshirtOrder
+                tshirtOrder,
+                tshirtOrderId
             )
         );
     });

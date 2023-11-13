@@ -1,5 +1,5 @@
 import { ExecuteTransactionCommand } from "@aws-sdk/client-dynamodb";
-import { createDynamoDBObj, customerOrderChangeTable, purchaseOrderChangeTable, tshirtOrderTable, tshirtTable } from '../dynamodb-transactions/dynamodb';
+import { createDynamoDBObj } from '../dynamodb-transactions/dynamodb';
 import { EntityType } from "../(DashboardLayout)/components/po-customer-order-shared-components/CreateOrderPage";
 import { CognitoUser } from '@aws-amplify/auth';
 import { toAWSDateTime } from "@/utils/datetimeConversions";
@@ -7,25 +7,45 @@ import dayjs from "dayjs";
 import { v4 } from 'uuid';
 import { OrderChange } from "../(DashboardLayout)/components/tshirt-order-table/table-constants";
 import { TShirtOrder } from "@/API";
-import { getInsertOrderChangePartiQL, getUpdateTShirtOrderTablePartiQL, getUpdateTShirtTablePartiQL } from "./partiql-helpers";
+import { getInsertOrderChangePartiQL, getInsertTShirtOrderTablePartiQL, getUpdateTShirtOrderTablePartiQL, getUpdateTShirtTablePartiQL } from "./partiql-helpers";
+import { DBOperation } from "@/contexts/DBErrorContext";
 
 export type UpdateOrderTransactionInput = {
     tshirtOrder: TShirtOrder;
-    orderId: string;
+    parentOrderId: string;
     reason: string;
-    quantityDelta: number;
-    quantityDelta2: number | undefined;
+    tshirtTableQtyDelta: number;
+    orderedQtyDelta: number | undefined;
 }
 
-// Used when updating the TShirtOrder row in an order. Returns null if allowNegativeInventory is false and the inventory will become negative in the TShirt table.
-export const updateOrderTransactionAPI = async (input: UpdateOrderTransactionInput, entityType: EntityType, user: CognitoUser, allowNegativeInventory: boolean): Promise<OrderChange | null> => {
-    const { tshirtOrder, orderId, reason, quantityDelta, quantityDelta2 } = input;
+export type UpdateOrderTransactionResponse = {
+    orderChange: OrderChange;
+    newTShirtOrderId?: string;
+} | null;
+
+// Used when updating the TShirtOrder row in an order. 
+// Returns null if allowNegativeInventory is false and the inventory will become negative in the TShirt table.
+// tshirtOrderTableOperation is the effect of the transaction. Only support for update and insert.
+// If tshirtOrderTableOpeartion is CREATE a new tshirtOrder id will be returned
+export const updateOrderTransactionAPI = async (
+    input: UpdateOrderTransactionInput,
+    entityType: EntityType,
+    user: CognitoUser,
+    tshirtOrderTableOperation: DBOperation,
+    allowNegativeInventory: boolean
+): Promise<UpdateOrderTransactionResponse> => {
+    if (tshirtOrderTableOperation !== DBOperation.CREATE &&
+        tshirtOrderTableOperation !== DBOperation.UPDATE)
+        throw Error("Invalid operation" + tshirtOrderTableOperation);
+
+    const { tshirtOrder, parentOrderId, reason, tshirtTableQtyDelta, orderedQtyDelta } = input;
     const tshirtOrderId = tshirtOrder.id;
     const tshirtStyleNumber = tshirtOrder.tShirtOrderTshirtStyleNumber;
 
-    let qtyDelta = entityType === EntityType.CustomerOrder ? -quantityDelta : quantityDelta;
-    const qtyDeltaStr = qtyDelta.toString();
-    const qtyDelta2Str = quantityDelta2 ? quantityDelta2.toString() : "0";
+    let entitySpecificQtyDelta = entityType === EntityType.CustomerOrder ?
+        -tshirtTableQtyDelta : tshirtTableQtyDelta;
+    const tshirtTableQtyDeltaStr = entitySpecificQtyDelta.toString();
+    const orderedQtyDeltaStr = orderedQtyDelta ? orderedQtyDelta.toString() : "0";
 
     // Insertion fields for new OrderChange
     const createdAtTimestamp = toAWSDateTime(dayjs());
@@ -34,36 +54,41 @@ export const updateOrderTransactionAPI = async (input: UpdateOrderTransactionInp
     const parentOrderIdFieldName = `${entityType}OrderChangeHistoryId`
     const associatedTShirtStyleNumberFieldName = `${entityType}OrderChangeTshirtStyleNumber`
 
-    // PurchaseOrder uses amountReceived (quantityDelta2) column as the column affecting TShirt table qty
-    const tshirtQtyChange = entityType === EntityType.CustomerOrder ? qtyDeltaStr : qtyDelta2Str;
-    const tshirtOrderQtyChange = quantityDelta.toString();
+    const newTShirtOrderId = tshirtOrderTableOperation === DBOperation.CREATE ? v4() : "";
 
     const transactionStatements = [
         getUpdateTShirtTablePartiQL(
-            tshirtQtyChange,
+            tshirtTableQtyDeltaStr,
             allowNegativeInventory,
             createdAtTimestamp,
             tshirtStyleNumber
         ),
-        getUpdateTShirtOrderTablePartiQL(
-            qtyDeltaStr,
-            qtyDelta2Str,
-            createdAtTimestamp,
-            tshirtOrderId
-        ),
+        tshirtOrderTableOperation === DBOperation.UPDATE ?
+            getUpdateTShirtOrderTablePartiQL(
+                orderedQtyDeltaStr,
+                tshirtTableQtyDeltaStr,
+                createdAtTimestamp,
+                tshirtOrderId
+            ) :
+            getInsertTShirtOrderTablePartiQL(
+                entityType,
+                parentOrderId,
+                createdAtTimestamp,
+                tshirtOrder,
+                newTShirtOrderId
+            ),
         getInsertOrderChangePartiQL(
             entityType,
             orderChangeUuid,
             typename,
             parentOrderIdFieldName,
             associatedTShirtStyleNumberFieldName,
-            tshirtOrderQtyChange,
             reason,
-            orderId,
+            parentOrderId,
             tshirtStyleNumber,
             createdAtTimestamp,
-            qtyDeltaStr,
-            qtyDelta2Str
+            tshirtTableQtyDeltaStr,
+            orderedQtyDeltaStr
         )
     ];
     const command = new ExecuteTransactionCommand({
@@ -77,16 +102,25 @@ export const updateOrderTransactionAPI = async (input: UpdateOrderTransactionInp
                 id: orderChangeUuid,
                 createdAt: createdAtTimestamp,
                 updatedAt: createdAtTimestamp,
-                [parentOrderIdFieldName]: orderId,
+                [parentOrderIdFieldName]: parentOrderId,
                 [associatedTShirtStyleNumberFieldName]: tshirtStyleNumber,
-                orderedQuantityChange: quantityDelta,
                 tshirt: {},
                 reason: reason
             };
+            // Table specific implementation. 
+            // Ordered quantity change field only affects tshirt table for customer orders
             if (entityType === EntityType.PurchaseOrder) {
-                orderChange.quantityChange = quantityDelta2 ? quantityDelta2 : 0;
+                orderChange.orderedQuantityChange = orderedQtyDelta ? orderedQtyDelta : 0;
+                orderChange.quantityChange = tshirtTableQtyDelta;
+            } else {
+                orderChange.orderedQuantityChange = tshirtTableQtyDelta;
             }
-            return orderChange as OrderChange;
+
+            return {
+                orderChange: orderChange as OrderChange,
+                newTShirtOrderId: tshirtOrderTableOperation === DBOperation.CREATE ?
+                    newTShirtOrderId : undefined
+            };
         })
         .catch((e) => {
             if (!allowNegativeInventory) {
