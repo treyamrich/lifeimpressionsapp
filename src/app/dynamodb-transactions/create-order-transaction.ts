@@ -55,7 +55,6 @@ export const createOrderTransactionAPI = async (input: PurchaseOrderOrCustomerOr
         getInsertOrderStatement(input, entityType, createdAtTimestamp, orderId),
         ...getTShirtOrdersStatements(orderedItems, entityType, createdAtTimestamp, orderId, allowNegativeInventory)
     ];
-    transactionStatements.forEach(s => { console.log(s.Statement); console.log(s.Parameters) });
     const command = new ExecuteTransactionCommand({
         TransactStatements: transactionStatements
     });
