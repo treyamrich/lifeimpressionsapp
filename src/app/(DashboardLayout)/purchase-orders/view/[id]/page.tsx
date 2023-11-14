@@ -68,7 +68,8 @@ const ViewPurchaseOrder = ({ params }: ViewPurchaseOrderProps) => {
                 });
                 const orderedItems = res.orderedItems ? res.orderedItems.items : [];
                 setUpdatedOrderedItems(orderedItems.filter(v => v !== null) as TShirtOrder[]);
-            }
+            },
+            "Order does not exist."
         );
     };
 
