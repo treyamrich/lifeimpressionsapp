@@ -12,6 +12,7 @@
     "@aws-sdk/client-dynamodb": "^3.284.0",
     "@aws-sdk/credential-providers": "^3.282.0",
     "@emotion/cache": "latest",
+    "@emotion/server": "latest",
     "@emotion/react": "latest",
     "@emotion/styled": "latest",
     "@mui/icons-material": "latest",
