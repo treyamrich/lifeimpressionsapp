@@ -1,9 +1,18 @@
 "use client";
 
-import { ReactNode, useState, Dispatch, createContext, useContext, SetStateAction } from "react";
-import { Auth } from "aws-amplify";
+import {
+  ReactNode,
+  useState,
+  Dispatch,
+  createContext,
+  useContext,
+  SetStateAction,
+  useEffect
+} from "react";
+import { Auth, Hub } from "aws-amplify";
 import { CognitoUser } from '@aws-amplify/auth';
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { isProtectedRoute } from "@/app/authentication/route-protection/route-protection";
 
 type authContextType = {
   user: any;
@@ -67,10 +76,14 @@ export type AuthError = {
   errMsg: string
 }
 
+const EVERY_59_MIN_AS_MS = 3540000;
+
 export const AuthContextProvider = ({ children }: Props) => {
   const [user, setUser] = useState<CognitoUser | null>(null);
   const [authError, setAuthError] = useState<AuthError>({ errMsg: "" });
   const router = useRouter();
+  const pathName = usePathname();
+  const routeIsProtected = isProtectedRoute(pathName);
 
   // NOTE: Using a listener in ProtectedRoute.tsx to detect auth events
   const login = async (creds: LoginCredentials) => {
@@ -132,22 +145,67 @@ export const AuthContextProvider = ({ children }: Props) => {
       .catch(e => setAuthError({ errMsg: e.message }))
   }
 
-  const value = {
-    user,
-    setUser,
-    login,
-    logout,
-    register,
-    confirmRegister,
-    authError,
-    setAuthError,
-    forgotPassword,
-    forgotPasswordSubmit
+  const checkUser = async (): Promise<void> => {
+    try {
+      const userData = await Auth.currentAuthenticatedUser();
+      const groups = userData.signInUserSession.accessToken.payload["cognito:groups"];
+      if (!groups || !groups.includes("admin")) {
+        router.push('/unauthorized');
+        throw Error('User is not admin')
+      }
+      setUser(userData);
+    } catch (error: any) {
+      setUser(null);
+      if (routeIsProtected)
+        router.push('/authentication/login');
+    }
   };
 
+  // Set user on initial load
+  useEffect(() => {
+    checkUser();
+  }, []);
+
+  // Refresh session token every 59 minutes
+  useEffect(() => {
+    const checkUserInterval = setInterval(() => {
+      console.log("REFRESHING SESSION TOKENS");
+      checkUser();
+    }, EVERY_59_MIN_AS_MS);
+    return () => clearInterval(checkUserInterval);
+  }, []);
+
+  // Set the user after login events
+  useEffect(() => {
+    const unsubscribe = Hub.listen("auth", ({ payload: { event, data } }) => {
+      //console.log(`auth event: ${event}`)
+      switch (event) {
+        case "cognitoHostedUI":
+        case "signIn":
+          router.push("/");
+          checkUser();
+          break;
+      }
+    });
+    return unsubscribe;
+  }, []);
+
+  const showRoute = user !== null || !routeIsProtected;
   return (
-    <AuthContext.Provider value={value}>
-      {children}
+    <AuthContext.Provider
+      value={{
+        user,
+        setUser,
+        login,
+        logout,
+        register,
+        confirmRegister,
+        authError,
+        setAuthError,
+        forgotPassword,
+        forgotPasswordSubmit
+      }}>
+      {showRoute ? <> {children} </> : <></>}
     </AuthContext.Provider>
   );
 };

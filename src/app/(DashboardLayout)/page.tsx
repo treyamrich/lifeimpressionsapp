@@ -1,10 +1,15 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 const LandingPage = () => {
     const router = useRouter();
-    router.push('/inventory');
+
+    useEffect(() => {
+        router.push('/inventory');
+    }, []);
+
     return <div>Dash Loading</div>
 }
 
