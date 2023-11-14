@@ -19,9 +19,21 @@ export const toDateObj = (dateString: string): Date => {
     return dayjs(dateString, readableTimeFormat).toDate();
 }
 
-// Takes a date string that comes from toReadableDateTime function and converts to a Date object
-export const toDayjs = (dateString: string): Dayjs => {
-    return dayjs(dateString, readableTimeFormat).tz(configuredTimeZone);
+// Takes a date string that comes from toReadableDateTime function and converts to a Dayjs object
+export const toTimezoneWithoutAdjustingHours = (dateString: string): Dayjs => {
+    const dayjsObj = dayjs(dateString);
+
+    // Save the time info
+    const hours = dayjsObj.hour();
+    const minutes = dayjsObj.minute();
+    const seconds = dayjsObj.second();
+    const milliseconds = dayjsObj.millisecond();
+
+    return dayjsObj.tz(configuredTimeZone)
+        .set('hour', hours)
+        .set('minute', minutes)
+        .set('second', seconds)
+        .set('millisecond', milliseconds);
 }
 
 export const getStartOfTomorrow = () => {

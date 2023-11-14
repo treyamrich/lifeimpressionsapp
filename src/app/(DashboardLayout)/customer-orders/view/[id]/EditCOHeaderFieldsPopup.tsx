@@ -3,7 +3,7 @@ import { MRT_ColumnDef } from "material-react-table";
 import { useMemo, useState } from "react";
 import { SelectValue, columnInfo, getTableColumns } from "../../table-constants";
 import { Dayjs } from "dayjs";
-import { toAWSDateTime, toDayjs } from "@/utils/datetimeConversions";
+import { toAWSDateTime, toTimezoneWithoutAdjustingHours } from "@/utils/datetimeConversions";
 import { Button, Dialog, DialogContent, DialogTitle, Grid, MenuItem, Stack, TextField } from "@mui/material";
 import { DateTimePicker } from "@mui/x-date-pickers";
 import { validateEmail, validatePhoneNumber } from "@/utils/field-validation";
@@ -26,9 +26,7 @@ const EditCOHeaderFieldsPopup = ({ open, co, onSubmit, onClose }: EditCOHeaderFi
         const formState = { ...co } as any;
         Object.keys(formState).forEach((field: string) => {
             if (columnInfo.get(field)?.isDatetimeField) {
-                formState[field] = toDayjs(formState[field]);
-                // SOME TIME ZONE SHIT
-                console.log(formState[field])
+                formState[field] = toTimezoneWithoutAdjustingHours(formState[field]);
             } else if (formState[field] === null) {
                 formState[field] = "";
             }
