@@ -6,7 +6,9 @@
     "dev": "cross-env NODE_OPTIONS=--max_old_space_size=4096 next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "test": "jest",
+    "test:watch": "jest --watchAll"
   },
   "dependencies": {
     "@aws-sdk/client-dynamodb": "^3.284.0",
