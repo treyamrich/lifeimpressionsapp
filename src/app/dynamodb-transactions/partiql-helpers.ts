@@ -149,7 +149,7 @@ export const getInsertTShirtOrderTablePartiQL = (
     }
 }
 
-export const getInsertOrderStatement = (
+export const getInsertOrderPartiQL = (
     order: PurchaseOrderOrCustomerOrder,
     entityType: EntityType,
     createdAt: string,
@@ -168,6 +168,7 @@ export const getInsertOrderStatement = (
                 'vendor': ?,
                 'status': ?,
                 'isDeleted': ?,
+                'type': ?,
                 'createdAt': ?,
                 'updatedAt': ?
             }
@@ -179,6 +180,7 @@ export const getInsertOrderStatement = (
                 { S: purchaseOrder.vendor },
                 { S: purchaseOrder.status },
                 { BOOL: false },
+                { S: typename },
                 { S: createdAt },
                 { S: createdAt },
             ]
@@ -199,6 +201,7 @@ export const getInsertOrderStatement = (
           'orderNotes': ?,
           'dateNeededBy': ?,
           'isDeleted': ?,
+          'type': ?,
           'createdAt': ?,
           'updatedAt': ?
         }
@@ -214,8 +217,27 @@ export const getInsertOrderStatement = (
             getStrOrNull(customerOrder.orderNotes),
             { S: customerOrder.dateNeededBy },
             { BOOL: false },
+            { S: typename },
             { S: createdAt },
             { S: createdAt },
+        ]
+    }
+};
+
+export const getUpdateOrderPartiQL = (
+    entityType: EntityType,
+    orderId: string,
+    updatedAtTimestamp: string
+): ParameterizedStatement => {
+    return {
+        Statement: `
+            UPDATE "${entityType === EntityType.PurchaseOrder ? purchaseOrderTable : customerOrderTable}"
+            SET updatedAt = ?
+            WHERE id = ?
+        `,
+        Parameters: [
+            { S: updatedAtTimestamp },
+            { S: orderId }
         ]
     }
 }

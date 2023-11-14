@@ -42,12 +42,15 @@ enum TShirtType {
 type PurchaseOrder @model @auth(rules: [
   { allow: groups, groups: ["admin"], provider: userPools}]) {
   id: ID!
-  orderNumber: String! # Optional for admin to track
+  orderNumber: String!
   vendor: String!
   orderedItems: [TShirtOrder!] @hasMany
   status: POStatus!
   changeHistory: [PurchaseOrderChange!] @hasMany
+
   isDeleted: Boolean @default(value: "false")
+  type: String @default(value: "PurchaseOrder") @index(name: "purchaseOrdersByCreatedAt", queryField: "purchaseOrdersByCreatedAt", sortKeyFields: ["createdAt"])
+  createdAt: String!
 }
 
 enum POStatus {
@@ -94,6 +97,8 @@ type CustomerOrder @model @auth(rules: [
   changeHistory: [CustomerOrderChange!] @hasMany
 
   isDeleted: Boolean @default(value: "false")
+  type: String @default(value: "CustomerOrder") @index(name: "customerOrdersByCreatedAt", queryField: "customerOrdersByCreatedAt", sortKeyFields: ["createdAt"])
+  createdAt: String!
 }
 
 enum CustomerOrderStatus {

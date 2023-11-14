@@ -1,7 +1,7 @@
-import { ListTShirtsQuery, TShirt, ModelTShirtFilterInput, ModelPurchaseOrderFilterInput, ListPurchaseOrdersQuery, PurchaseOrder, GetPurchaseOrderQueryVariables, GetPurchaseOrderQuery, ListCustomerOrdersQuery, ModelCustomerOrderFilterInput, CustomerOrder, GetCustomerOrderQueryVariables, GetCustomerOrderQuery } from "@/API";
+import { ListTShirtsQuery, TShirt, ModelTShirtFilterInput, ModelPurchaseOrderFilterInput, ListPurchaseOrdersQuery, PurchaseOrder, GetPurchaseOrderQueryVariables, GetPurchaseOrderQuery, ListCustomerOrdersQuery, ModelCustomerOrderFilterInput, CustomerOrder, GetCustomerOrderQueryVariables, GetCustomerOrderQuery, ModelSortDirection, CustomerOrdersByCreatedAtQuery, PurchaseOrdersByCreatedAtQuery } from "@/API";
 import { API } from "aws-amplify";
 import { GraphQLQuery } from "@aws-amplify/api";
-import { getCustomerOrder, getPurchaseOrder, listCustomerOrders, listPurchaseOrders, listTShirts } from "@/graphql/queries";
+import { customerOrdersByCreatedAt, getCustomerOrder, getPurchaseOrder, listCustomerOrders, listPurchaseOrders, listTShirts, purchaseOrdersByCreatedAt } from "@/graphql/queries";
 import { configuredAuthMode } from "./auth-mode";
 
 export const listTShirtAPI = async (filters: ModelTShirtFilterInput): Promise<TShirt[]> => {
@@ -20,15 +20,17 @@ export const listTShirtAPI = async (filters: ModelTShirtFilterInput): Promise<TS
   return resp;
 };
 
-export const listPurchaseOrderAPI = async (filters: ModelPurchaseOrderFilterInput): Promise<PurchaseOrder[]> => {
-  const resp = await API.graphql<GraphQLQuery<ListPurchaseOrdersQuery>>({
-    query: listPurchaseOrders,
+export const listPurchaseOrderAPI = async (filters: ModelPurchaseOrderFilterInput, sortDirection: ModelSortDirection): Promise<PurchaseOrder[]> => {
+  const resp = await API.graphql<GraphQLQuery<PurchaseOrdersByCreatedAtQuery>>({
+    query: purchaseOrdersByCreatedAt,
     variables: {
-      filter: filters
+      filter: filters,
+      sortDirection: sortDirection,
+      type: "PurchaseOrder"
     },
     authMode: configuredAuthMode
   })
-    .then((res) => res.data?.listPurchaseOrders?.items as PurchaseOrder[])
+    .then((res) => res.data?.purchaseOrdersByCreatedAt?.items as PurchaseOrder[])
     .catch((e) => {
       console.log(e);
       throw new Error("Failed to fetch Purchase Orders");
@@ -36,15 +38,17 @@ export const listPurchaseOrderAPI = async (filters: ModelPurchaseOrderFilterInpu
   return resp;
 }
 
-export const listCustomerOrderAPI = async (filters: ModelCustomerOrderFilterInput): Promise<CustomerOrder[]> => {
-  const resp = await API.graphql<GraphQLQuery<ListCustomerOrdersQuery>>({
-    query: listCustomerOrders,
+export const listCustomerOrderAPI = async (filters: ModelCustomerOrderFilterInput, sortDirection: ModelSortDirection): Promise<CustomerOrder[]> => {
+  const resp = await API.graphql<GraphQLQuery<CustomerOrdersByCreatedAtQuery>>({
+    query: customerOrdersByCreatedAt,
     variables: {
-      filter: filters
+      filter: filters,
+      sortDirection: sortDirection,
+      type: "CustomerOrder"
     },
     authMode: configuredAuthMode
   })
-    .then((res) => res.data?.listCustomerOrders?.items as CustomerOrder[])
+    .then((res) => res.data?.customerOrdersByCreatedAt?.items as CustomerOrder[])
     .catch((e) => {
       console.log(e);
       throw new Error("Failed to fetch Customer Orders");

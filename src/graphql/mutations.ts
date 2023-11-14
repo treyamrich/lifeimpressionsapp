@@ -100,6 +100,7 @@ export const createPurchaseOrder = /* GraphQL */ `
         __typename
       }
       isDeleted
+      type
       createdAt
       updatedAt
       __typename
@@ -147,6 +148,7 @@ export const updatePurchaseOrder = /* GraphQL */ `
         __typename
       }
       isDeleted
+      type
       createdAt
       updatedAt
       __typename
@@ -194,6 +196,7 @@ export const deletePurchaseOrder = /* GraphQL */ `
         __typename
       }
       isDeleted
+      type
       createdAt
       updatedAt
       __typename
@@ -511,6 +514,7 @@ export const createCustomerOrder = /* GraphQL */ `
         __typename
       }
       isDeleted
+      type
       createdAt
       updatedAt
       __typename
@@ -561,6 +565,7 @@ export const updateCustomerOrder = /* GraphQL */ `
         __typename
       }
       isDeleted
+      type
       createdAt
       updatedAt
       __typename
@@ -611,6 +616,7 @@ export const deleteCustomerOrder = /* GraphQL */ `
         __typename
       }
       isDeleted
+      type
       createdAt
       updatedAt
       __typename

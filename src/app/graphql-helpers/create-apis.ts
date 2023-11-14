@@ -21,39 +21,40 @@ export const createTShirtAPI = async (
   return resp;
 };
 
-export const createCustomerOrderAPI = async (
-  co: CreateCustomerOrderInput
-): Promise<CustomerOrder> => {
-  const cleanCO = cleanObjectFields(co);
-  const resp = await API.graphql<GraphQLQuery<CreateCustomerOrderMutation>>({
-    query: createCustomerOrder,
-    variables: { input: cleanCO },
-    authMode: configuredAuthMode
-  })
-    .then(res => res.data?.createCustomerOrder as CustomerOrder)
-    .catch(e => {
-      console.log(e);
-      throw new Error("Failed to create new Customer Order");
-    });
-  return resp
-}
+// REPLACED BY TRANSACTIONS
+// export const createCustomerOrderAPI = async (
+//   co: CreateCustomerOrderInput
+// ): Promise<CustomerOrder> => {
+//   const cleanCO = cleanObjectFields(co);
+//   const resp = await API.graphql<GraphQLQuery<CreateCustomerOrderMutation>>({
+//     query: createCustomerOrder,
+//     variables: { input: cleanCO },
+//     authMode: configuredAuthMode
+//   })
+//     .then(res => res.data?.createCustomerOrder as CustomerOrder)
+//     .catch(e => {
+//       console.log(e);
+//       throw new Error("Failed to create new Customer Order");
+//     });
+//   return resp
+// }
 
-export const createPurchaseOrderAPI = async (
-  po: PurchaseOrder
-): Promise<PurchaseOrder> => {
-  const cleanPO = cleanObjectFields(po);
-  const resp = await API.graphql<GraphQLQuery<CreatePurchaseOrderMutation>>({
-    query: createPurchaseOrder,
-    variables: { input: cleanPO },
-    authMode: configuredAuthMode
-  })
-    .then(res => res.data?.createPurchaseOrder as PurchaseOrder)
-    .catch(e => {
-      console.log(e);
-      throw new Error("Failed to create new Purchase Order");
-    });
-  return resp
-}
+// export const createPurchaseOrderAPI = async (
+//   po: PurchaseOrder
+// ): Promise<PurchaseOrder> => {
+//   const cleanPO = cleanObjectFields(po);
+//   const resp = await API.graphql<GraphQLQuery<CreatePurchaseOrderMutation>>({
+//     query: createPurchaseOrder,
+//     variables: { input: cleanPO },
+//     authMode: configuredAuthMode
+//   })
+//     .then(res => res.data?.createPurchaseOrder as PurchaseOrder)
+//     .catch(e => {
+//       console.log(e);
+//       throw new Error("Failed to create new Purchase Order");
+//     });
+//   return resp
+// }
 
 export const createPurchaseOrderChangeAPI = async (
   poChange: CreatePurchaseOrderChangeInput

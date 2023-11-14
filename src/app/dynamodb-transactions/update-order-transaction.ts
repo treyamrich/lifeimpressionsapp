@@ -7,7 +7,13 @@ import dayjs from "dayjs";
 import { v4 } from 'uuid';
 import { OrderChange } from "../(DashboardLayout)/components/tshirt-order-table/table-constants";
 import { TShirtOrder } from "@/API";
-import { getInsertOrderChangePartiQL, getInsertTShirtOrderTablePartiQL, getUpdateTShirtOrderTablePartiQL, getUpdateTShirtTablePartiQL } from "./partiql-helpers";
+import {
+    getInsertOrderChangePartiQL,
+    getInsertTShirtOrderTablePartiQL,
+    getUpdateOrderPartiQL,
+    getUpdateTShirtOrderTablePartiQL,
+    getUpdateTShirtTablePartiQL
+} from "./partiql-helpers";
 import { DBOperation } from "@/contexts/DBErrorContext";
 
 export type UpdateOrderTransactionInput = {
@@ -21,6 +27,7 @@ export type UpdateOrderTransactionInput = {
 export type UpdateOrderTransactionResponse = {
     orderChange: OrderChange;
     newTShirtOrderId?: string;
+    orderUpdatedAtTimestamp: string;
 } | null;
 
 // Used when updating the TShirtOrder row in an order. 
@@ -55,6 +62,11 @@ export const updateOrderTransactionAPI = async (
     const newTShirtOrderId = tshirtOrderTableOperation === DBOperation.CREATE ? v4() : "";
 
     const transactionStatements = [
+        getUpdateOrderPartiQL(
+            entityType,
+            parentOrderId,
+            createdAtTimestamp
+        ),
         getUpdateTShirtTablePartiQL(
             entitySpecificTShirtTableQtyDelta,
             allowNegativeInventory,
@@ -116,6 +128,7 @@ export const updateOrderTransactionAPI = async (
 
             return {
                 orderChange: orderChange as OrderChange,
+                orderUpdatedAtTimestamp: createdAtTimestamp,
                 newTShirtOrderId: tshirtOrderTableOperation === DBOperation.CREATE ?
                     newTShirtOrderId : undefined
             };

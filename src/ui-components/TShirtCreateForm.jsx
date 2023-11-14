@@ -14,8 +14,7 @@ import {
   SwitchField,
   TextField,
 } from "@aws-amplify/ui-react";
-import { getOverrideProps } from "@aws-amplify/ui-react/internal";
-import { fetchByPath, validateField } from "./utils";
+import { fetchByPath, getOverrideProps, validateField } from "./utils";
 import { API } from "aws-amplify";
 import { createTShirt } from "../graphql/mutations";
 export default function TShirtCreateForm(props) {
@@ -132,7 +131,7 @@ export default function TShirtCreateForm(props) {
             }
           });
           await API.graphql({
-            query: createTShirt,
+            query: createTShirt.replaceAll("__typename", ""),
             variables: {
               input: {
                 ...modelFields,

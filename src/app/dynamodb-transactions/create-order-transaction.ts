@@ -6,7 +6,7 @@ import { ExecuteTransactionCommand, ParameterizedStatement } from "@aws-sdk/clie
 import { TShirtOrder } from "@/API";
 import { PurchaseOrderOrCustomerOrder } from "../graphql-helpers/create-apis";
 import { createDynamoDBObj } from './dynamodb';
-import { getInsertOrderStatement, getInsertTShirtOrderTablePartiQL, getUpdateTShirtTablePartiQL } from "./partiql-helpers";
+import { getInsertOrderPartiQL, getInsertTShirtOrderTablePartiQL, getUpdateTShirtTablePartiQL } from "./partiql-helpers";
 import { v4 } from 'uuid';
 
 export const getTShirtOrdersStatements = (
@@ -52,7 +52,7 @@ export const createOrderTransactionAPI = async (input: PurchaseOrderOrCustomerOr
 
     const orderedItems = input.orderedItems as any as TShirtOrder[]; // Locally orderedItems is just an array
     const transactionStatements: ParameterizedStatement[] = [
-        getInsertOrderStatement(input, entityType, createdAtTimestamp, orderId),
+        getInsertOrderPartiQL(input, entityType, createdAtTimestamp, orderId),
         ...getTShirtOrdersStatements(orderedItems, entityType, createdAtTimestamp, orderId, allowNegativeInventory)
     ];
     const command = new ExecuteTransactionCommand({

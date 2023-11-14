@@ -14,8 +14,7 @@ import {
   SwitchField,
   TextField,
 } from "@aws-amplify/ui-react";
-import { getOverrideProps } from "@aws-amplify/ui-react/internal";
-import { fetchByPath, validateField } from "./utils";
+import { fetchByPath, getOverrideProps, validateField } from "./utils";
 import { API } from "aws-amplify";
 import { getTShirt } from "../graphql/queries";
 import { updateTShirt } from "../graphql/mutations";
@@ -71,7 +70,7 @@ export default function TShirtUpdateForm(props) {
       const record = styleNumberProp
         ? (
             await API.graphql({
-              query: getTShirt,
+              query: getTShirt.replaceAll("__typename", ""),
               variables: { styleNumber: styleNumberProp },
             })
           )?.data?.getTShirt
@@ -153,7 +152,7 @@ export default function TShirtUpdateForm(props) {
             }
           });
           await API.graphql({
-            query: updateTShirt,
+            query: updateTShirt.replaceAll("__typename", ""),
             variables: {
               input: {
                 styleNumber: tShirtRecord.styleNumber,

@@ -106,6 +106,7 @@ const ViewCustomerOrder = ({ params }: ViewCustomerOrderProps) => {
                                     tableData={updatedOrderedItems}
                                     setTableData={setUpdatedOrderedItems}
                                     parentCustomerOrder={co}
+                                    setCustomerOrder={setCo}
                                     changeHistory={editHistory}
                                     setChangeHistory={setEditHistory}
                                 />
@@ -136,6 +137,7 @@ type OrderedItemsTableProps = {
     tableData: TShirtOrder[];
     setTableData: React.Dispatch<React.SetStateAction<TShirtOrder[]>>;
     parentCustomerOrder: CustomerOrder;
+    setCustomerOrder: React.Dispatch<React.SetStateAction<CustomerOrder>>;
     changeHistory: CustomerOrderChange[];
     setChangeHistory: React.Dispatch<React.SetStateAction<CustomerOrderChange[]>>;
 };
@@ -144,6 +146,7 @@ const OrderedItemsTable = ({
     tableData,
     setTableData,
     parentCustomerOrder,
+    setCustomerOrder,
     changeHistory,
     setChangeHistory,
 }: OrderedItemsTableProps) => {
@@ -214,6 +217,7 @@ const OrderedItemsTable = ({
                     createdAt: toReadableDateTime(resp.orderChange.createdAt),
                 } as CustomerOrderChange;
                 setChangeHistory([changeCo, ...changeHistory]);
+                setCustomerOrder({...parentCustomerOrder, updatedAt: toReadableDateTime(resp.orderUpdatedAtTimestamp)});
                 exitEditingMode();
                 setNegativeInventoryWarning({ ...initialNegativeInventoryWarningState });
             },
@@ -261,6 +265,7 @@ const OrderedItemsTable = ({
                     createdAt: toReadableDateTime(resp.orderChange.createdAt),
                 } as CustomerOrderChange;
                 setChangeHistory([changeCo, ...changeHistory]);
+                setCustomerOrder({...parentCustomerOrder, updatedAt: toReadableDateTime(resp.orderUpdatedAtTimestamp)});
                 callback(resp.newTShirtOrderId ? resp.newTShirtOrderId : "");
                 setNegativeInventoryWarning({ ...initialNegativeInventoryWarningState });
             }

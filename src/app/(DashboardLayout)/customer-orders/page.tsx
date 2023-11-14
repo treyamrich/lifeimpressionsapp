@@ -1,6 +1,6 @@
 "use client";
 
-import { CustomerOrder, CustomerOrderStatus } from "@/API";
+import { CustomerOrder, CustomerOrderStatus, ModelSortDirection } from "@/API";
 import React, { useState } from "react";
 import { useRouter } from 'next/navigation';
 import { listCustomerOrderAPI } from "@/app/graphql-helpers/fetch-apis";
@@ -33,7 +33,7 @@ const CustomerOrders = () => {
   const handleFetchCustomerOrders = () => {
     const deletedFilter = { isDeleted: { ne: true } };
     rescueDBOperation(
-      () => listCustomerOrderAPI(deletedFilter),
+      () => listCustomerOrderAPI(deletedFilter, ModelSortDirection.DESC),
       DBOperation.LIST,
       (resp: CustomerOrder[]) => {
         setTableData(

@@ -1,6 +1,6 @@
 "use client";
 
-import { PurchaseOrder } from "@/API";
+import { ModelSortDirection, PurchaseOrder } from "@/API";
 import React, { useState, SetStateAction } from "react";
 import { useRouter } from 'next/navigation';
 import { listPurchaseOrderAPI } from "@/app/graphql-helpers/fetch-apis";
@@ -29,7 +29,7 @@ const PurchaseOrders = () => {
   const handleFetchPurchaseOrders = () => {
     const deletedFilter = { isDeleted: { ne: true } };
     rescueDBOperation(
-      () => listPurchaseOrderAPI(deletedFilter),
+      () => listPurchaseOrderAPI(deletedFilter, ModelSortDirection.DESC),
       DBOperation.LIST,
       (resp: PurchaseOrder[]) => {
         setTableData(

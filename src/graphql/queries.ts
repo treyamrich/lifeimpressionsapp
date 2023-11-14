@@ -88,6 +88,7 @@ export const getPurchaseOrder = /* GraphQL */ `
         __typename
       }
       isDeleted
+      type
       createdAt
       updatedAt
       __typename
@@ -115,6 +116,48 @@ export const listPurchaseOrders = /* GraphQL */ `
           __typename
         }
         isDeleted
+        type
+        createdAt
+        updatedAt
+        __typename
+      }
+      nextToken
+      __typename
+    }
+  }
+`;
+export const purchaseOrdersByCreatedAt = /* GraphQL */ `
+  query PurchaseOrdersByCreatedAt(
+    $type: String!
+    $createdAt: ModelStringKeyConditionInput
+    $sortDirection: ModelSortDirection
+    $filter: ModelPurchaseOrderFilterInput
+    $limit: Int
+    $nextToken: String
+  ) {
+    purchaseOrdersByCreatedAt(
+      type: $type
+      createdAt: $createdAt
+      sortDirection: $sortDirection
+      filter: $filter
+      limit: $limit
+      nextToken: $nextToken
+    ) {
+      items {
+        id
+        orderNumber
+        vendor
+        orderedItems {
+          nextToken
+          __typename
+        }
+        status
+        changeHistory {
+          nextToken
+          __typename
+        }
+        isDeleted
+        type
         createdAt
         updatedAt
         __typename
@@ -357,6 +400,7 @@ export const getCustomerOrder = /* GraphQL */ `
         __typename
       }
       isDeleted
+      type
       createdAt
       updatedAt
       __typename
@@ -388,6 +432,52 @@ export const listCustomerOrders = /* GraphQL */ `
           __typename
         }
         isDeleted
+        type
+        createdAt
+        updatedAt
+        __typename
+      }
+      nextToken
+      __typename
+    }
+  }
+`;
+export const customerOrdersByCreatedAt = /* GraphQL */ `
+  query CustomerOrdersByCreatedAt(
+    $type: String!
+    $createdAt: ModelStringKeyConditionInput
+    $sortDirection: ModelSortDirection
+    $filter: ModelCustomerOrderFilterInput
+    $limit: Int
+    $nextToken: String
+  ) {
+    customerOrdersByCreatedAt(
+      type: $type
+      createdAt: $createdAt
+      sortDirection: $sortDirection
+      filter: $filter
+      limit: $limit
+      nextToken: $nextToken
+    ) {
+      items {
+        id
+        customerName
+        customerEmail
+        customerPhoneNumber
+        orderedItems {
+          nextToken
+          __typename
+        }
+        orderNumber
+        orderStatus
+        orderNotes
+        dateNeededBy
+        changeHistory {
+          nextToken
+          __typename
+        }
+        isDeleted
+        type
         createdAt
         updatedAt
         __typename
