@@ -20,10 +20,6 @@ const PageWrapper = styled("div")(() => ({
   backgroundColor: "transparent",
 }));
 
-interface Props {
-  children: React.ReactNode;
-}
-
 export default function RootLayout({
   children,
 }: {
@@ -31,7 +27,7 @@ export default function RootLayout({
 }) {
   const [isSidebarOpen, setSidebarOpen] = useState(true);
   const [isMobileSidebarOpen, setMobileSidebarOpen] = useState(false);
-  const { dbOperationError, setDBOperationError } = useDBOperationContext();
+  const { dbOperationError, clearDBOperationErrors } = useDBOperationContext();
   
   return (
     <MainWrapper className="mainwrapper">
@@ -64,7 +60,7 @@ export default function RootLayout({
             {dbOperationError.errorMessage !== undefined ? (
               <Alert
                 severity="error"
-                onClose={() => setDBOperationError({ ...defaultDBOperationError })}
+                onClose={clearDBOperationErrors}
               >
                 {dbOperationError.errorMessage}
               </Alert>
