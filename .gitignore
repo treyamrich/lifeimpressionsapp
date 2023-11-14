@@ -5,6 +5,8 @@ node_modules/
 
 .vscode
 
+coverage/
+
 #amplify-do-not-edit-begin
 amplify/\#current-cloud-backend
 amplify/.config/local-*
