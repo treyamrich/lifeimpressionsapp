@@ -13,6 +13,7 @@ import { Auth, Hub } from "aws-amplify";
 import { CognitoUser } from '@aws-amplify/auth';
 import { usePathname, useRouter } from "next/navigation";
 import { isProtectedRoute } from "@/app/authentication/route-protection/route-protection";
+import { useDBOperationContext } from "./DBErrorContext";
 
 type authContextType = {
   user: any;
@@ -84,6 +85,7 @@ export const AuthContextProvider = ({ children }: Props) => {
   const router = useRouter();
   const pathName = usePathname();
   const routeIsProtected = isProtectedRoute(pathName);
+  const { clearDBOperationErrors } = useDBOperationContext();
 
   // NOTE: Using a listener in ProtectedRoute.tsx to detect auth events
   const login = async (creds: LoginCredentials) => {
@@ -94,6 +96,7 @@ export const AuthContextProvider = ({ children }: Props) => {
       });
   }
   const logout = async () => {
+    clearDBOperationErrors();
     await Auth.signOut()
       .then(() => router.push('/authentication/login'))
       .catch(e => console.log('Error signing out:', e));

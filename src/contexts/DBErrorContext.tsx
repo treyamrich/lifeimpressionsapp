@@ -21,7 +21,7 @@ export const defaultDBOperationError: DBOperationError = {
 
 type DBErrorContextType = {
     dbOperationError: DBOperationError,
-    setDBOperationError: React.Dispatch<SetStateAction<DBOperationError>>;
+    clearDBOperationErrors: () => void;
     rescueDBOperation: (func: () => void,
         operation: DBOperation,
         onSuccess: any,
@@ -30,7 +30,7 @@ type DBErrorContextType = {
 
 const dbOpErrorContextDefaultValues: DBErrorContextType = {
     dbOperationError: defaultDBOperationError,
-    setDBOperationError: () => { },
+    clearDBOperationErrors: () => { },
     rescueDBOperation: () => { }
 };
 
@@ -66,15 +66,14 @@ export const DBOperationContextProvider = ({ children }: Props) => {
         return resp;
     };
 
-
-    const value = {
-        dbOperationError,
-        setDBOperationError,
-        rescueDBOperation
-    };
+    const clearDBOperationErrors = () => setDBOperationError({ ...defaultDBOperationError });
 
     return (
-        <DBOpContext.Provider value={value}>
+        <DBOpContext.Provider value={{
+            dbOperationError,
+            clearDBOperationErrors,
+            rescueDBOperation
+        }}>
             {children}
         </DBOpContext.Provider>
     );
