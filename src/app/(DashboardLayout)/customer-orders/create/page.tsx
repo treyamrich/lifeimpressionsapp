@@ -11,7 +11,7 @@ import {
 } from "../table-constants";
 import { CustomerOrder } from "@/API";
 import CreateOrderPage, { EntityType } from "../../components/po-customer-order-shared-components/CreateOrderPage";
-import { createOrderTransactionAPI } from "@/app/dynamodb-transactions/create-order-transaction";
+import { createOrderTransactionAPI } from "@/dynamodb-transactions/create-order-transaction";
 import { useAuthContext } from "@/contexts/AuthContext";
 import NegativeInventoryConfirmPopup from "../../components/forms/confirm-popup/NegativeInventoryConfirmPopup";
 

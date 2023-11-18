@@ -1,5 +1,5 @@
 import { CustomerOrder, CustomerOrderStatus, PurchaseOrder, TShirtOrder } from "@/API";
-import { EntityType } from "../(DashboardLayout)/components/po-customer-order-shared-components/CreateOrderPage"
+import { EntityType } from "../app/(DashboardLayout)/components/po-customer-order-shared-components/CreateOrderPage"
 import { customerOrderChangeTable, customerOrderTable, getStrOrNull, purchaseOrderChangeTable, purchaseOrderTable, tshirtOrderTable, tshirtTable } from "./dynamodb"
 import { ParameterizedStatement } from "@aws-sdk/client-dynamodb";
 import { PurchaseOrderOrCustomerOrder } from "../graphql-helpers/create-apis";

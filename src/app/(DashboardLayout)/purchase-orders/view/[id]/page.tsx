@@ -10,7 +10,7 @@ import PageContainer from "@/app/(DashboardLayout)/components/container/PageCont
 import BlankCard from "@/app/(DashboardLayout)/components/shared/BlankCard";
 import DashboardCard from "@/app/(DashboardLayout)/components/shared/DashboardCard";
 import TShirtOrderTable, { TableMode } from "@/app/(DashboardLayout)/components/tshirt-order-table/TShirtOrderTable";
-import { getPurchaseOrderAPI } from "@/app/graphql-helpers/fetch-apis";
+import { getPurchaseOrderAPI } from "@/graphql-helpers/fetch-apis";
 import {
     DBOperation, useDBOperationContext,
 } from "@/contexts/DBErrorContext";
@@ -25,7 +25,7 @@ import { EntityType } from "@/app/(DashboardLayout)/components/po-customer-order
 import { CreateOrderChangeInput, OrderChange } from "@/app/(DashboardLayout)/components/tshirt-order-table/table-constants";
 import POChangeHistoryTable from "@/app/(DashboardLayout)/components/order-change-history-table/POChangeHistoryTable";
 import { useAuthContext } from "@/contexts/AuthContext";
-import { UpdateOrderTransactionInput, UpdateOrderTransactionResponse, updateOrderTransactionAPI } from "@/app/dynamodb-transactions/update-order-transaction";
+import { UpdateOrderTransactionInput, UpdateOrderTransactionResponse, updateOrderTransactionAPI } from "@/dynamodb-transactions/update-order-transaction";
 import NegativeInventoryConfirmPopup from "@/app/(DashboardLayout)/components/forms/confirm-popup/NegativeInventoryConfirmPopup";
 
 type ViewPurchaseOrderProps = {

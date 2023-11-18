@@ -1,6 +1,6 @@
 import { toAWSDateTime } from "@/utils/datetimeConversions";
 import dayjs from "dayjs";
-import { EntityType } from "../(DashboardLayout)/components/po-customer-order-shared-components/CreateOrderPage";
+import { EntityType } from "../app/(DashboardLayout)/components/po-customer-order-shared-components/CreateOrderPage";
 import { CognitoUser } from '@aws-amplify/auth';
 import { ExecuteTransactionCommand, ParameterizedStatement } from "@aws-sdk/client-dynamodb";
 import { TShirtOrder } from "@/API";

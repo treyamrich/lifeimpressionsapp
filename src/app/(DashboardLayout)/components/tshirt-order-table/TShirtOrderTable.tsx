@@ -16,7 +16,7 @@ import {
   type MRT_Row,
   type MRT_ColumnFiltersState,
 } from "material-react-table";
-import { listTShirtAPI } from "@/app/graphql-helpers/fetch-apis";
+import { listTShirtAPI } from "@/graphql-helpers/fetch-apis";
 import CreateTShirtOrderModal from "./CreateTShirtOrderModal";
 import EditRowPopup from "./EditRowPopup";
 import { useDBOperationContext, DBOperation } from "@/contexts/DBErrorContext";

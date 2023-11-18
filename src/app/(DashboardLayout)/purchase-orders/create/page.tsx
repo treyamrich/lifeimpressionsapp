@@ -11,7 +11,7 @@ import {
 } from "../table-constants";
 import { PurchaseOrder } from "@/API";
 import CreateOrderPage, { EntityType } from "../../components/po-customer-order-shared-components/CreateOrderPage";
-import { createOrderTransactionAPI } from "@/app/dynamodb-transactions/create-order-transaction";
+import { createOrderTransactionAPI } from "@/dynamodb-transactions/create-order-transaction";
 import { useAuthContext } from "@/contexts/AuthContext";
 
 const CreatePurchaseOrderPage = () => {

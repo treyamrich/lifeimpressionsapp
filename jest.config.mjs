@@ -10,7 +10,7 @@ const customJestConfig = {
   collectCoverage: true,
   coverageProvider: 'v8',
   collectCoverageFrom: [
-    '**/*.{js,jsx,ts,tsx}',
+    '**src/(app|utils|dynamodb-transactions|graphql-helpers)/*.{js,jsx,ts,tsx}',
     '!**/*.d.ts',
     '!**/node_modules/**',
     '!<rootDir>/out/**',

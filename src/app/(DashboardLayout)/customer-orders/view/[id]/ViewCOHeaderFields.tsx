@@ -1,7 +1,7 @@
 import { CustomerOrder, UpdateCustomerOrderInput } from "@/API";
 import BlankCard from "@/app/(DashboardLayout)/components/shared/BlankCard";
 import { DBOperation, useDBOperationContext } from "@/contexts/DBErrorContext";
-import { updateCustomerOrderAPI } from "@/app/graphql-helpers/update-apis";
+import { updateCustomerOrderAPI } from "@/graphql-helpers/update-apis";
 import { Button, CardContent, Grid, Typography } from "@mui/material";
 import { useRouter } from "next/navigation";
 import { orderStatusMap } from "../../table-constants";

@@ -1,11 +1,11 @@
 import { ExecuteTransactionCommand } from "@aws-sdk/client-dynamodb";
-import { createDynamoDBObj } from '../dynamodb-transactions/dynamodb';
-import { EntityType } from "../(DashboardLayout)/components/po-customer-order-shared-components/CreateOrderPage";
+import { createDynamoDBObj } from './dynamodb';
+import { EntityType } from "../app/(DashboardLayout)/components/po-customer-order-shared-components/CreateOrderPage";
 import { CognitoUser } from '@aws-amplify/auth';
 import { toAWSDateTime } from "@/utils/datetimeConversions";
 import dayjs from "dayjs";
 import { v4 } from 'uuid';
-import { OrderChange } from "../(DashboardLayout)/components/tshirt-order-table/table-constants";
+import { OrderChange } from "../app/(DashboardLayout)/components/tshirt-order-table/table-constants";
 import { TShirtOrder } from "@/API";
 import {
     getInsertOrderChangePartiQL,

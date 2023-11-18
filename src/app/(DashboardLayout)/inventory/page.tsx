@@ -5,9 +5,9 @@ import DashboardCard from "@/app/(DashboardLayout)/components/shared/DashboardCa
 import { TShirt } from "@/API";
 import React, { useEffect, useMemo, useState, useCallback } from "react";
 import { Delete, Edit } from "@mui/icons-material";
-import { createTShirtAPI } from "@/app/graphql-helpers/create-apis";
-import { listTShirtAPI } from "@/app/graphql-helpers/fetch-apis";
-import { updateTShirtAPI } from "@/app/graphql-helpers/update-apis";
+import { createTShirtAPI } from "@/graphql-helpers/create-apis";
+import { listTShirtAPI } from "@/graphql-helpers/fetch-apis";
+import { updateTShirtAPI } from "@/graphql-helpers/update-apis";
 import { toReadableDateTime } from "@/utils/datetimeConversions";
 
 import {
