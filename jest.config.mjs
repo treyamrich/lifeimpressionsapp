@@ -28,13 +28,17 @@ const customJestConfig = {
     '<rootDir>/coverage',
     '<rootDir>/dist'
   ],
-  testTimeout: 20000
+  testTimeout: 20000,
+  moduleNameMapper: {
+    '^@/(.*)$': '<rootDir>/src/$1',
+  },
+  setupFiles: ['<rootDir>/setupTests.js'],
 }
 
 const exportConfig = async () => ({
   ...(await createJestConfig(customJestConfig)()),
   transformIgnorePatterns: [
-    'node_modules/(?!(mui-tel-input)/)'
+    'node_modules/(?!(mui-tel-input|uuid)/)'
   ]
 });
 

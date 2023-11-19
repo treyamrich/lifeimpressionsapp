@@ -43,6 +43,7 @@ const AuthRegister = ({ title, subtitle, subtext }: registerType) => {
                     <Typography variant="subtitle1"
                         fontWeight={600} component="label" htmlFor='name' mb="5px">Name</Typography>
                     <CustomTextField id="name"
+                        data-testid="name-input"
                         variant="outlined"
                         fullWidth
                         value={registerCreds.name}
@@ -52,6 +53,7 @@ const AuthRegister = ({ title, subtitle, subtext }: registerType) => {
                     <Typography variant="subtitle1"
                         fontWeight={600} component="label" htmlFor='email' mb="5px" mt="25px">Email Address</Typography>
                     <CustomTextField id="email"
+                        data-testid="email-input"
                         variant="outlined"
                         fullWidth
                         value={registerCreds.email}
@@ -61,6 +63,7 @@ const AuthRegister = ({ title, subtitle, subtext }: registerType) => {
                     <Typography variant="subtitle1"
                         fontWeight={600} component="label" htmlFor='password' mb="5px" mt="25px">Password</Typography>
                     <CustomTextField id="password"
+                        data-testid="password-input"
                         variant="outlined"
                         fullWidth
                         value={registerCreds.password}
@@ -71,6 +74,7 @@ const AuthRegister = ({ title, subtitle, subtext }: registerType) => {
                     <Typography variant="subtitle1"
                         fontWeight={600} component="label" htmlFor='confirm-password' mb="5px" mt="25px">Confirm Password</Typography>
                     <CustomTextField id="confirm-password"
+                        data-testid="confirm-password-input"
                         variant="outlined"
                         fullWidth
                         value={registerCreds.confirmPassword}
@@ -80,6 +84,7 @@ const AuthRegister = ({ title, subtitle, subtext }: registerType) => {
                 </Stack>
                 <Box>
                     <Button
+                        data-testid="submit-button"
                         color="primary"
                         variant="contained"
                         size="large"
