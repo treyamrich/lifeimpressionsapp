@@ -23,7 +23,8 @@ export const createDynamoDBObj = async (user: CognitoUser) => {
     return dynamodbClient;
 }
 
-const tableNameSuffix = "-curfv2qbgze2dfrl5r7wrynenq-dev"
+const envDevSuffix = "-curfv2qbgze2dfrl5r7wrynenq-dev"
+const tableNameSuffix = envDevSuffix
 
 export interface DynamoDBTableInfo {
     tableName: string;
