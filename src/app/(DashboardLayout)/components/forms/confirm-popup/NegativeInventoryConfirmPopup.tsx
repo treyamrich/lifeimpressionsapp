@@ -1,5 +1,17 @@
 import ConfirmPopup from "./ConfirmPopup";
 
+// Shared with CustomerOrder and PurchaseOrder view page
+export type NegativeInventoryWarningState = {
+    show: boolean;
+    cachedFunctionCall: () => void;
+    failedTShirtStyleNumber: string;
+}
+export const initialNegativeInventoryWarningState = {
+    show: false,
+    cachedFunctionCall: () => { },
+    failedTShirtStyleNumber: ""
+};
+
 type NegativeInventoryConfirmPopupProps = {
     open: boolean;
     onClose: () => void;

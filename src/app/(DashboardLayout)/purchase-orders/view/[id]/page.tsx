@@ -22,11 +22,12 @@ import { toReadableDateTime } from "@/utils/datetimeConversions";
 
 import { MRT_Row } from "material-react-table";
 import { EntityType } from "@/app/(DashboardLayout)/components/po-customer-order-shared-components/CreateOrderPage";
-import { CreateOrderChangeInput, OrderChange } from "@/app/(DashboardLayout)/components/tshirt-order-table/table-constants";
+import { CreateOrderChangeInput } from "@/app/(DashboardLayout)/components/tshirt-order-table/table-constants";
 import POChangeHistoryTable from "@/app/(DashboardLayout)/components/order-change-history-table/POChangeHistoryTable";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { UpdateOrderTransactionInput, UpdateOrderTransactionResponse, updateOrderTransactionAPI } from "@/dynamodb-transactions/update-order-transaction";
 import NegativeInventoryConfirmPopup from "@/app/(DashboardLayout)/components/forms/confirm-popup/NegativeInventoryConfirmPopup";
+import { initialNegativeInventoryWarningState, type NegativeInventoryWarningState } from "@/app/(DashboardLayout)/components/forms/confirm-popup/NegativeInventoryConfirmPopup";
 
 type ViewPurchaseOrderProps = {
     params: { id: string };
@@ -128,18 +129,6 @@ const ViewPurchaseOrder = ({ params }: ViewPurchaseOrderProps) => {
 };
 
 export default ViewPurchaseOrder;
-
-// Shared with CustomerOrder view page
-export type NegativeInventoryWarningState = {
-    show: boolean;
-    cachedFunctionCall: () => void;
-    failedTShirtStyleNumber: string;
-}
-export const initialNegativeInventoryWarningState = {
-    show: false,
-    cachedFunctionCall: () => { },
-    failedTShirtStyleNumber: ""
-};
 
 type OrderedItemsTableProps = {
     tableData: TShirtOrder[];

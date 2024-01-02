@@ -19,16 +19,14 @@ import { Typography, Grid, CardContent } from "@mui/material";
 import { useState, useEffect } from "react";
 
 import { toReadableDateTime } from "@/utils/datetimeConversions";
-import { createTShirtOrderAPI } from "@/graphql-helpers/create-apis";
 import { MRT_Row } from "material-react-table";
 import { EntityType } from "@/app/(DashboardLayout)/components/po-customer-order-shared-components/CreateOrderPage";
 import ViewCOHeaderFields from "./ViewCOHeaderFields";
 import COChangeHistoryTable from "@/app/(DashboardLayout)/components/order-change-history-table/COChangeHistoryTable";
-import { CreateOrderChangeInput, OrderChange } from "@/app/(DashboardLayout)/components/tshirt-order-table/table-constants";
+import { CreateOrderChangeInput } from "@/app/(DashboardLayout)/components/tshirt-order-table/table-constants";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { UpdateOrderTransactionInput, UpdateOrderTransactionResponse, updateOrderTransactionAPI } from "@/dynamodb-transactions/update-order-transaction";
-import NegativeInventoryConfirmPopup from "@/app/(DashboardLayout)/components/forms/confirm-popup/NegativeInventoryConfirmPopup";
-import { NegativeInventoryWarningState, initialNegativeInventoryWarningState } from "@/app/(DashboardLayout)/purchase-orders/view/[id]/page";
+import NegativeInventoryConfirmPopup, { NegativeInventoryWarningState, initialNegativeInventoryWarningState } from "@/app/(DashboardLayout)/components/forms/confirm-popup/NegativeInventoryConfirmPopup";
 
 type ViewCustomerOrderProps = {
     params: { id: string };
