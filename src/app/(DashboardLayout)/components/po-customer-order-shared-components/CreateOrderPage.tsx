@@ -154,7 +154,7 @@ function CreateOrderPage<T extends Record<any, any>>({
                                             label={column.header}
                                             disabled={colInfo?.disabledOnCreate === true}
                                             value={values[column.accessorKey as string]}
-                                            onChange={(newVal) =>
+                                            onChange={(newVal: any) =>
                                                 setValues({ ...values, [column.accessorKey as string]: newVal })
                                             }
                                             views={['year', 'month', 'day', 'hours', 'minutes', 'seconds']}
@@ -218,7 +218,7 @@ function CreateOrderPage<T extends Record<any, any>>({
                                 setValues({ ...values, orderedItems: [...tableData] });
                                 exitEditingMode();
                             }}
-                            onRowAdd={(tshirtOrder: TShirtOrder, callback: () => void) => callback()}
+                            onRowAdd={(tshirtOrder: TShirtOrder, callback: (newTShirtOrderId: string) => void) => callback(tshirtOrder.id)}
                             entityType={entityType}
                             mode={TableMode.Create}
                         />
