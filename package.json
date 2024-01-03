@@ -6,7 +6,6 @@
     "dev": "cross-env NODE_OPTIONS=--max_old_space_size=4096 next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
     "test": "jest",
     "test:watch": "jest --watchAll"
   },
@@ -27,8 +26,6 @@
     "@types/react-dom": "18.2.4",
     "aws-amplify": "^5.3.7",
     "dayjs": "^1.11.10",
-    "eslint": "8.41.0",
-    "eslint-config-next": "13.4.3",
     "lodash": "^4.17.21",
     "material-react-table": "^1.14.0",
     "mui-tel-input": "^4.0.1",
