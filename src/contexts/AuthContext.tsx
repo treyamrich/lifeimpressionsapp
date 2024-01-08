@@ -159,6 +159,7 @@ export const AuthContextProvider = ({ children }: Props) => {
       console.log(userData);
       setUser(userData);
     } catch (error: any) {
+      console.log(error)
       setUser(null);
       if (routeIsProtected)
         router.push('/authentication/login');
