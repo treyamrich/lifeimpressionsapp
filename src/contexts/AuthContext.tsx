@@ -93,7 +93,8 @@ export const AuthContextProvider = ({ children }: Props) => {
     await Auth.signIn(username, password)
       .catch(e => {
         setAuthError({ errMsg: "Invalid Credentials" })
-      });
+      })
+      .then(()=> console.log('Signed in'));
   }
   const logout = async () => {
     clearDBOperationErrors();
@@ -181,7 +182,7 @@ export const AuthContextProvider = ({ children }: Props) => {
   // Set the user after login events
   useEffect(() => {
     const unsubscribe = Hub.listen("auth", ({ payload: { event, data } }) => {
-      //console.log(`auth event: ${event}`)
+      console.log(`auth event: ${event}`)
       switch (event) {
         case "cognitoHostedUI":
         case "signIn":
