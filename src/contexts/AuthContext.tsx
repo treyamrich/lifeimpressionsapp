@@ -156,6 +156,7 @@ export const AuthContextProvider = ({ children }: Props) => {
         router.push('/unauthorized');
         throw Error('User is not admin')
       }
+      console.log(userData);
       setUser(userData);
     } catch (error: any) {
       setUser(null);
@@ -186,7 +187,6 @@ export const AuthContextProvider = ({ children }: Props) => {
         case "cognitoHostedUI":
         case "signIn":
           router.push("/");
-          console.log("SIGNED IN")
           checkUser();
           break;
       }
