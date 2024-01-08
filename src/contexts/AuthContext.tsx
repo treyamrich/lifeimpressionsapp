@@ -94,7 +94,6 @@ export const AuthContextProvider = ({ children }: Props) => {
       .catch(e => {
         setAuthError({ errMsg: "Invalid Credentials" })
       })
-      .then(()=> console.log('Signed in'));
   }
   const logout = async () => {
     clearDBOperationErrors();
@@ -187,6 +186,7 @@ export const AuthContextProvider = ({ children }: Props) => {
         case "cognitoHostedUI":
         case "signIn":
           router.push("/");
+          console.log("SIGNED IN")
           checkUser();
           break;
       }
