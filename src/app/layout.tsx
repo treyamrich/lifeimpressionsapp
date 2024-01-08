@@ -10,7 +10,8 @@ import { DBOperationContextProvider } from "@/contexts/DBErrorContext";
 import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 
-Amplify.configure({ ...awsConfig, ssr: true });
+// Amplify.configure({ ...awsConfig, ssr: true });
+Amplify.configure(awsConfig);
 
 type Props = {
   children: ReactElement
