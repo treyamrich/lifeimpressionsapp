@@ -156,10 +156,8 @@ export const AuthContextProvider = ({ children }: Props) => {
         router.push('/unauthorized');
         throw Error('User is not admin')
       }
-      console.log(userData);
       setUser(userData);
     } catch (error: any) {
-      console.log(error)
       setUser(null);
       if (routeIsProtected)
         router.push('/authentication/login');
@@ -183,7 +181,7 @@ export const AuthContextProvider = ({ children }: Props) => {
   // Set the user after login events
   useEffect(() => {
     const unsubscribe = Hub.listen("auth", ({ payload: { event, data } }) => {
-      console.log(`auth event: ${event}`)
+      // console.log(`auth event: ${event}`)
       switch (event) {
         case "cognitoHostedUI":
         case "signIn":
