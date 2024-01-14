@@ -22,6 +22,7 @@ export const getTableColumns = (
         type: "number",
       }),
       helperText: "2",
+      size: 50,
     } as MRT_ColumnDef<TShirt>,
     {
       accessorKey: "brand",
@@ -36,6 +37,7 @@ export const getTableColumns = (
       muiTableBodyCellEditTextFieldProps: ({ cell }) => ({
         ...getCommonEditTextFieldProps(cell),
       }),
+      size: 50
     } as MRT_ColumnDef<TShirt>,
     {
       accessorKey: "size",
@@ -43,6 +45,7 @@ export const getTableColumns = (
       muiTableBodyCellEditTextFieldProps: ({ cell }) => ({
         ...getCommonEditTextFieldProps(cell),
       }),
+      size: 50,
       isSelectField: true,
     } as MRT_ColumnDef<TShirt>,
     {
@@ -51,6 +54,7 @@ export const getTableColumns = (
       muiTableBodyCellEditTextFieldProps: ({ cell }) => ({
         ...getCommonEditTextFieldProps(cell),
       }),
+      size: 50,
       isSelectField: true,
     } as MRT_ColumnDef<TShirt>,
     {

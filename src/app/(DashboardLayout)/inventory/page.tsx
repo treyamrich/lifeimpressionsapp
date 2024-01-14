@@ -206,7 +206,7 @@ const Inventory = () => {
                 onClick={() => setCreateModalOpen(true)}
                 variant="contained"
               >
-                Create New {entityName}
+                Add New Item
               </Button>
             )}
           />

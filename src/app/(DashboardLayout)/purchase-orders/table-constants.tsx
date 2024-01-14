@@ -74,6 +74,7 @@ export const columnInfo = new Map<string | number | symbol | undefined, ColumnIn
       { label: POStatus.Closed, value: POStatus.Closed },
     ]
   } as ColumnInfo],
+  ["orderNumber", { isRequired: true } as ColumnInfo],
 ]);
 
 export const getInitialPurchaseOrderFormErrorMap = () =>

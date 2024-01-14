@@ -96,7 +96,7 @@ function ViewOrdersPage<T extends Record<any, any>>({
                                 onClick={onAddRow}
                                 variant="contained"
                             >
-                                Create New {entityName}
+                                Place New {entityName}
                             </Button>
                         )}
                     />
