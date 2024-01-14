@@ -1,4 +1,4 @@
-import { CreateCustomerOrderChangeInput, CreatePurchaseOrderChangeInput, CustomerOrderChange, PurchaseOrderChange, TShirtOrder } from "@/API";
+import { CreateCustomerOrderChangeInput, CreatePurchaseOrderChangeInput, CustomerOrderChange, PurchaseOrderChange, TShirt, TShirtOrder } from "@/API";
 import { MRT_ColumnDef, MRT_Cell } from "material-react-table";
 
 export const tablePrimaryKey = "id";
@@ -6,7 +6,7 @@ export const modalTitle = "Add to Order";
 export const amountReceivedField = "amountReceived";
 
 //Exclude these fields when creating. TShirt style number is hard coded in the form for input
-export const excludeOnCreateFields: string[] = ["tShirtOrderTshirtStyleNumber", "updatedAt", "createdAt", "id", amountReceivedField];
+export const excludeOnCreateFields: string[] = ["updatedAt", "createdAt", "id", "tshirt.size", "tshirt.color", "tshirt.styleNumber", amountReceivedField];
 export const numberInputFields = new Set<string>(["quantity", amountReceivedField]); 
 
 export type OrderChange = PurchaseOrderChange | CustomerOrderChange;
@@ -17,7 +17,7 @@ export interface TShirtOrderFormError {
 }
 
 export const initialTShirtOrderFormState: any = {
-    tShirtOrderTshirtStyleNumber: "", // associated tshirt
+    tshirt: null,
     quantity: 0,
     amountReceived: 0
 };
@@ -30,7 +30,7 @@ export const getInitialTShirtOrderFormErrorMap = () =>
 export const getTableColumns = (): MRT_ColumnDef<TShirtOrder>[] => {
     return [
         {
-            accessorKey: "tShirtOrderTshirtStyleNumber",
+            accessorKey: "tshirt.styleNumber",
             header: "Style No.",
             muiTableHeadCellProps: { sx: { color: "green" } }, //custom props
             enableEditing: false,
@@ -42,6 +42,14 @@ export const getTableColumns = (): MRT_ColumnDef<TShirtOrder>[] => {
         {
             accessorKey: "amountReceived",
             header: "Amt. Received",
+        } as MRT_ColumnDef<TShirtOrder>,
+        {
+            accessorKey: "tshirt.color",
+            header: "Color",
+        } as MRT_ColumnDef<TShirtOrder>,
+        {
+            accessorKey: "tshirt.size",
+            header: "Size",
         } as MRT_ColumnDef<TShirtOrder>,
         {
             accessorKey: "id",

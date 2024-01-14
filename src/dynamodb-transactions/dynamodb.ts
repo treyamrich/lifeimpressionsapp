@@ -10,6 +10,7 @@ export const createDynamoDBObj = async (user: CognitoUser) => {
     const COGNITO_POOL_ID = awsmobile["aws_user_pools_id"]
     // MAKE SURE to attach the policy for the role that is assumed when logging in with this pool
     const COGNITO_POOL = `cognito-idp.${REGION}.amazonaws.com/${COGNITO_POOL_ID}`
+
     const dynamodbClient = new DynamoDBClient({
         region: REGION,
         credentials: fromCognitoIdentityPool({
@@ -24,7 +25,7 @@ export const createDynamoDBObj = async (user: CognitoUser) => {
 }
 
 const currEnv = process.env.USER_BRANCH;
-const envDevSuffix = "-curfv2qbgze2dfrl5r7wrynenq-dev"
+const envDevSuffix = "-5ktuld3bsvhrtf5yisjz2dini4-dev"
 const envProdSuffix = '-ikejhqyezjd3ja2shc4nwvbq6y-prod'
 const tableNameSuffix = currEnv == "prod" ? envProdSuffix : envDevSuffix;
 
@@ -47,7 +48,7 @@ export const purchaseOrderChangeTable: DynamoDBTableInfo = {
 export const tshirtTable: DynamoDBTableInfo = {
     tableName: `TShirt${tableNameSuffix}`,
     quantityFieldName: ["quantityOnHand"],
-    pkFieldName: "styleNumber"
+    pkFieldName: "id"
 }
 export const tshirtOrderTable: DynamoDBTableInfo = {
     tableName: `TShirtOrder${tableNameSuffix}`,

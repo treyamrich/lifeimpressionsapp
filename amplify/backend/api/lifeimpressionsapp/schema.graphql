@@ -1,6 +1,7 @@
 type TShirt @model @auth(rules: [
   { allow: groups, groups: ["admin"], provider: userPools}]) {
-  styleNumber: String! @primaryKey
+  id: ID! @primaryKey
+  styleNumber: String!
   brand: String!
   color: String!
   size: TShirtSize!

@@ -47,7 +47,6 @@ export const updateOrderTransactionAPI = async (
 
     const { tshirtOrder, parentOrderId, reason, tshirtTableQtyDelta, orderedQtyDelta } = input;
     const tshirtOrderId = tshirtOrder.id;
-    const tshirtStyleNumber = tshirtOrder.tShirtOrderTshirtStyleNumber;
 
     let entitySpecificTShirtTableQtyDelta = entityType === EntityType.CustomerOrder ?
         -tshirtTableQtyDelta : tshirtTableQtyDelta;
@@ -57,7 +56,7 @@ export const updateOrderTransactionAPI = async (
     const orderChangeUuid = v4();
     const typename = entityType === EntityType.CustomerOrder ? "CustomerOrderChange" : "PurchaseOrderChange";
     const parentOrderIdFieldName = `${entityType}OrderChangeHistoryId`
-    const associatedTShirtStyleNumberFieldName = `${entityType}OrderChangeTshirtStyleNumber`
+    const associatedTShirtIdFieldName = `${entityType}OrderChangeTshirtId`
 
     const newTShirtOrderId = tshirtOrderTableOperation === DBOperation.CREATE ? v4() : "";
 
@@ -71,7 +70,7 @@ export const updateOrderTransactionAPI = async (
             entitySpecificTShirtTableQtyDelta,
             allowNegativeInventory,
             createdAtTimestamp,
-            tshirtStyleNumber
+            tshirtOrder.tshirt.id
         ),
         tshirtOrderTableOperation === DBOperation.UPDATE ?
             getUpdateTShirtOrderTablePartiQL(
@@ -92,10 +91,10 @@ export const updateOrderTransactionAPI = async (
             orderChangeUuid,
             typename,
             parentOrderIdFieldName,
-            associatedTShirtStyleNumberFieldName,
+            associatedTShirtIdFieldName,
             reason,
             parentOrderId,
-            tshirtStyleNumber,
+            tshirtOrder.tshirt.id,
             createdAtTimestamp,
             entitySpecificTShirtTableQtyDelta,
             orderedQtyDelta
@@ -113,7 +112,7 @@ export const updateOrderTransactionAPI = async (
                 createdAt: createdAtTimestamp,
                 updatedAt: createdAtTimestamp,
                 [parentOrderIdFieldName]: parentOrderId,
-                [associatedTShirtStyleNumberFieldName]: tshirtStyleNumber,
+                [associatedTShirtIdFieldName]: tshirtOrder.tshirt.id,
                 tshirt: {},
                 reason: reason
             };
@@ -125,7 +124,8 @@ export const updateOrderTransactionAPI = async (
             } else {
                 orderChange.orderedQuantityChange = tshirtTableQtyDelta;
             }
-
+            orderChange.tshirt = tshirtOrder.tshirt;
+            
             return {
                 orderChange: orderChange as OrderChange,
                 orderUpdatedAtTimestamp: createdAtTimestamp,

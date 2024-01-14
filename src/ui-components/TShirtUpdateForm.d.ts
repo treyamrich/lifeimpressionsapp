@@ -54,7 +54,7 @@ export declare type TShirtUpdateFormOverridesProps = {
 export declare type TShirtUpdateFormProps = React.PropsWithChildren<{
     overrides?: TShirtUpdateFormOverridesProps | undefined | null;
 } & {
-    styleNumber?: string;
+    id?: string;
     tShirt?: TShirt;
     onSubmit?: (fields: TShirtUpdateFormInputValues) => TShirtUpdateFormInputValues;
     onSuccess?: (fields: TShirtUpdateFormInputValues) => void;

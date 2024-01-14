@@ -88,42 +88,38 @@ const ViewCustomerOrder = ({ params }: ViewCustomerOrderProps) => {
             description="this is View Customer Order"
         >
             <DashboardCard title={`Customer Order: ${co.orderNumber}`}>
-                <Grid container spacing={3} direction="column" padding={2}>
-                    <Grid item>
+                <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+                    <div>
                         <ViewCOHeaderFields co={co} setCo={setCo} />
-                    </Grid>
-                    <Grid item>
-                        <Grid container direction="column" spacing={1}>
-                            <Grid item>
-                                <Typography variant="h6" color="textSecondary">
-                                    Ordered Items
-                                </Typography>
-                            </Grid>
-                            <Grid item>
-                                <OrderedItemsTable
-                                    tableData={updatedOrderedItems}
-                                    setTableData={setUpdatedOrderedItems}
-                                    parentCustomerOrder={co}
-                                    setCustomerOrder={setCo}
-                                    changeHistory={editHistory}
-                                    setChangeHistory={setEditHistory}
-                                />
-                            </Grid>
-                        </Grid>
-                    </Grid>
-                    <Grid item>
-                        <Grid container direction="column" spacing={1}>
-                            <Grid item>
-                                <Typography variant="h6" color="textSecondary">
-                                    Change History
-                                </Typography>
-                            </Grid>
-                            <Grid item>
-                                <ChangeHistoryTable changeHistory={editHistory} />
-                            </Grid>
-                        </Grid>
-                    </Grid>
-                </Grid>
+                    </div>
+                    <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+                        <div>
+                            <Typography variant="h6" color="textSecondary">
+                                Ordered Items
+                            </Typography>
+                        </div>
+                        <div>
+                            <OrderedItemsTable
+                                tableData={updatedOrderedItems}
+                                setTableData={setUpdatedOrderedItems}
+                                parentCustomerOrder={co}
+                                setCustomerOrder={setCo}
+                                changeHistory={editHistory}
+                                setChangeHistory={setEditHistory}
+                            />
+                        </div>
+                    </div>
+                    <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+                        <div>
+                            <Typography variant="h6" color="textSecondary">
+                                Change History
+                            </Typography>
+                        </div>
+                        <div>
+                            <ChangeHistoryTable changeHistory={editHistory} />
+                        </div>
+                    </div>
+                </div>
             </DashboardCard>
         </PageContainer>
     );
@@ -196,7 +192,7 @@ const OrderedItemsTable = ({
                         show: true,
                         cachedFunctionCall: () =>
                             handleAfterRowEdit(row, orderChange, exitEditingMode, true),
-                        failedTShirtStyleNumber: prevTShirtOrder.tShirtOrderTshirtStyleNumber
+                        failedTShirtErrMsg: `Style#: ${prevTShirtOrder.tshirt.styleNumber} | Size: ${prevTShirtOrder.tshirt.size} | Color: ${prevTShirtOrder.tshirt.color}`
                     })
                     return;
                 }
@@ -215,7 +211,7 @@ const OrderedItemsTable = ({
                     createdAt: toReadableDateTime(resp.orderChange.createdAt),
                 } as CustomerOrderChange;
                 setChangeHistory([changeCo, ...changeHistory]);
-                setCustomerOrder({...parentCustomerOrder, updatedAt: toReadableDateTime(resp.orderUpdatedAtTimestamp)});
+                setCustomerOrder({ ...parentCustomerOrder, updatedAt: toReadableDateTime(resp.orderUpdatedAtTimestamp) });
                 exitEditingMode();
                 setNegativeInventoryWarning({ ...initialNegativeInventoryWarningState });
             },
@@ -254,7 +250,7 @@ const OrderedItemsTable = ({
                         show: true,
                         cachedFunctionCall: () =>
                             handleAfterRowAdd(newTShirtOrder, callback, true),
-                        failedTShirtStyleNumber: newTShirtOrder.tShirtOrderTshirtStyleNumber
+                        failedTShirtErrMsg: `Style#: ${newTShirtOrder.tshirt.styleNumber} | Size: ${newTShirtOrder.tshirt.size} | Color: ${newTShirtOrder.tshirt.color}`
                     })
                     return;
                 }
@@ -263,7 +259,7 @@ const OrderedItemsTable = ({
                     createdAt: toReadableDateTime(resp.orderChange.createdAt),
                 } as CustomerOrderChange;
                 setChangeHistory([changeCo, ...changeHistory]);
-                setCustomerOrder({...parentCustomerOrder, updatedAt: toReadableDateTime(resp.orderUpdatedAtTimestamp)});
+                setCustomerOrder({ ...parentCustomerOrder, updatedAt: toReadableDateTime(resp.orderUpdatedAtTimestamp) });
                 callback(resp.newTShirtOrderId ? resp.newTShirtOrderId : "");
                 setNegativeInventoryWarning({ ...initialNegativeInventoryWarningState });
             }
@@ -281,7 +277,7 @@ const OrderedItemsTable = ({
                             show: false
                         })}
                         onSubmit={negativeInventoryWarning.cachedFunctionCall}
-                        failedTShirts={[negativeInventoryWarning.failedTShirtStyleNumber]}
+                        failedTShirts={[negativeInventoryWarning.failedTShirtErrMsg]}
                     />
                 )}
                 <TShirtOrderTable

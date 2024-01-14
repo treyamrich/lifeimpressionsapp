@@ -84,7 +84,7 @@ function CreateOrderPage<T extends Record<any, any>>({
             }
             else if (columnInfo.get(key)?.isEmailField) {
                 const validatedEmail = validateEmail(values[key]);
-                if(validatedEmail === undefined) {
+                if (validatedEmail === undefined) {
                     errMsg = "Invalid email format.";
                 } else {
                     values[key] = validatedEmail;

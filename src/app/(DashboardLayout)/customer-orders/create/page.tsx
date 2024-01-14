@@ -21,16 +21,17 @@ type NegativeInventoryWarningState = {
   customerOrder: CustomerOrder;
   failedTShirts: string[];
 }
+const initialNegativeInventoryWarningState = {
+  show: false,
+  callback: () => { },
+  customerOrder: {} as CustomerOrder,
+  failedTShirts: []
+};
 
 const CreatePurchaseOrderPage = () => {
   const { user } = useAuthContext();
   const { rescueDBOperation } = useDBOperationContext();
-  const [negativeInventoryWarning, setNegativeInventoryWarning] = useState<NegativeInventoryWarningState>({
-    show: false,
-    callback: () => { },
-    customerOrder: {} as CustomerOrder,
-    failedTShirts: []
-  });
+  const [negativeInventoryWarning, setNegativeInventoryWarning] = useState<NegativeInventoryWarningState>({...initialNegativeInventoryWarningState});
 
   const handleCreateCustomerOrder = (co: CustomerOrder, callback: () => void, allowNegativeInventory: boolean = false) => {
     rescueDBOperation(
@@ -55,7 +56,10 @@ const CreatePurchaseOrderPage = () => {
       <NegativeInventoryConfirmPopup
         open={negativeInventoryWarning.show}
         onClose={() => setNegativeInventoryWarning({ ...negativeInventoryWarning, show: false })}
-        onSubmit={() => handleCreateCustomerOrder(negativeInventoryWarning.customerOrder, negativeInventoryWarning.callback, true)}
+        onSubmit={() => {
+          handleCreateCustomerOrder(negativeInventoryWarning.customerOrder, negativeInventoryWarning.callback, true);
+          setNegativeInventoryWarning({...initialNegativeInventoryWarningState});
+        }}
         failedTShirts={negativeInventoryWarning.failedTShirts}
       />
       <CreateOrderPage

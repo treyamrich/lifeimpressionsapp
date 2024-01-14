@@ -112,7 +112,7 @@ export const createTShirtOrderAPI = async (
       .then(res => res.data?.createTShirtOrder as TShirtOrder)
       .catch(e => {
         console.log(e);
-        errors.push(tshirtToAdd.tShirtOrderTshirtStyleNumber);
+        errors.push(`Style#: ${tshirtToAdd.tshirt.styleNumber} | Size: ${tshirtToAdd.tshirt.size} | Color: ${tshirtToAdd.tshirt.color}`);
       });
     requests.push(resp);
   });

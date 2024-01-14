@@ -15,12 +15,13 @@ import {
   TextField,
 } from "@aws-amplify/ui-react";
 import { fetchByPath, getOverrideProps, validateField } from "./utils";
-import { API } from "aws-amplify";
+import { generateClient } from "aws-amplify/api";
 import { getTShirt } from "../graphql/queries";
 import { updateTShirt } from "../graphql/mutations";
+const client = generateClient();
 export default function TShirtUpdateForm(props) {
   const {
-    styleNumber: styleNumberProp,
+    id: idProp,
     tShirt: tShirtModelProp,
     onSuccess,
     onError,
@@ -67,18 +68,18 @@ export default function TShirtUpdateForm(props) {
   const [tShirtRecord, setTShirtRecord] = React.useState(tShirtModelProp);
   React.useEffect(() => {
     const queryData = async () => {
-      const record = styleNumberProp
+      const record = idProp
         ? (
-            await API.graphql({
+            await client.graphql({
               query: getTShirt.replaceAll("__typename", ""),
-              variables: { styleNumber: styleNumberProp },
+              variables: { id: idProp },
             })
           )?.data?.getTShirt
         : tShirtModelProp;
       setTShirtRecord(record);
     };
     queryData();
-  }, [styleNumberProp, tShirtModelProp]);
+  }, [idProp, tShirtModelProp]);
   React.useEffect(resetStateValues, [tShirtRecord]);
   const validations = {
     styleNumber: [{ type: "Required" }],
@@ -151,11 +152,11 @@ export default function TShirtUpdateForm(props) {
               modelFields[key] = null;
             }
           });
-          await API.graphql({
+          await client.graphql({
             query: updateTShirt.replaceAll("__typename", ""),
             variables: {
               input: {
-                styleNumber: tShirtRecord.styleNumber,
+                id: tShirtRecord.id,
                 ...modelFields,
               },
             },
@@ -176,7 +177,7 @@ export default function TShirtUpdateForm(props) {
       <TextField
         label="Style number"
         isRequired={true}
-        isReadOnly={true}
+        isReadOnly={false}
         value={styleNumber}
         onChange={(e) => {
           let { value } = e.target;
@@ -520,7 +521,7 @@ export default function TShirtUpdateForm(props) {
             event.preventDefault();
             resetStateValues();
           }}
-          isDisabled={!(styleNumberProp || tShirtModelProp)}
+          isDisabled={!(idProp || tShirtModelProp)}
           {...getOverrideProps(overrides, "ResetButton")}
         ></Button>
         <Flex
@@ -532,7 +533,7 @@ export default function TShirtUpdateForm(props) {
             type="submit"
             variation="primary"
             isDisabled={
-              !(styleNumberProp || tShirtModelProp) ||
+              !(idProp || tShirtModelProp) ||
               Object.values(errors).some((e) => e?.hasError)
             }
             {...getOverrideProps(overrides, "SubmitButton")}

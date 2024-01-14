@@ -15,8 +15,9 @@ import {
   TextField,
 } from "@aws-amplify/ui-react";
 import { fetchByPath, getOverrideProps, validateField } from "./utils";
-import { API } from "aws-amplify";
+import { generateClient } from "aws-amplify/api";
 import { createTShirt } from "../graphql/mutations";
+const client = generateClient();
 export default function TShirtCreateForm(props) {
   const {
     clearOnSuccess = true,
@@ -130,7 +131,7 @@ export default function TShirtCreateForm(props) {
               modelFields[key] = null;
             }
           });
-          await API.graphql({
+          await client.graphql({
             query: createTShirt.replaceAll("__typename", ""),
             variables: {
               input: {

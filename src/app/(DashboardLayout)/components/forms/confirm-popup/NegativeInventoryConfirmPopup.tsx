@@ -4,12 +4,12 @@ import ConfirmPopup from "./ConfirmPopup";
 export type NegativeInventoryWarningState = {
     show: boolean;
     cachedFunctionCall: () => void;
-    failedTShirtStyleNumber: string;
+    failedTShirtErrMsg: string;
 }
 export const initialNegativeInventoryWarningState = {
     show: false,
     cachedFunctionCall: () => { },
-    failedTShirtStyleNumber: ""
+    failedTShirtErrMsg: ""
 };
 
 type NegativeInventoryConfirmPopupProps = {

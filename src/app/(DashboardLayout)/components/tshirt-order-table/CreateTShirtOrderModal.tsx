@@ -47,17 +47,15 @@ const CreateTShirtOrderModal = <TShirtOrder extends Record<string, any>>({
   });
   const [errorMap, setErrorMap] = useState(() => getInitialTShirtOrderFormErrorMap());
   const [autoCompleteInputVal, setAutoCompleteInputVal] = useState("");
-  const [selectedTShirt, setSelectedTShirt] = useState<TShirt | null>(null);
 
-  // Used to prevent duplicate TShirtOrders in a PurchaseOrder
+  // Used to prevent duplicate TShirtOrders in an order
   const [tshirtSet, setTShirtSet] = useState<Set<String>>(new Set<String>());
   useEffect(() => {
-    setTShirtSet(new Set(tableData.map(tshirtOrder => tshirtOrder.tShirtOrderTshirtStyleNumber)));
+    setTShirtSet(new Set(tableData.map(tshirtOrder => tshirtOrder.tshirt.id)));
   }, [tableData]);
 
   const resetForm = () => {
     setValues({ ...initialTShirtOrderFormState });
-    setSelectedTShirt(null);
     setAutoCompleteInputVal("");
     setErrorMap(getInitialTShirtOrderFormErrorMap());
   };
@@ -76,10 +74,7 @@ const CreateTShirtOrderModal = <TShirtOrder extends Record<string, any>>({
       let value = values[key];
       if (isNumberInputField(key) && value < 0) {
         errMsg = "Number must be non-negative";
-      } else if (
-        key === "tShirtOrderTshirtStyleNumber" &&
-        value.toString().length < 1
-      ) {
+      } else if (key === "tshirt" && value === null) {
         errMsg = "TShirt is not selected";
       }
       newErrors.set(key, errMsg);
@@ -115,9 +110,9 @@ const CreateTShirtOrderModal = <TShirtOrder extends Record<string, any>>({
                 (col) =>
                   !excludeOnCreateFields.includes(col.accessorKey as string)
               )
-              .map((column) => (
+              .map((column, idx) => (
                 <TextField
-                  key={column.accessorKey as React.Key}
+                  key={idx}
                   label={column.header}
                   name={column.accessorKey as string}
                   onChange={(e: any) => {
@@ -149,8 +144,8 @@ const CreateTShirtOrderModal = <TShirtOrder extends Record<string, any>>({
             <Autocomplete
               id="auto-complete"
               options={tshirtChoices}
-              getOptionLabel={(option: TShirt) => option.styleNumber}
-              getOptionDisabled={(option: TShirt) => tshirtSet.has(option.styleNumber)}
+              getOptionLabel={(option: TShirt) => `Style#: ${option.styleNumber} | Size: ${option.size} | Color: ${option.color}`}
+              getOptionDisabled={(option: TShirt) => tshirtSet.has(option.id)}
               autoComplete
               renderInput={(params: AutocompleteRenderInputParams) => (
                 <TextField
@@ -159,13 +154,12 @@ const CreateTShirtOrderModal = <TShirtOrder extends Record<string, any>>({
                   variant="standard"
                 />
               )}
-              value={selectedTShirt}
+              value={values.tshirt}
               onChange={(event, newValue) => {
                 setValues({
                   ...values,
-                  tShirtOrderTshirtStyleNumber: newValue?.styleNumber,
+                  tshirt: newValue
                 });
-                setSelectedTShirt(newValue);
               }}
               inputValue={autoCompleteInputVal}
               onInputChange={(event, newInputValue) => {
@@ -173,8 +167,8 @@ const CreateTShirtOrderModal = <TShirtOrder extends Record<string, any>>({
               }}
               renderOption={(props, option) => {
                 return (
-                  <li {...props} key={option.styleNumber}>
-                    {option.styleNumber}
+                  <li {...props} key={`${option.styleNumber}${option.size}${option.color}`}>
+                    {`Style#: ${option.styleNumber} | Size: ${option.size} | Color: ${option.color}`}
                   </li>
                 );
               }}
@@ -182,13 +176,13 @@ const CreateTShirtOrderModal = <TShirtOrder extends Record<string, any>>({
                 return tagValue.map((option, index) => (
                   <Chip
                     {...getTagProps({ index })}
-                    key={option.styleNumber}
-                    label={option.styleNumber}
+                    key={`tag${index}`}
+                    label={`Style#: ${option.styleNumber} | Size: ${option.size} | Color: ${option.color}`}
                   />
                 ));
               }}
             />
-            {errorMap.get("tShirtOrderTshirtStyleNumber") !== "" && (
+            {errorMap.get("tshirt") !== "" && (
               <Alert severity="error">TShirt not selected.</Alert>
             )}
           </Stack>

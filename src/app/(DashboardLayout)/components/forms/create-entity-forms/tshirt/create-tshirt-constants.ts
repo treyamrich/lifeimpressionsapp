@@ -1,8 +1,5 @@
 import { TShirtSize, TShirtType } from "@/API";
 
-export const tablePrimaryKey = "styleNumber";
-export const entityName = "TShirt";
-
 export interface SelectValue {
     label: string;
     value: any;

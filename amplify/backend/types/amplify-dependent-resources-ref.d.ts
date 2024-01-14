@@ -2,12 +2,11 @@ export type AmplifyDependentResourcesAttributes = {
   "api": {
     "lifeimpressionsapp": {
       "GraphQLAPIEndpointOutput": "string",
-      "GraphQLAPIIdOutput": "string",
-      "GraphQLAPIKeyOutput": "string"
+      "GraphQLAPIIdOutput": "string"
     }
   },
   "auth": {
-    "lifeimpresionsauth": {
+    "lihDev": {
       "AppClientID": "string",
       "AppClientIDWeb": "string",
       "IdentityPoolId": "string",
@@ -15,6 +14,9 @@ export type AmplifyDependentResourcesAttributes = {
       "UserPoolArn": "string",
       "UserPoolId": "string",
       "UserPoolName": "string"
+    },
+    "userPoolGroups": {
+      "adminGroupRole": "string"
     }
   }
 }

@@ -1,23 +1,41 @@
 {
-  "dev": {
+  "prod": {
     "awscloudformation": {
-      "AuthRoleName": "amplify-lifeimpressionsapp-dev-82555-authRole",
-      "UnauthRoleArn": "arn:aws:iam::068621236033:role/amplify-lifeimpressionsapp-dev-82555-unauthRole",
-      "AuthRoleArn": "arn:aws:iam::068621236033:role/amplify-lifeimpressionsapp-dev-82555-authRole",
+      "AuthRoleName": "amplify-lifeimpressionsapp-prod-215111-authRole",
+      "UnauthRoleArn": "arn:aws:iam::068621236033:role/amplify-lifeimpressionsapp-prod-215111-unauthRole",
+      "AuthRoleArn": "arn:aws:iam::068621236033:role/amplify-lifeimpressionsapp-prod-215111-authRole",
       "Region": "us-west-2",
-      "DeploymentBucketName": "amplify-lifeimpressionsapp-dev-82555-deployment",
-      "UnauthRoleName": "amplify-lifeimpressionsapp-dev-82555-unauthRole",
-      "StackName": "amplify-lifeimpressionsapp-dev-82555",
-      "StackId": "arn:aws:cloudformation:us-west-2:068621236033:stack/amplify-lifeimpressionsapp-dev-82555/af060660-393d-11ee-a800-065fd848f1d5",
-      "AmplifyAppId": "d1afn19kbdiaeb",
-      "AuthTriggerTemplateURL": "https://s3.amazonaws.com/amplify-lifeimpressionsapp-dev-82555-deployment/amplify-cfn-templates/auth/auth-trigger-cloudformation-template.json"
+      "DeploymentBucketName": "amplify-lifeimpressionsapp-prod-215111-deployment",
+      "UnauthRoleName": "amplify-lifeimpressionsapp-prod-215111-unauthRole",
+      "StackName": "amplify-lifeimpressionsapp-prod-215111",
+      "StackId": "arn:aws:cloudformation:us-west-2:068621236033:stack/amplify-lifeimpressionsapp-prod-215111/0b488510-a9b9-11ee-b7b7-06739942fd61",
+      "AmplifyAppId": "d1afn19kbdiaeb"
     },
     "categories": {
-      "api": {
-        "lifeimpressionsapp": {}
-      },
       "auth": {
         "lifeimpresionsauth": {}
+      }
+    }
+  },
+  "dev": {
+    "awscloudformation": {
+      "AuthRoleName": "amplify-lifeimpressionsapp-dev-144834-authRole",
+      "UnauthRoleArn": "arn:aws:iam::068621236033:role/amplify-lifeimpressionsapp-dev-144834-unauthRole",
+      "AuthRoleArn": "arn:aws:iam::068621236033:role/amplify-lifeimpressionsapp-dev-144834-authRole",
+      "Region": "us-west-2",
+      "DeploymentBucketName": "amplify-lifeimpressionsapp-dev-144834-deployment",
+      "UnauthRoleName": "amplify-lifeimpressionsapp-dev-144834-unauthRole",
+      "StackName": "amplify-lifeimpressionsapp-dev-144834",
+      "StackId": "arn:aws:cloudformation:us-west-2:068621236033:stack/amplify-lifeimpressionsapp-dev-144834/a83450f0-b276-11ee-b5c3-0a997cb6160f",
+      "AmplifyAppId": "d1afn19kbdiaeb"
+    },
+    "categories": {
+      "auth": {
+        "lihDev": {},
+        "userPoolGroups": {}
+      },
+      "api": {
+        "lifeimpressionsapp": {}
       }
     }
   }

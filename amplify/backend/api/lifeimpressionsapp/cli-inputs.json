@@ -4,17 +4,13 @@
     "apiName": "lifeimpressionsapp",
     "serviceName": "AppSync",
     "defaultAuthType": {
-      "mode": "API_KEY",
-      "expirationTime": 365,
-      "apiKeyExpirationDate": "2024-09-16T03:00:42.830Z",
-      "keyDescription": "dev"
+      "mode": "AMAZON_COGNITO_USER_POOLS",
+      "cognitoUserPoolId": "authlihDev"
     },
     "additionalAuthTypes": [
       {
-        "mode": "AMAZON_COGNITO_USER_POOLS",
-        "cognitoUserPoolId": "authlifeimpresionsauth"
+        "mode": "AWS_IAM"
       }
-    ],
-    "conflictResolution": {}
+    ]
   }
 }

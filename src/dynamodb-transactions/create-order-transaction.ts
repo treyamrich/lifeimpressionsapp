@@ -26,7 +26,7 @@ export const getTShirtOrdersStatements = (
                     tshirtQtyChange,
                     allowNegativeInventory,
                     createdAt,
-                    tshirtOrder.tShirtOrderTshirtStyleNumber
+                    tshirtOrder.tshirt.id
                 ));
         }
         // Add to TShirtOrder table
@@ -65,7 +65,8 @@ export const createOrderTransactionAPI = async (input: PurchaseOrderOrCustomerOr
                 const negativeInventoryShirts = e.CancellationReasons.slice(1)
                     .map((cancellationObj: any, index: number) => {
                         if (cancellationObj.Code === "ConditionalCheckFailed") {
-                            return orderedItems[index].tShirtOrderTshirtStyleNumber;
+                            const tshirt = orderedItems[index].tshirt;
+                            return `Style#: ${tshirt.styleNumber} | Size: ${tshirt.size} | Color: ${tshirt.color}`
                         }
                         return null;
                     })

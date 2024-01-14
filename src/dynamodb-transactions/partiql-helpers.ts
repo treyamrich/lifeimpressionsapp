@@ -9,10 +9,10 @@ export const getInsertOrderChangePartiQL = (
     orderChangeUuid: string,
     typename: string,
     parentOrderIdFieldName: string,
-    associatedTShirtStyleNumberFieldName: string,
+    associatedTshirtIdFieldName: string,
     reason: string,
     orderId: string,
-    tshirtStyleNumber: string,
+    tshirtId: string,
     createdAtTimestamp: string,
     tshirtTableQtyDelta: number,
     orderedQtyDelta: number = 0
@@ -27,7 +27,7 @@ export const getInsertOrderChangePartiQL = (
                     'orderedQuantityChange': ?,
                     'reason': ?,
                     '${parentOrderIdFieldName}': ?,
-                    '${associatedTShirtStyleNumberFieldName}': ?,
+                    '${associatedTshirtIdFieldName}': ?,
                     'createdAt': ?,
                     'updatedAt': ?
                 }`,
@@ -37,7 +37,7 @@ export const getInsertOrderChangePartiQL = (
                 { N: tshirtTableQtyDelta.toString() },
                 { S: reason },
                 { S: orderId },
-                { S: tshirtStyleNumber },
+                { S: tshirtId },
                 { S: createdAtTimestamp },
                 { S: createdAtTimestamp }
             ]
@@ -51,7 +51,7 @@ export const getInsertOrderChangePartiQL = (
                     'quantityChange': ?, 
                     'reason': ?, 
                     '${parentOrderIdFieldName}': ?, 
-                    '${associatedTShirtStyleNumberFieldName}': ?,
+                    '${associatedTshirtIdFieldName}': ?,
                     'createdAt': ?,
                     'updatedAt': ?
                 }`,
@@ -62,7 +62,7 @@ export const getInsertOrderChangePartiQL = (
                 { N: tshirtTableQtyDelta.toString() },
                 { S: reason },
                 { S: orderId },
-                { S: tshirtStyleNumber },
+                { S: tshirtId },
                 { S: createdAtTimestamp },
                 { S: createdAtTimestamp }
             ]
@@ -73,7 +73,7 @@ export const getUpdateTShirtTablePartiQL = (
     tshirtQtyChange: number,
     allowNegativeInventory: boolean,
     createdAtTimestamp: string,
-    tshirtStyleNumber: string
+    tshirtId: string
 ): ParameterizedStatement => {
     return {
         Statement: `
@@ -86,7 +86,7 @@ export const getUpdateTShirtTablePartiQL = (
         Parameters: [
             { N: tshirtQtyChange.toString() },
             { S: createdAtTimestamp },
-            { S: tshirtStyleNumber },
+            { S: tshirtId },
             { N: Math.abs(tshirtQtyChange).toString() }
         ]
     }
@@ -131,7 +131,7 @@ export const getInsertTShirtOrderTablePartiQL = (
                 'quantity': ?,
                 'amountReceived': ?,
                 '${entityType}OrderOrderedItemsId': ?,
-                'tShirtOrderTshirtStyleNumber': ?,
+                'tShirtOrderTshirtId': ?,
                 'createdAt': ?,
                 'updatedAt': ?
             }
@@ -142,7 +142,7 @@ export const getInsertTShirtOrderTablePartiQL = (
             { N: tshirtOrder.quantity.toString() },
             { N: tshirtOrder.amountReceived ? tshirtOrder.amountReceived.toString() : "0" },
             { S: parentOrderUuid },
-            { S: tshirtOrder.tShirtOrderTshirtStyleNumber },
+            { S: tshirtOrder.tshirt.id },
             { S: createdAtTimestamp },
             { S: createdAtTimestamp },
         ]

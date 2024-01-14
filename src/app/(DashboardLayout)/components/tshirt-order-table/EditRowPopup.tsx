@@ -16,7 +16,7 @@ import {
 import BlankCard from "../shared/BlankCard";
 import { SetStateAction, useState } from "react";
 import { MRT_Row } from "material-react-table";
-import { CreateCustomerOrderChangeInput, CreatePurchaseOrderChangeInput, TShirtOrder } from "@/API";
+import { CreateCustomerOrderChangeInput, CreatePurchaseOrderChangeInput, TShirt, TShirtOrder } from "@/API";
 import { EntityType } from "../po-customer-order-shared-components/CreateOrderPage";
 import { CreateOrderChangeInput } from "./table-constants";
 import { TableMode } from "./TShirtOrderTable";
@@ -67,9 +67,9 @@ const EditRowPopup = ({
       setOtherInputError(true);
       return;
     }
-    const tshirtStyleNo: string = row ? row.getValue("tShirtOrderTshirtStyleNumber") : "";
+    const tshirtId: string = row ? row.original.tshirt.id : "";
+    
     const editReasonMsg = editReason === "other" ? otherInput : editReason;
-
     const orderChange: any = {
       quantityChange: newAmtReceived,
       orderedQuantityChange: newAmtOrdered,
@@ -78,12 +78,12 @@ const EditRowPopup = ({
     if (entityType === EntityType.PurchaseOrder) {
       const poChange: CreatePurchaseOrderChangeInput = { ...orderChange };
       poChange.purchaseOrderChangeHistoryId = parentOrderId;
-      poChange.purchaseOrderChangeTshirtStyleNumber = tshirtStyleNo;
+      poChange.purchaseOrderChangeTshirtId = tshirtId;
       onSubmit(poChange, resetForm);
     } else {
       const coChange: CreateCustomerOrderChangeInput = { ...orderChange };
       coChange.customerOrderChangeHistoryId = parentOrderId;
-      coChange.customerOrderChangeTshirtStyleNumber = tshirtStyleNo;
+      coChange.customerOrderChangeTshirtId = tshirtId;
       onSubmit(coChange, resetForm);
     }
   };

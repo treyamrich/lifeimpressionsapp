@@ -7,26 +7,21 @@
             "UserPoolId"
           ],
           "category": "auth",
-          "resourceName": "lifeimpresionsauth"
+          "resourceName": "lihDev"
         }
       ],
       "output": {
         "authConfig": {
           "additionalAuthenticationProviders": [
             {
-              "authenticationType": "AMAZON_COGNITO_USER_POOLS",
-              "userPoolConfig": {
-                "userPoolId": "authlifeimpresionsauth"
-              }
+              "authenticationType": "AWS_IAM"
             }
           ],
           "defaultAuthentication": {
-            "apiKeyConfig": {
-              "apiKeyExpirationDate": "2024-09-16T03:00:42.830Z",
-              "apiKeyExpirationDays": 365,
-              "description": "dev"
-            },
-            "authenticationType": "API_KEY"
+            "authenticationType": "AMAZON_COGNITO_USER_POOLS",
+            "userPoolConfig": {
+              "userPoolId": "authlihDev"
+            }
           }
         }
       },
@@ -35,7 +30,7 @@
     }
   },
   "auth": {
-    "lifeimpresionsauth": {
+    "lihDev": {
       "customAuth": false,
       "dependsOn": [],
       "frontendAuthConfig": {
@@ -44,12 +39,7 @@
           "SMS"
         ],
         "passwordProtectionSettings": {
-          "passwordPolicyCharacters": [
-            "REQUIRES_LOWERCASE",
-            "REQUIRES_UPPERCASE",
-            "REQUIRES_NUMBERS",
-            "REQUIRES_SYMBOLS"
-          ],
+          "passwordPolicyCharacters": [],
           "passwordPolicyMinLength": 8
         },
         "signupAttributes": [
@@ -66,6 +56,22 @@
       },
       "providerPlugin": "awscloudformation",
       "service": "Cognito"
+    },
+    "userPoolGroups": {
+      "dependsOn": [
+        {
+          "attributes": [
+            "UserPoolId",
+            "AppClientIDWeb",
+            "AppClientID",
+            "IdentityPoolId"
+          ],
+          "category": "auth",
+          "resourceName": "lihDev"
+        }
+      ],
+      "providerPlugin": "awscloudformation",
+      "service": "Cognito-UserPool-Groups"
     }
   },
   "function": {}

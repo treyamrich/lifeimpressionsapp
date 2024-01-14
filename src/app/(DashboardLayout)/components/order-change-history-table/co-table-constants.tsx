@@ -5,9 +5,22 @@ import { MRT_ColumnDef } from "material-react-table";
 export const getTableColumns = (): MRT_ColumnDef<CustomerOrderChange>[] => {
     return [
       {
-        accessorKey: "customerOrderChangeTshirtStyleNumber",
+        accessorKey: "tshirt.styleNumber",
         header: "Style No.",
         muiTableHeadCellProps: { sx: { color: "green" } }, //custom props
+        size: 50,
+      } as MRT_ColumnDef<CustomerOrderChange>,
+      {
+        accessorKey: "tshirt.size",
+        header: "Size",
+        muiTableHeadCellProps: { sx: { color: "green" } }, //custom props
+        size: 50,
+      } as MRT_ColumnDef<CustomerOrderChange>,
+      {
+        accessorKey: "tshirt.color",
+        header: "Color",
+        muiTableHeadCellProps: { sx: { color: "green" } }, //custom props
+        size: 50,
       } as MRT_ColumnDef<CustomerOrderChange>,
       {
         accessorKey: "orderedQuantityChange",
