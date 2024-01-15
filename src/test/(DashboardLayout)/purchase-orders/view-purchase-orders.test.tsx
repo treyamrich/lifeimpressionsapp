@@ -1,9 +1,7 @@
 import {
   act,
   fireEvent,
-  prettyDOM,
   screen,
-  waitFor,
 } from "@testing-library/react";
 import { renderWithProviders } from "@/test/util/render";
 import PurchaseOrders from "@/app/(DashboardLayout)/purchase-orders/page";
