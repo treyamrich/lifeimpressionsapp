@@ -69,22 +69,30 @@ const CreateTShirtModal = <TShirt extends Record<string, any>>({
         errMsg = "Qty. must be non-negative";
       } else if (value.toString().length < 1) {
         errMsg = "Field is required";
-      } else if (
-        key === "styleNumber" &&
-        records.reduce(
-          (prev, curr) => prev || curr.styleNumber === value,
-          false
-        )
-      ) {
-        //Enforce primary key attribute
-        errMsg = "Duplicate style numbers not allowed";
       }
       newErrors.set(key, errMsg);
       allValid = allValid && errMsg === "";
     });
+
+    let hasDuplicate = records.reduce((prev, curr) => prev || 
+      curr.styleNumber.toLowerCase() === values.styleNumber.toLowerCase() &&
+      curr.size.toLowerCase() === values.size.toLowerCase() &&
+      curr.color.toLowerCase() === values.color.toLowerCase(), false);
+    if(hasDuplicate) {
+      allValid = false;
+      const dupMsg = "Tshirt with style number, size, color already exists";
+      newErrors.set("styleNumber", dupMsg);
+      newErrors.set("size", dupMsg);
+      newErrors.set("color", dupMsg);
+    }
+
     setErrorMap(newErrors);
 
     if (allValid) {
+      values.styleNumber = values.styleNumber.trim();
+      values.color = values.color.trim();
+      values.color = values.color.substring(0, 1).toUpperCase() + values.color.substring(1);
+      values.brand = values.brand.trim();
       onSubmit(values);
       resetForm();
       onClose();
