@@ -5,13 +5,13 @@ import { Amplify } from "aws-amplify"
 import awsConfig from "./src/aws-exports";
 Amplify.configure({ ...awsConfig, ssr: true });
 
-const mockUsePathname = jest.fn();
-const mockPush = jest.fn();
+export const mockUsePathname = jest.fn();
+export const mockNextRouterPush = jest.fn();
 jest.mock("next/navigation", () => ({
     useRouter: () => {
         return {
             prefetch: () => null,
-            push: mockPush,
+            push: mockNextRouterPush,
         };
     },
     usePathname() {

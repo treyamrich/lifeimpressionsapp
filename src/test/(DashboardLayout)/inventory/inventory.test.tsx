@@ -16,7 +16,7 @@ import {
   ExpectedErrorMessage,
   createTShirtInputDuplicate,
   expectedErrsDuplicate,
-} from "./inventoryfixtures";
+} from "./inventory.fixtures";
 import Inventory from "@/app/(DashboardLayout)/inventory/page";
 import { listTShirtAPI } from "@/graphql-helpers/fetch-apis";
 import { CreateTShirtInput } from "@/API";
