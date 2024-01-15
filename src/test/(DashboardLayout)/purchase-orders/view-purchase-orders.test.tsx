@@ -53,4 +53,16 @@ describe("View Purchase Orders", () => {
       expect(mockNextRouterPush).toHaveBeenCalledWith("/purchase-orders/create");
     });
   });
+  
+  describe("Go To 'View Single Purchase Order' Page", () => {
+    it("should link the user to the respective page with the PO id when clicking the record", async () => {
+      (listPurchaseOrderAPI as jest.Mock).mockResolvedValueOnce([validPO]);
+      await act(() => renderWithProviders(<PurchaseOrders />));
+      const tableRow = screen.getByText("ValidPoOrderNum");
+      fireEvent.click(tableRow);
+
+      expect(mockNextRouterPush).toHaveBeenCalledTimes(1);
+      expect(mockNextRouterPush).toHaveBeenCalledWith(`/purchase-orders/view/${validPO.id}`);
+    });
+  });
 });
