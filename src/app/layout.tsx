@@ -1,11 +1,11 @@
 "use client";
 import { baselightTheme } from "@/utils/theme/DefaultColors";
-import { ThemeProvider } from "@mui/material/styles";
-import { AuthContextProvider } from "@/contexts/AuthContext";
-import CssBaseline from "@mui/material/CssBaseline";
 import { Amplify } from "aws-amplify"
 import awsConfig from "../../src/aws-exports";
 import { ReactElement } from "react";
+import { ThemeProvider } from "@mui/material/styles";
+import { AuthContextProvider } from "@/contexts/AuthContext";
+import CssBaseline from "@mui/material/CssBaseline";
 import { DBOperationContextProvider } from "@/contexts/DBErrorContext";
 import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';

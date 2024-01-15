@@ -131,7 +131,7 @@ const Inventory = () => {
     },
     [validationErrors]
   );
-
+    
   const columns = useMemo<MRT_ColumnDef<TShirt>[]>(
     () => getTableColumns(getCommonEditTextFieldProps),
     [getCommonEditTextFieldProps]

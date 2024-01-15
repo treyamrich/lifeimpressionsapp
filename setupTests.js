@@ -1,7 +1,9 @@
-jest.mock('aws-amplify', () => ({
-    ...jest.requireActual('aws-amplify'),
-    configure: jest.fn(),
-}));
+// jest.mock('aws-amplify', () => ({
+//     ...jest.requireActual('aws-amplify')
+// }));
+import { Amplify } from "aws-amplify"
+import awsConfig from "./src/aws-exports";
+Amplify.configure({ ...awsConfig, ssr: true });
 
 const mockUsePathname = jest.fn();
 const mockPush = jest.fn();

@@ -1,4 +1,4 @@
-import { TShirt, TShirtSize, TShirtType } from "@/API";
+import { TShirt } from "@/API";
 import { MRT_ColumnDef, MRT_Cell } from "material-react-table";
 
 export const tshirtPrimaryKey = "styleNumber";

@@ -101,7 +101,7 @@ const CreateTShirtModal = <TShirt extends Record<string, any>>({
 
   return (
     <Dialog open={open}>
-      <DialogTitle textAlign="center">Create New {entityName}</DialogTitle>
+      <DialogTitle textAlign="center">{"Create New " + entityName}</DialogTitle>
       <DialogContent style={{ padding: "25px" }}>
         <form onSubmit={(e) => e.preventDefault()}>
           <Stack
@@ -110,6 +110,7 @@ const CreateTShirtModal = <TShirt extends Record<string, any>>({
               minWidth: { xs: "300px", sm: "360px", md: "400px" },
               gap: "1.5rem",
             }}
+            data-testid={"create-tshirt-inputs"}
           >
             {columns
               .filter(

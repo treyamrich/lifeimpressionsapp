@@ -7,7 +7,7 @@ const createJestConfig = nextJest({
 // Add any custom config to be passed to Jest
 /** @type {import('jest').Config} */
 const customJestConfig = {
-  collectCoverage: true,
+  collectCoverage: false,
   coverageProvider: 'v8',
   collectCoverageFrom: [
     '**src/(app|utils|dynamodb-transactions|graphql-helpers)/*.{js,jsx,ts,tsx}',
