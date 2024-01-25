@@ -82,17 +82,26 @@ export const createOrderTransactionAPI = async (
   user: CognitoUser,
   allowNegativeInventory: boolean
 ): Promise<Array<string>> => {
-  const command = new ExecuteTransactionCommand({
-    TransactStatements: assembleCreateOrderTransactionStatements(
-      input,
-      entityType,
-      allowNegativeInventory
-    ),
-  });
+
   const orderedItems = input.orderedItems as any as TShirtOrder[]; // Locally orderedItems is just an array
   // Ensure amount received is initally 0
   orderedItems.map(item => item.amountReceived = 0);
-  
+
+  let command = null;
+  try {
+    command = new ExecuteTransactionCommand({
+      TransactStatements: assembleCreateOrderTransactionStatements(
+        input,
+        entityType,
+        allowNegativeInventory
+      ),
+    });
+  } catch (e) {
+    console.log(e);
+    throw new Error(`Failed to create ${entityType} order`);
+  }
+
+
   const dynamodbClient = await createDynamoDBObj(user);
   return dynamodbClient.send(command).catch((e) => {
     if (!allowNegativeInventory && e.CancellationReasons) {

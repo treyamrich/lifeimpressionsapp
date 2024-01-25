@@ -165,7 +165,7 @@ const OrderedItemsTable = ({
         const newAmtOrdered = coChange.orderedQuantityChange + prevAmtOrdered;
 
         const updateCOInput: UpdateOrderTransactionInput = {
-            tshirtOrder: prevTShirtOrder,
+            updatedTShirtOrder: prevTShirtOrder,
             parentOrderId: parentCustomerOrder.id,
             reason: coChange.reason,
             tshirtTableQtyDelta: coChange.orderedQuantityChange,
@@ -226,7 +226,7 @@ const OrderedItemsTable = ({
         if (newTShirtOrder.id) return; // Only create new tshirt orders
 
         const updateCOInput: UpdateOrderTransactionInput = {
-            tshirtOrder: newTShirtOrder,
+            updatedTShirtOrder: newTShirtOrder,
             parentOrderId: parentCustomerOrder.id,
             reason: "Added tshirt to customer order",
             tshirtTableQtyDelta: newTShirtOrder.quantity,

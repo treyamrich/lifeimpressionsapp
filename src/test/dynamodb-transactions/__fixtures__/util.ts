@@ -11,5 +11,10 @@ export const filterGeneratedFields = (obj: any): string[] => {
 
         // Customer/Purchase Order generated fields
         "isDeleted",
+
+        // Order change generated fields
+        "purchaseOrderChangeTshirtId",
+        "customerOrderChangeTshirtId",
+        
     ].includes(key))
 }

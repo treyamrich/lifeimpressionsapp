@@ -31,29 +31,46 @@ const tableNameSuffix = currEnv == "prod" ? envProdSuffix : envDevSuffix;
 
 export interface DynamoDBTableInfo {
     tableName: string;
-    quantityFieldName: string[];
     pkFieldName: string | undefined;
 }
 
-export const customerOrderChangeTable: DynamoDBTableInfo = {
+export interface CustomerOrderChangeTableInfo extends DynamoDBTableInfo {
+    orderedQuantityChangeField: string;
+}
+export interface PurchaseOrderChangeTableInfo extends DynamoDBTableInfo {
+    orderedQuantityChangeField: string;
+    quantityChangeField: string;
+}
+export interface TShirtTableInfo extends DynamoDBTableInfo {
+    quantityOnHandField: string;
+}
+export interface TShirtOrderTableInfo extends DynamoDBTableInfo {
+    quantityField: string;
+    amountReceivedField: string;
+}
+
+
+export const customerOrderChangeTable: CustomerOrderChangeTableInfo = {
     tableName: `CustomerOrderChange${tableNameSuffix}`,
-    quantityFieldName: ["orderedQuantityChange"],
-    pkFieldName: undefined
+    pkFieldName: undefined,
+    orderedQuantityChangeField: "orderedQuantityChange",
 }
-export const purchaseOrderChangeTable: DynamoDBTableInfo = {
+export const purchaseOrderChangeTable: PurchaseOrderChangeTableInfo = {
     tableName: `PurchaseOrderChange${tableNameSuffix}`,
-    quantityFieldName: ["orderedQuantityChange", "quantityChange"],
-    pkFieldName: undefined
+    pkFieldName: undefined,
+    orderedQuantityChangeField: "orderedQuantityChange",
+    quantityChangeField: "quantityChange",
 }
-export const tshirtTable: DynamoDBTableInfo = {
+export const tshirtTable: TShirtTableInfo = {
     tableName: `TShirt${tableNameSuffix}`,
-    quantityFieldName: ["quantityOnHand"],
-    pkFieldName: "id"
+    pkFieldName: "id",
+    quantityOnHandField: "quantityOnHand",
 }
-export const tshirtOrderTable: DynamoDBTableInfo = {
+export const tshirtOrderTable: TShirtOrderTableInfo = {
     tableName: `TShirtOrder${tableNameSuffix}`,
-    quantityFieldName: ["quantity", "amountReceived"],
-    pkFieldName: "id"
+    pkFieldName: "id",
+    quantityField: "quantity",
+    amountReceivedField: "amountReceived"
 }
 
 export const purchaseOrderTable = `PurchaseOrder${tableNameSuffix}`;

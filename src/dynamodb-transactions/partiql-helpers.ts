@@ -78,10 +78,10 @@ export const getUpdateTShirtTablePartiQL = (
     return {
         Statement: `
             UPDATE "${tshirtTable.tableName}"
-            SET ${tshirtTable.quantityFieldName[0]} = ${tshirtTable.quantityFieldName[0]} + ?
+            SET ${tshirtTable.quantityOnHandField} = ${tshirtTable.quantityOnHandField} + ?
             SET updatedAt = ?
             WHERE ${tshirtTable.pkFieldName} = ?
-            ${!allowNegativeInventory && tshirtQtyChange < 0 ? `AND  ${tshirtTable.quantityFieldName[0]} >= ?` : ""}
+            ${!allowNegativeInventory && tshirtQtyChange < 0 ? `AND  ${tshirtTable.quantityOnHandField} >= ?` : ""}
         `,
         Parameters: [
             { N: tshirtQtyChange.toString() },
@@ -101,8 +101,8 @@ export const getUpdateTShirtOrderTablePartiQL = (
     return {
         Statement: `
             UPDATE "${tshirtOrderTable.tableName}"
-            SET ${tshirtOrderTable.quantityFieldName[0]} = ${tshirtOrderTable.quantityFieldName[0]} + ?
-            SET ${tshirtOrderTable.quantityFieldName[1]} = ${tshirtOrderTable.quantityFieldName[1]} + ?
+            SET ${tshirtOrderTable.quantityField} = ${tshirtOrderTable.quantityField} + ?
+            SET ${tshirtOrderTable.amountReceivedField} = ${tshirtOrderTable.amountReceivedField} + ?
             SET updatedAt = ?
             WHERE ${tshirtOrderTable.pkFieldName} = ?
         `,
