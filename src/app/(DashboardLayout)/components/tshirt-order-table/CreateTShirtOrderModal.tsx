@@ -72,14 +72,19 @@ const CreateTShirtOrderModal = <TShirtOrder extends Record<string, any>>({
     Object.keys(values).forEach((key) => {
       let errMsg = "";
       let value = values[key];
-      if (isNumberInputField(key) && value < 0) {
-        errMsg = "Number must be non-negative";
+      
+      // Not applicable when adding a new tshirt order
+      if(key === "amountReceived") return;
+
+      if (isNumberInputField(key) && value <= 0) {
+        errMsg = "Number must be positive";
       } else if (key === "tshirt" && value === null) {
         errMsg = "TShirt is not selected";
       }
       newErrors.set(key, errMsg);
       allValid = allValid && errMsg === "";
     });
+
     setErrorMap(newErrors);
     if (allValid) {
       onSubmit(
