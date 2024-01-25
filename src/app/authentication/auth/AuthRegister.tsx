@@ -38,8 +38,11 @@ const AuthRegister = ({ title, subtitle, subtext }: registerType) => {
 
             {subtext}
 
-            <Box>
-                <Stack mb={3}>
+            <Box style={{textAlign: "center"}}>
+                <Typography fontWeight={"600"}>
+                    Please contact your administrator for an account.
+                </Typography>
+                {/* <Stack mb={3}>
                     <Typography variant="subtitle1"
                         fontWeight={600} component="label" htmlFor='name' mb="5px">Name</Typography>
                     <CustomTextField id="name"
@@ -94,7 +97,7 @@ const AuthRegister = ({ title, subtitle, subtext }: registerType) => {
                     >
                         Sign Up
                     </Button>
-                </Box>
+                </Box> */}
             </Box>
             {subtitle}
         </>

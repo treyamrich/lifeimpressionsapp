@@ -14,6 +14,7 @@ import { CognitoUser } from '@aws-amplify/auth';
 import { usePathname, useRouter } from "next/navigation";
 import { isProtectedRoute } from "@/app/authentication/route-protection/route-protection";
 import { useDBOperationContext } from "./DBErrorContext";
+import { Button } from "@mui/material";
 
 type authContextType = {
   user: any;
@@ -78,6 +79,8 @@ export type AuthError = {
 }
 
 const EVERY_59_MIN_AS_MS = 3540000;
+export const loginPath = '/authentication/login';
+export const registerSuccessPath = '/authentication/register/success';
 
 export const AuthContextProvider = ({ children }: Props) => {
   const [user, setUser] = useState<CognitoUser | null>(null);
@@ -97,8 +100,13 @@ export const AuthContextProvider = ({ children }: Props) => {
   }
   const logout = async () => {
     clearDBOperationErrors();
+    // Reset auth errors
+    setAuthError({ errMsg: "" });
+
     await Auth.signOut()
-      .then(() => router.push('/authentication/login'))
+      .then(() => {
+        router.push(loginPath);
+      })
       .catch(e => console.log('Error signing out:', e));
   }
 
@@ -128,7 +136,7 @@ export const AuthContextProvider = ({ children }: Props) => {
       username,
       confirmationCode
     )
-      .then(() => router.push('/'))
+      .then(() => router.push(registerSuccessPath))
       .catch(e => setAuthError({ errMsg: e.message }))
   }
 
@@ -139,7 +147,7 @@ export const AuthContextProvider = ({ children }: Props) => {
       return;
     }
     await Auth.forgotPasswordSubmit(username, code, newPassword)
-      .then(() => router.push('/authentication/login'))
+      .then(() => router.push(loginPath))
       .catch(e => setAuthError({ errMsg: e.message }));
   }
   const forgotPassword = async (username: string) => {
@@ -150,17 +158,20 @@ export const AuthContextProvider = ({ children }: Props) => {
 
   const checkUser = async (): Promise<void> => {
     try {
-      const userData = await Auth.currentAuthenticatedUser();
+      let userData = await Auth.currentAuthenticatedUser();
       const groups = userData.signInUserSession.accessToken.payload["cognito:groups"];
+      // Is User is not admin
       if (!groups || !groups.includes("admin")) {
-        router.push('/unauthorized');
-        throw Error('User is not admin')
+        userData = null;
       }
       setUser(userData);
     } catch (error: any) {
+      console.log(error);
       setUser(null);
-      if (routeIsProtected)
-        router.push('/authentication/login');
+      // No user
+      if (routeIsProtected) {
+        router.push(loginPath);
+      }
     }
   };
 
@@ -181,7 +192,7 @@ export const AuthContextProvider = ({ children }: Props) => {
   // Set the user after login events
   useEffect(() => {
     const unsubscribe = Hub.listen("auth", ({ payload: { event, data } }) => {
-      // console.log(`auth event: ${event}`)
+      //console.log(`auth event: ${event} ${data}`)
       switch (event) {
         case "cognitoHostedUI":
         case "signIn":
@@ -208,7 +219,15 @@ export const AuthContextProvider = ({ children }: Props) => {
         forgotPassword,
         forgotPasswordSubmit
       }}>
-      {showRoute ? <> {children} </> : <></>}
+        {children}
+      {/* {showRoute ? <> {children} </> :
+        <> User not authorized: <Button
+          color="error"
+          size="small"
+          variant="contained"
+          onClick={logout}>
+          Logout
+        </Button></>} */}
     </AuthContext.Provider>
   );
 };
