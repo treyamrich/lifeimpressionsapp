@@ -1,22 +1,4 @@
 {
-  "prod": {
-    "awscloudformation": {
-      "AuthRoleName": "amplify-lifeimpressionsapp-prod-215111-authRole",
-      "UnauthRoleArn": "arn:aws:iam::068621236033:role/amplify-lifeimpressionsapp-prod-215111-unauthRole",
-      "AuthRoleArn": "arn:aws:iam::068621236033:role/amplify-lifeimpressionsapp-prod-215111-authRole",
-      "Region": "us-west-2",
-      "DeploymentBucketName": "amplify-lifeimpressionsapp-prod-215111-deployment",
-      "UnauthRoleName": "amplify-lifeimpressionsapp-prod-215111-unauthRole",
-      "StackName": "amplify-lifeimpressionsapp-prod-215111",
-      "StackId": "arn:aws:cloudformation:us-west-2:068621236033:stack/amplify-lifeimpressionsapp-prod-215111/0b488510-a9b9-11ee-b7b7-06739942fd61",
-      "AmplifyAppId": "d1afn19kbdiaeb"
-    },
-    "categories": {
-      "auth": {
-        "lifeimpresionsauth": {}
-      }
-    }
-  },
   "dev": {
     "awscloudformation": {
       "AuthRoleName": "amplify-lifeimpressionsapp-dev-144834-authRole",

@@ -14,7 +14,7 @@ export const createDynamoDBObj = async (user: CognitoUser) => {
     const dynamodbClient = new DynamoDBClient({
         region: REGION,
         credentials: fromCognitoIdentityPool({
-            clientConfig: { region: REGION},
+            clientConfig: { region: REGION },
             identityPoolId: IDENTITY_POOL_ID,
             logins: {
                 [COGNITO_POOL]: extractJWT(user)
@@ -26,7 +26,7 @@ export const createDynamoDBObj = async (user: CognitoUser) => {
 
 const currEnv = process.env.USER_BRANCH;
 const envDevSuffix = "-5ktuld3bsvhrtf5yisjz2dini4-dev"
-const envProdSuffix = '-ikejhqyezjd3ja2shc4nwvbq6y-prod'
+const envProdSuffix = '-juolr2cid5ewhfpo4shhbdrtta-prod'
 const tableNameSuffix = currEnv == "prod" ? envProdSuffix : envDevSuffix;
 
 export interface DynamoDBTableInfo {
