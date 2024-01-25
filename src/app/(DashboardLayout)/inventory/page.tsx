@@ -17,6 +17,7 @@ import {
   tshirtPrimaryKey,
   entityName,
   getTableColumns,
+  hiddenColumns,
 } from "./table-constants";
 import {
   Box,
@@ -49,7 +50,10 @@ const Inventory = () => {
     rescueDBOperation(
       () => createTShirtAPI(values),
       DBOperation.CREATE,
-      (resp: TShirt) => setTableData([...tableData, resp])
+      (resp: TShirt) => {
+        resp.updatedAt = toReadableDateTime(resp.updatedAt);
+        setTableData([...tableData, resp]);
+      }
     );
   };
 
@@ -131,7 +135,7 @@ const Inventory = () => {
     },
     [validationErrors]
   );
-    
+
   const columns = useMemo<MRT_ColumnDef<TShirt>[]>(
     () => getTableColumns(getCommonEditTextFieldProps),
     [getCommonEditTextFieldProps]
@@ -179,6 +183,7 @@ const Inventory = () => {
             onColumnFiltersChange={setColumnFilters}
             state={{
               columnFilters,
+              columnVisibility: hiddenColumns
             }}
             enableEditing
             onEditingRowSave={handleSaveRowEdits}

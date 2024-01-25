@@ -4,10 +4,17 @@ import { MRT_ColumnDef, MRT_Cell } from "material-react-table";
 export const tshirtPrimaryKey = "styleNumber";
 export const entityName = "TShirt";
 
+export const hiddenColumns = { id: false };
+
 export const getTableColumns = (
   getCommonEditTextFieldProps: (cell: MRT_Cell<TShirt>) => MRT_ColumnDef<TShirt>["muiTableBodyCellEditTextFieldProps"]
 ): MRT_ColumnDef<TShirt>[] => {
   return [
+    {
+      accessorKey: "id",
+      header: "ID",
+      enableEditing: false,
+    } as MRT_ColumnDef<TShirt>,
     {
       accessorKey: "styleNumber",
       header: "Style No.",
