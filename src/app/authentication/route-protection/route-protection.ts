@@ -8,7 +8,6 @@ const unprotectedRoutes = [
 ];
 
 export const isProtectedRoute = (currRoute: string) => {
-  return false;
   let isProtectedRoute = true;
   unprotectedRoutes.forEach(route => {
       if(currRoute.includes(route)) isProtectedRoute = false
