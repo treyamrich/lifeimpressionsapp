@@ -175,7 +175,7 @@ const OrderedItemsTable = ({
         // Only warn negative inventory when inventory will be reduced
         allowNegativeInventory = allowNegativeInventory ||
             coChange.orderedQuantityChange <= 0;
-
+        console.log(coChange.orderedQuantityChange <= 0);
         rescueDBOperation(
             () => updateOrderTransactionAPI(
                 updateCOInput,
@@ -188,6 +188,7 @@ const OrderedItemsTable = ({
             (resp: UpdateOrderTransactionResponse) => {
                 // Transaction failed
                 if (resp === null) {
+                    console.log('NULL');
                     setNegativeInventoryWarning({
                         show: true,
                         cachedFunctionCall: () =>

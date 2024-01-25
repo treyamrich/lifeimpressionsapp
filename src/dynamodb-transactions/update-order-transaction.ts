@@ -157,21 +157,27 @@ export const updateOrderTransactionAPI = async (
         tshirtOrderTableOperation !== DBOperation.UPDATE)
         throw Error("Invalid operation" + tshirtOrderTableOperation);
 
+    let command = null;
+    let response: UpdateOrderTransactionResponse = null;
     try {
-        const { transactionStatements, response } =
-            assembleUpdateOrderTransactionStatements(input, tshirtOrderTableOperation, entityType, allowNegativeInventory);
-
-        const command = new ExecuteTransactionCommand({
-            TransactStatements: transactionStatements
+        const res = assembleUpdateOrderTransactionStatements(input, tshirtOrderTableOperation, entityType, allowNegativeInventory);
+        command = new ExecuteTransactionCommand({
+            TransactStatements: res.transactionStatements
         });
-        const dynamodbClient = await createDynamoDBObj(user);
-        return dynamodbClient.send(command)
-            .then((onFulfilled) => response)
+        response = res.response;
     } catch (e) {
-        if (!allowNegativeInventory) {
-            return null;
-        }
         console.log(e);
         throw new Error(`Failed to update ${entityType} order`);
     }
+
+    const dynamodbClient = await createDynamoDBObj(user);
+    return dynamodbClient.send(command)
+        .then((onFulfilled) => response)
+        .catch(e => {
+            if (!allowNegativeInventory) {
+                return null;
+            }
+            console.log(e);
+            throw new Error(`Failed to update ${entityType} order`);
+        })
 }
