@@ -1,4 +1,5 @@
 import { POStatus, PurchaseOrder } from "@/API";
+import { toReadableDateTime } from "@/utils/datetimeConversions";
 import { MRT_ColumnDef } from "material-react-table";
 
 export interface SelectValue {
@@ -40,10 +41,20 @@ export const getTableColumns = (): MRT_ColumnDef<PurchaseOrder>[] => {
     {
       accessorKey: "createdAt",
       header: "Created on",
+      Cell: ({ renderedCellValue, row }) => (
+        <>
+          {toReadableDateTime(row.original.createdAt)}
+        </>
+      )
     } as MRT_ColumnDef<PurchaseOrder>,
     {
       accessorKey: "updatedAt",
       header: "Last Modified",
+      Cell: ({ renderedCellValue, row }) => (
+        <>
+          {toReadableDateTime(row.original.updatedAt)}
+        </>
+      )
     } as MRT_ColumnDef<PurchaseOrder>,
   ];
 };

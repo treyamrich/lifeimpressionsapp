@@ -15,10 +15,9 @@ import {
     DBOperation, useDBOperationContext,
 } from "@/contexts/DBErrorContext";
 
-import { Typography, Grid, CardContent } from "@mui/material";
+import { Typography, CardContent } from "@mui/material";
 import { useState, useEffect } from "react";
 
-import { toReadableDateTime } from "@/utils/datetimeConversions";
 import { MRT_Row } from "material-react-table";
 import { EntityType } from "@/app/(DashboardLayout)/components/po-customer-order-shared-components/CreateOrderPage";
 import ViewCOHeaderFields from "./ViewCOHeaderFields";
@@ -49,25 +48,13 @@ const ViewCustomerOrder = ({ params }: ViewCustomerOrderProps) => {
             DBOperation.GET,
             (res: CustomerOrder) => {
                 const changeHistory = res.changeHistory?.items;
+
                 if (changeHistory) {
-                    const newChangeHistory: CustomerOrderChange[] =
-                        changeHistory.map((change) => {
-                            if (change) {
-                                change = {
-                                    ...change,
-                                    createdAt: toReadableDateTime(change.createdAt),
-                                };
-                            }
-                            return change;
-                        }) as CustomerOrderChange[];
-                    setEditHistory(newChangeHistory);
+                    let history = changeHistory.filter(x => x != null) as CustomerOrderChange[];
+                    setEditHistory(history);
                 }
-                setCo({
-                    ...res,
-                    createdAt: toReadableDateTime(res.createdAt),
-                    updatedAt: toReadableDateTime(res.updatedAt),
-                    dateNeededBy: toReadableDateTime(res.dateNeededBy)
-                });
+
+                setCo(res);
                 const orderedItems = res.orderedItems ? res.orderedItems.items : [];
                 setUpdatedOrderedItems(orderedItems.filter(v => v !== null) as TShirtOrder[]);
             },
@@ -207,12 +194,8 @@ const OrderedItemsTable = ({
                 setTableData([...tableData]);
 
                 // Update local change history table
-                const changeCo = {
-                    ...resp.orderChange,
-                    createdAt: toReadableDateTime(resp.orderChange.createdAt),
-                } as CustomerOrderChange;
-                setChangeHistory([changeCo, ...changeHistory]);
-                setCustomerOrder({ ...parentCustomerOrder, updatedAt: toReadableDateTime(resp.orderUpdatedAtTimestamp) });
+                setChangeHistory([resp.orderChange as CustomerOrderChange, ...changeHistory]);
+                setCustomerOrder({ ...parentCustomerOrder, updatedAt: resp.orderUpdatedAtTimestamp });
                 exitEditingMode();
                 setNegativeInventoryWarning({ ...initialNegativeInventoryWarningState });
             },
@@ -255,12 +238,8 @@ const OrderedItemsTable = ({
                     })
                     return;
                 }
-                const changeCo = {
-                    ...resp.orderChange,
-                    createdAt: toReadableDateTime(resp.orderChange.createdAt),
-                } as CustomerOrderChange;
-                setChangeHistory([changeCo, ...changeHistory]);
-                setCustomerOrder({ ...parentCustomerOrder, updatedAt: toReadableDateTime(resp.orderUpdatedAtTimestamp) });
+                setChangeHistory([resp.orderChange as CustomerOrderChange, ...changeHistory]);
+                setCustomerOrder({ ...parentCustomerOrder, updatedAt: resp.orderUpdatedAtTimestamp });
                 callback(resp.newTShirtOrderId ? resp.newTShirtOrderId : "");
                 setNegativeInventoryWarning({ ...initialNegativeInventoryWarningState });
             }

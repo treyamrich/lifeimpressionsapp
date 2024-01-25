@@ -1,5 +1,5 @@
 import { PurchaseOrderChange } from "@/API";
-import { toDateObj } from "@/utils/datetimeConversions";
+import { toDateObj, toReadableDateTime } from "@/utils/datetimeConversions";
 import { MRT_ColumnDef } from "material-react-table";
 
 export const getTableColumns = (): MRT_ColumnDef<PurchaseOrderChange>[] => {
@@ -43,7 +43,12 @@ export const getTableColumns = (): MRT_ColumnDef<PurchaseOrderChange>[] => {
           if(l < r) return -1;
           if(l > r) return 1;
           return 0;
-        }
+        },
+        Cell: ({ renderedCellValue, row }) => (
+          <>
+            {toReadableDateTime(row.original.createdAt)}
+          </>
+        )
       } as MRT_ColumnDef<PurchaseOrderChange>
     ];
   };

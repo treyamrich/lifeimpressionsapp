@@ -4,7 +4,6 @@ import { CustomerOrder, CustomerOrderStatus, ModelSortDirection } from "@/API";
 import React, { useState } from "react";
 import { useRouter } from 'next/navigation';
 import { listCustomerOrderAPI } from "@/graphql-helpers/fetch-apis";
-import { toReadableDateTime } from "@/utils/datetimeConversions";
 
 import {
   DBOperation, useDBOperationContext,
@@ -40,9 +39,6 @@ const CustomerOrders = () => {
           resp.map((order: CustomerOrder) => {
             return {
               ...order,
-              updatedAt: toReadableDateTime(order.updatedAt),
-              createdAt: toReadableDateTime(order.createdAt),
-              dateNeededBy: toReadableDateTime(order.dateNeededBy ? order.dateNeededBy : ""),
               orderStatus: orderStatusMap[order.orderStatus] as CustomerOrderStatus
             };
           })

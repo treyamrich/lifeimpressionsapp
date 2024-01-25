@@ -2,6 +2,7 @@ import { CustomerOrder, CustomerOrderStatus } from "@/API";
 import { MRT_ColumnDef } from "material-react-table";
 import { ColumnInfo } from "../purchase-orders/table-constants";
 import dayjs from "dayjs";
+import { toReadableDateTime } from "@/utils/datetimeConversions";
 
 export interface SelectValue {
   label: string;
@@ -37,6 +38,11 @@ export const getTableColumns = (): MRT_ColumnDef<CustomerOrder>[] => {
     {
       accessorKey: "dateNeededBy",
       header: "Date Needed",
+      Cell: ({ renderedCellValue, row }) => (
+        <>
+          {toReadableDateTime(row.original.dateNeededBy)}
+        </>
+      )
     } as MRT_ColumnDef<CustomerOrder>,
     {
       accessorKey: "orderStatus",
@@ -45,10 +51,20 @@ export const getTableColumns = (): MRT_ColumnDef<CustomerOrder>[] => {
     {
       accessorKey: "createdAt",
       header: "Created on",
+      Cell: ({ renderedCellValue, row }) => (
+        <>
+          {toReadableDateTime(row.original.createdAt)}
+        </>
+      )
     } as MRT_ColumnDef<CustomerOrder>,
     {
       accessorKey: "updatedAt",
       header: "Last Modified",
+      Cell: ({ renderedCellValue, row }) => (
+        <>
+          {toReadableDateTime(row.original.updatedAt)}
+        </>
+      )
     } as MRT_ColumnDef<CustomerOrder>,
     {
       accessorKey: "orderNotes",

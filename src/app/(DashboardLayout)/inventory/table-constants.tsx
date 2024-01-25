@@ -1,4 +1,5 @@
 import { TShirt } from "@/API";
+import { toReadableDateTime } from "@/utils/datetimeConversions";
 import { MRT_ColumnDef, MRT_Cell } from "material-react-table";
 
 export const tshirtPrimaryKey = "styleNumber";
@@ -68,6 +69,11 @@ export const getTableColumns = (
       accessorKey: "updatedAt",
       header: "Last Modified",
       enableEditing: false,
+      Cell: ({ renderedCellValue, row }) => (
+        <>
+          {toReadableDateTime(row.original.updatedAt)}
+        </>
+      )
     } as MRT_ColumnDef<TShirt>,
   ];
 };

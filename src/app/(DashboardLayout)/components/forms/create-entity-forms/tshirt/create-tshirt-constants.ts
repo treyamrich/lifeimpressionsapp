@@ -48,7 +48,7 @@ export const selectInputFields = new Map<
 export const numberInputFields = new Set<string>(["quantityOnHand"]); 
 
 //Exclude these fields when creating
-export const excludeOnCreateFields: string[] = ["updatedAt", "createdAt"];
+export const excludeOnCreateFields: string[] = ["id", "updatedAt", "createdAt"];
 
 export interface TShirtFormError {
     message: string;

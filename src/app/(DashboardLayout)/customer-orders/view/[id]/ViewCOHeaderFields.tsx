@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 import { orderStatusMap } from "../../table-constants";
 import { useState } from "react";
 import EditCOHeaderFieldsPopup from "./EditCOHeaderFieldsPopup";
-import { toReadableDateTime } from "@/utils/datetimeConversions";
+import DateTime from "@/app/(DashboardLayout)/components/datetime/DateTime";
 
 type ViewCOHeaderFieldsProps = {
     co: CustomerOrder;
@@ -20,7 +20,7 @@ const ViewCOHeaderFields = ({ co, setCo }: ViewCOHeaderFieldsProps) => {
     const { customerName, customerEmail, customerPhoneNumber, dateNeededBy, orderStatus, orderNotes, createdAt, updatedAt } = co;
     const [showEditPopup, setShowEditPopup] = useState(false);
 
-    const handleUpdateCO = (newCo: CustomerOrder, resetForm: ()=>void) => {
+    const handleUpdateCO = (newCo: CustomerOrder, resetForm: () => void) => {
         const cleanCo = {
             ...newCo,
             orderedItems: undefined,
@@ -30,12 +30,7 @@ const ViewCOHeaderFields = ({ co, setCo }: ViewCOHeaderFieldsProps) => {
             () => updateCustomerOrderAPI(cleanCo),
             DBOperation.UPDATE,
             (resp: CustomerOrder) => {
-                setCo({
-                    ...resp,
-                    createdAt: toReadableDateTime(resp.createdAt),
-                    updatedAt: toReadableDateTime(resp.updatedAt),
-                    dateNeededBy: toReadableDateTime(resp.dateNeededBy)
-                });
+                setCo(resp);
                 setShowEditPopup(false);
                 resetForm();
             }
@@ -85,7 +80,7 @@ const ViewCOHeaderFields = ({ co, setCo }: ViewCOHeaderFieldsProps) => {
                                     </Grid>
                                     <Grid item>
                                         <Typography variant="body1" color="textSecondary">
-                                            {dateNeededBy}
+                                            <DateTime value={dateNeededBy} />
                                         </Typography>
                                     </Grid>
                                 </Grid>
@@ -99,7 +94,7 @@ const ViewCOHeaderFields = ({ co, setCo }: ViewCOHeaderFieldsProps) => {
                                     </Grid>
                                     <Grid item>
                                         <Typography variant="body1" color="textSecondary">
-                                            {createdAt}
+                                            <DateTime value={createdAt} />
                                         </Typography>
                                     </Grid>
                                 </Grid>
@@ -113,7 +108,7 @@ const ViewCOHeaderFields = ({ co, setCo }: ViewCOHeaderFieldsProps) => {
                                     </Grid>
                                     <Grid item>
                                         <Typography variant="body1" color="textSecondary">
-                                            {updatedAt}
+                                            <DateTime value={updatedAt} />
                                         </Typography>
                                     </Grid>
                                 </Grid>

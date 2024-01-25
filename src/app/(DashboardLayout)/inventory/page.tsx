@@ -8,7 +8,6 @@ import { Delete, Edit } from "@mui/icons-material";
 import { createTShirtAPI } from "@/graphql-helpers/create-apis";
 import { listTShirtAPI } from "@/graphql-helpers/fetch-apis";
 import { updateTShirtAPI } from "@/graphql-helpers/update-apis";
-import { toReadableDateTime } from "@/utils/datetimeConversions";
 
 import {
   DBOperation, useDBOperationContext,
@@ -51,7 +50,6 @@ const Inventory = () => {
       () => createTShirtAPI(values),
       DBOperation.CREATE,
       (resp: TShirt) => {
-        resp.updatedAt = toReadableDateTime(resp.updatedAt);
         setTableData([...tableData, resp]);
       }
     );
@@ -147,14 +145,7 @@ const Inventory = () => {
       () => listTShirtAPI(deletedFilter),
       DBOperation.LIST,
       (resp: TShirt[]) => {
-        setTableData(
-          resp.map((tshirt: TShirt) => {
-            return {
-              ...tshirt,
-              updatedAt: toReadableDateTime(tshirt.updatedAt),
-            };
-          })
-        );
+        setTableData(resp);
       }
     );
   };

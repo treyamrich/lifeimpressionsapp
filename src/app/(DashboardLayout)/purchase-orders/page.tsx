@@ -1,10 +1,10 @@
 "use client";
 
 import { ModelSortDirection, PurchaseOrder } from "@/API";
-import React, { useState, SetStateAction } from "react";
+import React, { useState } from "react";
 import { useRouter } from 'next/navigation';
 import { listPurchaseOrderAPI } from "@/graphql-helpers/fetch-apis";
-import { toReadableDateTime } from "@/utils/datetimeConversions";
+
 import {
   columnInfo,
   entityName,
@@ -32,15 +32,7 @@ const PurchaseOrders = () => {
       () => listPurchaseOrderAPI(deletedFilter, ModelSortDirection.DESC),
       DBOperation.LIST,
       (resp: PurchaseOrder[]) => {
-        setTableData(
-          resp.map((po: PurchaseOrder) => {
-            return {
-              ...po,
-              updatedAt: toReadableDateTime(po.updatedAt),
-              createdAt: toReadableDateTime(po.createdAt)
-            };
-          })
-        );
+        setTableData(resp);
       }
     );
   }

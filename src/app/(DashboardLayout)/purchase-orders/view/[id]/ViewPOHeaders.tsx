@@ -1,4 +1,5 @@
 import { POStatus, PurchaseOrder, UpdatePurchaseOrderInput } from "@/API";
+import DateTime from "@/app/(DashboardLayout)/components/datetime/DateTime";
 import BlankCard from "@/app/(DashboardLayout)/components/shared/BlankCard";
 import { DBOperation, useDBOperationContext } from "@/contexts/DBErrorContext";
 import { updatePurchaseOrderAPI } from "@/graphql-helpers/update-apis";
@@ -93,7 +94,7 @@ const ViewPOHeaderFields = ({ po, setPo }: ViewPOHeaderFieldsProps) => {
               </Grid>
               <Grid item>
                 <Typography variant="body1" color="textSecondary">
-                  {createdAt}
+                  <DateTime value={createdAt} />
                 </Typography>
               </Grid>
             </Grid>
@@ -107,7 +108,7 @@ const ViewPOHeaderFields = ({ po, setPo }: ViewPOHeaderFieldsProps) => {
               </Grid>
               <Grid item>
                 <Typography variant="body1" color="textSecondary">
-                  {updatedAt}
+                  <DateTime value={updatedAt} />
                 </Typography>
               </Grid>
             </Grid>
