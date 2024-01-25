@@ -14,11 +14,6 @@ export const toReadableDateTime = (date: string) => {
     return readableTime;
 }
 
-// Takes a date string that comes from toReadableDateTime function and converts to a Date object
-export const toDateObj = (dateString: string): Date => {
-    return dayjs(dateString, readableTimeFormat).toDate();
-}
-
 // Takes a date string that comes from toReadableDateTime function and converts to a Dayjs object
 export const toTimezoneWithoutAdjustingHours = (dateString: string): Dayjs => {
     const dayjsObj = dayjs(dateString);
