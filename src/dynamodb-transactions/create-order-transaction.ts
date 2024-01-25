@@ -90,6 +90,9 @@ export const createOrderTransactionAPI = async (
     ),
   });
   const orderedItems = input.orderedItems as any as TShirtOrder[]; // Locally orderedItems is just an array
+  // Ensure amount received is initally 0
+  orderedItems.map(item => item.amountReceived = 0);
+  
   const dynamodbClient = await createDynamoDBObj(user);
   return dynamodbClient.send(command).catch((e) => {
     if (!allowNegativeInventory && e.CancellationReasons) {
