@@ -35,22 +35,22 @@ const Menuitems = [
     icon: IconLayoutDashboard,
     href: "/customer-orders",
   },
-  {
-    navlabel: true,
-    subheader: "Auth",
-  },
-  {
-    id: uniqueId(),
-    title: "Login",
-    icon: IconLogin,
-    href: "/authentication/login",
-  },
-  {
-    id: uniqueId(),
-    title: "Register",
-    icon: IconUserPlus,
-    href: "/authentication/register",
-  },
+  // {
+  //   navlabel: true,
+  //   subheader: "Auth",
+  // },
+  // {
+  //   id: uniqueId(),
+  //   title: "Login",
+  //   icon: IconLogin,
+  //   href: "/authentication/login",
+  // },
+  // {
+  //   id: uniqueId(),
+  //   title: "Register",
+  //   icon: IconUserPlus,
+  //   href: "/authentication/register",
+  // },
 ];
 
 export default Menuitems;
