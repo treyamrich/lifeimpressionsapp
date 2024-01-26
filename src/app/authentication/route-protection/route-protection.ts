@@ -4,7 +4,8 @@ const unprotectedRoutes = [
   '/authentication/register/confirm',
   '/authentication/forgot',
   '/authentication/forgot/confirm',
-  '/unauthorized'
+  '/unauthorized',
+  '/authentication/complete-new-password'
 ];
 
 export const isProtectedRoute = (currRoute: string) => {

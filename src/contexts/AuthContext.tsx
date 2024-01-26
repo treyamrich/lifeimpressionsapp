@@ -27,6 +27,7 @@ type authContextType = {
   setAuthError: Dispatch<SetStateAction<AuthError>>;
   forgotPassword: (username: string) => void;
   forgotPasswordSubmit: (input: ForgotPasswordInput) => void;
+  completeNewPassword: (newPw: string, name: string) => void;
 };
 
 const authContextDefaultValues: authContextType = {
@@ -39,7 +40,8 @@ const authContextDefaultValues: authContextType = {
   authError: { errMsg: "" },
   setAuthError: () => { },
   forgotPassword: () => { },
-  forgotPasswordSubmit: () => { }
+  forgotPasswordSubmit: () => { },
+  completeNewPassword: () => {}
 };
 
 const AuthContext = createContext<authContextType>(authContextDefaultValues);
@@ -94,6 +96,12 @@ export const AuthContextProvider = ({ children }: Props) => {
   const login = async (creds: LoginCredentials) => {
     const { username, password } = creds;
     await Auth.signIn(username, password)
+      .then(user => {
+        if (user.challengeName === 'NEW_PASSWORD_REQUIRED') {
+          setUser(user);
+         router.push('/authentication/complete-new-password');
+        }
+      })
       .catch(e => {
         setAuthError({ errMsg: "Invalid Credentials" })
       })
@@ -156,6 +164,16 @@ export const AuthContextProvider = ({ children }: Props) => {
       .catch(e => setAuthError({ errMsg: e.message }))
   }
 
+  const completeNewPassword = async (newPw: string, name: string) => {
+    if(!user) return;
+
+    const requiredAttributes = { name: name }
+    Auth.completeNewPassword(user, newPw, requiredAttributes)
+    .catch(e => {
+      setAuthError({ errMsg: e.message});
+    })
+  }
+
   const checkUser = async (): Promise<void> => {
     try {
       let userData = await Auth.currentAuthenticatedUser();
@@ -166,7 +184,6 @@ export const AuthContextProvider = ({ children }: Props) => {
       }
       setUser(userData);
     } catch (error: any) {
-      console.log(error);
       setUser(null);
       // No user
       if (routeIsProtected) {
@@ -217,17 +234,17 @@ export const AuthContextProvider = ({ children }: Props) => {
         authError,
         setAuthError,
         forgotPassword,
-        forgotPasswordSubmit
+        forgotPasswordSubmit,
+        completeNewPassword
       }}>
-        {children}
-      {/* {showRoute ? <> {children} </> :
+      {showRoute ? <> {children} </> :
         <> User not authorized: <Button
           color="error"
           size="small"
           variant="contained"
           onClick={logout}>
           Logout
-        </Button></>} */}
+        </Button></>}
     </AuthContext.Provider>
   );
 };
