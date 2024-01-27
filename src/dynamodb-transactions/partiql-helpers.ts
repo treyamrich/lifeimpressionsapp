@@ -1,7 +1,7 @@
 import { CustomerOrder, CustomerOrderStatus, PurchaseOrder, TShirtOrder } from "@/API";
 import { EntityType } from "../app/(DashboardLayout)/components/po-customer-order-shared-components/CreateOrderPage"
 import { customerOrderChangeTable, customerOrderTable, getStrOrNull, purchaseOrderChangeTable, purchaseOrderTable, tshirtOrderTable, tshirtTable } from "./dynamodb"
-import { ParameterizedStatement } from "@aws-sdk/client-dynamodb";
+import { AttributeValue, ParameterizedStatement } from "@aws-sdk/client-dynamodb";
 import { PurchaseOrderOrCustomerOrder } from "../graphql-helpers/create-apis";
 
 export const getInsertOrderChangePartiQL = (
@@ -95,6 +95,7 @@ export const getUpdateTShirtTablePartiQL = (
 export const getUpdateTShirtOrderTablePartiQL = (
     amountOrderedDelta: number,
     amountReceivedDelta: number,
+    costPerUnit: number,
     createdAtTimestamp: string,
     tshirtOrderId: string
 ): ParameterizedStatement => {
@@ -103,12 +104,14 @@ export const getUpdateTShirtOrderTablePartiQL = (
             UPDATE "${tshirtOrderTable.tableName}"
             SET ${tshirtOrderTable.quantityField} = ${tshirtOrderTable.quantityField} + ?
             SET ${tshirtOrderTable.amountReceivedField} = ${tshirtOrderTable.amountReceivedField} + ?
+            SET costPerUnit = ?
             SET updatedAt = ?
             WHERE ${tshirtOrderTable.pkFieldName} = ?
         `,
         Parameters: [
             { N: amountOrderedDelta.toString() },
             { N: amountReceivedDelta.toString() },
+            { N: costPerUnit.toString() },
             { S: createdAtTimestamp },
             { S: tshirtOrderId },
         ]
@@ -130,6 +133,7 @@ export const getInsertTShirtOrderTablePartiQL = (
                 'id': ?,
                 'quantity': ?,
                 'amountReceived': ?,
+                'costPerUnit': ?,
                 '${entityType}OrderOrderedItemsId': ?,
                 'tShirtOrderTshirtId': ?,
                 'createdAt': ?,
@@ -137,10 +141,11 @@ export const getInsertTShirtOrderTablePartiQL = (
             }
         `,
         Parameters: [
-            { S: "TShirtOrder" },
+            { S: "TShirtOrder" } as AttributeValue,
             { S: tshirtOrderUuid },
             { N: tshirtOrder.quantity.toString() },
             { N: tshirtOrder.amountReceived ? tshirtOrder.amountReceived.toString() : "0" },
+            { N: tshirtOrder.costPerUnit.toString() },
             { S: parentOrderUuid },
             { S: tshirtOrder.tshirt.id },
             { S: createdAtTimestamp },

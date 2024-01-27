@@ -196,7 +196,7 @@ export type PurchaseOrder = {
   vendor: string,
   orderedItems?: ModelTShirtOrderConnection | null,
   status: POStatus,
-  changeHistory?: ModelPurchaseOrderChangeConnection | null,
+  changeHistory?: ModelOrderChangeConnection | null,
   isDeleted?: boolean | null,
   type?: string | null,
   createdAt: string,
@@ -214,6 +214,7 @@ export type TShirtOrder = {
   tshirt: TShirt,
   quantity: number,
   amountReceived?: number | null,
+  costPerUnit: number,
   id: string,
   createdAt: string,
   updatedAt: string,
@@ -222,23 +223,25 @@ export type TShirtOrder = {
   tShirtOrderTshirtId: string,
 };
 
-export type ModelPurchaseOrderChangeConnection = {
-  __typename: "ModelPurchaseOrderChangeConnection",
-  items:  Array<PurchaseOrderChange | null >,
+export type ModelOrderChangeConnection = {
+  __typename: "ModelOrderChangeConnection",
+  items:  Array<OrderChange | null >,
   nextToken?: string | null,
 };
 
-export type PurchaseOrderChange = {
-  __typename: "PurchaseOrderChange",
+export type OrderChange = {
+  __typename: "OrderChange",
   tshirt: TShirt,
-  quantityChange: number,
-  orderedQuantityChange: number,
   reason: string,
+  oldValue: string,
+  newValue: string,
+  fieldName: string,
   id: string,
   createdAt: string,
   updatedAt: string,
   purchaseOrderChangeHistoryId?: string | null,
-  purchaseOrderChangeTshirtId: string,
+  customerOrderChangeHistoryId?: string | null,
+  orderChangeTshirtId: string,
 };
 
 export type UpdatePurchaseOrderInput = {
@@ -255,24 +258,28 @@ export type DeletePurchaseOrderInput = {
   id: string,
 };
 
-export type CreatePurchaseOrderChangeInput = {
-  quantityChange: number,
-  orderedQuantityChange: number,
+export type CreateOrderChangeInput = {
   reason: string,
+  oldValue: string,
+  newValue: string,
+  fieldName: string,
   id?: string | null,
   purchaseOrderChangeHistoryId?: string | null,
-  purchaseOrderChangeTshirtId: string,
+  customerOrderChangeHistoryId?: string | null,
+  orderChangeTshirtId: string,
 };
 
-export type ModelPurchaseOrderChangeConditionInput = {
-  quantityChange?: ModelIntInput | null,
-  orderedQuantityChange?: ModelIntInput | null,
+export type ModelOrderChangeConditionInput = {
   reason?: ModelStringInput | null,
-  and?: Array< ModelPurchaseOrderChangeConditionInput | null > | null,
-  or?: Array< ModelPurchaseOrderChangeConditionInput | null > | null,
-  not?: ModelPurchaseOrderChangeConditionInput | null,
+  oldValue?: ModelStringInput | null,
+  newValue?: ModelStringInput | null,
+  fieldName?: ModelStringInput | null,
+  and?: Array< ModelOrderChangeConditionInput | null > | null,
+  or?: Array< ModelOrderChangeConditionInput | null > | null,
+  not?: ModelOrderChangeConditionInput | null,
   purchaseOrderChangeHistoryId?: ModelIDInput | null,
-  purchaseOrderChangeTshirtId?: ModelIDInput | null,
+  customerOrderChangeHistoryId?: ModelIDInput | null,
+  orderChangeTshirtId?: ModelIDInput | null,
 };
 
 export type ModelIDInput = {
@@ -291,64 +298,25 @@ export type ModelIDInput = {
   size?: ModelSizeInput | null,
 };
 
-export type UpdatePurchaseOrderChangeInput = {
-  quantityChange?: number | null,
-  orderedQuantityChange?: number | null,
+export type UpdateOrderChangeInput = {
   reason?: string | null,
+  oldValue?: string | null,
+  newValue?: string | null,
+  fieldName?: string | null,
   id: string,
   purchaseOrderChangeHistoryId?: string | null,
-  purchaseOrderChangeTshirtId?: string | null,
-};
-
-export type DeletePurchaseOrderChangeInput = {
-  id: string,
-};
-
-export type CreateCustomerOrderChangeInput = {
-  orderedQuantityChange: number,
-  reason: string,
-  id?: string | null,
   customerOrderChangeHistoryId?: string | null,
-  customerOrderChangeTshirtId: string,
+  orderChangeTshirtId?: string | null,
 };
 
-export type ModelCustomerOrderChangeConditionInput = {
-  orderedQuantityChange?: ModelIntInput | null,
-  reason?: ModelStringInput | null,
-  and?: Array< ModelCustomerOrderChangeConditionInput | null > | null,
-  or?: Array< ModelCustomerOrderChangeConditionInput | null > | null,
-  not?: ModelCustomerOrderChangeConditionInput | null,
-  customerOrderChangeHistoryId?: ModelIDInput | null,
-  customerOrderChangeTshirtId?: ModelIDInput | null,
-};
-
-export type CustomerOrderChange = {
-  __typename: "CustomerOrderChange",
-  tshirt: TShirt,
-  orderedQuantityChange: number,
-  reason: string,
-  id: string,
-  createdAt: string,
-  updatedAt: string,
-  customerOrderChangeHistoryId?: string | null,
-  customerOrderChangeTshirtId: string,
-};
-
-export type UpdateCustomerOrderChangeInput = {
-  orderedQuantityChange?: number | null,
-  reason?: string | null,
-  id: string,
-  customerOrderChangeHistoryId?: string | null,
-  customerOrderChangeTshirtId?: string | null,
-};
-
-export type DeleteCustomerOrderChangeInput = {
+export type DeleteOrderChangeInput = {
   id: string,
 };
 
 export type CreateTShirtOrderInput = {
   quantity: number,
   amountReceived?: number | null,
+  costPerUnit: number,
   id?: string | null,
   purchaseOrderOrderedItemsId?: string | null,
   customerOrderOrderedItemsId?: string | null,
@@ -358,6 +326,7 @@ export type CreateTShirtOrderInput = {
 export type ModelTShirtOrderConditionInput = {
   quantity?: ModelIntInput | null,
   amountReceived?: ModelIntInput | null,
+  costPerUnit?: ModelFloatInput | null,
   and?: Array< ModelTShirtOrderConditionInput | null > | null,
   or?: Array< ModelTShirtOrderConditionInput | null > | null,
   not?: ModelTShirtOrderConditionInput | null,
@@ -366,9 +335,22 @@ export type ModelTShirtOrderConditionInput = {
   tShirtOrderTshirtId?: ModelIDInput | null,
 };
 
+export type ModelFloatInput = {
+  ne?: number | null,
+  eq?: number | null,
+  le?: number | null,
+  lt?: number | null,
+  ge?: number | null,
+  gt?: number | null,
+  between?: Array< number | null > | null,
+  attributeExists?: boolean | null,
+  attributeType?: ModelAttributeTypes | null,
+};
+
 export type UpdateTShirtOrderInput = {
   quantity?: number | null,
   amountReceived?: number | null,
+  costPerUnit?: number | null,
   id: string,
   purchaseOrderOrderedItemsId?: string | null,
   customerOrderOrderedItemsId?: string | null,
@@ -433,17 +415,11 @@ export type CustomerOrder = {
   orderStatus: CustomerOrderStatus,
   orderNotes?: string | null,
   dateNeededBy: string,
-  changeHistory?: ModelCustomerOrderChangeConnection | null,
+  changeHistory?: ModelOrderChangeConnection | null,
   isDeleted?: boolean | null,
   type?: string | null,
   createdAt: string,
   updatedAt: string,
-};
-
-export type ModelCustomerOrderChangeConnection = {
-  __typename: "ModelCustomerOrderChangeConnection",
-  items:  Array<CustomerOrderChange | null >,
-  nextToken?: string | null,
 };
 
 export type UpdateCustomerOrderInput = {
@@ -519,30 +495,23 @@ export type ModelStringKeyConditionInput = {
   beginsWith?: string | null,
 };
 
-export type ModelPurchaseOrderChangeFilterInput = {
-  quantityChange?: ModelIntInput | null,
-  orderedQuantityChange?: ModelIntInput | null,
+export type ModelOrderChangeFilterInput = {
   reason?: ModelStringInput | null,
-  and?: Array< ModelPurchaseOrderChangeFilterInput | null > | null,
-  or?: Array< ModelPurchaseOrderChangeFilterInput | null > | null,
-  not?: ModelPurchaseOrderChangeFilterInput | null,
+  oldValue?: ModelStringInput | null,
+  newValue?: ModelStringInput | null,
+  fieldName?: ModelStringInput | null,
+  and?: Array< ModelOrderChangeFilterInput | null > | null,
+  or?: Array< ModelOrderChangeFilterInput | null > | null,
+  not?: ModelOrderChangeFilterInput | null,
   purchaseOrderChangeHistoryId?: ModelIDInput | null,
-  purchaseOrderChangeTshirtId?: ModelIDInput | null,
-};
-
-export type ModelCustomerOrderChangeFilterInput = {
-  orderedQuantityChange?: ModelIntInput | null,
-  reason?: ModelStringInput | null,
-  and?: Array< ModelCustomerOrderChangeFilterInput | null > | null,
-  or?: Array< ModelCustomerOrderChangeFilterInput | null > | null,
-  not?: ModelCustomerOrderChangeFilterInput | null,
   customerOrderChangeHistoryId?: ModelIDInput | null,
-  customerOrderChangeTshirtId?: ModelIDInput | null,
+  orderChangeTshirtId?: ModelIDInput | null,
 };
 
 export type ModelTShirtOrderFilterInput = {
   quantity?: ModelIntInput | null,
   amountReceived?: ModelIntInput | null,
+  costPerUnit?: ModelFloatInput | null,
   and?: Array< ModelTShirtOrderFilterInput | null > | null,
   or?: Array< ModelTShirtOrderFilterInput | null > | null,
   not?: ModelTShirtOrderFilterInput | null,
@@ -646,26 +615,33 @@ export type ModelSubscriptionPurchaseOrderFilterInput = {
   or?: Array< ModelSubscriptionPurchaseOrderFilterInput | null > | null,
 };
 
-export type ModelSubscriptionPurchaseOrderChangeFilterInput = {
-  quantityChange?: ModelSubscriptionIntInput | null,
-  orderedQuantityChange?: ModelSubscriptionIntInput | null,
+export type ModelSubscriptionOrderChangeFilterInput = {
   reason?: ModelSubscriptionStringInput | null,
-  and?: Array< ModelSubscriptionPurchaseOrderChangeFilterInput | null > | null,
-  or?: Array< ModelSubscriptionPurchaseOrderChangeFilterInput | null > | null,
-};
-
-export type ModelSubscriptionCustomerOrderChangeFilterInput = {
-  orderedQuantityChange?: ModelSubscriptionIntInput | null,
-  reason?: ModelSubscriptionStringInput | null,
-  and?: Array< ModelSubscriptionCustomerOrderChangeFilterInput | null > | null,
-  or?: Array< ModelSubscriptionCustomerOrderChangeFilterInput | null > | null,
+  oldValue?: ModelSubscriptionStringInput | null,
+  newValue?: ModelSubscriptionStringInput | null,
+  fieldName?: ModelSubscriptionStringInput | null,
+  and?: Array< ModelSubscriptionOrderChangeFilterInput | null > | null,
+  or?: Array< ModelSubscriptionOrderChangeFilterInput | null > | null,
 };
 
 export type ModelSubscriptionTShirtOrderFilterInput = {
   quantity?: ModelSubscriptionIntInput | null,
   amountReceived?: ModelSubscriptionIntInput | null,
+  costPerUnit?: ModelSubscriptionFloatInput | null,
   and?: Array< ModelSubscriptionTShirtOrderFilterInput | null > | null,
   or?: Array< ModelSubscriptionTShirtOrderFilterInput | null > | null,
+};
+
+export type ModelSubscriptionFloatInput = {
+  ne?: number | null,
+  eq?: number | null,
+  le?: number | null,
+  lt?: number | null,
+  ge?: number | null,
+  gt?: number | null,
+  between?: Array< number | null > | null,
+  in?: Array< number | null > | null,
+  notIn?: Array< number | null > | null,
 };
 
 export type ModelSubscriptionCustomerOrderFilterInput = {
@@ -777,6 +753,7 @@ export type CreatePurchaseOrderMutation = {
         },
         quantity: number,
         amountReceived?: number | null,
+        costPerUnit: number,
         id: string,
         createdAt: string,
         updatedAt: string,
@@ -788,9 +765,9 @@ export type CreatePurchaseOrderMutation = {
     } | null,
     status: POStatus,
     changeHistory?:  {
-      __typename: "ModelPurchaseOrderChangeConnection",
+      __typename: "ModelOrderChangeConnection",
       items:  Array< {
-        __typename: "PurchaseOrderChange",
+        __typename: "OrderChange",
         tshirt:  {
           __typename: "TShirt",
           id: string,
@@ -804,14 +781,16 @@ export type CreatePurchaseOrderMutation = {
           createdAt: string,
           updatedAt: string,
         },
-        quantityChange: number,
-        orderedQuantityChange: number,
         reason: string,
+        oldValue: string,
+        newValue: string,
+        fieldName: string,
         id: string,
         createdAt: string,
         updatedAt: string,
         purchaseOrderChangeHistoryId?: string | null,
-        purchaseOrderChangeTshirtId: string,
+        customerOrderChangeHistoryId?: string | null,
+        orderChangeTshirtId: string,
       } | null >,
       nextToken?: string | null,
     } | null,
@@ -852,6 +831,7 @@ export type UpdatePurchaseOrderMutation = {
         },
         quantity: number,
         amountReceived?: number | null,
+        costPerUnit: number,
         id: string,
         createdAt: string,
         updatedAt: string,
@@ -863,9 +843,9 @@ export type UpdatePurchaseOrderMutation = {
     } | null,
     status: POStatus,
     changeHistory?:  {
-      __typename: "ModelPurchaseOrderChangeConnection",
+      __typename: "ModelOrderChangeConnection",
       items:  Array< {
-        __typename: "PurchaseOrderChange",
+        __typename: "OrderChange",
         tshirt:  {
           __typename: "TShirt",
           id: string,
@@ -879,14 +859,16 @@ export type UpdatePurchaseOrderMutation = {
           createdAt: string,
           updatedAt: string,
         },
-        quantityChange: number,
-        orderedQuantityChange: number,
         reason: string,
+        oldValue: string,
+        newValue: string,
+        fieldName: string,
         id: string,
         createdAt: string,
         updatedAt: string,
         purchaseOrderChangeHistoryId?: string | null,
-        purchaseOrderChangeTshirtId: string,
+        customerOrderChangeHistoryId?: string | null,
+        orderChangeTshirtId: string,
       } | null >,
       nextToken?: string | null,
     } | null,
@@ -927,6 +909,7 @@ export type DeletePurchaseOrderMutation = {
         },
         quantity: number,
         amountReceived?: number | null,
+        costPerUnit: number,
         id: string,
         createdAt: string,
         updatedAt: string,
@@ -938,9 +921,9 @@ export type DeletePurchaseOrderMutation = {
     } | null,
     status: POStatus,
     changeHistory?:  {
-      __typename: "ModelPurchaseOrderChangeConnection",
+      __typename: "ModelOrderChangeConnection",
       items:  Array< {
-        __typename: "PurchaseOrderChange",
+        __typename: "OrderChange",
         tshirt:  {
           __typename: "TShirt",
           id: string,
@@ -954,14 +937,16 @@ export type DeletePurchaseOrderMutation = {
           createdAt: string,
           updatedAt: string,
         },
-        quantityChange: number,
-        orderedQuantityChange: number,
         reason: string,
+        oldValue: string,
+        newValue: string,
+        fieldName: string,
         id: string,
         createdAt: string,
         updatedAt: string,
         purchaseOrderChangeHistoryId?: string | null,
-        purchaseOrderChangeTshirtId: string,
+        customerOrderChangeHistoryId?: string | null,
+        orderChangeTshirtId: string,
       } | null >,
       nextToken?: string | null,
     } | null,
@@ -972,14 +957,14 @@ export type DeletePurchaseOrderMutation = {
   } | null,
 };
 
-export type CreatePurchaseOrderChangeMutationVariables = {
-  input: CreatePurchaseOrderChangeInput,
-  condition?: ModelPurchaseOrderChangeConditionInput | null,
+export type CreateOrderChangeMutationVariables = {
+  input: CreateOrderChangeInput,
+  condition?: ModelOrderChangeConditionInput | null,
 };
 
-export type CreatePurchaseOrderChangeMutation = {
-  createPurchaseOrderChange?:  {
-    __typename: "PurchaseOrderChange",
+export type CreateOrderChangeMutation = {
+  createOrderChange?:  {
+    __typename: "OrderChange",
     tshirt:  {
       __typename: "TShirt",
       id: string,
@@ -993,25 +978,27 @@ export type CreatePurchaseOrderChangeMutation = {
       createdAt: string,
       updatedAt: string,
     },
-    quantityChange: number,
-    orderedQuantityChange: number,
     reason: string,
+    oldValue: string,
+    newValue: string,
+    fieldName: string,
     id: string,
     createdAt: string,
     updatedAt: string,
     purchaseOrderChangeHistoryId?: string | null,
-    purchaseOrderChangeTshirtId: string,
+    customerOrderChangeHistoryId?: string | null,
+    orderChangeTshirtId: string,
   } | null,
 };
 
-export type UpdatePurchaseOrderChangeMutationVariables = {
-  input: UpdatePurchaseOrderChangeInput,
-  condition?: ModelPurchaseOrderChangeConditionInput | null,
+export type UpdateOrderChangeMutationVariables = {
+  input: UpdateOrderChangeInput,
+  condition?: ModelOrderChangeConditionInput | null,
 };
 
-export type UpdatePurchaseOrderChangeMutation = {
-  updatePurchaseOrderChange?:  {
-    __typename: "PurchaseOrderChange",
+export type UpdateOrderChangeMutation = {
+  updateOrderChange?:  {
+    __typename: "OrderChange",
     tshirt:  {
       __typename: "TShirt",
       id: string,
@@ -1025,25 +1012,27 @@ export type UpdatePurchaseOrderChangeMutation = {
       createdAt: string,
       updatedAt: string,
     },
-    quantityChange: number,
-    orderedQuantityChange: number,
     reason: string,
+    oldValue: string,
+    newValue: string,
+    fieldName: string,
     id: string,
     createdAt: string,
     updatedAt: string,
     purchaseOrderChangeHistoryId?: string | null,
-    purchaseOrderChangeTshirtId: string,
+    customerOrderChangeHistoryId?: string | null,
+    orderChangeTshirtId: string,
   } | null,
 };
 
-export type DeletePurchaseOrderChangeMutationVariables = {
-  input: DeletePurchaseOrderChangeInput,
-  condition?: ModelPurchaseOrderChangeConditionInput | null,
+export type DeleteOrderChangeMutationVariables = {
+  input: DeleteOrderChangeInput,
+  condition?: ModelOrderChangeConditionInput | null,
 };
 
-export type DeletePurchaseOrderChangeMutation = {
-  deletePurchaseOrderChange?:  {
-    __typename: "PurchaseOrderChange",
+export type DeleteOrderChangeMutation = {
+  deleteOrderChange?:  {
+    __typename: "OrderChange",
     tshirt:  {
       __typename: "TShirt",
       id: string,
@@ -1057,107 +1046,16 @@ export type DeletePurchaseOrderChangeMutation = {
       createdAt: string,
       updatedAt: string,
     },
-    quantityChange: number,
-    orderedQuantityChange: number,
     reason: string,
+    oldValue: string,
+    newValue: string,
+    fieldName: string,
     id: string,
     createdAt: string,
     updatedAt: string,
     purchaseOrderChangeHistoryId?: string | null,
-    purchaseOrderChangeTshirtId: string,
-  } | null,
-};
-
-export type CreateCustomerOrderChangeMutationVariables = {
-  input: CreateCustomerOrderChangeInput,
-  condition?: ModelCustomerOrderChangeConditionInput | null,
-};
-
-export type CreateCustomerOrderChangeMutation = {
-  createCustomerOrderChange?:  {
-    __typename: "CustomerOrderChange",
-    tshirt:  {
-      __typename: "TShirt",
-      id: string,
-      styleNumber: string,
-      brand: string,
-      color: string,
-      size: TShirtSize,
-      type: TShirtType,
-      quantityOnHand?: number | null,
-      isDeleted?: boolean | null,
-      createdAt: string,
-      updatedAt: string,
-    },
-    orderedQuantityChange: number,
-    reason: string,
-    id: string,
-    createdAt: string,
-    updatedAt: string,
     customerOrderChangeHistoryId?: string | null,
-    customerOrderChangeTshirtId: string,
-  } | null,
-};
-
-export type UpdateCustomerOrderChangeMutationVariables = {
-  input: UpdateCustomerOrderChangeInput,
-  condition?: ModelCustomerOrderChangeConditionInput | null,
-};
-
-export type UpdateCustomerOrderChangeMutation = {
-  updateCustomerOrderChange?:  {
-    __typename: "CustomerOrderChange",
-    tshirt:  {
-      __typename: "TShirt",
-      id: string,
-      styleNumber: string,
-      brand: string,
-      color: string,
-      size: TShirtSize,
-      type: TShirtType,
-      quantityOnHand?: number | null,
-      isDeleted?: boolean | null,
-      createdAt: string,
-      updatedAt: string,
-    },
-    orderedQuantityChange: number,
-    reason: string,
-    id: string,
-    createdAt: string,
-    updatedAt: string,
-    customerOrderChangeHistoryId?: string | null,
-    customerOrderChangeTshirtId: string,
-  } | null,
-};
-
-export type DeleteCustomerOrderChangeMutationVariables = {
-  input: DeleteCustomerOrderChangeInput,
-  condition?: ModelCustomerOrderChangeConditionInput | null,
-};
-
-export type DeleteCustomerOrderChangeMutation = {
-  deleteCustomerOrderChange?:  {
-    __typename: "CustomerOrderChange",
-    tshirt:  {
-      __typename: "TShirt",
-      id: string,
-      styleNumber: string,
-      brand: string,
-      color: string,
-      size: TShirtSize,
-      type: TShirtType,
-      quantityOnHand?: number | null,
-      isDeleted?: boolean | null,
-      createdAt: string,
-      updatedAt: string,
-    },
-    orderedQuantityChange: number,
-    reason: string,
-    id: string,
-    createdAt: string,
-    updatedAt: string,
-    customerOrderChangeHistoryId?: string | null,
-    customerOrderChangeTshirtId: string,
+    orderChangeTshirtId: string,
   } | null,
 };
 
@@ -1184,6 +1082,7 @@ export type CreateTShirtOrderMutation = {
     },
     quantity: number,
     amountReceived?: number | null,
+    costPerUnit: number,
     id: string,
     createdAt: string,
     updatedAt: string,
@@ -1216,6 +1115,7 @@ export type UpdateTShirtOrderMutation = {
     },
     quantity: number,
     amountReceived?: number | null,
+    costPerUnit: number,
     id: string,
     createdAt: string,
     updatedAt: string,
@@ -1248,6 +1148,7 @@ export type DeleteTShirtOrderMutation = {
     },
     quantity: number,
     amountReceived?: number | null,
+    costPerUnit: number,
     id: string,
     createdAt: string,
     updatedAt: string,
@@ -1288,6 +1189,7 @@ export type CreateCustomerOrderMutation = {
         },
         quantity: number,
         amountReceived?: number | null,
+        costPerUnit: number,
         id: string,
         createdAt: string,
         updatedAt: string,
@@ -1302,9 +1204,9 @@ export type CreateCustomerOrderMutation = {
     orderNotes?: string | null,
     dateNeededBy: string,
     changeHistory?:  {
-      __typename: "ModelCustomerOrderChangeConnection",
+      __typename: "ModelOrderChangeConnection",
       items:  Array< {
-        __typename: "CustomerOrderChange",
+        __typename: "OrderChange",
         tshirt:  {
           __typename: "TShirt",
           id: string,
@@ -1318,13 +1220,16 @@ export type CreateCustomerOrderMutation = {
           createdAt: string,
           updatedAt: string,
         },
-        orderedQuantityChange: number,
         reason: string,
+        oldValue: string,
+        newValue: string,
+        fieldName: string,
         id: string,
         createdAt: string,
         updatedAt: string,
+        purchaseOrderChangeHistoryId?: string | null,
         customerOrderChangeHistoryId?: string | null,
-        customerOrderChangeTshirtId: string,
+        orderChangeTshirtId: string,
       } | null >,
       nextToken?: string | null,
     } | null,
@@ -1366,6 +1271,7 @@ export type UpdateCustomerOrderMutation = {
         },
         quantity: number,
         amountReceived?: number | null,
+        costPerUnit: number,
         id: string,
         createdAt: string,
         updatedAt: string,
@@ -1380,9 +1286,9 @@ export type UpdateCustomerOrderMutation = {
     orderNotes?: string | null,
     dateNeededBy: string,
     changeHistory?:  {
-      __typename: "ModelCustomerOrderChangeConnection",
+      __typename: "ModelOrderChangeConnection",
       items:  Array< {
-        __typename: "CustomerOrderChange",
+        __typename: "OrderChange",
         tshirt:  {
           __typename: "TShirt",
           id: string,
@@ -1396,13 +1302,16 @@ export type UpdateCustomerOrderMutation = {
           createdAt: string,
           updatedAt: string,
         },
-        orderedQuantityChange: number,
         reason: string,
+        oldValue: string,
+        newValue: string,
+        fieldName: string,
         id: string,
         createdAt: string,
         updatedAt: string,
+        purchaseOrderChangeHistoryId?: string | null,
         customerOrderChangeHistoryId?: string | null,
-        customerOrderChangeTshirtId: string,
+        orderChangeTshirtId: string,
       } | null >,
       nextToken?: string | null,
     } | null,
@@ -1444,6 +1353,7 @@ export type DeleteCustomerOrderMutation = {
         },
         quantity: number,
         amountReceived?: number | null,
+        costPerUnit: number,
         id: string,
         createdAt: string,
         updatedAt: string,
@@ -1458,9 +1368,9 @@ export type DeleteCustomerOrderMutation = {
     orderNotes?: string | null,
     dateNeededBy: string,
     changeHistory?:  {
-      __typename: "ModelCustomerOrderChangeConnection",
+      __typename: "ModelOrderChangeConnection",
       items:  Array< {
-        __typename: "CustomerOrderChange",
+        __typename: "OrderChange",
         tshirt:  {
           __typename: "TShirt",
           id: string,
@@ -1474,13 +1384,16 @@ export type DeleteCustomerOrderMutation = {
           createdAt: string,
           updatedAt: string,
         },
-        orderedQuantityChange: number,
         reason: string,
+        oldValue: string,
+        newValue: string,
+        fieldName: string,
         id: string,
         createdAt: string,
         updatedAt: string,
+        purchaseOrderChangeHistoryId?: string | null,
         customerOrderChangeHistoryId?: string | null,
-        customerOrderChangeTshirtId: string,
+        orderChangeTshirtId: string,
       } | null >,
       nextToken?: string | null,
     } | null,
@@ -1568,6 +1481,7 @@ export type GetPurchaseOrderQuery = {
         },
         quantity: number,
         amountReceived?: number | null,
+        costPerUnit: number,
         id: string,
         createdAt: string,
         updatedAt: string,
@@ -1579,9 +1493,9 @@ export type GetPurchaseOrderQuery = {
     } | null,
     status: POStatus,
     changeHistory?:  {
-      __typename: "ModelPurchaseOrderChangeConnection",
+      __typename: "ModelOrderChangeConnection",
       items:  Array< {
-        __typename: "PurchaseOrderChange",
+        __typename: "OrderChange",
         tshirt:  {
           __typename: "TShirt",
           id: string,
@@ -1595,14 +1509,16 @@ export type GetPurchaseOrderQuery = {
           createdAt: string,
           updatedAt: string,
         },
-        quantityChange: number,
-        orderedQuantityChange: number,
         reason: string,
+        oldValue: string,
+        newValue: string,
+        fieldName: string,
         id: string,
         createdAt: string,
         updatedAt: string,
         purchaseOrderChangeHistoryId?: string | null,
-        purchaseOrderChangeTshirtId: string,
+        customerOrderChangeHistoryId?: string | null,
+        orderChangeTshirtId: string,
       } | null >,
       nextToken?: string | null,
     } | null,
@@ -1646,6 +1562,7 @@ export type ListPurchaseOrdersQuery = {
           },
           quantity: number,
           amountReceived?: number | null,
+          costPerUnit: number,
           id: string,
           createdAt: string,
           updatedAt: string,
@@ -1657,9 +1574,9 @@ export type ListPurchaseOrdersQuery = {
       } | null,
       status: POStatus,
       changeHistory?:  {
-        __typename: "ModelPurchaseOrderChangeConnection",
+        __typename: "ModelOrderChangeConnection",
         items:  Array< {
-          __typename: "PurchaseOrderChange",
+          __typename: "OrderChange",
           tshirt:  {
             __typename: "TShirt",
             id: string,
@@ -1673,14 +1590,16 @@ export type ListPurchaseOrdersQuery = {
             createdAt: string,
             updatedAt: string,
           },
-          quantityChange: number,
-          orderedQuantityChange: number,
           reason: string,
+          oldValue: string,
+          newValue: string,
+          fieldName: string,
           id: string,
           createdAt: string,
           updatedAt: string,
           purchaseOrderChangeHistoryId?: string | null,
-          purchaseOrderChangeTshirtId: string,
+          customerOrderChangeHistoryId?: string | null,
+          orderChangeTshirtId: string,
         } | null >,
         nextToken?: string | null,
       } | null,
@@ -1729,6 +1648,7 @@ export type PurchaseOrdersByCreatedAtQuery = {
           },
           quantity: number,
           amountReceived?: number | null,
+          costPerUnit: number,
           id: string,
           createdAt: string,
           updatedAt: string,
@@ -1740,9 +1660,9 @@ export type PurchaseOrdersByCreatedAtQuery = {
       } | null,
       status: POStatus,
       changeHistory?:  {
-        __typename: "ModelPurchaseOrderChangeConnection",
+        __typename: "ModelOrderChangeConnection",
         items:  Array< {
-          __typename: "PurchaseOrderChange",
+          __typename: "OrderChange",
           tshirt:  {
             __typename: "TShirt",
             id: string,
@@ -1756,14 +1676,16 @@ export type PurchaseOrdersByCreatedAtQuery = {
             createdAt: string,
             updatedAt: string,
           },
-          quantityChange: number,
-          orderedQuantityChange: number,
           reason: string,
+          oldValue: string,
+          newValue: string,
+          fieldName: string,
           id: string,
           createdAt: string,
           updatedAt: string,
           purchaseOrderChangeHistoryId?: string | null,
-          purchaseOrderChangeTshirtId: string,
+          customerOrderChangeHistoryId?: string | null,
+          orderChangeTshirtId: string,
         } | null >,
         nextToken?: string | null,
       } | null,
@@ -1776,13 +1698,13 @@ export type PurchaseOrdersByCreatedAtQuery = {
   } | null,
 };
 
-export type GetPurchaseOrderChangeQueryVariables = {
+export type GetOrderChangeQueryVariables = {
   id: string,
 };
 
-export type GetPurchaseOrderChangeQuery = {
-  getPurchaseOrderChange?:  {
-    __typename: "PurchaseOrderChange",
+export type GetOrderChangeQuery = {
+  getOrderChange?:  {
+    __typename: "OrderChange",
     tshirt:  {
       __typename: "TShirt",
       id: string,
@@ -1796,28 +1718,30 @@ export type GetPurchaseOrderChangeQuery = {
       createdAt: string,
       updatedAt: string,
     },
-    quantityChange: number,
-    orderedQuantityChange: number,
     reason: string,
+    oldValue: string,
+    newValue: string,
+    fieldName: string,
     id: string,
     createdAt: string,
     updatedAt: string,
     purchaseOrderChangeHistoryId?: string | null,
-    purchaseOrderChangeTshirtId: string,
+    customerOrderChangeHistoryId?: string | null,
+    orderChangeTshirtId: string,
   } | null,
 };
 
-export type ListPurchaseOrderChangesQueryVariables = {
-  filter?: ModelPurchaseOrderChangeFilterInput | null,
+export type ListOrderChangesQueryVariables = {
+  filter?: ModelOrderChangeFilterInput | null,
   limit?: number | null,
   nextToken?: string | null,
 };
 
-export type ListPurchaseOrderChangesQuery = {
-  listPurchaseOrderChanges?:  {
-    __typename: "ModelPurchaseOrderChangeConnection",
+export type ListOrderChangesQuery = {
+  listOrderChanges?:  {
+    __typename: "ModelOrderChangeConnection",
     items:  Array< {
-      __typename: "PurchaseOrderChange",
+      __typename: "OrderChange",
       tshirt:  {
         __typename: "TShirt",
         id: string,
@@ -1831,80 +1755,16 @@ export type ListPurchaseOrderChangesQuery = {
         createdAt: string,
         updatedAt: string,
       },
-      quantityChange: number,
-      orderedQuantityChange: number,
       reason: string,
+      oldValue: string,
+      newValue: string,
+      fieldName: string,
       id: string,
       createdAt: string,
       updatedAt: string,
       purchaseOrderChangeHistoryId?: string | null,
-      purchaseOrderChangeTshirtId: string,
-    } | null >,
-    nextToken?: string | null,
-  } | null,
-};
-
-export type GetCustomerOrderChangeQueryVariables = {
-  id: string,
-};
-
-export type GetCustomerOrderChangeQuery = {
-  getCustomerOrderChange?:  {
-    __typename: "CustomerOrderChange",
-    tshirt:  {
-      __typename: "TShirt",
-      id: string,
-      styleNumber: string,
-      brand: string,
-      color: string,
-      size: TShirtSize,
-      type: TShirtType,
-      quantityOnHand?: number | null,
-      isDeleted?: boolean | null,
-      createdAt: string,
-      updatedAt: string,
-    },
-    orderedQuantityChange: number,
-    reason: string,
-    id: string,
-    createdAt: string,
-    updatedAt: string,
-    customerOrderChangeHistoryId?: string | null,
-    customerOrderChangeTshirtId: string,
-  } | null,
-};
-
-export type ListCustomerOrderChangesQueryVariables = {
-  filter?: ModelCustomerOrderChangeFilterInput | null,
-  limit?: number | null,
-  nextToken?: string | null,
-};
-
-export type ListCustomerOrderChangesQuery = {
-  listCustomerOrderChanges?:  {
-    __typename: "ModelCustomerOrderChangeConnection",
-    items:  Array< {
-      __typename: "CustomerOrderChange",
-      tshirt:  {
-        __typename: "TShirt",
-        id: string,
-        styleNumber: string,
-        brand: string,
-        color: string,
-        size: TShirtSize,
-        type: TShirtType,
-        quantityOnHand?: number | null,
-        isDeleted?: boolean | null,
-        createdAt: string,
-        updatedAt: string,
-      },
-      orderedQuantityChange: number,
-      reason: string,
-      id: string,
-      createdAt: string,
-      updatedAt: string,
       customerOrderChangeHistoryId?: string | null,
-      customerOrderChangeTshirtId: string,
+      orderChangeTshirtId: string,
     } | null >,
     nextToken?: string | null,
   } | null,
@@ -1932,6 +1792,7 @@ export type GetTShirtOrderQuery = {
     },
     quantity: number,
     amountReceived?: number | null,
+    costPerUnit: number,
     id: string,
     createdAt: string,
     updatedAt: string,
@@ -1967,6 +1828,7 @@ export type ListTShirtOrdersQuery = {
       },
       quantity: number,
       amountReceived?: number | null,
+      costPerUnit: number,
       id: string,
       createdAt: string,
       updatedAt: string,
@@ -2008,6 +1870,7 @@ export type GetCustomerOrderQuery = {
         },
         quantity: number,
         amountReceived?: number | null,
+        costPerUnit: number,
         id: string,
         createdAt: string,
         updatedAt: string,
@@ -2022,9 +1885,9 @@ export type GetCustomerOrderQuery = {
     orderNotes?: string | null,
     dateNeededBy: string,
     changeHistory?:  {
-      __typename: "ModelCustomerOrderChangeConnection",
+      __typename: "ModelOrderChangeConnection",
       items:  Array< {
-        __typename: "CustomerOrderChange",
+        __typename: "OrderChange",
         tshirt:  {
           __typename: "TShirt",
           id: string,
@@ -2038,13 +1901,16 @@ export type GetCustomerOrderQuery = {
           createdAt: string,
           updatedAt: string,
         },
-        orderedQuantityChange: number,
         reason: string,
+        oldValue: string,
+        newValue: string,
+        fieldName: string,
         id: string,
         createdAt: string,
         updatedAt: string,
+        purchaseOrderChangeHistoryId?: string | null,
         customerOrderChangeHistoryId?: string | null,
-        customerOrderChangeTshirtId: string,
+        orderChangeTshirtId: string,
       } | null >,
       nextToken?: string | null,
     } | null,
@@ -2089,6 +1955,7 @@ export type ListCustomerOrdersQuery = {
           },
           quantity: number,
           amountReceived?: number | null,
+          costPerUnit: number,
           id: string,
           createdAt: string,
           updatedAt: string,
@@ -2103,9 +1970,9 @@ export type ListCustomerOrdersQuery = {
       orderNotes?: string | null,
       dateNeededBy: string,
       changeHistory?:  {
-        __typename: "ModelCustomerOrderChangeConnection",
+        __typename: "ModelOrderChangeConnection",
         items:  Array< {
-          __typename: "CustomerOrderChange",
+          __typename: "OrderChange",
           tshirt:  {
             __typename: "TShirt",
             id: string,
@@ -2119,13 +1986,16 @@ export type ListCustomerOrdersQuery = {
             createdAt: string,
             updatedAt: string,
           },
-          orderedQuantityChange: number,
           reason: string,
+          oldValue: string,
+          newValue: string,
+          fieldName: string,
           id: string,
           createdAt: string,
           updatedAt: string,
+          purchaseOrderChangeHistoryId?: string | null,
           customerOrderChangeHistoryId?: string | null,
-          customerOrderChangeTshirtId: string,
+          orderChangeTshirtId: string,
         } | null >,
         nextToken?: string | null,
       } | null,
@@ -2175,6 +2045,7 @@ export type CustomerOrdersByCreatedAtQuery = {
           },
           quantity: number,
           amountReceived?: number | null,
+          costPerUnit: number,
           id: string,
           createdAt: string,
           updatedAt: string,
@@ -2189,9 +2060,9 @@ export type CustomerOrdersByCreatedAtQuery = {
       orderNotes?: string | null,
       dateNeededBy: string,
       changeHistory?:  {
-        __typename: "ModelCustomerOrderChangeConnection",
+        __typename: "ModelOrderChangeConnection",
         items:  Array< {
-          __typename: "CustomerOrderChange",
+          __typename: "OrderChange",
           tshirt:  {
             __typename: "TShirt",
             id: string,
@@ -2205,13 +2076,16 @@ export type CustomerOrdersByCreatedAtQuery = {
             createdAt: string,
             updatedAt: string,
           },
-          orderedQuantityChange: number,
           reason: string,
+          oldValue: string,
+          newValue: string,
+          fieldName: string,
           id: string,
           createdAt: string,
           updatedAt: string,
+          purchaseOrderChangeHistoryId?: string | null,
           customerOrderChangeHistoryId?: string | null,
-          customerOrderChangeTshirtId: string,
+          orderChangeTshirtId: string,
         } | null >,
         nextToken?: string | null,
       } | null,
@@ -2313,6 +2187,7 @@ export type OnCreatePurchaseOrderSubscription = {
         },
         quantity: number,
         amountReceived?: number | null,
+        costPerUnit: number,
         id: string,
         createdAt: string,
         updatedAt: string,
@@ -2324,9 +2199,9 @@ export type OnCreatePurchaseOrderSubscription = {
     } | null,
     status: POStatus,
     changeHistory?:  {
-      __typename: "ModelPurchaseOrderChangeConnection",
+      __typename: "ModelOrderChangeConnection",
       items:  Array< {
-        __typename: "PurchaseOrderChange",
+        __typename: "OrderChange",
         tshirt:  {
           __typename: "TShirt",
           id: string,
@@ -2340,14 +2215,16 @@ export type OnCreatePurchaseOrderSubscription = {
           createdAt: string,
           updatedAt: string,
         },
-        quantityChange: number,
-        orderedQuantityChange: number,
         reason: string,
+        oldValue: string,
+        newValue: string,
+        fieldName: string,
         id: string,
         createdAt: string,
         updatedAt: string,
         purchaseOrderChangeHistoryId?: string | null,
-        purchaseOrderChangeTshirtId: string,
+        customerOrderChangeHistoryId?: string | null,
+        orderChangeTshirtId: string,
       } | null >,
       nextToken?: string | null,
     } | null,
@@ -2387,6 +2264,7 @@ export type OnUpdatePurchaseOrderSubscription = {
         },
         quantity: number,
         amountReceived?: number | null,
+        costPerUnit: number,
         id: string,
         createdAt: string,
         updatedAt: string,
@@ -2398,9 +2276,9 @@ export type OnUpdatePurchaseOrderSubscription = {
     } | null,
     status: POStatus,
     changeHistory?:  {
-      __typename: "ModelPurchaseOrderChangeConnection",
+      __typename: "ModelOrderChangeConnection",
       items:  Array< {
-        __typename: "PurchaseOrderChange",
+        __typename: "OrderChange",
         tshirt:  {
           __typename: "TShirt",
           id: string,
@@ -2414,14 +2292,16 @@ export type OnUpdatePurchaseOrderSubscription = {
           createdAt: string,
           updatedAt: string,
         },
-        quantityChange: number,
-        orderedQuantityChange: number,
         reason: string,
+        oldValue: string,
+        newValue: string,
+        fieldName: string,
         id: string,
         createdAt: string,
         updatedAt: string,
         purchaseOrderChangeHistoryId?: string | null,
-        purchaseOrderChangeTshirtId: string,
+        customerOrderChangeHistoryId?: string | null,
+        orderChangeTshirtId: string,
       } | null >,
       nextToken?: string | null,
     } | null,
@@ -2461,6 +2341,7 @@ export type OnDeletePurchaseOrderSubscription = {
         },
         quantity: number,
         amountReceived?: number | null,
+        costPerUnit: number,
         id: string,
         createdAt: string,
         updatedAt: string,
@@ -2472,9 +2353,9 @@ export type OnDeletePurchaseOrderSubscription = {
     } | null,
     status: POStatus,
     changeHistory?:  {
-      __typename: "ModelPurchaseOrderChangeConnection",
+      __typename: "ModelOrderChangeConnection",
       items:  Array< {
-        __typename: "PurchaseOrderChange",
+        __typename: "OrderChange",
         tshirt:  {
           __typename: "TShirt",
           id: string,
@@ -2488,14 +2369,16 @@ export type OnDeletePurchaseOrderSubscription = {
           createdAt: string,
           updatedAt: string,
         },
-        quantityChange: number,
-        orderedQuantityChange: number,
         reason: string,
+        oldValue: string,
+        newValue: string,
+        fieldName: string,
         id: string,
         createdAt: string,
         updatedAt: string,
         purchaseOrderChangeHistoryId?: string | null,
-        purchaseOrderChangeTshirtId: string,
+        customerOrderChangeHistoryId?: string | null,
+        orderChangeTshirtId: string,
       } | null >,
       nextToken?: string | null,
     } | null,
@@ -2506,13 +2389,13 @@ export type OnDeletePurchaseOrderSubscription = {
   } | null,
 };
 
-export type OnCreatePurchaseOrderChangeSubscriptionVariables = {
-  filter?: ModelSubscriptionPurchaseOrderChangeFilterInput | null,
+export type OnCreateOrderChangeSubscriptionVariables = {
+  filter?: ModelSubscriptionOrderChangeFilterInput | null,
 };
 
-export type OnCreatePurchaseOrderChangeSubscription = {
-  onCreatePurchaseOrderChange?:  {
-    __typename: "PurchaseOrderChange",
+export type OnCreateOrderChangeSubscription = {
+  onCreateOrderChange?:  {
+    __typename: "OrderChange",
     tshirt:  {
       __typename: "TShirt",
       id: string,
@@ -2526,24 +2409,26 @@ export type OnCreatePurchaseOrderChangeSubscription = {
       createdAt: string,
       updatedAt: string,
     },
-    quantityChange: number,
-    orderedQuantityChange: number,
     reason: string,
+    oldValue: string,
+    newValue: string,
+    fieldName: string,
     id: string,
     createdAt: string,
     updatedAt: string,
     purchaseOrderChangeHistoryId?: string | null,
-    purchaseOrderChangeTshirtId: string,
+    customerOrderChangeHistoryId?: string | null,
+    orderChangeTshirtId: string,
   } | null,
 };
 
-export type OnUpdatePurchaseOrderChangeSubscriptionVariables = {
-  filter?: ModelSubscriptionPurchaseOrderChangeFilterInput | null,
+export type OnUpdateOrderChangeSubscriptionVariables = {
+  filter?: ModelSubscriptionOrderChangeFilterInput | null,
 };
 
-export type OnUpdatePurchaseOrderChangeSubscription = {
-  onUpdatePurchaseOrderChange?:  {
-    __typename: "PurchaseOrderChange",
+export type OnUpdateOrderChangeSubscription = {
+  onUpdateOrderChange?:  {
+    __typename: "OrderChange",
     tshirt:  {
       __typename: "TShirt",
       id: string,
@@ -2557,24 +2442,26 @@ export type OnUpdatePurchaseOrderChangeSubscription = {
       createdAt: string,
       updatedAt: string,
     },
-    quantityChange: number,
-    orderedQuantityChange: number,
     reason: string,
+    oldValue: string,
+    newValue: string,
+    fieldName: string,
     id: string,
     createdAt: string,
     updatedAt: string,
     purchaseOrderChangeHistoryId?: string | null,
-    purchaseOrderChangeTshirtId: string,
+    customerOrderChangeHistoryId?: string | null,
+    orderChangeTshirtId: string,
   } | null,
 };
 
-export type OnDeletePurchaseOrderChangeSubscriptionVariables = {
-  filter?: ModelSubscriptionPurchaseOrderChangeFilterInput | null,
+export type OnDeleteOrderChangeSubscriptionVariables = {
+  filter?: ModelSubscriptionOrderChangeFilterInput | null,
 };
 
-export type OnDeletePurchaseOrderChangeSubscription = {
-  onDeletePurchaseOrderChange?:  {
-    __typename: "PurchaseOrderChange",
+export type OnDeleteOrderChangeSubscription = {
+  onDeleteOrderChange?:  {
+    __typename: "OrderChange",
     tshirt:  {
       __typename: "TShirt",
       id: string,
@@ -2588,104 +2475,16 @@ export type OnDeletePurchaseOrderChangeSubscription = {
       createdAt: string,
       updatedAt: string,
     },
-    quantityChange: number,
-    orderedQuantityChange: number,
     reason: string,
+    oldValue: string,
+    newValue: string,
+    fieldName: string,
     id: string,
     createdAt: string,
     updatedAt: string,
     purchaseOrderChangeHistoryId?: string | null,
-    purchaseOrderChangeTshirtId: string,
-  } | null,
-};
-
-export type OnCreateCustomerOrderChangeSubscriptionVariables = {
-  filter?: ModelSubscriptionCustomerOrderChangeFilterInput | null,
-};
-
-export type OnCreateCustomerOrderChangeSubscription = {
-  onCreateCustomerOrderChange?:  {
-    __typename: "CustomerOrderChange",
-    tshirt:  {
-      __typename: "TShirt",
-      id: string,
-      styleNumber: string,
-      brand: string,
-      color: string,
-      size: TShirtSize,
-      type: TShirtType,
-      quantityOnHand?: number | null,
-      isDeleted?: boolean | null,
-      createdAt: string,
-      updatedAt: string,
-    },
-    orderedQuantityChange: number,
-    reason: string,
-    id: string,
-    createdAt: string,
-    updatedAt: string,
     customerOrderChangeHistoryId?: string | null,
-    customerOrderChangeTshirtId: string,
-  } | null,
-};
-
-export type OnUpdateCustomerOrderChangeSubscriptionVariables = {
-  filter?: ModelSubscriptionCustomerOrderChangeFilterInput | null,
-};
-
-export type OnUpdateCustomerOrderChangeSubscription = {
-  onUpdateCustomerOrderChange?:  {
-    __typename: "CustomerOrderChange",
-    tshirt:  {
-      __typename: "TShirt",
-      id: string,
-      styleNumber: string,
-      brand: string,
-      color: string,
-      size: TShirtSize,
-      type: TShirtType,
-      quantityOnHand?: number | null,
-      isDeleted?: boolean | null,
-      createdAt: string,
-      updatedAt: string,
-    },
-    orderedQuantityChange: number,
-    reason: string,
-    id: string,
-    createdAt: string,
-    updatedAt: string,
-    customerOrderChangeHistoryId?: string | null,
-    customerOrderChangeTshirtId: string,
-  } | null,
-};
-
-export type OnDeleteCustomerOrderChangeSubscriptionVariables = {
-  filter?: ModelSubscriptionCustomerOrderChangeFilterInput | null,
-};
-
-export type OnDeleteCustomerOrderChangeSubscription = {
-  onDeleteCustomerOrderChange?:  {
-    __typename: "CustomerOrderChange",
-    tshirt:  {
-      __typename: "TShirt",
-      id: string,
-      styleNumber: string,
-      brand: string,
-      color: string,
-      size: TShirtSize,
-      type: TShirtType,
-      quantityOnHand?: number | null,
-      isDeleted?: boolean | null,
-      createdAt: string,
-      updatedAt: string,
-    },
-    orderedQuantityChange: number,
-    reason: string,
-    id: string,
-    createdAt: string,
-    updatedAt: string,
-    customerOrderChangeHistoryId?: string | null,
-    customerOrderChangeTshirtId: string,
+    orderChangeTshirtId: string,
   } | null,
 };
 
@@ -2711,6 +2510,7 @@ export type OnCreateTShirtOrderSubscription = {
     },
     quantity: number,
     amountReceived?: number | null,
+    costPerUnit: number,
     id: string,
     createdAt: string,
     updatedAt: string,
@@ -2742,6 +2542,7 @@ export type OnUpdateTShirtOrderSubscription = {
     },
     quantity: number,
     amountReceived?: number | null,
+    costPerUnit: number,
     id: string,
     createdAt: string,
     updatedAt: string,
@@ -2773,6 +2574,7 @@ export type OnDeleteTShirtOrderSubscription = {
     },
     quantity: number,
     amountReceived?: number | null,
+    costPerUnit: number,
     id: string,
     createdAt: string,
     updatedAt: string,
@@ -2812,6 +2614,7 @@ export type OnCreateCustomerOrderSubscription = {
         },
         quantity: number,
         amountReceived?: number | null,
+        costPerUnit: number,
         id: string,
         createdAt: string,
         updatedAt: string,
@@ -2826,9 +2629,9 @@ export type OnCreateCustomerOrderSubscription = {
     orderNotes?: string | null,
     dateNeededBy: string,
     changeHistory?:  {
-      __typename: "ModelCustomerOrderChangeConnection",
+      __typename: "ModelOrderChangeConnection",
       items:  Array< {
-        __typename: "CustomerOrderChange",
+        __typename: "OrderChange",
         tshirt:  {
           __typename: "TShirt",
           id: string,
@@ -2842,13 +2645,16 @@ export type OnCreateCustomerOrderSubscription = {
           createdAt: string,
           updatedAt: string,
         },
-        orderedQuantityChange: number,
         reason: string,
+        oldValue: string,
+        newValue: string,
+        fieldName: string,
         id: string,
         createdAt: string,
         updatedAt: string,
+        purchaseOrderChangeHistoryId?: string | null,
         customerOrderChangeHistoryId?: string | null,
-        customerOrderChangeTshirtId: string,
+        orderChangeTshirtId: string,
       } | null >,
       nextToken?: string | null,
     } | null,
@@ -2889,6 +2695,7 @@ export type OnUpdateCustomerOrderSubscription = {
         },
         quantity: number,
         amountReceived?: number | null,
+        costPerUnit: number,
         id: string,
         createdAt: string,
         updatedAt: string,
@@ -2903,9 +2710,9 @@ export type OnUpdateCustomerOrderSubscription = {
     orderNotes?: string | null,
     dateNeededBy: string,
     changeHistory?:  {
-      __typename: "ModelCustomerOrderChangeConnection",
+      __typename: "ModelOrderChangeConnection",
       items:  Array< {
-        __typename: "CustomerOrderChange",
+        __typename: "OrderChange",
         tshirt:  {
           __typename: "TShirt",
           id: string,
@@ -2919,13 +2726,16 @@ export type OnUpdateCustomerOrderSubscription = {
           createdAt: string,
           updatedAt: string,
         },
-        orderedQuantityChange: number,
         reason: string,
+        oldValue: string,
+        newValue: string,
+        fieldName: string,
         id: string,
         createdAt: string,
         updatedAt: string,
+        purchaseOrderChangeHistoryId?: string | null,
         customerOrderChangeHistoryId?: string | null,
-        customerOrderChangeTshirtId: string,
+        orderChangeTshirtId: string,
       } | null >,
       nextToken?: string | null,
     } | null,
@@ -2966,6 +2776,7 @@ export type OnDeleteCustomerOrderSubscription = {
         },
         quantity: number,
         amountReceived?: number | null,
+        costPerUnit: number,
         id: string,
         createdAt: string,
         updatedAt: string,
@@ -2980,9 +2791,9 @@ export type OnDeleteCustomerOrderSubscription = {
     orderNotes?: string | null,
     dateNeededBy: string,
     changeHistory?:  {
-      __typename: "ModelCustomerOrderChangeConnection",
+      __typename: "ModelOrderChangeConnection",
       items:  Array< {
-        __typename: "CustomerOrderChange",
+        __typename: "OrderChange",
         tshirt:  {
           __typename: "TShirt",
           id: string,
@@ -2996,13 +2807,16 @@ export type OnDeleteCustomerOrderSubscription = {
           createdAt: string,
           updatedAt: string,
         },
-        orderedQuantityChange: number,
         reason: string,
+        oldValue: string,
+        newValue: string,
+        fieldName: string,
         id: string,
         createdAt: string,
         updatedAt: string,
+        purchaseOrderChangeHistoryId?: string | null,
         customerOrderChangeHistoryId?: string | null,
-        customerOrderChangeTshirtId: string,
+        orderChangeTshirtId: string,
       } | null >,
       nextToken?: string | null,
     } | null,

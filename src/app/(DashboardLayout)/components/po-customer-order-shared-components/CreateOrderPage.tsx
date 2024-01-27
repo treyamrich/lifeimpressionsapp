@@ -213,7 +213,8 @@ function CreateOrderPage<T extends Record<any, any>>({
                                 tableData[row.index] = {
                                     ...prevTShirtOrder,
                                     quantity: prevTShirtOrder.quantity + orderChange.orderedQuantityChange,
-                                    amountReceived: prevAmtReceived + orderChange.quantityChange
+                                    amountReceived: prevAmtReceived + orderChange.quantityChange,
+                                    costPerUnit: prevTShirtOrder.costPerUnit + orderChange.costPerUnitChange
                                 } as TShirtOrder;
                                 setValues({ ...values, orderedItems: [...tableData] });
                                 exitEditingMode();

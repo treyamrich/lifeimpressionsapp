@@ -14,12 +14,13 @@ import {
   Typography,
 } from "@mui/material";
 import BlankCard from "../shared/BlankCard";
-import { SetStateAction, useState } from "react";
+import { SetStateAction, useEffect, useState } from "react";
 import { MRT_Row } from "material-react-table";
 import { CreateCustomerOrderChangeInput, CreatePurchaseOrderChangeInput, TShirt, TShirtOrder } from "@/API";
 import { EntityType } from "../po-customer-order-shared-components/CreateOrderPage";
 import { CreateOrderChangeInput } from "./table-constants";
 import { TableMode } from "./TShirtOrderTable";
+import NumberInput from "../NumberInput/NumberInput";
 
 interface EditRowPopupProps {
   onSubmit: (orderChange: CreateOrderChangeInput, resetFormCallback: () => void) => void;
@@ -34,7 +35,13 @@ interface EditRowPopupProps {
 
 const amtReceivedField = "amountReceived";
 const amtOrderedField = "quantity";
+const costPerUnitField = "costPerUnit";
 const initialEditReasonState = "other"; // This provides easy form validation for both purchase/customer order edit forms
+
+export interface FormValue<T> {
+  value: T;
+  hasError: boolean;
+};
 
 const EditRowPopup = ({
   open,
@@ -48,8 +55,13 @@ const EditRowPopup = ({
 }: EditRowPopupProps) => {
   const [newAmtReceived, setNewAmtReceived] = useState<number>(0);
   const currentAmtReceived: number = row ? row.getValue(amtReceivedField) : 0;
+
   const [newAmtOrdered, setNewAmtOrdered] = useState<number>(0);
   const currentAmtOrdered: number = row ? row.getValue(amtOrderedField) : 0;
+
+  const currentCostPerUnit = row ? row.getValue(costPerUnitField) as number : 0.0;
+  const [newCostPerUnit, setNewCostPerUnit] = useState<FormValue<number>>({ value: 0, hasError: false });
+
   const [editReason, setEditReason] = useState(initialEditReasonState);
   const [otherInput, setOtherInput] = useState(""); // When user selects "other"
   const [otherInputError, setOtherInputError] = useState(false);
@@ -60,6 +72,7 @@ const EditRowPopup = ({
     setEditReason(initialEditReasonState);
     setNewAmtReceived(0);
     setNewAmtOrdered(0);
+    setNewCostPerUnit({ value: 0, hasError: false });
   };
 
   const handleSubmit = () => {
@@ -67,12 +80,16 @@ const EditRowPopup = ({
       setOtherInputError(true);
       return;
     }
+
+    if (newCostPerUnit.hasError) return;
+
     const tshirtId: string = row ? row.original.tshirt.id : "";
-    
+
     const editReasonMsg = editReason === "other" ? otherInput : editReason;
     const orderChange: any = {
       quantityChange: newAmtReceived,
       orderedQuantityChange: newAmtOrdered,
+      costPerUnitChange: newCostPerUnit.value,
       reason: editReasonMsg,
     };
     if (entityType === EntityType.PurchaseOrder) {
@@ -88,6 +105,10 @@ const EditRowPopup = ({
     }
   };
 
+  useEffect(() => {
+    setNewCostPerUnit({...newCostPerUnit, value: currentCostPerUnit});
+  }, [row]);
+
   return (
     <Dialog open={open} maxWidth="md">
       <DialogTitle textAlign="center">{title}</DialogTitle>
@@ -98,9 +119,15 @@ const EditRowPopup = ({
               currentAmtReceived={currentAmtReceived}
               newAmtReceived={newAmtReceived}
               setNewAmtReceived={setNewAmtReceived}
+
               currentAmtOrdered={currentAmtOrdered}
               newAmtOrdered={newAmtOrdered}
               setNewAmtOrdered={setNewAmtOrdered}
+
+              currentCostPerUnit={currentCostPerUnit}
+              newCostPerUnit={newCostPerUnit}
+              setNewCostPerUnit={setNewCostPerUnit}
+
               editReason={editReason}
               setEditReason={setEditReason}
               otherInput={otherInput}
@@ -156,6 +183,10 @@ type EditCardProps = {
   newAmtOrdered: number;
   setNewAmtOrdered: React.Dispatch<React.SetStateAction<number>>;
 
+  currentCostPerUnit: number;
+  newCostPerUnit: FormValue<number>;
+  setNewCostPerUnit: React.Dispatch<React.SetStateAction<FormValue<number>>>;
+
   editReason: string;
   setEditReason: React.Dispatch<React.SetStateAction<string>>;
 
@@ -175,6 +206,9 @@ const EditCard = ({
   currentAmtOrdered,
   newAmtOrdered,
   setNewAmtOrdered,
+  currentCostPerUnit,
+  newCostPerUnit,
+  setNewCostPerUnit,
   editReason,
   setEditReason,
   otherInput,
@@ -188,6 +222,7 @@ const EditCard = ({
     setEditReason(newReason);
     if (newReason !== "other") setOtherInputError(false);
   };
+
   return (
     <BlankCard>
       <CardContent>
@@ -209,6 +244,17 @@ const EditCard = ({
                 newQty={newAmtOrdered}
                 setNewQty={setNewAmtOrdered}
                 currentQty={currentAmtOrdered}
+              />
+            </Grid>
+            <Grid item>
+              <NumberInput
+                label="Cost/Unit $"
+                initialValue={currentCostPerUnit}
+                isFloat
+                customErrorMsg="Not a valid dollar value"
+                onChange={(newValue: number, hasError: boolean) => {
+                  setNewCostPerUnit({ value: newValue, hasError: hasError });
+                }}
               />
             </Grid>
             {mode === TableMode.Edit && (

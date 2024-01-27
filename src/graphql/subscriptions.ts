@@ -78,6 +78,7 @@ export const onCreatePurchaseOrder = /* GraphQL */ `
           }
           quantity
           amountReceived
+          costPerUnit
           id
           createdAt
           updatedAt
@@ -105,14 +106,16 @@ export const onCreatePurchaseOrder = /* GraphQL */ `
             updatedAt
             __typename
           }
-          quantityChange
-          orderedQuantityChange
           reason
+          oldValue
+          newValue
+          fieldName
           id
           createdAt
           updatedAt
           purchaseOrderChangeHistoryId
-          purchaseOrderChangeTshirtId
+          customerOrderChangeHistoryId
+          orderChangeTshirtId
           __typename
         }
         nextToken
@@ -151,6 +154,7 @@ export const onUpdatePurchaseOrder = /* GraphQL */ `
           }
           quantity
           amountReceived
+          costPerUnit
           id
           createdAt
           updatedAt
@@ -178,14 +182,16 @@ export const onUpdatePurchaseOrder = /* GraphQL */ `
             updatedAt
             __typename
           }
-          quantityChange
-          orderedQuantityChange
           reason
+          oldValue
+          newValue
+          fieldName
           id
           createdAt
           updatedAt
           purchaseOrderChangeHistoryId
-          purchaseOrderChangeTshirtId
+          customerOrderChangeHistoryId
+          orderChangeTshirtId
           __typename
         }
         nextToken
@@ -224,6 +230,7 @@ export const onDeletePurchaseOrder = /* GraphQL */ `
           }
           quantity
           amountReceived
+          costPerUnit
           id
           createdAt
           updatedAt
@@ -251,14 +258,16 @@ export const onDeletePurchaseOrder = /* GraphQL */ `
             updatedAt
             __typename
           }
-          quantityChange
-          orderedQuantityChange
           reason
+          oldValue
+          newValue
+          fieldName
           id
           createdAt
           updatedAt
           purchaseOrderChangeHistoryId
-          purchaseOrderChangeTshirtId
+          customerOrderChangeHistoryId
+          orderChangeTshirtId
           __typename
         }
         nextToken
@@ -272,11 +281,11 @@ export const onDeletePurchaseOrder = /* GraphQL */ `
     }
   }
 `;
-export const onCreatePurchaseOrderChange = /* GraphQL */ `
-  subscription OnCreatePurchaseOrderChange(
-    $filter: ModelSubscriptionPurchaseOrderChangeFilterInput
+export const onCreateOrderChange = /* GraphQL */ `
+  subscription OnCreateOrderChange(
+    $filter: ModelSubscriptionOrderChangeFilterInput
   ) {
-    onCreatePurchaseOrderChange(filter: $filter) {
+    onCreateOrderChange(filter: $filter) {
       tshirt {
         id
         styleNumber
@@ -290,23 +299,25 @@ export const onCreatePurchaseOrderChange = /* GraphQL */ `
         updatedAt
         __typename
       }
-      quantityChange
-      orderedQuantityChange
       reason
+      oldValue
+      newValue
+      fieldName
       id
       createdAt
       updatedAt
       purchaseOrderChangeHistoryId
-      purchaseOrderChangeTshirtId
+      customerOrderChangeHistoryId
+      orderChangeTshirtId
       __typename
     }
   }
 `;
-export const onUpdatePurchaseOrderChange = /* GraphQL */ `
-  subscription OnUpdatePurchaseOrderChange(
-    $filter: ModelSubscriptionPurchaseOrderChangeFilterInput
+export const onUpdateOrderChange = /* GraphQL */ `
+  subscription OnUpdateOrderChange(
+    $filter: ModelSubscriptionOrderChangeFilterInput
   ) {
-    onUpdatePurchaseOrderChange(filter: $filter) {
+    onUpdateOrderChange(filter: $filter) {
       tshirt {
         id
         styleNumber
@@ -320,23 +331,25 @@ export const onUpdatePurchaseOrderChange = /* GraphQL */ `
         updatedAt
         __typename
       }
-      quantityChange
-      orderedQuantityChange
       reason
+      oldValue
+      newValue
+      fieldName
       id
       createdAt
       updatedAt
       purchaseOrderChangeHistoryId
-      purchaseOrderChangeTshirtId
+      customerOrderChangeHistoryId
+      orderChangeTshirtId
       __typename
     }
   }
 `;
-export const onDeletePurchaseOrderChange = /* GraphQL */ `
-  subscription OnDeletePurchaseOrderChange(
-    $filter: ModelSubscriptionPurchaseOrderChangeFilterInput
+export const onDeleteOrderChange = /* GraphQL */ `
+  subscription OnDeleteOrderChange(
+    $filter: ModelSubscriptionOrderChangeFilterInput
   ) {
-    onDeletePurchaseOrderChange(filter: $filter) {
+    onDeleteOrderChange(filter: $filter) {
       tshirt {
         id
         styleNumber
@@ -350,101 +363,16 @@ export const onDeletePurchaseOrderChange = /* GraphQL */ `
         updatedAt
         __typename
       }
-      quantityChange
-      orderedQuantityChange
       reason
+      oldValue
+      newValue
+      fieldName
       id
       createdAt
       updatedAt
       purchaseOrderChangeHistoryId
-      purchaseOrderChangeTshirtId
-      __typename
-    }
-  }
-`;
-export const onCreateCustomerOrderChange = /* GraphQL */ `
-  subscription OnCreateCustomerOrderChange(
-    $filter: ModelSubscriptionCustomerOrderChangeFilterInput
-  ) {
-    onCreateCustomerOrderChange(filter: $filter) {
-      tshirt {
-        id
-        styleNumber
-        brand
-        color
-        size
-        type
-        quantityOnHand
-        isDeleted
-        createdAt
-        updatedAt
-        __typename
-      }
-      orderedQuantityChange
-      reason
-      id
-      createdAt
-      updatedAt
       customerOrderChangeHistoryId
-      customerOrderChangeTshirtId
-      __typename
-    }
-  }
-`;
-export const onUpdateCustomerOrderChange = /* GraphQL */ `
-  subscription OnUpdateCustomerOrderChange(
-    $filter: ModelSubscriptionCustomerOrderChangeFilterInput
-  ) {
-    onUpdateCustomerOrderChange(filter: $filter) {
-      tshirt {
-        id
-        styleNumber
-        brand
-        color
-        size
-        type
-        quantityOnHand
-        isDeleted
-        createdAt
-        updatedAt
-        __typename
-      }
-      orderedQuantityChange
-      reason
-      id
-      createdAt
-      updatedAt
-      customerOrderChangeHistoryId
-      customerOrderChangeTshirtId
-      __typename
-    }
-  }
-`;
-export const onDeleteCustomerOrderChange = /* GraphQL */ `
-  subscription OnDeleteCustomerOrderChange(
-    $filter: ModelSubscriptionCustomerOrderChangeFilterInput
-  ) {
-    onDeleteCustomerOrderChange(filter: $filter) {
-      tshirt {
-        id
-        styleNumber
-        brand
-        color
-        size
-        type
-        quantityOnHand
-        isDeleted
-        createdAt
-        updatedAt
-        __typename
-      }
-      orderedQuantityChange
-      reason
-      id
-      createdAt
-      updatedAt
-      customerOrderChangeHistoryId
-      customerOrderChangeTshirtId
+      orderChangeTshirtId
       __typename
     }
   }
@@ -469,6 +397,7 @@ export const onCreateTShirtOrder = /* GraphQL */ `
       }
       quantity
       amountReceived
+      costPerUnit
       id
       createdAt
       updatedAt
@@ -499,6 +428,7 @@ export const onUpdateTShirtOrder = /* GraphQL */ `
       }
       quantity
       amountReceived
+      costPerUnit
       id
       createdAt
       updatedAt
@@ -529,6 +459,7 @@ export const onDeleteTShirtOrder = /* GraphQL */ `
       }
       quantity
       amountReceived
+      costPerUnit
       id
       createdAt
       updatedAt
@@ -565,6 +496,7 @@ export const onCreateCustomerOrder = /* GraphQL */ `
           }
           quantity
           amountReceived
+          costPerUnit
           id
           createdAt
           updatedAt
@@ -595,13 +527,16 @@ export const onCreateCustomerOrder = /* GraphQL */ `
             updatedAt
             __typename
           }
-          orderedQuantityChange
           reason
+          oldValue
+          newValue
+          fieldName
           id
           createdAt
           updatedAt
+          purchaseOrderChangeHistoryId
           customerOrderChangeHistoryId
-          customerOrderChangeTshirtId
+          orderChangeTshirtId
           __typename
         }
         nextToken
@@ -641,6 +576,7 @@ export const onUpdateCustomerOrder = /* GraphQL */ `
           }
           quantity
           amountReceived
+          costPerUnit
           id
           createdAt
           updatedAt
@@ -671,13 +607,16 @@ export const onUpdateCustomerOrder = /* GraphQL */ `
             updatedAt
             __typename
           }
-          orderedQuantityChange
           reason
+          oldValue
+          newValue
+          fieldName
           id
           createdAt
           updatedAt
+          purchaseOrderChangeHistoryId
           customerOrderChangeHistoryId
-          customerOrderChangeTshirtId
+          orderChangeTshirtId
           __typename
         }
         nextToken
@@ -717,6 +656,7 @@ export const onDeleteCustomerOrder = /* GraphQL */ `
           }
           quantity
           amountReceived
+          costPerUnit
           id
           createdAt
           updatedAt
@@ -747,13 +687,16 @@ export const onDeleteCustomerOrder = /* GraphQL */ `
             updatedAt
             __typename
           }
-          orderedQuantityChange
           reason
+          oldValue
+          newValue
+          fieldName
           id
           createdAt
           updatedAt
+          purchaseOrderChangeHistoryId
           customerOrderChangeHistoryId
-          customerOrderChangeTshirtId
+          orderChangeTshirtId
           __typename
         }
         nextToken

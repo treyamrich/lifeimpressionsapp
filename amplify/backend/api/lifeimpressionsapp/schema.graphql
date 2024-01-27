@@ -47,7 +47,7 @@ type PurchaseOrder @model @auth(rules: [
   vendor: String!
   orderedItems: [TShirtOrder!] @hasMany
   status: POStatus!
-  changeHistory: [PurchaseOrderChange!] @hasMany
+  changeHistory: [OrderChange!] @hasMany
 
   isDeleted: Boolean @default(value: "false")
   type: String @default(value: "PurchaseOrder") @index(name: "purchaseOrdersByCreatedAt", queryField: "purchaseOrdersByCreatedAt", sortKeyFields: ["createdAt"])
@@ -59,19 +59,14 @@ enum POStatus {
   Closed
 }
 
-type PurchaseOrderChange @model @auth(rules: [
+type OrderChange @model @auth(rules: [
   { allow: groups, groups: ["admin"], provider: userPools}]) {
   tshirt: TShirt! @hasOne
-  quantityChange: Int! # the delta for qtyOnHand
-  orderedQuantityChange: Int!
   reason: String!
-}
 
-type CustomerOrderChange @model @auth(rules: [
-  { allow: groups, groups: ["admin"], provider: userPools}]) {
-  tshirt: TShirt! @hasOne
-  orderedQuantityChange: Int!
-  reason: String!
+  oldValue: String!
+  newValue: String!
+  fieldName: String!
 }
 
 type TShirtOrder @model @auth(rules: [
@@ -79,6 +74,7 @@ type TShirtOrder @model @auth(rules: [
   tshirt: TShirt! @hasOne
   quantity: Int!
   amountReceived: Int @default(value: "0") # This is only used for PurchaseOrder
+  costPerUnit: Float!
 }
 
 type CustomerOrder @model @auth(rules: [
@@ -95,7 +91,7 @@ type CustomerOrder @model @auth(rules: [
   orderNotes: String
 
   dateNeededBy: AWSDateTime!
-  changeHistory: [CustomerOrderChange!] @hasMany
+  changeHistory: [OrderChange!] @hasMany
 
   isDeleted: Boolean @default(value: "false")
   type: String @default(value: "CustomerOrder") @index(name: "customerOrdersByCreatedAt", queryField: "customerOrdersByCreatedAt", sortKeyFields: ["createdAt"])

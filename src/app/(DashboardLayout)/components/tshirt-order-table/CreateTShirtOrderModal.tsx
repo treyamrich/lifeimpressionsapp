@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import {
   excludeOnCreateFields,
+  floatInputFields,
   getInitialTShirtOrderFormErrorMap,
   initialTShirtOrderFormState,
   modalTitle,
@@ -13,6 +14,7 @@ import {
   Autocomplete,
   AutocompleteRenderInputParams,
   Button,
+  CardContent,
   Chip,
   Dialog,
   DialogActions,
@@ -20,9 +22,13 @@ import {
   DialogTitle,
   Stack,
   TextField,
+  Typography,
 } from "@mui/material";
 import { TShirt } from "@/API";
 import { MRT_ColumnDef } from "material-react-table";
+import TShirtPicker from "./TShirtPicker";
+import BlankCard from "../shared/BlankCard";
+import NumberInput from "../NumberInput/NumberInput";
 
 interface CreateTShirtOrderModalProps<TShirtOrder extends Record<string, any>> {
   columns: MRT_ColumnDef<TShirtOrder>[];
@@ -46,17 +52,16 @@ const CreateTShirtOrderModal = <TShirtOrder extends Record<string, any>>({
     return { ...initialTShirtOrderFormState };
   });
   const [errorMap, setErrorMap] = useState(() => getInitialTShirtOrderFormErrorMap());
-  const [autoCompleteInputVal, setAutoCompleteInputVal] = useState("");
 
   // Used to prevent duplicate TShirtOrders in an order
   const [tshirtSet, setTShirtSet] = useState<Set<String>>(new Set<String>());
+
   useEffect(() => {
     setTShirtSet(new Set(tableData.map(tshirtOrder => tshirtOrder.tshirt.id)));
   }, [tableData]);
 
   const resetForm = () => {
     setValues({ ...initialTShirtOrderFormState });
-    setAutoCompleteInputVal("");
     setErrorMap(getInitialTShirtOrderFormErrorMap());
   };
   const handleClose = () => {
@@ -72,19 +77,28 @@ const CreateTShirtOrderModal = <TShirtOrder extends Record<string, any>>({
     Object.keys(values).forEach((key) => {
       let errMsg = "";
       let value = values[key];
-      
-      // Not applicable when adding a new tshirt order
-      if(key === "amountReceived") return;
 
-      if (isNumberInputField(key) && value <= 0) {
+      if (key === "amountReceived") return;
+
+      if (key === "quantity" && value <= 0) {
         errMsg = "Number must be positive";
-      } else if (key === "tshirt" && value === null) {
-        errMsg = "TShirt is not selected";
+      } else if (key === "costPerUnit" && value < 0) {
+        errMsg = "Cost cannot be negative";
       }
+      else if (key === "tshirt" && value === null) {
+        // Preserve existing error message if exists
+        if (errorMap.get(key) !== "" && errorMap.get(key) !== undefined) {
+          errMsg = errorMap.get(key)!;
+        } else {
+          errMsg = "T-Shirt details incomplete";
+        }
+      }
+
       newErrors.set(key, errMsg);
       allValid = allValid && errMsg === "";
     });
 
+    setValues({ ...values }); // Values might've updated
     setErrorMap(newErrors);
     if (allValid) {
       onSubmit(
@@ -97,7 +111,27 @@ const CreateTShirtOrderModal = <TShirtOrder extends Record<string, any>>({
     }
   };
 
+  const handleUpdateTShirt = (newShirt: TShirt | null) => {
+    const newErrorMap = new Map<string, string>(errorMap);
+    if (newShirt && tshirtSet.has(newShirt.id)) {
+      newErrorMap.set('tshirt', 'Order already contains T-Shirt type.');
+    } else {
+      newErrorMap.set('tshirt', '');
+      setValues({ ...values, tshirt: newShirt });
+    }
+    setErrorMap(newErrorMap);
+  }
 
+  const handleUpdateNumberField = (key: string, newValue: number, hasError: boolean) => {
+    const newErrorMap = new Map<string, string>(errorMap);
+    if (hasError) {
+      newErrorMap.set(key, "Invalid input");
+    } else {
+      newErrorMap.set(key, '');
+      setValues({ ...values, [key]: newValue });
+    }
+    setErrorMap(newErrorMap);
+  }
   return (
     <Dialog open={open}>
       <DialogTitle textAlign="center">{modalTitle}</DialogTitle>
@@ -108,88 +142,54 @@ const CreateTShirtOrderModal = <TShirtOrder extends Record<string, any>>({
               width: "100%",
               minWidth: { xs: "300px", sm: "360px", md: "400px" },
               gap: "1.5rem",
-            }}
-          >
-            {columns
-              .filter(
-                (col) =>
-                  !excludeOnCreateFields.includes(col.accessorKey as string)
-              )
-              .map((column, idx) => (
-                <TextField
-                  key={idx}
-                  label={column.header}
-                  name={column.accessorKey as string}
-                  onChange={(e: any) => {
-                    {
-                      if (isNumberInputField(column.accessorKey)) {
-                        try {
-                          const v = parseInt(e.target.value, 10);
-                          setValues({ ...values, [e.target.name]: isNaN(v) ? 0 : v })
-                        } catch (e) {
-                          console.log(e)
-                        }
-                      } else {
-                        setValues({ ...values, [e.target.name]: e.target.value })
-                      }
-                    }
+            }}>
+            <BlankCard>
+              <CardContent>
+                <Typography variant="h6" color="textSecondary" style={{ marginBottom: "15px" }}>
+                  Other Order Details
+                </Typography>
+                <Stack
+                  sx={{
+                    width: "100%",
+                    minWidth: { xs: "300px", sm: "360px", md: "400px" },
+                    gap: "1.5rem",
                   }}
-                  type={
-                    isNumberInputField(column.accessorKey)
-                      ? "number"
-                      : undefined
-                  }
-                  variant="standard"
-                  value={values[column.accessorKey]}
-                  required={true}
-                  error={errorMap.get(column.accessorKey as string) !== ""}
-                  helperText={errorMap.get(column.accessorKey as string)}
+                >
+                  {columns
+                    .filter(
+                      (col) =>
+                        !excludeOnCreateFields.includes(col.accessorKey as string)
+                    )
+                    .map((column, idx) => (
+                      <NumberInput
+                        key={idx}
+                        label={column.header}
+                        initialValue={values[column.accessorKey]}
+                        isFloat={column.accessorKey === "costPerUnit"}
+                        onChange={(newValue: number, hasError: boolean) =>
+                          handleUpdateNumberField(column.accessorKey as string, newValue, hasError)
+                        }
+                        customErrorMsg={column.accessorKey === "costPerUnit" ? "Not a valid dollar value" : undefined}
+                      />
+                    ))}
+                </Stack>
+              </CardContent>
+            </BlankCard>
+
+            <BlankCard>
+              <CardContent>
+                <Typography variant="h6" color="textSecondary" style={{ marginBottom: "15px" }}>
+                  TShirt Details
+                </Typography>
+
+                <TShirtPicker
+                  choices={tshirtChoices}
+                  onChange={handleUpdateTShirt}
+                  errorMessage={errorMap.get('tshirt')}
                 />
-              ))}
-            <Autocomplete
-              id="auto-complete"
-              options={tshirtChoices}
-              getOptionLabel={(option: TShirt) => `Style#: ${option.styleNumber} | Size: ${option.size} | Color: ${option.color}`}
-              getOptionDisabled={(option: TShirt) => tshirtSet.has(option.id)}
-              autoComplete
-              renderInput={(params: AutocompleteRenderInputParams) => (
-                <TextField
-                  {...params}
-                  label="TShirt Style No."
-                  variant="standard"
-                />
-              )}
-              value={values.tshirt}
-              onChange={(event, newValue) => {
-                setValues({
-                  ...values,
-                  tshirt: newValue
-                });
-              }}
-              inputValue={autoCompleteInputVal}
-              onInputChange={(event, newInputValue) => {
-                setAutoCompleteInputVal(newInputValue);
-              }}
-              renderOption={(props, option) => {
-                return (
-                  <li {...props} key={`${option.styleNumber}${option.size}${option.color}`}>
-                    {`Style#: ${option.styleNumber} | Size: ${option.size} | Color: ${option.color}`}
-                  </li>
-                );
-              }}
-              renderTags={(tagValue, getTagProps) => {
-                return tagValue.map((option, index) => (
-                  <Chip
-                    {...getTagProps({ index })}
-                    key={`tag${index}`}
-                    label={`Style#: ${option.styleNumber} | Size: ${option.size} | Color: ${option.color}`}
-                  />
-                ));
-              }}
-            />
-            {errorMap.get("tshirt") !== "" && (
-              <Alert severity="error">TShirt not selected.</Alert>
-            )}
+              </CardContent>
+            </BlankCard>
+
           </Stack>
         </form>
       </DialogContent>
@@ -211,3 +211,11 @@ const isNumberInputField = (
   let nameOfField = fieldName ? fieldName.toString() : "";
   return numberInputFields.has(nameOfField);
 };
+
+const isFloatInputField = (
+  fieldName: string | number | symbol | undefined
+) => {
+  let nameOfField = fieldName ? fieldName.toString() : "";
+  return floatInputFields.has(nameOfField);
+};
+
