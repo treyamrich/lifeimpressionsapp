@@ -104,9 +104,12 @@ export const getPurchaseOrder = /* GraphQL */ `
             __typename
           }
           reason
-          oldValue
-          newValue
-          fieldName
+          fieldChanges {
+            oldValue
+            newValue
+            fieldName
+            __typename
+          }
           id
           createdAt
           updatedAt
@@ -183,9 +186,12 @@ export const listPurchaseOrders = /* GraphQL */ `
               __typename
             }
             reason
-            oldValue
-            newValue
-            fieldName
+            fieldChanges {
+              oldValue
+              newValue
+              fieldName
+              __typename
+            }
             id
             createdAt
             updatedAt
@@ -275,9 +281,12 @@ export const purchaseOrdersByCreatedAt = /* GraphQL */ `
               __typename
             }
             reason
-            oldValue
-            newValue
-            fieldName
+            fieldChanges {
+              oldValue
+              newValue
+              fieldName
+              __typename
+            }
             id
             createdAt
             updatedAt
@@ -317,9 +326,12 @@ export const getOrderChange = /* GraphQL */ `
         __typename
       }
       reason
-      oldValue
-      newValue
-      fieldName
+      fieldChanges {
+        oldValue
+        newValue
+        fieldName
+        __typename
+      }
       id
       createdAt
       updatedAt
@@ -352,9 +364,12 @@ export const listOrderChanges = /* GraphQL */ `
           __typename
         }
         reason
-        oldValue
-        newValue
-        fieldName
+        fieldChanges {
+          oldValue
+          newValue
+          fieldName
+          __typename
+        }
         id
         createdAt
         updatedAt
@@ -490,9 +505,12 @@ export const getCustomerOrder = /* GraphQL */ `
             __typename
           }
           reason
-          oldValue
-          newValue
-          fieldName
+          fieldChanges {
+            oldValue
+            newValue
+            fieldName
+            __typename
+          }
           id
           createdAt
           updatedAt
@@ -573,9 +591,12 @@ export const listCustomerOrders = /* GraphQL */ `
               __typename
             }
             reason
-            oldValue
-            newValue
-            fieldName
+            fieldChanges {
+              oldValue
+              newValue
+              fieldName
+              __typename
+            }
             id
             createdAt
             updatedAt
@@ -669,9 +690,12 @@ export const customerOrdersByCreatedAt = /* GraphQL */ `
               __typename
             }
             reason
-            oldValue
-            newValue
-            fieldName
+            fieldChanges {
+              oldValue
+              newValue
+              fieldName
+              __typename
+            }
             id
             createdAt
             updatedAt

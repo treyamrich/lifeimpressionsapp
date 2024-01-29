@@ -3,7 +3,7 @@ import timezone from "dayjs/plugin/timezone";
 import utc from "dayjs/plugin/utc";
 
 const configuredTimeZone = 'Pacific/Honolulu';
-const readableTimeFormat = 'MM/DD/YYYY hh:mm:ss A';
+const readableTimeFormat = 'lll';
 
 dayjs.extend(utc)
 dayjs.extend(timezone);

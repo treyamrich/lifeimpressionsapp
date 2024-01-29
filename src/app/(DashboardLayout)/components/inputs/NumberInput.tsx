@@ -12,11 +12,11 @@ type NumberInputProps = {
 };
 
 const NumberInput = ({ label, initialValue, isFloat, onChange, decimalPlaceLimit = 2, customErrorMsg, isValidFn }: NumberInputProps) => {
-    const [inputValue, setInputValue] = useState<string>("");
+    const [inputValue, setInputValue] = useState<string | undefined>("");
     const [errorMsg, setErrorMsg] = useState<string>("");
 
     useEffect(() => {
-        setInputValue(initialValue.toString());
+        setInputValue(initialValue?.toString());
     }, []);
 
     return (
@@ -35,7 +35,7 @@ const NumberInput = ({ label, initialValue, isFloat, onChange, decimalPlaceLimit
 
                 let newErrorMsg: string = "";
                 let parsedVal = 0;
-
+                
                 if (isFloat) {
                     const floatRegex = new RegExp(`^-?(\\d+(\\.\\d{1,${decimalPlaceLimit}})?|\\.\\d{1,${decimalPlaceLimit}})$`);
                     if(floatRegex.test(unparsedVal) && unparsedVal !== ".0") {

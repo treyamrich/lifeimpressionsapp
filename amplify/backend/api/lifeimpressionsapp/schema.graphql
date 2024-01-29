@@ -59,14 +59,17 @@ enum POStatus {
   Closed
 }
 
+type FieldChange {
+  oldValue: String!
+  newValue: String!
+  fieldName: String!
+}
+
 type OrderChange @model @auth(rules: [
   { allow: groups, groups: ["admin"], provider: userPools}]) {
   tshirt: TShirt! @hasOne
   reason: String!
-
-  oldValue: String!
-  newValue: String!
-  fieldName: String!
+  fieldChanges: [FieldChange!]!
 }
 
 type TShirtOrder @model @auth(rules: [

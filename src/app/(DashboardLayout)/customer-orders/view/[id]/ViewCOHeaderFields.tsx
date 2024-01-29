@@ -151,7 +151,7 @@ const ViewCOHeaderFields = ({ co, setCo }: ViewCOHeaderFieldsProps) => {
                                     </Grid>
                                     <Grid item>
                                         <Typography variant="body1" color="textSecondary">
-                                            {customerEmail}
+                                            {getStrOrDash(customerEmail)}
                                         </Typography>
                                     </Grid>
                                 </Grid>
@@ -165,7 +165,7 @@ const ViewCOHeaderFields = ({ co, setCo }: ViewCOHeaderFieldsProps) => {
                                     </Grid>
                                     <Grid item>
                                         <Typography variant="body1" color="textSecondary">
-                                            {customerPhoneNumber}
+                                            {getStrOrDash(customerPhoneNumber)}
                                         </Typography>
                                     </Grid>
                                 </Grid>
@@ -192,7 +192,7 @@ const ViewCOHeaderFields = ({ co, setCo }: ViewCOHeaderFieldsProps) => {
                             </Grid>
                             <Grid item>
                                 <Typography variant="body1" color="textSecondary">
-                                    {orderNotes}
+                                    {getStrOrDash(orderNotes)}
                                 </Typography>
                             </Grid>
                         </Grid>
@@ -211,3 +211,7 @@ const ViewCOHeaderFields = ({ co, setCo }: ViewCOHeaderFieldsProps) => {
 };
 
 export default ViewCOHeaderFields;
+
+const getStrOrDash = (value: string | null | undefined) => {
+    return value !== "" && value !== null && value !== undefined ? value : "-"
+}

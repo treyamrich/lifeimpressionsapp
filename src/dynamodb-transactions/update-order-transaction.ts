@@ -5,8 +5,7 @@ import { CognitoUser } from '@aws-amplify/auth';
 import { toAWSDateTime } from "@/utils/datetimeConversions";
 import dayjs from "dayjs";
 import { v4 } from 'uuid';
-import { OrderChange } from "../app/(DashboardLayout)/components/tshirt-order-table/table-constants";
-import { TShirtOrder } from "@/API";
+import { CreateOrderChangeInput, FieldChange, FieldChangeInput, OrderChange, TShirtOrder } from "@/API";
 import {
     getInsertOrderChangePartiQL,
     getInsertTShirtOrderTablePartiQL,
@@ -15,20 +14,6 @@ import {
     getUpdateTShirtTablePartiQL
 } from "./partiql-helpers";
 import { DBOperation } from "@/contexts/DBErrorContext";
-
-export type UpdateOrderTransactionInput = {
-    updatedTShirtOrder: TShirtOrder;
-    parentOrderId: string;
-    reason: string;
-    tshirtTableQtyDelta: number;
-    orderedQtyDelta: number | undefined;
-}
-
-export type UpdateOrderTransactionResponse = {
-    orderChange: OrderChange;
-    newTShirtOrderId?: string;
-    orderUpdatedAtTimestamp: string;
-} | null;
 
 export type AssembleUpdateStatementsResult = {
     transactionStatements: ParameterizedStatement[];
@@ -40,20 +25,20 @@ export const assembleUpdateOrderTransactionStatements = (
     entityType: EntityType,
     allowNegativeInventory: boolean
 ): AssembleUpdateStatementsResult => {
-    const { updatedTShirtOrder, parentOrderId, reason, tshirtTableQtyDelta, orderedQtyDelta } = input;
-    const tshirtOrderId = updatedTShirtOrder.id;
+    const { updatedTShirtOrder, parentOrderId, createOrderChangeInput, inventoryQtyDelta } = input;
 
-    let maybeNegatedTShirtTableQtyDelta = entityType === EntityType.CustomerOrder ?
-        -tshirtTableQtyDelta : tshirtTableQtyDelta;
+    let maybeNegatedInventoryQtyDelta = entityType === EntityType.CustomerOrder ?
+        -inventoryQtyDelta : inventoryQtyDelta;
 
     // Insertion fields for new OrderChange
     const createdAtTimestamp = toAWSDateTime(dayjs());
     const orderChangeUuid = v4();
-    const typename = entityType === EntityType.CustomerOrder ? "CustomerOrderChange" : "PurchaseOrderChange";
+    const newTShirtOrderId = v4();
+    const typename = "OrderChange";
     const parentOrderIdFieldName = `${entityType}OrderChangeHistoryId`
-    const associatedTShirtIdFieldName = `${entityType}OrderChangeTshirtId`
-
-    const newTShirtOrderId = tshirtOrderTableOperation === DBOperation.CREATE ? v4() : "";
+    const fieldChanges: FieldChange[] = createOrderChangeInput.fieldChanges.map(
+        (fieldChange: FieldChangeInput) => ({ ...fieldChange, __typename: "FieldChange" })
+    );
 
     const getUpdateTShirtOrderStatement = () => {
         if (tshirtOrderTableOperation === DBOperation.CREATE) {
@@ -65,21 +50,10 @@ export const assembleUpdateOrderTransactionStatements = (
                 newTShirtOrderId
             )
         }
-        if (entityType === EntityType.CustomerOrder) {
-            return getUpdateTShirtOrderTablePartiQL(
-                tshirtTableQtyDelta, // amount ordered affects the tshirt table
-                0, // Field unused
-                createdAtTimestamp,
-                tshirtOrderId
-            )
-        }
         return getUpdateTShirtOrderTablePartiQL(
-            orderedQtyDelta ? orderedQtyDelta : 0, // amount ordered does not affect tshirt table
-            tshirtTableQtyDelta, // Amount received affects tshirt table
-            createdAtTimestamp,
-            tshirtOrderId
+            updatedTShirtOrder,
+            createdAtTimestamp
         )
-
     }
 
     const transactionStatements: ParameterizedStatement[] = [
@@ -89,50 +63,39 @@ export const assembleUpdateOrderTransactionStatements = (
             createdAtTimestamp
         ),
         getUpdateTShirtTablePartiQL(
-            maybeNegatedTShirtTableQtyDelta,
+            maybeNegatedInventoryQtyDelta,
             allowNegativeInventory,
             createdAtTimestamp,
             updatedTShirtOrder.tshirt.id
         ),
         getUpdateTShirtOrderStatement(),
         getInsertOrderChangePartiQL(
-            entityType,
             orderChangeUuid,
             typename,
             parentOrderIdFieldName,
-            associatedTShirtIdFieldName,
-            reason,
             parentOrderId,
             updatedTShirtOrder.tshirt.id,
             createdAtTimestamp,
-            tshirtTableQtyDelta,
-            orderedQtyDelta
+            createOrderChangeInput.reason,
+            fieldChanges
         )
     ];
 
     // Assemble response
-    const orderChange = {
+    const orderChange: OrderChange = {
         __typename: typename,
         id: orderChangeUuid,
         createdAt: createdAtTimestamp,
         updatedAt: createdAtTimestamp,
         [parentOrderIdFieldName]: parentOrderId,
-        [associatedTShirtIdFieldName]: updatedTShirtOrder.tshirt.id,
-        tshirt: {},
-        reason: reason
+        orderChangeTshirtId: updatedTShirtOrder.tshirt.id,
+        tshirt: updatedTShirtOrder.tshirt,
+        reason: createOrderChangeInput.reason,
+        fieldChanges: fieldChanges,
     };
-    // Table specific implementation. 
-    // Ordered quantity change field only affects tshirt table for customer orders
-    if (entityType === EntityType.PurchaseOrder) {
-        orderChange.orderedQuantityChange = orderedQtyDelta ? orderedQtyDelta : 0;
-        orderChange.quantityChange = tshirtTableQtyDelta;
-    } else {
-        orderChange.orderedQuantityChange = tshirtTableQtyDelta;
-    }
-    orderChange.tshirt = updatedTShirtOrder.tshirt;
 
     const response: UpdateOrderTransactionResponse = {
-        orderChange: orderChange as OrderChange,
+        orderChange: orderChange,
         orderUpdatedAtTimestamp: createdAtTimestamp,
         newTShirtOrderId: tshirtOrderTableOperation === DBOperation.CREATE ?
             newTShirtOrderId : undefined
@@ -141,6 +104,19 @@ export const assembleUpdateOrderTransactionStatements = (
     return { transactionStatements, response }
 };
 
+
+export type UpdateOrderTransactionInput = {
+    updatedTShirtOrder: TShirtOrder;
+    parentOrderId: string;
+    inventoryQtyDelta: number;
+    createOrderChangeInput: CreateOrderChangeInput;
+}
+
+export type UpdateOrderTransactionResponse = {
+    orderChange: OrderChange;
+    newTShirtOrderId?: string;
+    orderUpdatedAtTimestamp: string;
+} | null;
 
 // Used when updating the TShirtOrder row in an order. 
 // Returns null if allowNegativeInventory is false and the inventory will become negative in the TShirt table.
@@ -155,7 +131,7 @@ export const updateOrderTransactionAPI = async (
 ): Promise<UpdateOrderTransactionResponse> => {
     if (tshirtOrderTableOperation !== DBOperation.CREATE &&
         tshirtOrderTableOperation !== DBOperation.UPDATE)
-        throw Error("Invalid operation" + tshirtOrderTableOperation);
+        throw Error("Invalid operation " + tshirtOrderTableOperation);
 
     let command = null;
     let response: UpdateOrderTransactionResponse = null;

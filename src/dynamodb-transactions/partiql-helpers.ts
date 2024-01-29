@@ -1,72 +1,52 @@
-import { CustomerOrder, CustomerOrderStatus, PurchaseOrder, TShirtOrder } from "@/API";
+import { CustomerOrder, CustomerOrderStatus, FieldChange, PurchaseOrder, TShirtOrder } from "@/API";
 import { EntityType } from "../app/(DashboardLayout)/components/po-customer-order-shared-components/CreateOrderPage"
-import { customerOrderChangeTable, customerOrderTable, getStrOrNull, purchaseOrderChangeTable, purchaseOrderTable, tshirtOrderTable, tshirtTable } from "./dynamodb"
+import { customerOrderTable, getStrOrNull, orderChangeTable, purchaseOrderTable, tshirtOrderTable, tshirtTable } from "./dynamodb"
 import { AttributeValue, ParameterizedStatement } from "@aws-sdk/client-dynamodb";
 import { PurchaseOrderOrCustomerOrder } from "../graphql-helpers/create-apis";
+import { TShirtOrderFields } from "@/app/(DashboardLayout)/components/TShirtOrderTable/table-constants";
 
 export const getInsertOrderChangePartiQL = (
-    entityType: EntityType,
     orderChangeUuid: string,
     typename: string,
     parentOrderIdFieldName: string,
-    associatedTshirtIdFieldName: string,
-    reason: string,
     orderId: string,
     tshirtId: string,
     createdAtTimestamp: string,
-    tshirtTableQtyDelta: number,
-    orderedQtyDelta: number = 0
+    reason: string,
+    fieldChanges: FieldChange[]
 ): ParameterizedStatement => {
-    return entityType === EntityType.CustomerOrder ?
-        {
-            Statement: `
-                INSERT INTO "${customerOrderChangeTable.tableName}"
+    const attributeValues = fieldChanges.map(fieldChange => {
+        let mapAttributeVal: any = {};
+        Object.keys(fieldChange).forEach(key => { 
+            mapAttributeVal[key] = { S: fieldChange[key as keyof FieldChange].toString() }
+        });
+        return { M: mapAttributeVal } as unknown as AttributeValue;
+    });
+
+    return {
+        Statement: `
+                INSERT INTO "${orderChangeTable.tableName}"
                 value {
                     'id': ?,
                     '__typename': ?,
-                    'orderedQuantityChange': ?,
+                    'fieldChanges': ?,
                     'reason': ?,
                     '${parentOrderIdFieldName}': ?,
-                    '${associatedTshirtIdFieldName}': ?,
+                    'orderChangeTshirtId': ?,
                     'createdAt': ?,
                     'updatedAt': ?
                 }`,
-            Parameters: [
-                { S: orderChangeUuid },
-                { S: typename },
-                { N: tshirtTableQtyDelta.toString() },
-                { S: reason },
-                { S: orderId },
-                { S: tshirtId },
-                { S: createdAtTimestamp },
-                { S: createdAtTimestamp }
-            ]
-        } : {
-            Statement: `
-                INSERT INTO "${purchaseOrderChangeTable.tableName}"
-                value {
-                    'id': ?,
-                    '__typename': ?,
-                    'orderedQuantityChange': ?, 
-                    'quantityChange': ?, 
-                    'reason': ?, 
-                    '${parentOrderIdFieldName}': ?, 
-                    '${associatedTshirtIdFieldName}': ?,
-                    'createdAt': ?,
-                    'updatedAt': ?
-                }`,
-            Parameters: [
-                { S: orderChangeUuid },
-                { S: typename },
-                { N: orderedQtyDelta.toString() },
-                { N: tshirtTableQtyDelta.toString() },
-                { S: reason },
-                { S: orderId },
-                { S: tshirtId },
-                { S: createdAtTimestamp },
-                { S: createdAtTimestamp }
-            ]
-        }
+        Parameters: [
+            { S: orderChangeUuid },
+            { S: typename },
+            { L: attributeValues },
+            { S: reason },
+            { S: orderId },
+            { S: tshirtId },
+            { S: createdAtTimestamp },
+            { S: createdAtTimestamp }
+        ]
+    }
 }
 
 export const getUpdateTShirtTablePartiQL = (
@@ -93,27 +73,25 @@ export const getUpdateTShirtTablePartiQL = (
 }
 
 export const getUpdateTShirtOrderTablePartiQL = (
-    amountOrderedDelta: number,
-    amountReceivedDelta: number,
-    costPerUnit: number,
+    tshirtOrder: TShirtOrder,
     createdAtTimestamp: string,
-    tshirtOrderId: string
 ): ParameterizedStatement => {
+    let amtReceived = tshirtOrder.amountReceived ? tshirtOrder.amountReceived.toString() : "0";
     return {
         Statement: `
             UPDATE "${tshirtOrderTable.tableName}"
-            SET ${tshirtOrderTable.quantityField} = ${tshirtOrderTable.quantityField} + ?
-            SET ${tshirtOrderTable.amountReceivedField} = ${tshirtOrderTable.amountReceivedField} + ?
-            SET costPerUnit = ?
+            SET ${TShirtOrderFields.Qty} = ?
+            SET ${TShirtOrderFields.AmtReceived} = ?
+            SET ${TShirtOrderFields.CostPerUnit} = ?
             SET updatedAt = ?
             WHERE ${tshirtOrderTable.pkFieldName} = ?
         `,
         Parameters: [
-            { N: amountOrderedDelta.toString() },
-            { N: amountReceivedDelta.toString() },
-            { N: costPerUnit.toString() },
+            { N: tshirtOrder.quantity.toString() },
+            { N: amtReceived },
+            { N: tshirtOrder.costPerUnit.toString() },
             { S: createdAtTimestamp },
-            { S: tshirtOrderId },
+            { S: tshirtOrder.id },
         ]
     }
 }

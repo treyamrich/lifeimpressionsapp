@@ -1,18 +1,16 @@
 "use client";
 
 import {
+  CreateOrderChangeInput,
   TShirt,
   TShirtOrder,
 } from "@/API";
-import React, { useMemo, useState, useCallback, useEffect } from "react";
-import { Delete, Edit } from "@mui/icons-material";
-import { modalTitle, getTableColumns, amountReceivedField, CreateOrderChangeInput } from "./table-constants";
-import { Box, Button, IconButton, Tooltip } from "@mui/material";
+import React, { useMemo, useState, useEffect } from "react";
+import { modalTitle, getTableColumns, TShirtOrderFields } from "./table-constants";
+import { Button } from "@mui/material";
 import {
   MaterialReactTable,
-  type MaterialReactTableProps,
   type MRT_ColumnDef,
-  type MRT_Cell,
   type MRT_Row,
   type MRT_ColumnFiltersState,
 } from "material-react-table";
@@ -33,7 +31,8 @@ interface TShirtOrderTableProps {
   ) => void | undefined;
   onRowAdd: (
     newRowValue: TShirtOrder,
-    callback: (newTShirtOrderId: string) => void
+    orderChange: CreateOrderChangeInput,
+    closeFormCallback: () => void
   ) => void | undefined;
   entityType: EntityType;
   mode: TableMode;
@@ -69,17 +68,6 @@ const TShirtOrderTable = ({
   );
   const [tshirtChoices, setTShirtChoices] = useState<TShirt[]>([]);
 
-  const handleCreateNewRow = (values: TShirtOrder, closeFormCallback: () => void) => {
-    onRowAdd(
-      values,
-      (newTShirtOrderId: string) => {
-        values.id = newTShirtOrderId;
-        setTableData([...tableData, values]);
-        closeFormCallback();
-      }
-    );
-  };
-
   const handleEditRowAudit = (orderChange: CreateOrderChangeInput, resetEditFormCallback: () => void) => {
     const row = editMode.row;
     if (!row) return;
@@ -112,7 +100,7 @@ const TShirtOrderTable = ({
 
   const hiddenColumns = { id: false } as any;
   if (entityType === EntityType.CustomerOrder || mode === TableMode.Create) {
-    hiddenColumns[amountReceivedField] = false;
+    hiddenColumns[TShirtOrderFields.AmtReceived] = false;
   }
 
   return (
@@ -160,9 +148,11 @@ const TShirtOrderTable = ({
         columns={columns}
         open={createModalOpen}
         onClose={() => setCreateModalOpen(false)}
-        onSubmit={handleCreateNewRow}
+        onSubmit={onRowAdd}
         tshirtChoices={tshirtChoices}
         tableData={tableData}
+        entityType={entityType}
+        parentOrderId={parentOrderId}
       />
       <EditRowPopup
         open={editMode.show}

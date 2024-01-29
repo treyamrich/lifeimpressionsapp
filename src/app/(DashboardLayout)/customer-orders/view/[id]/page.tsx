@@ -1,15 +1,15 @@
 "use client";
 
 import {
-    CreateCustomerOrderChangeInput,
+    CreateOrderChangeInput,
     CustomerOrder,
-    CustomerOrderChange,
+    OrderChange,
     TShirtOrder,
 } from "@/API";
 import PageContainer from "@/app/(DashboardLayout)/components/container/PageContainer";
 import BlankCard from "@/app/(DashboardLayout)/components/shared/BlankCard";
 import DashboardCard from "@/app/(DashboardLayout)/components/shared/DashboardCard";
-import TShirtOrderTable, { TableMode } from "@/app/(DashboardLayout)/components/tshirt-order-table/TShirtOrderTable";
+import TShirtOrderTable, { TableMode } from "@/app/(DashboardLayout)/components/TShirtOrderTable/TShirtOrderTable";
 import { getCustomerOrderAPI } from "@/graphql-helpers/fetch-apis";
 import {
     DBOperation, useDBOperationContext,
@@ -21,11 +21,10 @@ import { useState, useEffect } from "react";
 import { MRT_Row } from "material-react-table";
 import { EntityType } from "@/app/(DashboardLayout)/components/po-customer-order-shared-components/CreateOrderPage";
 import ViewCOHeaderFields from "./ViewCOHeaderFields";
-import COChangeHistoryTable from "@/app/(DashboardLayout)/components/order-change-history-table/COChangeHistoryTable";
-import { CreateOrderChangeInput } from "@/app/(DashboardLayout)/components/tshirt-order-table/table-constants";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { UpdateOrderTransactionInput, UpdateOrderTransactionResponse, updateOrderTransactionAPI } from "@/dynamodb-transactions/update-order-transaction";
 import NegativeInventoryConfirmPopup, { NegativeInventoryWarningState, initialNegativeInventoryWarningState } from "@/app/(DashboardLayout)/components/forms/confirm-popup/NegativeInventoryConfirmPopup";
+import OrderChangeHistory from "@/app/(DashboardLayout)/components/po-customer-order-shared-components/OrderChangeHistory/OrderChangeHistory";
 
 type ViewCustomerOrderProps = {
     params: { id: string };
@@ -35,7 +34,7 @@ const ViewCustomerOrder = ({ params }: ViewCustomerOrderProps) => {
     const { id } = params;
     const { rescueDBOperation } = useDBOperationContext();
     const [co, setCo] = useState<CustomerOrder>({} as CustomerOrder);
-    const [editHistory, setEditHistory] = useState<CustomerOrderChange[]>([]);
+    const [editHistory, setEditHistory] = useState<OrderChange[]>([]);
     const [updatedOrderedItems, setUpdatedOrderedItems] = useState<TShirtOrder[]>(
         () => {
             return co.orderedItems ? (co.orderedItems.items as TShirtOrder[]) : [];
@@ -50,7 +49,7 @@ const ViewCustomerOrder = ({ params }: ViewCustomerOrderProps) => {
                 const changeHistory = res.changeHistory?.items;
 
                 if (changeHistory) {
-                    let history = changeHistory.filter(x => x != null) as CustomerOrderChange[];
+                    let history = changeHistory.filter(x => x != null) as OrderChange[];
                     setEditHistory(history);
                 }
 
@@ -119,8 +118,8 @@ type OrderedItemsTableProps = {
     setTableData: React.Dispatch<React.SetStateAction<TShirtOrder[]>>;
     parentCustomerOrder: CustomerOrder;
     setCustomerOrder: React.Dispatch<React.SetStateAction<CustomerOrder>>;
-    changeHistory: CustomerOrderChange[];
-    setChangeHistory: React.Dispatch<React.SetStateAction<CustomerOrderChange[]>>;
+    changeHistory: OrderChange[];
+    setChangeHistory: React.Dispatch<React.SetStateAction<OrderChange[]>>;
 };
 
 const OrderedItemsTable = ({
@@ -138,34 +137,31 @@ const OrderedItemsTable = ({
 
     const handleAfterRowEdit = (
         row: MRT_Row<TShirtOrder>,
-        orderChange: CreateOrderChangeInput,
+        createOrderChangeInput: CreateOrderChangeInput,
         exitEditingMode: () => void,
         allowNegativeInventory: boolean = false
     ) => {
-        // quantityChange is only for PurchaseOrders
-        const coChange = {
-            ...orderChange,
-            quantityChange: undefined
-        } as any as CreateCustomerOrderChangeInput;
-        const prevTShirtOrder = row.original;
-        const prevAmtOrdered = prevTShirtOrder.quantity ? prevTShirtOrder.quantity : 0;
-        const newAmtOrdered = coChange.orderedQuantityChange + prevAmtOrdered;
+        const oldTShirtOrder = tableData[row.index];
+        const newTShirtOrder: any = { ...oldTShirtOrder };
+        createOrderChangeInput.fieldChanges.forEach((fieldChange) => {
+            newTShirtOrder[fieldChange.fieldName] = fieldChange.newValue
+        });
 
-        const updateCOInput: UpdateOrderTransactionInput = {
-            updatedTShirtOrder: prevTShirtOrder,
+
+        const inventoryQtyDelta = newTShirtOrder.quantity - oldTShirtOrder.quantity;
+        const updateOrderInput: UpdateOrderTransactionInput = {
+            updatedTShirtOrder: newTShirtOrder,
             parentOrderId: parentCustomerOrder.id,
-            reason: coChange.reason,
-            tshirtTableQtyDelta: coChange.orderedQuantityChange,
-            orderedQtyDelta: 0 // unused for CustomerOrder
+            inventoryQtyDelta: inventoryQtyDelta,
+            createOrderChangeInput: createOrderChangeInput
         };
 
         // Only warn negative inventory when inventory will be reduced
-        allowNegativeInventory = allowNegativeInventory ||
-            coChange.orderedQuantityChange <= 0;
-        console.log(coChange.orderedQuantityChange <= 0);
+        allowNegativeInventory = allowNegativeInventory || inventoryQtyDelta <= 0;
+
         rescueDBOperation(
             () => updateOrderTransactionAPI(
-                updateCOInput,
+                updateOrderInput,
                 EntityType.CustomerOrder,
                 user,
                 DBOperation.UPDATE,
@@ -175,26 +171,22 @@ const OrderedItemsTable = ({
             (resp: UpdateOrderTransactionResponse) => {
                 // Transaction failed
                 if (resp === null) {
-                    console.log('NULL');
                     setNegativeInventoryWarning({
                         show: true,
                         cachedFunctionCall: () =>
-                            handleAfterRowEdit(row, orderChange, exitEditingMode, true),
-                        failedTShirtErrMsg: `Style#: ${prevTShirtOrder.tshirt.styleNumber} | Size: ${prevTShirtOrder.tshirt.size} | Color: ${prevTShirtOrder.tshirt.color}`
+                            handleAfterRowEdit(row, createOrderChangeInput, exitEditingMode, true),
+                        failedTShirtErrMsg: `Style#: ${oldTShirtOrder.tshirt.styleNumber} | Size: ${oldTShirtOrder.tshirt.size} | Color: ${oldTShirtOrder.tshirt.color}`
                     })
                     return;
                 }
 
                 // Update local TShirtOrderTable
-                const newTShirtOrder: TShirtOrder = {
-                    ...prevTShirtOrder,
-                    quantity: newAmtOrdered
-                };
+                newTShirtOrder.id = resp.newTShirtOrderId;
                 tableData[row.index] = newTShirtOrder;
                 setTableData([...tableData]);
 
                 // Update local change history table
-                setChangeHistory([resp.orderChange as CustomerOrderChange, ...changeHistory]);
+                setChangeHistory([resp.orderChange, ...changeHistory]);
                 setCustomerOrder({ ...parentCustomerOrder, updatedAt: resp.orderUpdatedAtTimestamp });
                 exitEditingMode();
                 setNegativeInventoryWarning({ ...initialNegativeInventoryWarningState });
@@ -204,23 +196,24 @@ const OrderedItemsTable = ({
 
     const handleAfterRowAdd = (
         newTShirtOrder: TShirtOrder,
-        callback: (newTshirtOrderId: string) => void,
+        createOrderChangeInput: CreateOrderChangeInput,
+        closeFormCallback: () => void,
         allowNegativeInventory: boolean = false
     ) => {
         if (newTShirtOrder.id) return; // Only create new tshirt orders
 
-        const updateCOInput: UpdateOrderTransactionInput = {
+        const inventoryQtyDelta = newTShirtOrder.quantity;
+        const updateOrderInput: UpdateOrderTransactionInput = {
             updatedTShirtOrder: newTShirtOrder,
             parentOrderId: parentCustomerOrder.id,
-            reason: "Added tshirt to customer order",
-            tshirtTableQtyDelta: newTShirtOrder.quantity,
-            orderedQtyDelta: 0 // unused for CustomerOrder
+            inventoryQtyDelta: inventoryQtyDelta,
+            createOrderChangeInput: createOrderChangeInput
         };
 
         // Update the customer order with the new added item
         rescueDBOperation(
             () => updateOrderTransactionAPI(
-                updateCOInput,
+                updateOrderInput,
                 EntityType.CustomerOrder,
                 user,
                 DBOperation.CREATE,
@@ -233,14 +226,15 @@ const OrderedItemsTable = ({
                     setNegativeInventoryWarning({
                         show: true,
                         cachedFunctionCall: () =>
-                            handleAfterRowAdd(newTShirtOrder, callback, true),
+                            handleAfterRowAdd(newTShirtOrder, createOrderChangeInput, closeFormCallback, true),
                         failedTShirtErrMsg: `Style#: ${newTShirtOrder.tshirt.styleNumber} | Size: ${newTShirtOrder.tshirt.size} | Color: ${newTShirtOrder.tshirt.color}`
                     })
                     return;
                 }
-                setChangeHistory([resp.orderChange as CustomerOrderChange, ...changeHistory]);
+                setChangeHistory([resp.orderChange, ...changeHistory]);
                 setCustomerOrder({ ...parentCustomerOrder, updatedAt: resp.orderUpdatedAtTimestamp });
-                callback(resp.newTShirtOrderId ? resp.newTShirtOrderId : "");
+                setTableData([...tableData, newTShirtOrder]);
+                closeFormCallback();
                 setNegativeInventoryWarning({ ...initialNegativeInventoryWarningState });
             }
         )
@@ -274,15 +268,13 @@ const OrderedItemsTable = ({
     );
 };
 
-type ChangeHistoryTableProps = {
-    changeHistory: CustomerOrderChange[];
-};
-
-const ChangeHistoryTable = ({ changeHistory }: ChangeHistoryTableProps) => {
+const ChangeHistoryTable = ({ changeHistory }: {
+    changeHistory: OrderChange[];
+}) => {
     return (
         <BlankCard>
             <CardContent>
-                <COChangeHistoryTable changeHistory={changeHistory} />
+                <OrderChangeHistory changeHistory={changeHistory} />
             </CardContent>
         </BlankCard>
     );

@@ -5,10 +5,11 @@ type MyTelInputProps = {
     value: string;
     onChange: (newVal: string) => void;
     errorMsg?: string;
+    label?: string;
 }
 
 // Default component only accepts US phone numbers
-const MyTelInput = ({ value, onChange, errorMsg }: MyTelInputProps) => (
+const MyTelInput = ({ value, onChange, errorMsg, label }: MyTelInputProps) => (
     <FormGroup>
         <MuiTelInput
             value={value}
@@ -23,6 +24,7 @@ const MyTelInput = ({ value, onChange, errorMsg }: MyTelInputProps) => (
             defaultCountry="US"
             forceCallingCode
             placeholder={'234 567 8910'}
+            label={label}
         />
 
         {errorMsg && (

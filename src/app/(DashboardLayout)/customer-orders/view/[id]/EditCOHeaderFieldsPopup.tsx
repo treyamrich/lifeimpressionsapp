@@ -8,7 +8,7 @@ import { Button, Dialog, DialogContent, DialogTitle, Grid, MenuItem, Stack, Text
 import { DateTimePicker } from "@mui/x-date-pickers";
 import { validateEmail, validatePhoneNumber } from "@/utils/field-validation";
 import React from "react";
-import MyTelInput from "@/app/(DashboardLayout)/components/tel-input/MyTelInput";
+import MyTelInput from "@/app/(DashboardLayout)/components/inputs/MyTelInput";
 
 type EditCOHeaderFieldsPopupProps = {
     open: boolean;
@@ -136,6 +136,7 @@ const EditCOHeaderFieldsPopup = ({ open, co, onSubmit, onClose }: EditCOHeaderFi
                                             value={values[column.accessorKey as string]}
                                             onChange={newVal => setValues({ ...values, [column.accessorKey as string]: newVal })}
                                             errorMsg={errMsg}
+                                            label="Customer Phone Number"
                                         />
                                     )}
                                     {!colInfo?.isDatetimeField && !colInfo?.isPhoneNumField && (

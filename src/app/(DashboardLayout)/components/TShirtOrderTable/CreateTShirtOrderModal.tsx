@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from "react";
 import {
-  excludeOnCreateFields,
+  TShirtOrderFields,
+  columnInfo,
   floatInputFields,
   getInitialTShirtOrderFormErrorMap,
   initialTShirtOrderFormState,
@@ -10,33 +11,31 @@ import {
   numberInputFields,
 } from "./table-constants";
 import {
-  Alert,
-  Autocomplete,
-  AutocompleteRenderInputParams,
   Button,
   CardContent,
-  Chip,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
   Stack,
-  TextField,
   Typography,
 } from "@mui/material";
-import { TShirt } from "@/API";
+import { CreateOrderChangeInput, TShirt } from "@/API";
 import { MRT_ColumnDef } from "material-react-table";
 import TShirtPicker from "./TShirtPicker";
 import BlankCard from "../shared/BlankCard";
-import NumberInput from "../NumberInput/NumberInput";
+import { EntityType } from "../po-customer-order-shared-components/CreateOrderPage";
+import NumberInput from "../inputs/NumberInput";
 
 interface CreateTShirtOrderModalProps<TShirtOrder extends Record<string, any>> {
   columns: MRT_ColumnDef<TShirtOrder>[];
   onClose: () => void;
-  onSubmit: (values: TShirtOrder, callback: () => void) => void;
+  onSubmit: (values: TShirtOrder, createOrderChangeInput: CreateOrderChangeInput, callback: () => void) => void;
   open: boolean;
   tshirtChoices: TShirt[];
   tableData: TShirtOrder[];
+  entityType: EntityType;
+  parentOrderId: string | undefined;
 }
 
 const CreateTShirtOrderModal = <TShirtOrder extends Record<string, any>>({
@@ -46,6 +45,8 @@ const CreateTShirtOrderModal = <TShirtOrder extends Record<string, any>>({
   onSubmit,
   tshirtChoices,
   tableData,
+  entityType,
+  parentOrderId,
 }: CreateTShirtOrderModalProps<TShirtOrder>) => {
   //Initial TShirtOrder values
   const [values, setValues] = useState<any>(() => {
@@ -78,11 +79,11 @@ const CreateTShirtOrderModal = <TShirtOrder extends Record<string, any>>({
       let errMsg = "";
       let value = values[key];
 
-      if (key === "amountReceived") return;
+      if (key === TShirtOrderFields.AmtReceived) return;
 
-      if (key === "quantity" && value <= 0) {
+      if (key === TShirtOrderFields.Qty && value <= 0) {
         errMsg = "Number must be positive";
-      } else if (key === "costPerUnit" && value < 0) {
+      } else if (key === TShirtOrderFields.CostPerUnit && value < 0) {
         errMsg = "Cost cannot be negative";
       }
       else if (key === "tshirt" && value === null) {
@@ -101,8 +102,19 @@ const CreateTShirtOrderModal = <TShirtOrder extends Record<string, any>>({
     setValues({ ...values }); // Values might've updated
     setErrorMap(newErrors);
     if (allValid) {
+      const createOrderChangeInput: CreateOrderChangeInput = {
+        reason: "Added new tshirt to purchase order",
+        fieldChanges: [
+          { fieldName: TShirtOrderFields.Qty, oldValue: "-", newValue: values[TShirtOrderFields.Qty].toString()},
+          { fieldName: TShirtOrderFields.AmtReceived, oldValue: "-", newValue: values[TShirtOrderFields.AmtReceived].toString()},
+          { fieldName: TShirtOrderFields.CostPerUnit, oldValue: "-", newValue: values[TShirtOrderFields.CostPerUnit].toString()},
+        ],
+        orderChangeTshirtId: values.tshirt.id,
+        [`${entityType === EntityType.PurchaseOrder ? "purchase" : "customer"}OrderChangeHistoryId`]: parentOrderId,
+      };
       onSubmit(
         values,
+        createOrderChangeInput,
         () => {
           resetForm();
           onClose();
@@ -156,20 +168,17 @@ const CreateTShirtOrderModal = <TShirtOrder extends Record<string, any>>({
                   }}
                 >
                   {columns
-                    .filter(
-                      (col) =>
-                        !excludeOnCreateFields.includes(col.accessorKey as string)
-                    )
+                    .filter(col => !columnInfo.get(col.accessorKey)?.excludeOnCreate)
                     .map((column, idx) => (
                       <NumberInput
                         key={idx}
                         label={column.header}
                         initialValue={values[column.accessorKey]}
-                        isFloat={column.accessorKey === "costPerUnit"}
+                        isFloat={column.accessorKey === TShirtOrderFields.CostPerUnit}
                         onChange={(newValue: number, hasError: boolean) =>
                           handleUpdateNumberField(column.accessorKey as string, newValue, hasError)
                         }
-                        customErrorMsg={column.accessorKey === "costPerUnit" ? "Not a valid dollar value" : undefined}
+                        customErrorMsg={column.accessorKey === TShirtOrderFields.CostPerUnit ? "Not a valid dollar value" : undefined}
                       />
                     ))}
                 </Stack>

@@ -34,13 +34,6 @@ export interface DynamoDBTableInfo {
     pkFieldName: string | undefined;
 }
 
-export interface CustomerOrderChangeTableInfo extends DynamoDBTableInfo {
-    orderedQuantityChangeField: string;
-}
-export interface PurchaseOrderChangeTableInfo extends DynamoDBTableInfo {
-    orderedQuantityChangeField: string;
-    quantityChangeField: string;
-}
 export interface TShirtTableInfo extends DynamoDBTableInfo {
     quantityOnHandField: string;
 }
@@ -50,16 +43,9 @@ export interface TShirtOrderTableInfo extends DynamoDBTableInfo {
 }
 
 
-export const customerOrderChangeTable: CustomerOrderChangeTableInfo = {
-    tableName: `CustomerOrderChange${tableNameSuffix}`,
+export const orderChangeTable: DynamoDBTableInfo = {
+    tableName: `OrderChange${tableNameSuffix}`,
     pkFieldName: undefined,
-    orderedQuantityChangeField: "orderedQuantityChange",
-}
-export const purchaseOrderChangeTable: PurchaseOrderChangeTableInfo = {
-    tableName: `PurchaseOrderChange${tableNameSuffix}`,
-    pkFieldName: undefined,
-    orderedQuantityChangeField: "orderedQuantityChange",
-    quantityChangeField: "quantityChange",
 }
 export const tshirtTable: TShirtTableInfo = {
     tableName: `TShirt${tableNameSuffix}`,

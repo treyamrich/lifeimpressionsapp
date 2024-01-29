@@ -107,9 +107,12 @@ export const onCreatePurchaseOrder = /* GraphQL */ `
             __typename
           }
           reason
-          oldValue
-          newValue
-          fieldName
+          fieldChanges {
+            oldValue
+            newValue
+            fieldName
+            __typename
+          }
           id
           createdAt
           updatedAt
@@ -183,9 +186,12 @@ export const onUpdatePurchaseOrder = /* GraphQL */ `
             __typename
           }
           reason
-          oldValue
-          newValue
-          fieldName
+          fieldChanges {
+            oldValue
+            newValue
+            fieldName
+            __typename
+          }
           id
           createdAt
           updatedAt
@@ -259,9 +265,12 @@ export const onDeletePurchaseOrder = /* GraphQL */ `
             __typename
           }
           reason
-          oldValue
-          newValue
-          fieldName
+          fieldChanges {
+            oldValue
+            newValue
+            fieldName
+            __typename
+          }
           id
           createdAt
           updatedAt
@@ -300,9 +309,12 @@ export const onCreateOrderChange = /* GraphQL */ `
         __typename
       }
       reason
-      oldValue
-      newValue
-      fieldName
+      fieldChanges {
+        oldValue
+        newValue
+        fieldName
+        __typename
+      }
       id
       createdAt
       updatedAt
@@ -332,9 +344,12 @@ export const onUpdateOrderChange = /* GraphQL */ `
         __typename
       }
       reason
-      oldValue
-      newValue
-      fieldName
+      fieldChanges {
+        oldValue
+        newValue
+        fieldName
+        __typename
+      }
       id
       createdAt
       updatedAt
@@ -364,9 +379,12 @@ export const onDeleteOrderChange = /* GraphQL */ `
         __typename
       }
       reason
-      oldValue
-      newValue
-      fieldName
+      fieldChanges {
+        oldValue
+        newValue
+        fieldName
+        __typename
+      }
       id
       createdAt
       updatedAt
@@ -528,9 +546,12 @@ export const onCreateCustomerOrder = /* GraphQL */ `
             __typename
           }
           reason
-          oldValue
-          newValue
-          fieldName
+          fieldChanges {
+            oldValue
+            newValue
+            fieldName
+            __typename
+          }
           id
           createdAt
           updatedAt
@@ -608,9 +629,12 @@ export const onUpdateCustomerOrder = /* GraphQL */ `
             __typename
           }
           reason
-          oldValue
-          newValue
-          fieldName
+          fieldChanges {
+            oldValue
+            newValue
+            fieldName
+            __typename
+          }
           id
           createdAt
           updatedAt
@@ -688,9 +712,12 @@ export const onDeleteCustomerOrder = /* GraphQL */ `
             __typename
           }
           reason
-          oldValue
-          newValue
-          fieldName
+          fieldChanges {
+            oldValue
+            newValue
+            fieldName
+            __typename
+          }
           id
           createdAt
           updatedAt

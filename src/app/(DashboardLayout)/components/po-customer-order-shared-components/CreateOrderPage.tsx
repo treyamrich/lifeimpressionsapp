@@ -6,15 +6,15 @@ import React, { useMemo, useState } from "react";
 import { TextField, Stack, MenuItem, Box, Button } from "@mui/material";
 
 import { MRT_ColumnDef, MRT_Row } from "material-react-table";
-import { TShirtOrder } from "@/API";
-import TShirtOrderTable, { TableMode } from "../../components/tshirt-order-table/TShirtOrderTable";
+import { CreateOrderChangeInput, TShirtOrder } from "@/API";
+import TShirtOrderTable, { TableMode } from "../TShirtOrderTable/TShirtOrderTable";
 import ConfirmPopup from "../../components/forms/confirm-popup/ConfirmPopup";
 import { useRouter } from "next/navigation";
 import { ColumnInfo, SelectValue } from "../../purchase-orders/table-constants";
 import { DateTimePicker } from "@mui/x-date-pickers";
 import { getStartOfTomorrow, toAWSDateTime } from "@/utils/datetimeConversions";
 import { Dayjs } from "dayjs";
-import MyTelInput from "../tel-input/MyTelInput";
+import MyTelInput from "../inputs/MyTelInput";
 import { validateEmail, validatePhoneNumber } from "@/utils/field-validation";
 
 export enum EntityType {
@@ -165,6 +165,7 @@ function CreateOrderPage<T extends Record<any, any>>({
                                             value={values[column.accessorKey as string]}
                                             onChange={newVal => setValues({ ...values, [column.accessorKey as string]: newVal })}
                                             errorMsg={errMsg}
+                                            label="Customer Phone Number"
                                         />
                                     )}
                                     {!colInfo?.isDatetimeField && !colInfo?.isPhoneNumField && (
@@ -204,22 +205,22 @@ function CreateOrderPage<T extends Record<any, any>>({
                             parentOrderId={undefined}
                             onRowEdit={(
                                 row: MRT_Row<TShirtOrder>,
-                                orderChange: any,
+                                orderChange: CreateOrderChangeInput,
                                 exitEditingMode: () => void
                             ) => {
                                 const tableData = values.orderedItems;
-                                const prevTShirtOrder = row.original;
-                                const prevAmtReceived = prevTShirtOrder.amountReceived ? prevTShirtOrder.amountReceived : 0;
-                                tableData[row.index] = {
-                                    ...prevTShirtOrder,
-                                    quantity: prevTShirtOrder.quantity + orderChange.orderedQuantityChange,
-                                    amountReceived: prevAmtReceived + orderChange.quantityChange,
-                                    costPerUnit: prevTShirtOrder.costPerUnit + orderChange.costPerUnitChange
-                                } as TShirtOrder;
+                                orderChange.fieldChanges.forEach(fieldChange => {
+                                    tableData[row.index][fieldChange.fieldName] = fieldChange.newValue;
+                                })
+                                tableData[row.index] = 
                                 setValues({ ...values, orderedItems: [...tableData] });
                                 exitEditingMode();
                             }}
-                            onRowAdd={(tshirtOrder: TShirtOrder, callback: (newTShirtOrderId: string) => void) => callback(tshirtOrder.id)}
+                            onRowAdd={(newTShirtOrder: TShirtOrder, orderChange: CreateOrderChangeInput, closeFormCallback: () => void) => {
+                                const tableData = values.orderedItems;
+                                setValues({ ...values, orderedItems: [...tableData, newTShirtOrder]})
+                                closeFormCallback();
+                            }}
                             entityType={entityType}
                             mode={TableMode.Create}
                         />
