@@ -72,31 +72,17 @@ const CreateTShirtOrderModal = <TShirtOrder extends Record<string, any>>({
 
   const handleSubmit = () => {
     //Validate input
-    const newErrors = new Map<string, string>(errorMap);
+    const newErrors = new Map(errorMap);
     let allValid = true;
 
+    if (values.tshirt === null && errorMap.get('tshirt') === '') {
+      newErrors.set('tshirt', "T-Shirt details incomplete");
+      setErrorMap(newErrors);
+      // Preserve existing error message if exists
+    }
+
     Object.keys(values).forEach((key) => {
-      let errMsg = "";
-      let value = values[key];
-
-      if (key === TShirtOrderFields.AmtReceived) return;
-
-      if (key === TShirtOrderFields.Qty && value <= 0) {
-        errMsg = "Number must be positive";
-      } else if (key === TShirtOrderFields.CostPerUnit && value < 0) {
-        errMsg = "Cost cannot be negative";
-      }
-      else if (key === "tshirt" && value === null) {
-        // Preserve existing error message if exists
-        if (errorMap.get(key) !== "" && errorMap.get(key) !== undefined) {
-          errMsg = errorMap.get(key)!;
-        } else {
-          errMsg = "T-Shirt details incomplete";
-        }
-      }
-
-      newErrors.set(key, errMsg);
-      allValid = allValid && errMsg === "";
+      allValid = allValid && newErrors.get(key) === "";
     });
 
     setValues({ ...values }); // Values might've updated
@@ -140,15 +126,16 @@ const CreateTShirtOrderModal = <TShirtOrder extends Record<string, any>>({
   }
 
   const handleUpdateNumberField = (key: string, newValue: number, hasError: boolean) => {
-    const newErrorMap = new Map<string, string>(errorMap);
-    if (hasError) {
-      newErrorMap.set(key, "Invalid input");
-    } else {
-      newErrorMap.set(key, '');
+    let newErrMap = new Map(errorMap);
+    if (!hasError) {
       setValues({ ...values, [key]: newValue });
+      newErrMap.set(key, '');
+    } else {
+      newErrMap.set(key, 'some error');
     }
-    setErrorMap(newErrorMap);
+    setErrorMap(newErrMap);
   }
+
   return (
     <Dialog open={open}>
       <DialogTitle textAlign="center">{modalTitle}</DialogTitle>
@@ -193,11 +180,24 @@ const CreateTShirtOrderModal = <TShirtOrder extends Record<string, any>>({
                         key={idx}
                         label={column.header}
                         initialValue={values[column.accessorKey]}
-                        isFloat={column.accessorKey === TShirtOrderFields.CostPerUnit}
+                        isFloat={columnInfo.get(column.accessorKey)?.isFloatField}
                         onChange={(newValue: number, hasError: boolean) =>
                           handleUpdateNumberField(column.accessorKey as string, newValue, hasError)
                         }
-                        customErrorMsg={column.accessorKey === TShirtOrderFields.CostPerUnit ? "Not a valid dollar value" : undefined}
+                        isValidFn={(newValue: number) => {
+                          let errMsg = "";
+                          if (column.accessorKey === TShirtOrderFields.Qty && newValue <= 0) {
+                            errMsg = "Number must be positive";
+                          } else if (column.accessorKey === TShirtOrderFields.Discount && newValue < 0) {
+                            errMsg = "Discount cannot be negative";
+                          } else if (column.accessorKey === TShirtOrderFields.CostPerUnit && newValue < 0) {
+                            errMsg = "Cost cannot be negative";
+                          }
+                          let newErrMap = new Map(errorMap);
+                          newErrMap.set(column.accessorKey as string, errMsg);
+                          setErrorMap(newErrMap)
+                          return errMsg;
+                        }}
                       />
                     ))}
                 </Stack>

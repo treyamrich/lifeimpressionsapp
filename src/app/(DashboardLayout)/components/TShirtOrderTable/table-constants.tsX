@@ -11,12 +11,14 @@ export enum TShirtOrderFields {
     Qty = "quantity",
     AmtReceived = "amountReceived",
     CostPerUnit = "costPerUnit",
+    Discount = "discount"
 }
 
 export const toColumnHeaderMap = new Map<string, string>([
     [TShirtOrderFields.Qty, "Quantity"],
     [TShirtOrderFields.AmtReceived, "Amt. Received"],
-    [TShirtOrderFields.CostPerUnit, "Cost/Unit $"]
+    [TShirtOrderFields.CostPerUnit, "Cost/Unit $"],
+    [TShirtOrderFields.Discount, "Discount $"]
 ]);
 
 export const numberInputFields = new Set<string>([TShirtOrderFields.Qty, TShirtOrderFields.AmtReceived]);
@@ -31,6 +33,7 @@ export const initialTShirtOrderFormState: any = {
     quantity: 1,
     amountReceived: 0,
     costPerUnit: 0,
+    discount: 0,
     tShirtOrderTshirtId: ""
 };
 
@@ -73,6 +76,10 @@ export const getTableColumns = (): MRT_ColumnDef<TShirtOrder>[] => {
             header: toColumnHeaderMap.get(TShirtOrderFields.CostPerUnit),
         } as MRT_ColumnDef<TShirtOrder>,
         {
+            accessorKey: TShirtOrderFields.Discount,
+            header: toColumnHeaderMap.get(TShirtOrderFields.Discount),
+        } as MRT_ColumnDef<TShirtOrder>,
+        {
             accessorKey: "id",
             header: "Id",
             enableEditing: false
@@ -89,9 +96,10 @@ export const columnInfo = new Map<string | number | symbol | undefined, ColumnIn
     ["tshirt.color", { excludeOnCreate: true } as ColumnInfo],
     ["tshirt.styleNumber", { excludeOnCreate: true } as ColumnInfo],
 
-    [TShirtOrderFields.AmtReceived, { excludeOnCreate: true, isEditable: true } as ColumnInfo],
-    [TShirtOrderFields.Qty, { isEditable: true } as ColumnInfo],
-    [TShirtOrderFields.CostPerUnit, { isEditable: true } as ColumnInfo],
+    [TShirtOrderFields.AmtReceived, { excludeOnCreate: true, isEditable: true, isNumberField: true } as ColumnInfo],
+    [TShirtOrderFields.Qty, { isEditable: true, isNumberField: true } as ColumnInfo],
+    [TShirtOrderFields.CostPerUnit, { isEditable: true, isFloatField: true } as ColumnInfo],
+    [TShirtOrderFields.Discount, { isEditable: true, isFloatField: true } as ColumnInfo]
   ]);
 
 export const iterateColumnInfo = (fn: (columnKey: string, colInfo: ColumnInfo) => void) => {

@@ -72,6 +72,8 @@ export type ColumnInfo = {
   placeholderText: string | undefined;
   isEditable: boolean | undefined;
   multilineTextInfo: { numRows: number } | undefined;
+  isNumberField?: boolean;
+  isFloatField?: boolean;
 };
 
 export const columnInfo = new Map<string | number | symbol | undefined, ColumnInfo>([

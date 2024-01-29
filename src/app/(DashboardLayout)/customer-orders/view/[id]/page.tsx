@@ -25,6 +25,7 @@ import { useAuthContext } from "@/contexts/AuthContext";
 import { UpdateOrderTransactionInput, UpdateOrderTransactionResponse, updateOrderTransactionAPI } from "@/dynamodb-transactions/update-order-transaction";
 import NegativeInventoryConfirmPopup, { NegativeInventoryWarningState, initialNegativeInventoryWarningState } from "@/app/(DashboardLayout)/components/forms/confirm-popup/NegativeInventoryConfirmPopup";
 import OrderChangeHistory from "@/app/(DashboardLayout)/components/po-customer-order-shared-components/OrderChangeHistory/OrderChangeHistory";
+import OrderTotalCard from "@/app/(DashboardLayout)/components/po-customer-order-shared-components/OrderTotalCard";
 
 type ViewCustomerOrderProps = {
     params: { id: string };
@@ -95,6 +96,10 @@ const ViewCustomerOrder = ({ params }: ViewCustomerOrderProps) => {
                             />
                         </div>
                     </div>
+                    <OrderTotalCard
+                        order={co}
+                        orderedItems={updatedOrderedItems}
+                    />
                     <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
                         <div>
                             <Typography variant="h6" color="textSecondary">

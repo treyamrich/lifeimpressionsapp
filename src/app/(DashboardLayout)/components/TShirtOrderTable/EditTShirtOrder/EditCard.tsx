@@ -19,6 +19,10 @@ type EditCardProps = {
     newCostPerUnit: FormValue<number>;
     setNewCostPerUnit: React.Dispatch<React.SetStateAction<FormValue<number>>>;
 
+    currentDiscount: number;
+    newDiscount: FormValue<number>;
+    setNewDiscount: React.Dispatch<React.SetStateAction<FormValue<number>>>;
+
     editReason: string;
     setEditReason: React.Dispatch<React.SetStateAction<string>>;
 
@@ -35,18 +39,28 @@ const EditCard = ({
     currentAmtReceived,
     newAmtReceived,
     setNewAmtReceived,
+
     currentAmtOrdered,
     newAmtOrdered,
     setNewAmtOrdered,
+
     currentCostPerUnit,
     newCostPerUnit,
     setNewCostPerUnit,
+
+    currentDiscount,
+    newDiscount,
+    setNewDiscount,
+
     editReason,
     setEditReason,
+
     otherInput,
     setOtherInput,
+
     otherInputError,
     setOtherInputError,
+    
     entityType,
     mode
 }: EditCardProps) => {
@@ -83,9 +97,28 @@ const EditCard = ({
                                 label="Cost/Unit $"
                                 initialValue={currentCostPerUnit}
                                 isFloat
-                                customErrorMsg="Not a valid dollar value"
+                                isValidFn={(newValue: number) => {
+                                    let err = newValue < 0 ? "Cost/Unit cannot be negative" : "";
+                                    setNewCostPerUnit({ value: newValue, hasError: err !== "" });
+                                    return err
+                                }}
                                 onChange={(newValue: number, hasError: boolean) => {
                                     setNewCostPerUnit({ value: newValue, hasError: hasError });
+                                }}
+                            />
+                        </Grid>
+                        <Grid item>
+                            <NumberInput
+                                label="Discount $"
+                                initialValue={currentDiscount}
+                                isFloat
+                                isValidFn={(newValue: number) => {
+                                    let err = newValue < 0 ? "Discount cannot be negative" : "";
+                                    setNewDiscount({ value: newValue, hasError: err !== "" });
+                                    return err
+                                }}
+                                onChange={(newValue: number, hasError: boolean) => {
+                                    setNewDiscount({ value: newValue, hasError: hasError });
                                 }}
                             />
                         </Grid>

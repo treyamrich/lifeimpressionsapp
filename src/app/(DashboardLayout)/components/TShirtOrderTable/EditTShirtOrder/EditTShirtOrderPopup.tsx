@@ -53,6 +53,9 @@ const EditTShirtOrderPopup = ({
   const currentCostPerUnit = row ? row.getValue(TShirtOrderFields.CostPerUnit) as number : 0.0;
   const [newCostPerUnit, setNewCostPerUnit] = useState<FormValue<number>>({ value: 0, hasError: false });
 
+  const currentDiscount = row ? row.getValue(TShirtOrderFields.Discount) as number : 0.0;
+  const [newDiscount, setNewDiscount] = useState<FormValue<number>>({ value: 0, hasError: false});
+
   const [editReason, setEditReason] = useState(initialEditReasonState);
   const [otherInput, setOtherInput] = useState(""); // When user selects "other"
   const [otherInputError, setOtherInputError] = useState(false);
@@ -72,13 +75,14 @@ const EditTShirtOrderPopup = ({
       return;
     }
 
-    if (newCostPerUnit.hasError)
+    if (newCostPerUnit.hasError || newDiscount.hasError)
       return;
 
     const editReasonMsg = editReason === "other" ? otherInput : editReason;
     const newTShirtOrder: TShirtOrder = {
       ...row!.original,
       costPerUnit: newCostPerUnit.value,
+      discount: newDiscount.value,
       // These two variables are delta's
       quantity: currentAmtOrdered + newAmtOrdered,
       amountReceived: currentAmtReceived + newAmtReceived,
@@ -96,6 +100,7 @@ const EditTShirtOrderPopup = ({
   };
 
   useEffect(() => {
+    setNewDiscount({ ...newDiscount, value: currentDiscount });
     setNewCostPerUnit({ ...newCostPerUnit, value: currentCostPerUnit });
   }, [row]);
 
@@ -120,6 +125,10 @@ const EditTShirtOrderPopup = ({
               currentCostPerUnit={currentCostPerUnit}
               newCostPerUnit={newCostPerUnit}
               setNewCostPerUnit={setNewCostPerUnit}
+
+              currentDiscount={currentDiscount}
+              newDiscount={newDiscount}
+              setNewDiscount={setNewDiscount}
 
               editReason={editReason}
               setEditReason={setEditReason}

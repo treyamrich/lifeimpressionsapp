@@ -26,6 +26,7 @@ import { UpdateOrderTransactionInput, UpdateOrderTransactionResponse, updateOrde
 import NegativeInventoryConfirmPopup from "@/app/(DashboardLayout)/components/forms/confirm-popup/NegativeInventoryConfirmPopup";
 import { initialNegativeInventoryWarningState, type NegativeInventoryWarningState } from "@/app/(DashboardLayout)/components/forms/confirm-popup/NegativeInventoryConfirmPopup";
 import OrderChangeHistory from "@/app/(DashboardLayout)/components/po-customer-order-shared-components/OrderChangeHistory/OrderChangeHistory";
+import OrderTotalCard from "@/app/(DashboardLayout)/components/po-customer-order-shared-components/OrderTotalCard";
 
 type ViewPurchaseOrderProps = {
     params: { id: string };
@@ -94,6 +95,10 @@ const ViewPurchaseOrder = ({ params }: ViewPurchaseOrderProps) => {
                             />
                         </div>
                     </div>
+                    <OrderTotalCard
+                        order={po}
+                        orderedItems={updatedOrderedItems}
+                    />
                     <div style={{display: "flex", flexDirection: "column", gap: "10px"}}>
                         <div>
                             <Typography variant="h6" color="textSecondary">

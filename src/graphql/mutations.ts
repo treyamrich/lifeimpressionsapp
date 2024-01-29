@@ -89,6 +89,7 @@ export const createPurchaseOrder = /* GraphQL */ `
           quantity
           amountReceived
           costPerUnit
+          discount
           id
           createdAt
           updatedAt
@@ -100,6 +101,7 @@ export const createPurchaseOrder = /* GraphQL */ `
         nextToken
         __typename
       }
+      orderNotes
       status
       changeHistory {
         items {
@@ -134,6 +136,13 @@ export const createPurchaseOrder = /* GraphQL */ `
         nextToken
         __typename
       }
+      taxRate
+      shipping
+      shippingAddress
+      fees
+      discount
+      sentToVendor
+      dateExpected
       isDeleted
       type
       createdAt
@@ -169,6 +178,7 @@ export const updatePurchaseOrder = /* GraphQL */ `
           quantity
           amountReceived
           costPerUnit
+          discount
           id
           createdAt
           updatedAt
@@ -180,6 +190,7 @@ export const updatePurchaseOrder = /* GraphQL */ `
         nextToken
         __typename
       }
+      orderNotes
       status
       changeHistory {
         items {
@@ -214,6 +225,13 @@ export const updatePurchaseOrder = /* GraphQL */ `
         nextToken
         __typename
       }
+      taxRate
+      shipping
+      shippingAddress
+      fees
+      discount
+      sentToVendor
+      dateExpected
       isDeleted
       type
       createdAt
@@ -249,6 +267,7 @@ export const deletePurchaseOrder = /* GraphQL */ `
           quantity
           amountReceived
           costPerUnit
+          discount
           id
           createdAt
           updatedAt
@@ -260,6 +279,7 @@ export const deletePurchaseOrder = /* GraphQL */ `
         nextToken
         __typename
       }
+      orderNotes
       status
       changeHistory {
         items {
@@ -294,6 +314,13 @@ export const deletePurchaseOrder = /* GraphQL */ `
         nextToken
         __typename
       }
+      taxRate
+      shipping
+      shippingAddress
+      fees
+      discount
+      sentToVendor
+      dateExpected
       isDeleted
       type
       createdAt
@@ -432,6 +459,7 @@ export const createTShirtOrder = /* GraphQL */ `
       quantity
       amountReceived
       costPerUnit
+      discount
       id
       createdAt
       updatedAt
@@ -464,6 +492,7 @@ export const updateTShirtOrder = /* GraphQL */ `
       quantity
       amountReceived
       costPerUnit
+      discount
       id
       createdAt
       updatedAt
@@ -496,6 +525,7 @@ export const deleteTShirtOrder = /* GraphQL */ `
       quantity
       amountReceived
       costPerUnit
+      discount
       id
       createdAt
       updatedAt
@@ -534,6 +564,7 @@ export const createCustomerOrder = /* GraphQL */ `
           quantity
           amountReceived
           costPerUnit
+          discount
           id
           createdAt
           updatedAt
@@ -582,6 +613,7 @@ export const createCustomerOrder = /* GraphQL */ `
         nextToken
         __typename
       }
+      taxRate
       isDeleted
       type
       createdAt
@@ -618,6 +650,7 @@ export const updateCustomerOrder = /* GraphQL */ `
           quantity
           amountReceived
           costPerUnit
+          discount
           id
           createdAt
           updatedAt
@@ -666,6 +699,7 @@ export const updateCustomerOrder = /* GraphQL */ `
         nextToken
         __typename
       }
+      taxRate
       isDeleted
       type
       createdAt
@@ -702,6 +736,7 @@ export const deleteCustomerOrder = /* GraphQL */ `
           quantity
           amountReceived
           costPerUnit
+          discount
           id
           createdAt
           updatedAt
@@ -750,6 +785,7 @@ export const deleteCustomerOrder = /* GraphQL */ `
         nextToken
         __typename
       }
+      taxRate
       isDeleted
       type
       createdAt

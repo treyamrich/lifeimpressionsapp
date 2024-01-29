@@ -102,7 +102,7 @@ const TShirtOrderTable = ({
   if (entityType === EntityType.CustomerOrder || mode === TableMode.Create) {
     hiddenColumns[TShirtOrderFields.AmtReceived] = false;
   }
-
+  
   return (
     <>
       <MaterialReactTable
