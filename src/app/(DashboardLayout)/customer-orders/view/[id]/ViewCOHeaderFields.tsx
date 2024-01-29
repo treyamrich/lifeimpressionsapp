@@ -4,10 +4,11 @@ import { DBOperation, useDBOperationContext } from "@/contexts/DBErrorContext";
 import { updateCustomerOrderAPI } from "@/graphql-helpers/update-apis";
 import { Button, CardContent, Grid, Typography } from "@mui/material";
 import { useRouter } from "next/navigation";
-import { orderStatusMap } from "../../table-constants";
+import { columnInfo, getTableColumns, orderStatusMap } from "../../table-constants";
 import { useState } from "react";
-import EditCOHeaderFieldsPopup from "./EditCOHeaderFieldsPopup";
 import DateTime from "@/app/(DashboardLayout)/components/datetime/DateTime";
+import EditOrderHeaderPopup from "@/app/(DashboardLayout)/components/po-customer-order-shared-components/EditOrderHeaderPopup";
+import { EntityType } from "@/app/(DashboardLayout)/components/po-customer-order-shared-components/CreateOrderPage";
 
 type ViewCOHeaderFieldsProps = {
     co: CustomerOrder;
@@ -199,11 +200,14 @@ const ViewCOHeaderFields = ({ co, setCo }: ViewCOHeaderFieldsProps) => {
                     </Grid>
                 </Grid>
 
-                <EditCOHeaderFieldsPopup
+                <EditOrderHeaderPopup
                     open={showEditPopup}
-                    co={co}
+                    order={co}
                     onSubmit={handleUpdateCO}
                     onClose={() => setShowEditPopup(false)}
+                    orderType={EntityType.CustomerOrder}
+                    getTableColumns={getTableColumns}
+                    columnInfo={columnInfo}
                 />
             </CardContent>
         </BlankCard>

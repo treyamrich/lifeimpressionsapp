@@ -1,5 +1,5 @@
 import { MRT_ColumnDef } from "material-react-table";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Dayjs } from "dayjs";
 import { toAWSDateTime, toTimezoneWithoutAdjustingHours } from "@/utils/datetimeConversions";
 import { Button, Dialog, DialogContent, DialogTitle, Grid, MenuItem, Stack, TextField } from "@mui/material";
@@ -7,8 +7,9 @@ import { DateTimePicker } from "@mui/x-date-pickers";
 import { validateEmail, validatePhoneNumber } from "@/utils/field-validation";
 import React from "react";
 import MyTelInput from "@/app/(DashboardLayout)/components/inputs/MyTelInput";
-import TaxRateInput from "@/app/(DashboardLayout)/components/po-customer-order-shared-components/TaxRateInput";
 import { EntityType } from "./CreateOrderPage";
+import NonNegativeFloatInput from "./NonNegativeFloatInput";
+import { ColumnInfo, SelectValue } from "../../purchase-orders/table-constants";
 
 
 function EditOrderHeaderPopup<T extends Record<any, any>>({ open, order, onSubmit, onClose, orderType, getTableColumns, columnInfo }: {
@@ -50,6 +51,10 @@ function EditOrderHeaderPopup<T extends Record<any, any>>({ open, order, onSubmi
         setValues(getInitialFormState());
     }
 
+    useEffect(() => {
+        setValues(getInitialFormState());
+    }, [order])
+    
     const handleSubmit = () => {
         //Validate input
         const newErrors = getInitialOrderFormErrorMap();
@@ -142,7 +147,7 @@ function EditOrderHeaderPopup<T extends Record<any, any>>({ open, order, onSubmi
         }
         if (colInfo?.isFloatField) {
             return (
-                <TaxRateInput
+                <NonNegativeFloatInput
                     column={column}
                     values={values}
                     setValues={setValues}
