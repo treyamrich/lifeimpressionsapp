@@ -84,6 +84,7 @@ export const getUpdateTShirtOrderTablePartiQL = (
             SET ${TShirtOrderFields.Qty} = ?
             SET ${TShirtOrderFields.AmtReceived} = ?
             SET ${TShirtOrderFields.CostPerUnit} = ?
+            SET ${TShirtOrderFields.Discount} = ?
             SET updatedAt = ?
             WHERE ${tshirtOrderTable.pkFieldName} = ?
         `,
@@ -91,6 +92,7 @@ export const getUpdateTShirtOrderTablePartiQL = (
             { N: tshirtOrder.quantity.toString() },
             { N: amtReceived },
             { N: tshirtOrder.costPerUnit.toString() },
+            { N: tshirtOrder.discount.toString() },
             { S: createdAtTimestamp },
             { S: tshirtOrder.id },
         ]
@@ -110,9 +112,10 @@ export const getInsertTShirtOrderTablePartiQL = (
             value {
                 '__typename': ?,
                 'id': ?,
-                'quantity': ?,
-                'amountReceived': ?,
-                'costPerUnit': ?,
+                '${TShirtOrderFields.Qty}': ?,
+                '${TShirtOrderFields.AmtReceived}': ?,
+                '${TShirtOrderFields.CostPerUnit}': ?,
+                '${TShirtOrderFields.Discount}': ?,
                 '${entityType}OrderOrderedItemsId': ?,
                 'tShirtOrderTshirtId': ?,
                 'createdAt': ?,
@@ -125,6 +128,7 @@ export const getInsertTShirtOrderTablePartiQL = (
             { N: tshirtOrder.quantity.toString() },
             { N: tshirtOrder.amountReceived ? tshirtOrder.amountReceived.toString() : "0" },
             { N: tshirtOrder.costPerUnit.toString() },
+            { N: tshirtOrder.discount.toString() },
             { S: parentOrderUuid },
             { S: tshirtOrder.tshirt.id },
             { S: createdAtTimestamp },
