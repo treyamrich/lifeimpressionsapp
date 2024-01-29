@@ -22,7 +22,6 @@ const NumberInput = ({ label, initialValue, isFloat, onChange, decimalPlaceLimit
     return (
         <TextField
             label={label}
-            variant="standard"
             type="text"
             value={inputValue}
             helperText={errorMsg}

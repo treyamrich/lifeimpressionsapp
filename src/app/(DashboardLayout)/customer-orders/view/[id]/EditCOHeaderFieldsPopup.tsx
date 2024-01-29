@@ -134,7 +134,14 @@ const EditCOHeaderFieldsPopup = ({ open, co, onSubmit, onClose }: EditCOHeaderFi
                                     {colInfo?.isPhoneNumField && (
                                         <MyTelInput
                                             value={values[column.accessorKey as string]}
-                                            onChange={newVal => setValues({ ...values, [column.accessorKey as string]: newVal })}
+                                            onChange={newVal => {
+                                                if(newVal === "+1") {
+                                                    const newMap = new Map(errorMap);
+                                                    newMap.set(column.accessorKey as string, '');
+                                                    setErrorMap(newMap);
+                                                }
+                                                setValues({ ...values, [column.accessorKey as string]: newVal })
+                                            }}
                                             errorMsg={errMsg}
                                             label="Customer Phone Number"
                                         />

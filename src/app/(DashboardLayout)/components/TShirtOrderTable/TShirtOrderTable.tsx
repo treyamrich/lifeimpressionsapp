@@ -16,7 +16,7 @@ import {
 } from "material-react-table";
 import { listTShirtAPI } from "@/graphql-helpers/fetch-apis";
 import CreateTShirtOrderModal from "./CreateTShirtOrderModal";
-import EditRowPopup from "./EditRowPopup";
+import EditRowPopup from "./EditTShirtOrder/EditTShirtOrder";
 import { useDBOperationContext, DBOperation } from "@/contexts/DBErrorContext";
 import { EntityType } from "../po-customer-order-shared-components/CreateOrderPage";
 

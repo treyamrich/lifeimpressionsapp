@@ -105,9 +105,9 @@ const CreateTShirtOrderModal = <TShirtOrder extends Record<string, any>>({
       const createOrderChangeInput: CreateOrderChangeInput = {
         reason: "Added new tshirt to purchase order",
         fieldChanges: [
-          { fieldName: TShirtOrderFields.Qty, oldValue: "-", newValue: values[TShirtOrderFields.Qty].toString()},
-          { fieldName: TShirtOrderFields.AmtReceived, oldValue: "-", newValue: values[TShirtOrderFields.AmtReceived].toString()},
-          { fieldName: TShirtOrderFields.CostPerUnit, oldValue: "-", newValue: values[TShirtOrderFields.CostPerUnit].toString()},
+          { fieldName: TShirtOrderFields.Qty, oldValue: "-", newValue: values[TShirtOrderFields.Qty].toString() },
+          { fieldName: TShirtOrderFields.AmtReceived, oldValue: "-", newValue: values[TShirtOrderFields.AmtReceived].toString() },
+          { fieldName: TShirtOrderFields.CostPerUnit, oldValue: "-", newValue: values[TShirtOrderFields.CostPerUnit].toString() },
         ],
         orderChangeTshirtId: values.tshirt.id,
         [`${entityType === EntityType.PurchaseOrder ? "purchase" : "customer"}OrderChangeHistoryId`]: parentOrderId,
@@ -158,6 +158,20 @@ const CreateTShirtOrderModal = <TShirtOrder extends Record<string, any>>({
             <BlankCard>
               <CardContent>
                 <Typography variant="h6" color="textSecondary" style={{ marginBottom: "15px" }}>
+                  TShirt Details
+                </Typography>
+
+                <TShirtPicker
+                  choices={tshirtChoices}
+                  onChange={handleUpdateTShirt}
+                  errorMessage={errorMap.get('tshirt')}
+                />
+              </CardContent>
+            </BlankCard>
+
+            <BlankCard>
+              <CardContent>
+                <Typography variant="h6" color="textSecondary" style={{ marginBottom: "15px" }}>
                   Other Order Details
                 </Typography>
                 <Stack
@@ -185,20 +199,6 @@ const CreateTShirtOrderModal = <TShirtOrder extends Record<string, any>>({
               </CardContent>
             </BlankCard>
 
-            <BlankCard>
-              <CardContent>
-                <Typography variant="h6" color="textSecondary" style={{ marginBottom: "15px" }}>
-                  TShirt Details
-                </Typography>
-
-                <TShirtPicker
-                  choices={tshirtChoices}
-                  onChange={handleUpdateTShirt}
-                  errorMessage={errorMap.get('tshirt')}
-                />
-              </CardContent>
-            </BlankCard>
-
           </Stack>
         </form>
       </DialogContent>
@@ -213,18 +213,3 @@ const CreateTShirtOrderModal = <TShirtOrder extends Record<string, any>>({
 };
 
 export default CreateTShirtOrderModal;
-
-const isNumberInputField = (
-  fieldName: string | number | symbol | undefined
-) => {
-  let nameOfField = fieldName ? fieldName.toString() : "";
-  return numberInputFields.has(nameOfField);
-};
-
-const isFloatInputField = (
-  fieldName: string | number | symbol | undefined
-) => {
-  let nameOfField = fieldName ? fieldName.toString() : "";
-  return floatInputFields.has(nameOfField);
-};
-

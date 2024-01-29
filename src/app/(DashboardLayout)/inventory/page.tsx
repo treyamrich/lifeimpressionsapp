@@ -32,7 +32,7 @@ import {
   type MRT_Row,
   type MRT_ColumnFiltersState
 } from "material-react-table";
-import CreateTShirtModal from "../components/forms/create-entity-forms/tshirt/CreateTShirtModal";
+import CreateTShirtModal from "./CreateTShirtModal";
 
 const Inventory = () => {
   const { rescueDBOperation } = useDBOperationContext();
@@ -168,7 +168,13 @@ const Inventory = () => {
             }}
             columns={columns}
             data={tableData}
-            initialState={{ showColumnFilters: true }}
+            initialState={{ 
+              showColumnFilters: true,
+              sorting: [{
+                id: 'quantityOnHand',
+                desc: false,
+            }]
+            }}
             editingMode="modal" //default
             enableColumnOrdering
             onColumnFiltersChange={setColumnFilters}

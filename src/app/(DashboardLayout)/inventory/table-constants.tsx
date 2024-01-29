@@ -1,6 +1,7 @@
 import { TShirt } from "@/API";
 import { toReadableDateTime } from "@/utils/datetimeConversions";
 import { MRT_ColumnDef, MRT_Cell } from "material-react-table";
+import { selectInputFields, tshirtSizeToLabel } from "./create-tshirt-constants";
 
 export const tshirtPrimaryKey = "styleNumber";
 export const entityName = "TShirt";
@@ -55,6 +56,9 @@ export const getTableColumns = (
       }),
       size: 50,
       isSelectField: true,
+      Cell: ({ renderedCellValue, row}) => (
+        <> {tshirtSizeToLabel[row.original.size]}</>
+      )
     } as MRT_ColumnDef<TShirt>,
     {
       accessorKey: "type",

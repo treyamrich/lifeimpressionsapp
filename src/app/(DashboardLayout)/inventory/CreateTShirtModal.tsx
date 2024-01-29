@@ -20,6 +20,7 @@ import {
   Stack,
   TextField
 } from "@mui/material";
+import NumberInput from "../components/inputs/NumberInput";
 
 interface CreateTShirtModalProps<TShirt extends Record<string, any>> {
   columns: MRT_ColumnDef<TShirt>[];
@@ -65,8 +66,8 @@ const CreateTShirtModal = <TShirt extends Record<string, any>>({
     Object.keys(values).forEach((key) => {
       let errMsg = "";
       let value = values[key];
-      if (key === "quantityOnHand" && value < 0) {
-        errMsg = "Qty. must be non-negative";
+      if (key === "quantityOnHand" && errorMap.get(key) !== undefined) {
+        errMsg = errorMap.get(key)!;
       } else if (value.toString().length < 1) {
         errMsg = "Field is required";
       }
@@ -74,11 +75,11 @@ const CreateTShirtModal = <TShirt extends Record<string, any>>({
       allValid = allValid && errMsg === "";
     });
 
-    let hasDuplicate = records.reduce((prev, curr) => prev || 
+    let hasDuplicate = records.reduce((prev, curr) => prev ||
       curr.styleNumber.toLowerCase() === values.styleNumber.toLowerCase() &&
       curr.size.toLowerCase() === values.size.toLowerCase() &&
       curr.color.toLowerCase() === values.color.toLowerCase(), false);
-    if(hasDuplicate) {
+    if (hasDuplicate) {
       allValid = false;
       const dupMsg = "Tshirt with style number, size, color already exists";
       newErrors.set("styleNumber", dupMsg);
@@ -99,6 +100,17 @@ const CreateTShirtModal = <TShirt extends Record<string, any>>({
     }
   };
 
+  const handleUpdateNumberField = (key: string, newValue: number, hasError: boolean) => {
+    const newErrorMap = new Map<string, string>(errorMap);
+    if (hasError) {
+      newErrorMap.set(key, "Invalid input");
+    } else {
+      newErrorMap.set(key, '');
+      setValues({ ...values, [key]: newValue });
+    }
+    setErrorMap(newErrorMap);
+  }
+
   return (
     <Dialog open={open}>
       <DialogTitle textAlign="center">{"Create New " + entityName}</DialogTitle>
@@ -117,7 +129,15 @@ const CreateTShirtModal = <TShirt extends Record<string, any>>({
                 (col) =>
                   !excludeOnCreateFields.includes(col.accessorKey as string)
               )
-              .map((column) => (
+              .map((column) => {
+                return isNumberInputField(column.accessorKey) ? 
+                <NumberInput
+                  label={column.header}
+                  initialValue={values[column.accessorKey]}
+                  onChange={(newValue: number, hasError: boolean) => {
+                    handleUpdateNumberField(column.accessorKey as string, newValue, hasError)
+                  }}
+                /> :
                 <TextField
                   select={isSelectInputField(column.accessorKey)}
                   key={column.accessorKey as React.Key}
@@ -141,7 +161,7 @@ const CreateTShirtModal = <TShirt extends Record<string, any>>({
                         </MenuItem>
                       ))}
                 </TextField>
-              ))}
+              })}
           </Stack>
         </form>
       </DialogContent>
