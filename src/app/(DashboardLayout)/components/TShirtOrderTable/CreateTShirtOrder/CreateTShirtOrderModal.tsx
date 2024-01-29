@@ -134,7 +134,7 @@ const CreateTShirtOrderModal = <TShirtOrder extends Record<string, any>>({
       newErrorMap.set('tshirt', 'Order already contains T-Shirt type.');
     } else {
       newErrorMap.set('tshirt', '');
-      setValues({ ...values, tshirt: newShirt });
+      setValues({ ...values, tshirt: newShirt, tShirtOrderTshirtId: newShirt?.id });
     }
     setErrorMap(newErrorMap);
   }

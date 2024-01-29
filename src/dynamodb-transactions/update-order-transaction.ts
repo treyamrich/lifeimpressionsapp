@@ -14,6 +14,7 @@ import {
     getUpdateTShirtTablePartiQL
 } from "./partiql-helpers";
 import { DBOperation } from "@/contexts/DBErrorContext";
+import { validateTShirtOrderInput } from "./validation";
 
 export type AssembleUpdateStatementsResult = {
     transactionStatements: ParameterizedStatement[];
@@ -26,12 +27,6 @@ export const assembleUpdateOrderTransactionStatements = (
     allowNegativeInventory: boolean
 ): AssembleUpdateStatementsResult => {
     const { updatedTShirtOrder, parentOrderId, createOrderChangeInput, inventoryQtyDelta } = input;
-
-    if(tshirtOrderTableOperation === DBOperation.CREATE && input.updatedTShirtOrder.id !== undefined) {
-        throw Error("Creating TShirtOrder should not already have an id")
-    } else if(tshirtOrderTableOperation === DBOperation.UPDATE && input.updatedTShirtOrder.id === undefined) {
-        throw Error("Editing TShirtOrder when it did not have an id")
-    }
 
     let maybeNegatedInventoryQtyDelta = entityType === EntityType.CustomerOrder ?
         -inventoryQtyDelta : inventoryQtyDelta;
@@ -110,6 +105,21 @@ export const assembleUpdateOrderTransactionStatements = (
     return { transactionStatements, response }
 };
 
+const validateOrderChangeInput = (createOrderChangeInput: CreateOrderChangeInput) => {
+    if(createOrderChangeInput.fieldChanges.length === 0) throw Error("No changes made to order");
+    if(createOrderChangeInput.reason.length === 0) throw Error("No reason for editing order provided.");
+    if(createOrderChangeInput.orderChangeTshirtId.length === 0) throw Error("No thirt id provided");
+}
+
+const validateUpdateOrderInput = (input: UpdateOrderTransactionInput, tshirtOrderTableOperation: DBOperation) => {
+    if (tshirtOrderTableOperation !== DBOperation.CREATE &&
+        tshirtOrderTableOperation !== DBOperation.UPDATE)
+        throw Error("Invalid operation " + tshirtOrderTableOperation);
+    const { updatedTShirtOrder, parentOrderId, createOrderChangeInput } = input;
+    if(parentOrderId === undefined || parentOrderId === "") throw Error("Order id does not exist");
+    validateOrderChangeInput(createOrderChangeInput);
+    validateTShirtOrderInput(updatedTShirtOrder, tshirtOrderTableOperation);
+}
 
 export type UpdateOrderTransactionInput = {
     updatedTShirtOrder: TShirtOrder;
@@ -135,9 +145,7 @@ export const updateOrderTransactionAPI = async (
     tshirtOrderTableOperation: DBOperation,
     allowNegativeInventory: boolean
 ): Promise<UpdateOrderTransactionResponse> => {
-    if (tshirtOrderTableOperation !== DBOperation.CREATE &&
-        tshirtOrderTableOperation !== DBOperation.UPDATE)
-        throw Error("Invalid operation " + tshirtOrderTableOperation);
+    validateUpdateOrderInput(input, tshirtOrderTableOperation);
 
     let command = null;
     let response: UpdateOrderTransactionResponse = null;

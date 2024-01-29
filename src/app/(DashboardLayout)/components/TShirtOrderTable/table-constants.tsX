@@ -30,7 +30,8 @@ export const initialTShirtOrderFormState: any = {
     tshirt: null,
     quantity: 1,
     amountReceived: 0,
-    costPerUnit: 0
+    costPerUnit: 0,
+    tShirtOrderTshirtId: ""
 };
 
 export const getInitialTShirtOrderFormErrorMap = () =>

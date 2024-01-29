@@ -6,7 +6,7 @@ import {
   ExecuteTransactionCommand,
   ParameterizedStatement,
 } from "@aws-sdk/client-dynamodb";
-import { TShirtOrder } from "@/API";
+import { CustomerOrder, PurchaseOrder, TShirtOrder } from "@/API";
 import { createDynamoDBObj } from "./dynamodb";
 import {
   PurchaseOrderOrCustomerOrder,
@@ -15,6 +15,9 @@ import {
   getUpdateTShirtTablePartiQL,
 } from "./partiql-helpers";
 import { v4 } from "uuid";
+import { validateEmail, validatePhoneNumber } from "@/utils/field-validation";
+import { validateTShirtOrderInput } from "./validation";
+import { DBOperation } from "@/contexts/DBErrorContext";
 
 export const getTShirtOrdersStatements = (
   orderedItems: TShirtOrder[],
@@ -75,6 +78,22 @@ export const assembleCreateOrderTransactionStatements = (
   return transactionStatements;
 };
 
+const validateCreateOrderInput = (input: PurchaseOrderOrCustomerOrder, entityType: EntityType) => {
+  const orderedItems = input.orderedItems as any as TShirtOrder[]; // Locally orderedItems is just an array
+  orderedItems.forEach(item => {
+    validateTShirtOrderInput(item, DBOperation.CREATE);
+    if (item.amountReceived !== 0) throw Error("Received amount should be 0 on order creation");
+  });
+  const isValidStr = (str: string | undefined | null) => str !== undefined && str !== null;
+  if (entityType === EntityType.CustomerOrder) {
+    let order = input as CustomerOrder;
+    if (isValidStr(order.customerPhoneNumber) && validatePhoneNumber(order.customerPhoneNumber!) === undefined)
+      throw Error("Invalid phone number input");
+    if (isValidStr(order.customerEmail) && validateEmail(order.customerEmail!) === undefined)
+      throw Error("Invalid email input.")
+  }
+}
+
 // If allow negative inventory is set to false, then an array of tshirt order style numbers will be returned that would've caused negative inventory
 export const createOrderTransactionAPI = async (
   input: PurchaseOrderOrCustomerOrder,
@@ -84,8 +103,7 @@ export const createOrderTransactionAPI = async (
 ): Promise<Array<string>> => {
 
   const orderedItems = input.orderedItems as any as TShirtOrder[]; // Locally orderedItems is just an array
-  // Ensure amount received is initally 0
-  orderedItems.map(item => item.amountReceived = 0);
+  validateCreateOrderInput(input, entityType);
 
   let command = null;
   try {
