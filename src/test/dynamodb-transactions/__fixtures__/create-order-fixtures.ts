@@ -51,7 +51,8 @@ export const tshirtOrders: TShirtOrder[] = [
         tShirtOrderTshirtId: tshirts[0].id,
         createdAt: '',
         updatedAt: '',
-        tshirt: tshirts[0]
+        tshirt: tshirts[0],
+        costPerUnit: 52.1
     },
     {
         __typename: "TShirtOrder",
@@ -62,6 +63,7 @@ export const tshirtOrders: TShirtOrder[] = [
         createdAt: '',
         updatedAt: '',
         tshirt: tshirts[1],
+        costPerUnit: 52.4
     }
 ]
 

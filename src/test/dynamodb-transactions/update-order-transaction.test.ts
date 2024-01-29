@@ -3,7 +3,7 @@ import { assembleUpdateOrderTransactionStatements } from "@/dynamodb-transaction
 import { negativeUpdateOrderInput, updateOrderInput } from "./__fixtures__/update-order-fixtures";
 import { DBOperation } from "@/contexts/DBErrorContext";
 import { compileUpdateStatement, toJson } from "./__fixtures__/json-parsing";
-import { CustomerOrderChange, PurchaseOrderChange } from "@/API";
+import { OrderChange } from "@/API";
 import { ParameterizedStatement } from "@aws-sdk/client-dynamodb";
 
 const getUpdateStatementLines = (statements: ParameterizedStatement[]): string[][] => statements
@@ -22,10 +22,10 @@ describe("Update Order Transaction", () => {
             const { transactionStatements, response } = assembleUpdateOrderTransactionStatements(updateOrderInput, DBOperation.UPDATE, EntityType.PurchaseOrder, false);
             const insertOrderChangeStatement = transactionStatements[3];
 
-            const json = toJson(insertOrderChangeStatement) as PurchaseOrderChange;
+            const json = toJson(insertOrderChangeStatement) as OrderChange;
             expect(json.orderedQuantityChange).toBe(updateOrderInput.orderedQtyDelta?.toString());
             expect(json.quantityChange).toBe(updateOrderInput.tshirtTableQtyDelta.toString());
-            expect(json.reason).toBe(updateOrderInput.reason);
+            expect(json.reason).toBe(updateOrderInput.createOrderChangeInput.reason);
 
             const orderChange = response?.orderChange;
             const newTShirtOrderId = response?.newTShirtOrderId;
@@ -33,7 +33,7 @@ describe("Update Order Transaction", () => {
             expect(orderChange).toBeDefined();
             expect(newTShirtOrderId).toBeUndefined(); // due to the DBOperation.UPDATE
             expect(orderUpdatedAtTimestamp).toBeDefined();
-            expect(orderChange?.reason).toBe(updateOrderInput.reason);
+            expect(orderChange?.reason).toBe(updateOrderInput.createOrderChangeInput.reason);
             expect(orderChange?.orderedQuantityChange).toBe(updateOrderInput.orderedQtyDelta);
         })
 
@@ -41,10 +41,10 @@ describe("Update Order Transaction", () => {
             const { transactionStatements, response } = assembleUpdateOrderTransactionStatements(updateOrderInput, DBOperation.CREATE, EntityType.CustomerOrder, false);
             const insertOrderChangeStatement = transactionStatements[3];
 
-            const json = toJson(insertOrderChangeStatement) as CustomerOrderChange;
+            const json = toJson(insertOrderChangeStatement) as OrderChange;
             // The tshirt table's quantity should be decremented and reflected in the order change
             expect(json.orderedQuantityChange).toBe(updateOrderInput.tshirtTableQtyDelta.toString());
-            expect(json.reason).toBe(updateOrderInput.reason);
+            expect(json.reason).toBe(updateOrderInput.createOrderChangeInput.reason);
 
             const orderChange = response?.orderChange;
             const newTShirtOrderId = response?.newTShirtOrderId;
@@ -52,7 +52,7 @@ describe("Update Order Transaction", () => {
             expect(orderChange).toBeDefined();
             expect(newTShirtOrderId).toBeDefined(); // due to the DBOperation.CREATE
             expect(orderUpdatedAtTimestamp).toBeDefined();
-            expect(orderChange?.reason).toBe(updateOrderInput.reason);
+            expect(orderChange?.reason).toBe(updateOrderInput.createOrderChangeInput.reason);
             expect(orderChange?.orderedQuantityChange).toBe(updateOrderInput.tshirtTableQtyDelta);
         })
     })

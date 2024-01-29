@@ -81,8 +81,8 @@ describe("View Single PO page", () => {
         orderedItems: undefined,
         changeHistory: undefined,
         status: POStatus.Closed,
-        createdAt: "01/01/2023 10:10:10 AM",
-        updatedAt: "01/01/2023 10:10:10 AM",
+        createdAt: "2023-01-01T10:10:10",
+        updatedAt: "2023-01-01T10:10:10",
       });
 
       waitFor(() => {
