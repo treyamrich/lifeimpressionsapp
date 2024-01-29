@@ -3,7 +3,7 @@ import BlankCard from "../../shared/BlankCard";
 import { CardContent, Stack, Typography } from "@mui/material";
 import { tshirtSizeToLabel } from "@/app/(DashboardLayout)/inventory/create-tshirt-constants";
 
-const ChosenTShirtCard = ({ tshirt }: { tshirt: TShirt }) => (
+const ChosenTShirtCard = ({ tshirt }: { tshirt: TShirt | undefined }) => (
     <BlankCard>
         <CardContent>
             <Typography variant="h6" color="textSecondary" style={{ marginBottom: "15px" }}>
@@ -16,13 +16,13 @@ const ChosenTShirtCard = ({ tshirt }: { tshirt: TShirt }) => (
                     gap: ".5rem",
                 }}>
                     <Typography variant="body1">
-                        Style Number: {tshirt.styleNumber}
+                        Style Number: {tshirt?.styleNumber}
                     </Typography>
                     <Typography variant="body1">
-                        Size: {tshirtSizeToLabel[tshirt.size]}
+                        Size: {tshirt ? tshirtSizeToLabel[tshirt.size] : ""}
                     </Typography>
                     <Typography variant="body1">
-                        Color: {tshirt.color}
+                        Color: {tshirt?.color}
                     </Typography>
             </Stack>
         </CardContent>
