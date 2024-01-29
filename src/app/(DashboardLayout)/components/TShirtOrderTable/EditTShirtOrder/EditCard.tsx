@@ -63,7 +63,7 @@ const EditCard = ({
                         {entityType === EntityType.PurchaseOrder && mode === TableMode.Edit && (
                             <Grid item>
                                 <QuantityChanger
-                                    title="Amount Received"
+                                    title="Amount On Hand"
                                     newQty={newAmtReceived}
                                     setNewQty={setNewAmtReceived}
                                     currentQty={currentAmtReceived}

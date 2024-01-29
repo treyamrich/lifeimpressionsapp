@@ -1,7 +1,7 @@
 import { TShirt } from "@/API";
 import { Autocomplete, AutocompleteRenderInputParams, Chip, MenuItem, Stack, TextField, Typography } from "@mui/material";
 import { useState } from "react";
-import { SelectValue } from "../../inventory/create-tshirt-constants";
+import { SelectValue, tshirtSizeToLabel } from "../../../inventory/create-tshirt-constants";
 
 type TShirtPickerState = {
     inputValue: string;
@@ -58,7 +58,7 @@ const TShirtPicker = ({ choices, onChange, errorMessage, disabled }: {
 
     const tshirtsByStyleNumber = choices.filter(tshirt => tshirt.styleNumber === pickerState.tshirtStyleNo);
     const availableTShirtColors = tshirtsByStyleNumber.map(tshirt => ({ label: tshirt.color, value: tshirt.color }));
-    const availableTShirtSizes = tshirtsByStyleNumber.map(tshirt => ({ label: tshirt.size, value: tshirt.size }));
+    const availableTShirtSizes = tshirtsByStyleNumber.map(tshirt => ({ label: tshirtSizeToLabel[tshirt.size], value: tshirt.size }));
 
     const handleFieldChange = (fieldName: string, newValue: any) => {
         const newPickerState = { ...pickerState, [fieldName]: newValue };

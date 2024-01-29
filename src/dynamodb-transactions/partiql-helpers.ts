@@ -2,8 +2,9 @@ import { CustomerOrder, CustomerOrderStatus, FieldChange, PurchaseOrder, TShirtO
 import { EntityType } from "../app/(DashboardLayout)/components/po-customer-order-shared-components/CreateOrderPage"
 import { customerOrderTable, getStrOrNull, orderChangeTable, purchaseOrderTable, tshirtOrderTable, tshirtTable } from "./dynamodb"
 import { AttributeValue, ParameterizedStatement } from "@aws-sdk/client-dynamodb";
-import { PurchaseOrderOrCustomerOrder } from "../graphql-helpers/create-apis";
 import { TShirtOrderFields } from "@/app/(DashboardLayout)/components/TShirtOrderTable/table-constants";
+
+export type PurchaseOrderOrCustomerOrder = PurchaseOrder | CustomerOrder;
 
 export const getInsertOrderChangePartiQL = (
     orderChangeUuid: string,

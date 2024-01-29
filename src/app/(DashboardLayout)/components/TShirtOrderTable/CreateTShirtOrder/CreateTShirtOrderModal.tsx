@@ -9,7 +9,7 @@ import {
   initialTShirtOrderFormState,
   modalTitle,
   numberInputFields,
-} from "./table-constants";
+} from "../table-constants";
 import {
   Button,
   CardContent,
@@ -23,9 +23,9 @@ import {
 import { CreateOrderChangeInput, TShirt } from "@/API";
 import { MRT_ColumnDef } from "material-react-table";
 import TShirtPicker from "./TShirtPicker";
-import BlankCard from "../shared/BlankCard";
-import { EntityType } from "../po-customer-order-shared-components/CreateOrderPage";
-import NumberInput from "../inputs/NumberInput";
+import BlankCard from "../../shared/BlankCard";
+import { EntityType } from "../../po-customer-order-shared-components/CreateOrderPage";
+import NumberInput from "../../inputs/NumberInput";
 
 interface CreateTShirtOrderModalProps<TShirtOrder extends Record<string, any>> {
   columns: MRT_ColumnDef<TShirtOrder>[];
@@ -106,12 +106,17 @@ const CreateTShirtOrderModal = <TShirtOrder extends Record<string, any>>({
         reason: "Added new tshirt to purchase order",
         fieldChanges: [
           { fieldName: TShirtOrderFields.Qty, oldValue: "-", newValue: values[TShirtOrderFields.Qty].toString() },
-          { fieldName: TShirtOrderFields.AmtReceived, oldValue: "-", newValue: values[TShirtOrderFields.AmtReceived].toString() },
           { fieldName: TShirtOrderFields.CostPerUnit, oldValue: "-", newValue: values[TShirtOrderFields.CostPerUnit].toString() },
         ],
         orderChangeTshirtId: values.tshirt.id,
         [`${entityType === EntityType.PurchaseOrder ? "purchase" : "customer"}OrderChangeHistoryId`]: parentOrderId,
       };
+      if (entityType === EntityType.PurchaseOrder) {
+        createOrderChangeInput.fieldChanges.push({
+          fieldName: TShirtOrderFields.AmtReceived, oldValue: "-", newValue: values[TShirtOrderFields.AmtReceived].toString()
+        })
+      }
+
       onSubmit(
         values,
         createOrderChangeInput,

@@ -7,9 +7,9 @@ import {
   ParameterizedStatement,
 } from "@aws-sdk/client-dynamodb";
 import { TShirtOrder } from "@/API";
-import { PurchaseOrderOrCustomerOrder } from "../graphql-helpers/create-apis";
 import { createDynamoDBObj } from "./dynamodb";
 import {
+  PurchaseOrderOrCustomerOrder,
   getInsertOrderPartiQL,
   getInsertTShirtOrderTablePartiQL,
   getUpdateTShirtTablePartiQL,

@@ -3,6 +3,7 @@ import { toReadableDateTime } from "@/utils/datetimeConversions";
 import { Box, Stack, Typography } from "@mui/material";
 import { MRT_ColumnDef } from "material-react-table";
 import { toColumnHeaderMap } from "../../TShirtOrderTable/table-constants";
+import { tshirtSizeToLabel } from "@/app/(DashboardLayout)/inventory/create-tshirt-constants";
 
 export const getTableColumns = (): MRT_ColumnDef<OrderChange>[] => {
   return [
@@ -17,6 +18,9 @@ export const getTableColumns = (): MRT_ColumnDef<OrderChange>[] => {
       header: "Size",
       muiTableHeadCellProps: { sx: { color: "green" } }, //custom props
       size: 50,
+      Cell: ({ renderedCellValue, row}) => (
+        <> {tshirtSizeToLabel[row.original.tshirt.size]}</>
+      )
     } as MRT_ColumnDef<OrderChange>,
     {
       accessorKey: "tshirt.color",

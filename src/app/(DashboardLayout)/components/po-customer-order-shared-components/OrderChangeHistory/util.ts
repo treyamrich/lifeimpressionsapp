@@ -30,6 +30,5 @@ export const buildOrderChangeInput = (input: BuildOrderChangeInput): CreateOrder
             )
         }
     });
-
     return orderChange;
 }

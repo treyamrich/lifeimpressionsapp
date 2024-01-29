@@ -1,6 +1,7 @@
 import { TShirtOrder } from "@/API";
 import { MRT_ColumnDef, MRT_Cell } from "material-react-table";
 import { ColumnInfo } from "../../purchase-orders/table-constants";
+import { tshirtSizeToLabel } from "../../inventory/create-tshirt-constants";
 
 export const tablePrimaryKey = "id";
 export const modalTitle = "Add to Order";
@@ -49,6 +50,9 @@ export const getTableColumns = (): MRT_ColumnDef<TShirtOrder>[] => {
             accessorKey: "tshirt.size",
             header: "Size",
             muiTableHeadCellProps: { sx: { color: "green" } },
+            Cell: ({ renderedCellValue, row}) => (
+                <> {tshirtSizeToLabel[row.original.tshirt.size]}</>
+              )
         } as MRT_ColumnDef<TShirtOrder>,
         {
             accessorKey: "tshirt.color",

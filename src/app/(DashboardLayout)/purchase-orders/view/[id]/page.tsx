@@ -145,7 +145,6 @@ const OrderedItemsTable = ({
             newTShirtOrder[fieldChange.fieldName] = fieldChange.newValue
         });
 
-
         const inventoryQtyDelta = newTShirtOrder.amountReceived - oldTShirtOrder.amountReceived!;
         const updateOrderInput: UpdateOrderTransactionInput = {
             updatedTShirtOrder: newTShirtOrder,
@@ -155,7 +154,7 @@ const OrderedItemsTable = ({
         };
 
         // Only warn negative inventory when inventory will be reduced
-        allowNegativeInventory = allowNegativeInventory || inventoryQtyDelta <= 0;
+        allowNegativeInventory = allowNegativeInventory || inventoryQtyDelta >= 0;
 
         rescueDBOperation(
             () => updateOrderTransactionAPI(
@@ -179,7 +178,6 @@ const OrderedItemsTable = ({
                 }
 
                 // Update local TShirtOrderTable
-                newTShirtOrder.id = resp.newTShirtOrderId;
                 tableData[row.index] = newTShirtOrder;
                 setTableData([...tableData]);
 
@@ -222,7 +220,10 @@ const OrderedItemsTable = ({
                 if (resp === null) return;
                 setChangeHistory([resp.orderChange as OrderChange, ...changeHistory]);
                 setPurchaseOrder({ ...parentPurchaseOrder, updatedAt: resp.orderUpdatedAtTimestamp });
+
+                newTShirtOrder.id = resp.newTShirtOrderId!;
                 setTableData([...tableData, newTShirtOrder]);
+
                 closeFormCallback();
                 setNegativeInventoryWarning({ ...initialNegativeInventoryWarningState });
             }

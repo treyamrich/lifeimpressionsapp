@@ -27,6 +27,12 @@ export const assembleUpdateOrderTransactionStatements = (
 ): AssembleUpdateStatementsResult => {
     const { updatedTShirtOrder, parentOrderId, createOrderChangeInput, inventoryQtyDelta } = input;
 
+    if(tshirtOrderTableOperation === DBOperation.CREATE && input.updatedTShirtOrder.id !== undefined) {
+        throw Error("Creating TShirtOrder should not already have an id")
+    } else if(tshirtOrderTableOperation === DBOperation.UPDATE && input.updatedTShirtOrder.id === undefined) {
+        throw Error("Editing TShirtOrder when it did not have an id")
+    }
+
     let maybeNegatedInventoryQtyDelta = entityType === EntityType.CustomerOrder ?
         -inventoryQtyDelta : inventoryQtyDelta;
 
