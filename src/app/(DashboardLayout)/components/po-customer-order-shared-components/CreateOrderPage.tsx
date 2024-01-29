@@ -16,6 +16,7 @@ import { getStartOfTomorrow, toAWSDateTime } from "@/utils/datetimeConversions";
 import { Dayjs } from "dayjs";
 import MyTelInput from "../inputs/MyTelInput";
 import { validateEmail, validatePhoneNumber } from "@/utils/field-validation";
+import NonNegativeFloatInput from "./NonNegativeFloatInput";
 
 export enum EntityType {
     CustomerOrder = "customer",
@@ -71,7 +72,10 @@ function CreateOrderPage<T extends Record<any, any>>({
         Object.keys(values).forEach((key) => {
             let errMsg = "";
             let value = values[key];
-            if (columnInfo.get(key)?.isRequired && value.toString().length < 1) {
+            if (columnInfo.get(key)?.isFloatField && errorMap.get(key) !== "") {
+                errMsg = errorMap.get(key)!;
+            }
+            else if (columnInfo.get(key)?.isRequired && value.toString().length < 1) {
                 errMsg = "Field is required";
             }
             else if (columnInfo.get(key)?.isPhoneNumField) {
@@ -126,6 +130,76 @@ function CreateOrderPage<T extends Record<any, any>>({
     );
 
     const uppercaseEntityType = entityType === EntityType.CustomerOrder ? "Customer" : "Purchase";
+    const getFormField = (column: MRT_ColumnDef<T>) => {
+        const errMsg = errorMap.get(column.accessorKey as string);
+        const hasError = errMsg !== "" && errMsg !== undefined;
+        const colInfo = columnInfo.get(column.accessorKey);
+        if (colInfo?.isDatetimeField) {
+            return (
+                <DateTimePicker
+                    label={column.header}
+                    disabled={colInfo?.disabledOnCreate === true}
+                    value={values[column.accessorKey as string]}
+                    onChange={(newVal: any) =>
+                        setValues({ ...values, [column.accessorKey as string]: newVal })
+                    }
+                    views={['year', 'month', 'day', 'hours', 'minutes', 'seconds']}
+                />)
+        }
+        if (colInfo?.isPhoneNumField) {
+            return (
+                <MyTelInput
+                    value={values[column.accessorKey as string]}
+                    onChange={newVal => {
+                        if (newVal === "+1") {
+                            const newMap = new Map(errorMap);
+                            newMap.set(column.accessorKey as string, '');
+                            setErrorMap(newMap);
+                        }
+                        setValues({ ...values, [column.accessorKey as string]: newVal });
+                    }}
+                    errorMsg={errMsg}
+                    label="Customer Phone Number"
+                />)
+        }
+        if (colInfo?.isFloatField) {
+            return (
+                <NonNegativeFloatInput
+                    column={column}
+                    values={values}
+                    setValues={setValues}
+                    errorMap={errorMap}
+                    setErrorMap={setErrorMap}
+                />
+            )
+        }
+        return (
+            <TextField
+                select={colInfo?.selectFields !== undefined}
+                label={column.header}
+                name={column.accessorKey as string}
+                onChange={(e: any) =>
+                    setValues({ ...values, [e.target.name]: e.target.value })
+                }
+                disabled={colInfo?.disabledOnCreate === true}
+                value={values[column.accessorKey as string]}
+                required={colInfo?.isRequired}
+                error={hasError}
+                helperText={errMsg}
+                placeholder={colInfo?.placeholderText}
+                multiline={colInfo?.multilineTextInfo !== undefined}
+                rows={colInfo?.multilineTextInfo?.numRows}
+            >
+                {/* Select field options */}
+                {colInfo?.selectFields
+                    ?.map((selectValue: SelectValue, idx: number) => (
+                        <MenuItem key={idx} value={selectValue.value}>
+                            {selectValue.label}
+                        </MenuItem>
+                    ))}
+            </TextField>
+        )
+    }
     return (
         <PageContainer
             title={`New ${uppercaseEntityType} Order`}
@@ -144,65 +218,9 @@ function CreateOrderPage<T extends Record<any, any>>({
                             .filter(
                                 (col) => !columnInfo.get(col.accessorKey)?.excludeOnCreate
                             )
-                            .map((column, index) => {
-                                const errMsg = errorMap.get(column.accessorKey as string);
-                                const hasError = errMsg !== "" && errMsg !== undefined;
-                                const colInfo = columnInfo.get(column.accessorKey);
-                                return (<React.Fragment key={index}>
-                                    {colInfo?.isDatetimeField && (
-                                        <DateTimePicker
-                                            label={column.header}
-                                            disabled={colInfo?.disabledOnCreate === true}
-                                            value={values[column.accessorKey as string]}
-                                            onChange={(newVal: any) =>
-                                                setValues({ ...values, [column.accessorKey as string]: newVal })
-                                            }
-                                            views={['year', 'month', 'day', 'hours', 'minutes', 'seconds']}
-                                        />
-                                    )}
-                                    {colInfo?.isPhoneNumField && (
-                                        <MyTelInput
-                                            value={values[column.accessorKey as string]}
-                                            onChange={newVal => {
-                                                if(newVal === "+1") {
-                                                    const newMap = new Map(errorMap);
-                                                    newMap.set(column.accessorKey as string, '');
-                                                    setErrorMap(newMap);
-                                                }
-                                                setValues({ ...values, [column.accessorKey as string]: newVal });
-                                            }}
-                                            errorMsg={errMsg}
-                                            label="Customer Phone Number"
-                                        />
-                                    )}
-                                    {!colInfo?.isDatetimeField && !colInfo?.isPhoneNumField && (
-                                        <TextField
-                                            select={colInfo?.selectFields !== undefined}
-                                            label={column.header}
-                                            name={column.accessorKey as string}
-                                            onChange={(e: any) =>
-                                                setValues({ ...values, [e.target.name]: e.target.value })
-                                            }
-                                            disabled={colInfo?.disabledOnCreate === true}
-                                            value={values[column.accessorKey as string]}
-                                            required={colInfo?.isRequired}
-                                            error={hasError}
-                                            helperText={errMsg}
-                                            placeholder={colInfo?.placeholderText}
-                                            multiline={colInfo?.multilineTextInfo !== undefined}
-                                            rows={colInfo?.multilineTextInfo?.numRows}
-                                        >
-                                            {/* Select field options */}
-                                            {colInfo?.selectFields
-                                                ?.map((selectValue: SelectValue, idx: number) => (
-                                                    <MenuItem key={idx} value={selectValue.value}>
-                                                        {selectValue.label}
-                                                    </MenuItem>
-                                                ))}
-                                        </TextField>
-                                    )}
-                                </React.Fragment>)
-                            })
+                            .map((column, index) => (
+                                <React.Fragment key={index}> {getFormField(column)} </React.Fragment>
+                            ))
                         }
                         <TShirtOrderTable
                             tableData={values.orderedItems}
@@ -219,13 +237,13 @@ function CreateOrderPage<T extends Record<any, any>>({
                                 orderChange.fieldChanges.forEach(fieldChange => {
                                     tableData[row.index][fieldChange.fieldName] = fieldChange.newValue;
                                 })
-                                tableData[row.index] = 
-                                setValues({ ...values, orderedItems: [...tableData] });
+                                tableData[row.index] =
+                                    setValues({ ...values, orderedItems: [...tableData] });
                                 exitEditingMode();
                             }}
                             onRowAdd={(newTShirtOrder: TShirtOrder, orderChange: CreateOrderChangeInput, closeFormCallback: () => void) => {
                                 const tableData = values.orderedItems;
-                                setValues({ ...values, orderedItems: [...tableData, newTShirtOrder]})
+                                setValues({ ...values, orderedItems: [...tableData, newTShirtOrder] })
                                 closeFormCallback();
                             }}
                             entityType={entityType}

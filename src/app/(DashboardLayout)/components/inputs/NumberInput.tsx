@@ -8,24 +8,27 @@ type NumberInputProps = {
     decimalPlaceLimit?: number;
     isValidFn?: (newValue: number) => string;
     onChange: (newValue: number, hasError: boolean) => void;
+    placeholder?: string;
+    name: string;
 };
 
-const NumberInput = ({ label, initialValue, isFloat, onChange, decimalPlaceLimit = 2, isValidFn }: NumberInputProps) => {
+const NumberInput = ({ label, initialValue, isFloat, onChange, decimalPlaceLimit = 2, isValidFn, placeholder, name }: NumberInputProps) => {
     const [inputValue, setInputValue] = useState<string | undefined>("");
     const [errorMsg, setErrorMsg] = useState<string>("");
 
     useEffect(() => {
         setInputValue(initialValue?.toString());
-    }, []);
+    }, [initialValue]);
 
     return (
         <TextField
             label={label}
-            variant="standard"
             type="text"
+            name={name}
             value={inputValue}
             helperText={errorMsg}
             error={errorMsg !== ""}
+            placeholder={placeholder}
             onChange={e => {
                 // Remove leading zeros
                 let unparsedVal = e.target.value;

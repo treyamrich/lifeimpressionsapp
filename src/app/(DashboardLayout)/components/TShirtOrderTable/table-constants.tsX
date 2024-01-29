@@ -18,7 +18,7 @@ export const toColumnHeaderMap = new Map<string, string>([
     [TShirtOrderFields.Qty, "Quantity"],
     [TShirtOrderFields.AmtReceived, "Amt. Received"],
     [TShirtOrderFields.CostPerUnit, "Cost/Unit $"],
-    [TShirtOrderFields.Discount, "Discount $"]
+    [TShirtOrderFields.Discount, "TShirt Discount $"]
 ]);
 
 export const numberInputFields = new Set<string>([TShirtOrderFields.Qty, TShirtOrderFields.AmtReceived]);

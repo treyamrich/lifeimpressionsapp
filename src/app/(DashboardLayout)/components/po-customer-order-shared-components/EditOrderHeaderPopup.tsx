@@ -1,7 +1,5 @@
-import { CustomerOrder } from "@/API";
 import { MRT_ColumnDef } from "material-react-table";
 import { useMemo, useState } from "react";
-import { SelectValue, columnInfo, getTableColumns } from "../../table-constants";
 import { Dayjs } from "dayjs";
 import { toAWSDateTime, toTimezoneWithoutAdjustingHours } from "@/utils/datetimeConversions";
 import { Button, Dialog, DialogContent, DialogTitle, Grid, MenuItem, Stack, TextField } from "@mui/material";
@@ -9,22 +7,26 @@ import { DateTimePicker } from "@mui/x-date-pickers";
 import { validateEmail, validatePhoneNumber } from "@/utils/field-validation";
 import React from "react";
 import MyTelInput from "@/app/(DashboardLayout)/components/inputs/MyTelInput";
-import NonNegativeFloatInput from "@/app/(DashboardLayout)/components/po-customer-order-shared-components/NonNegativeFloatInput";
+import TaxRateInput from "@/app/(DashboardLayout)/components/po-customer-order-shared-components/TaxRateInput";
+import { EntityType } from "./CreateOrderPage";
 
-type EditCOHeaderFieldsPopupProps = {
+
+function EditOrderHeaderPopup<T extends Record<any, any>>({ open, order, onSubmit, onClose, orderType, getTableColumns, columnInfo }: {
     open: boolean;
-    co: CustomerOrder;
-    onSubmit: (newCo: CustomerOrder, resetForm: () => void) => void;
+    order: T;
+    onSubmit: (newOrder: T, resetForm: () => void) => void;
     onClose: () => void;
-}
+    orderType: EntityType;
+    getTableColumns: () => MRT_ColumnDef<T>[];
+    columnInfo: Map<string | number | symbol | undefined, ColumnInfo>;
 
-const EditCOHeaderFieldsPopup = ({ open, co, onSubmit, onClose }: EditCOHeaderFieldsPopupProps) => {
-    const columns = useMemo<MRT_ColumnDef<CustomerOrder>[]>(
+}) {
+    const columns = useMemo<MRT_ColumnDef<T>[]>(
         () => getTableColumns(),
         []
     );
     const getInitialFormState = () => {
-        const formState = { ...co } as any;
+        const formState = { ...order } as any;
         Object.keys(formState).forEach((field: string) => {
             if (columnInfo.get(field)?.isDatetimeField) {
                 formState[field] = toTimezoneWithoutAdjustingHours(formState[field]);
@@ -36,7 +38,7 @@ const EditCOHeaderFieldsPopup = ({ open, co, onSubmit, onClose }: EditCOHeaderFi
     }
     const getInitialOrderFormErrorMap = () =>
         new Map<string, string>(
-            Object.keys(co).map((key) => [key, ""])
+            Object.keys(order).map((key) => [key, ""])
         );
 
     // State starts here
@@ -85,25 +87,25 @@ const EditCOHeaderFieldsPopup = ({ open, co, onSubmit, onClose }: EditCOHeaderFi
 
         if (allValid) {
             // Convert the datetime that was input with user's timezone to UTC timezone
-            const order = {} as any;
+            const updatedOrder = {} as any;
             Object.keys(values).forEach((key: string) => {
                 if (columnInfo.get(key)?.isDatetimeField) {
                     const datetime = values[key] as Dayjs;
-                    order[key] = toAWSDateTime(datetime);
+                    updatedOrder[key] = toAWSDateTime(datetime);
                 }
                 // This field had to be optional
                 else if (values[key] === "") {
-                    order[key] = undefined;
+                    updatedOrder[key] = undefined;
                 }
                 else {
-                    order[key] = values[key];
+                    updatedOrder[key] = values[key];
                 }
             });
-            onSubmit(order, resetForm);
+            onSubmit(updatedOrder, resetForm);
         }
     };
 
-    const getFormField = (column: MRT_ColumnDef<CustomerOrder>) => {
+    const getFormField = (column: MRT_ColumnDef<T>) => {
         const errMsg = errorMap.get(column.accessorKey as string);
         const hasError = errMsg !== "" && errMsg !== undefined;
         const colInfo = columnInfo.get(column.accessorKey);
@@ -140,7 +142,7 @@ const EditCOHeaderFieldsPopup = ({ open, co, onSubmit, onClose }: EditCOHeaderFi
         }
         if (colInfo?.isFloatField) {
             return (
-                <NonNegativeFloatInput
+                <TaxRateInput
                     column={column}
                     values={values}
                     setValues={setValues}
@@ -179,7 +181,7 @@ const EditCOHeaderFieldsPopup = ({ open, co, onSubmit, onClose }: EditCOHeaderFi
     }
     return (
         <Dialog open={open} maxWidth="xs">
-            <DialogTitle textAlign="center">Edit Customer Order {co.orderNumber}</DialogTitle>
+            <DialogTitle textAlign="center">Edit {orderType === EntityType.PurchaseOrder ? "Purchase" : "Customer"} {order.orderNumber} Order</DialogTitle>
             <DialogContent style={{ padding: "25px" }}>
                 <form onSubmit={(e) => e.preventDefault()}>
                     <Stack
@@ -233,4 +235,4 @@ const EditCOHeaderFieldsPopup = ({ open, co, onSubmit, onClose }: EditCOHeaderFi
     )
 }
 
-export default EditCOHeaderFieldsPopup;
+export default EditOrderHeaderPopup;

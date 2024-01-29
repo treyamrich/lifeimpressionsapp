@@ -5,6 +5,7 @@ import { TableMode } from "../TShirtOrderTable";
 import NumberInput from "../../inputs/NumberInput";
 import QuantityChanger from "./QuantityChanger";
 import { FormValue } from "./EditTShirtOrderPopup";
+import { TShirtOrderFields, toColumnHeaderMap } from "../table-constants";
 
 type EditCardProps = {
     currentAmtReceived: number;
@@ -60,7 +61,7 @@ const EditCard = ({
 
     otherInputError,
     setOtherInputError,
-    
+
     entityType,
     mode
 }: EditCardProps) => {
@@ -105,11 +106,12 @@ const EditCard = ({
                                 onChange={(newValue: number, hasError: boolean) => {
                                     setNewCostPerUnit({ value: newValue, hasError: hasError });
                                 }}
+                                name="costPerUnit"
                             />
                         </Grid>
                         <Grid item>
                             <NumberInput
-                                label="Discount $"
+                                label={toColumnHeaderMap.get(TShirtOrderFields.Discount)!}
                                 initialValue={currentDiscount}
                                 isFloat
                                 isValidFn={(newValue: number) => {
@@ -118,8 +120,10 @@ const EditCard = ({
                                     return err
                                 }}
                                 onChange={(newValue: number, hasError: boolean) => {
+                                    console.log(newValue)
                                     setNewDiscount({ value: newValue, hasError: hasError });
                                 }}
+                                name="discount"
                             />
                         </Grid>
                         {mode === TableMode.Edit && (

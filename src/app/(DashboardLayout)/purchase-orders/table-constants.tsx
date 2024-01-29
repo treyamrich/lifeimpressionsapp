@@ -17,6 +17,7 @@ export const initialPurchaseOrderFormState: any = {
   orderedItems: [],
   status: POStatus.Open,
   changeHistory: [],
+  taxRate: 0
 };
 
 export const getTableColumns = (): MRT_ColumnDef<PurchaseOrder>[] => {
@@ -56,6 +57,10 @@ export const getTableColumns = (): MRT_ColumnDef<PurchaseOrder>[] => {
         </>
       )
     } as MRT_ColumnDef<PurchaseOrder>,
+    {
+      accessorKey: "taxRate",
+      header: "Tax Rate %",
+    } as MRT_ColumnDef<PurchaseOrder>,
   ];
 };
 
@@ -88,6 +93,7 @@ export const columnInfo = new Map<string | number | symbol | undefined, ColumnIn
     ]
   } as ColumnInfo],
   ["orderNumber", { isRequired: true } as ColumnInfo],
+  ["taxRate", { isFloatField: true, isEditable: true } as ColumnInfo],
 ]);
 
 export const getInitialPurchaseOrderFormErrorMap = () =>

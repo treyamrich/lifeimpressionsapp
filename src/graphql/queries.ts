@@ -553,6 +553,7 @@ export const getCustomerOrder = /* GraphQL */ `
         __typename
       }
       taxRate
+      discount
       isDeleted
       type
       createdAt
@@ -641,6 +642,7 @@ export const listCustomerOrders = /* GraphQL */ `
           __typename
         }
         taxRate
+        discount
         isDeleted
         type
         createdAt
@@ -742,6 +744,7 @@ export const customerOrdersByCreatedAt = /* GraphQL */ `
           __typename
         }
         taxRate
+        discount
         isDeleted
         type
         createdAt

@@ -178,6 +178,7 @@ const CreateTShirtOrderModal = <TShirtOrder extends Record<string, any>>({
                     .map((column, idx) => (
                       <NumberInput
                         key={idx}
+                        name={column.accessorKey as string}
                         label={column.header}
                         initialValue={values[column.accessorKey]}
                         isFloat={columnInfo.get(column.accessorKey)?.isFloatField}

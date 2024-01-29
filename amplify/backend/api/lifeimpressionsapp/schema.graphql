@@ -107,6 +107,7 @@ type CustomerOrder @model @auth(rules: [
   changeHistory: [OrderChange!] @hasMany
 
   taxRate: Float!
+  discount: Float!
 
   isDeleted: Boolean @default(value: "false")
   type: String @default(value: "CustomerOrder") @index(name: "customerOrdersByCreatedAt", queryField: "customerOrdersByCreatedAt", sortKeyFields: ["createdAt"])

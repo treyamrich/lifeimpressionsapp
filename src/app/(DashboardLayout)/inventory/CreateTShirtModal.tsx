@@ -137,6 +137,7 @@ const CreateTShirtModal = <TShirt extends Record<string, any>>({
                   onChange={(newValue: number, hasError: boolean) => {
                     handleUpdateNumberField(column.accessorKey as string, newValue, hasError)
                   }}
+                  name={column.accessorKey as string}
                 /> :
                 <TextField
                   select={isSelectInputField(column.accessorKey)}
