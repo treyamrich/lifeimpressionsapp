@@ -5,6 +5,7 @@ import {
     PurchaseOrder,
     OrderChange,
     TShirtOrder,
+    UpdatePurchaseOrderInput,
 } from "@/API";
 import PageContainer from "@/app/(DashboardLayout)/components/container/PageContainer";
 import BlankCard from "@/app/(DashboardLayout)/components/shared/BlankCard";
@@ -15,8 +16,8 @@ import {
     DBOperation, useDBOperationContext,
 } from "@/contexts/DBErrorContext";
 
-import { Typography, CardContent } from "@mui/material";
-import { useState, useEffect } from "react";
+import { Typography, CardContent, Grid, Stack } from "@mui/material";
+import React, { useState, useEffect } from "react";
 import ViewPOHeaderFields from "./ViewPOHeaders";
 
 import { MRT_Row } from "material-react-table";
@@ -27,6 +28,10 @@ import NegativeInventoryConfirmPopup from "@/app/(DashboardLayout)/components/fo
 import { initialNegativeInventoryWarningState, type NegativeInventoryWarningState } from "@/app/(DashboardLayout)/components/forms/confirm-popup/NegativeInventoryConfirmPopup";
 import OrderChangeHistory from "@/app/(DashboardLayout)/components/po-customer-order-shared-components/OrderChangeHistory/OrderChangeHistory";
 import OrderTotalCard from "@/app/(DashboardLayout)/components/po-customer-order-shared-components/OrderTotalCard";
+import ViewOrderActions from "@/app/(DashboardLayout)/components/po-customer-order-shared-components/ViewOrderHeader/ViewOrderActions";
+import { updatePurchaseOrderAPI } from "@/graphql-helpers/update-apis";
+import { useRouter } from "next/navigation";
+import Section from "@/app/(DashboardLayout)/components/po-customer-order-shared-components/ViewOrderHeader/Section";
 
 type ViewPurchaseOrderProps = {
     params: { id: string };
@@ -34,8 +39,10 @@ type ViewPurchaseOrderProps = {
 
 const ViewPurchaseOrder = ({ params }: ViewPurchaseOrderProps) => {
     const { id } = params;
+    const { push } = useRouter();
     const { rescueDBOperation } = useDBOperationContext();
     const [po, setPo] = useState<PurchaseOrder>({} as PurchaseOrder);
+    const [showEditPopup, setShowEditPopup] = useState(false);
     const [editHistory, setEditHistory] = useState<OrderChange[]>([]);
     const [updatedOrderedItems, setUpdatedOrderedItems] = useState<TShirtOrder[]>(
         () => {
@@ -61,6 +68,20 @@ const ViewPurchaseOrder = ({ params }: ViewPurchaseOrderProps) => {
         );
     };
 
+    const handleDeletePurchaseOrder = () => {
+        if (!confirm(`Are you sure you want to delete this purchase order?`)) {
+            return;
+        }
+        const deletedPurchaseOrder: UpdatePurchaseOrderInput = { id: po.id, isDeleted: true };
+        rescueDBOperation(
+            () => updatePurchaseOrderAPI(deletedPurchaseOrder),
+            DBOperation.DELETE,
+            () => {
+                push('/purchase-orders/');
+            }
+        );
+    }
+
     useEffect(() => {
         fetchPurchaseOrder();
     }, []);
@@ -74,17 +95,29 @@ const ViewPurchaseOrder = ({ params }: ViewPurchaseOrderProps) => {
             description="this is View Purchase Order"
         >
             <DashboardCard title={`Purchase Order: ${po.orderNumber}`}>
-                <div style={{display: "flex", flexDirection: "column", gap: "20px"}}>
-                    <div>
-                        <ViewPOHeaderFields po={po} setPo={setPo} />
-                    </div>
-                    <div style={{display: "flex", flexDirection: "column", gap: "20px"}}>
-                        <div>
-                            <Typography variant="h6" color="textSecondary">
-                                Ordered Items
-                            </Typography>
-                        </div>
-                        <div>
+                <>
+                    <ViewOrderActions
+                        onEdit={() => setShowEditPopup(true)}
+                        onDelete={handleDeletePurchaseOrder}
+                    />
+                    <Grid container rowSpacing={5} columnSpacing={5}>
+                        <Section header="Order Details" columnWidth={7}>
+                            <ViewPOHeaderFields
+                                po={po}
+                                setPo={setPo}
+                                showEditPopup={showEditPopup}
+                                setShowEditPopup={setShowEditPopup}
+                            />
+                        </Section>
+
+                        <Section header="Order Total" columnWidth={5}>
+                            <OrderTotalCard
+                                order={po}
+                                orderedItems={updatedOrderedItems}
+                            />
+                        </Section>
+
+                        <Section header="Ordered Items" columnWidth={12}>
                             <OrderedItemsTable
                                 tableData={updatedOrderedItems}
                                 setTableData={setUpdatedOrderedItems}
@@ -93,23 +126,13 @@ const ViewPurchaseOrder = ({ params }: ViewPurchaseOrderProps) => {
                                 changeHistory={editHistory}
                                 setChangeHistory={setEditHistory}
                             />
-                        </div>
-                    </div>
-                    <OrderTotalCard
-                        order={po}
-                        orderedItems={updatedOrderedItems}
-                    />
-                    <div style={{display: "flex", flexDirection: "column", gap: "10px"}}>
-                        <div>
-                            <Typography variant="h6" color="textSecondary">
-                                Change History
-                            </Typography>
-                        </div>
-                        <div>
+                        </Section>
+
+                        <Section header="Change History" columnWidth={12}>
                             <ChangeHistoryTable changeHistory={editHistory} />
-                        </div>
-                    </div>
-                </div>
+                        </Section>
+                    </Grid>
+                </>
             </DashboardCard>
         </PageContainer>
     );

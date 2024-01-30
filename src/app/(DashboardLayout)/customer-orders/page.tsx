@@ -12,7 +12,7 @@ import {
     columnInfo,
   entityName,
   getTableColumns,
-  orderStatusMap,
+  coStatusToHeaderMap,
 } from "./table-constants";
 import {
   type MRT_Row,
@@ -39,7 +39,7 @@ const CustomerOrders = () => {
           resp.map((order: CustomerOrder) => {
             return {
               ...order,
-              orderStatus: orderStatusMap[order.orderStatus] as CustomerOrderStatus
+              orderStatus: coStatusToHeaderMap[order.orderStatus] as CustomerOrderStatus
             };
           })
         );

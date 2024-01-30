@@ -1,25 +1,35 @@
-import { CustomerOrder, UpdateCustomerOrderInput } from "@/API";
+import { CustomerOrder } from "@/API";
 import BlankCard from "@/app/(DashboardLayout)/components/shared/BlankCard";
 import { DBOperation, useDBOperationContext } from "@/contexts/DBErrorContext";
 import { updateCustomerOrderAPI } from "@/graphql-helpers/update-apis";
-import { Button, CardContent, Grid, Typography } from "@mui/material";
-import { useRouter } from "next/navigation";
-import { columnInfo, getTableColumns, orderStatusMap } from "../../table-constants";
-import { useState } from "react";
+import { CardContent, Grid } from "@mui/material";
+import { columnInfo, getTableColumns } from "../../table-constants";
 import DateTime from "@/app/(DashboardLayout)/components/datetime/DateTime";
-import EditOrderHeaderPopup from "@/app/(DashboardLayout)/components/po-customer-order-shared-components/EditOrderHeaderPopup";
 import { EntityType } from "@/app/(DashboardLayout)/components/po-customer-order-shared-components/CreateOrderPage";
+import { getFieldWithHeader, getTextField } from "@/app/(DashboardLayout)/components/po-customer-order-shared-components/ViewOrderHeader/util/viewOrderHeadersUtil";
+import EditOrderHeaderPopup from "@/app/(DashboardLayout)/components/po-customer-order-shared-components/ViewOrderHeader/EditOrderHeaderPopup";
+import OrderStatusSelect from "@/app/(DashboardLayout)/components/po-customer-order-shared-components/ViewOrderHeader/OrderStatusSelect";
 
 type ViewCOHeaderFieldsProps = {
     co: CustomerOrder;
     setCo: React.Dispatch<React.SetStateAction<CustomerOrder>>;
+    showEditPopup: boolean;
+    setShowEditPopup: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
-const ViewCOHeaderFields = ({ co, setCo }: ViewCOHeaderFieldsProps) => {
-    const { push } = useRouter();
+const ViewCOHeaderFields = ({ co, setCo, showEditPopup, setShowEditPopup }: ViewCOHeaderFieldsProps) => {
     const { rescueDBOperation } = useDBOperationContext();
-    const { customerName, customerEmail, customerPhoneNumber, dateNeededBy, orderStatus, orderNotes, createdAt, updatedAt } = co;
-    const [showEditPopup, setShowEditPopup] = useState(false);
+    const {
+        customerName,
+        customerEmail,
+        customerPhoneNumber,
+        dateNeededBy,
+        orderStatus,
+        orderNumber,
+        orderNotes,
+        createdAt,
+        updatedAt,
+    } = co;
 
     const handleUpdateCO = (newCo: CustomerOrder, resetForm: () => void) => {
         const cleanCo = {
@@ -38,179 +48,60 @@ const ViewCOHeaderFields = ({ co, setCo }: ViewCOHeaderFieldsProps) => {
         )
     }
 
-    const handleDeleteCustomerOrder = () => {
-        if (!confirm(`Are you sure you want to delete this customer order?`)) {
-            return;
-        }
-        const deletedCustomerOrder: UpdateCustomerOrderInput = { id: co.id, isDeleted: true };
+    const handleChangePOStatus = (e: any) => {
+        const cleanUpdatedCo: CustomerOrder = {
+            ...co,
+            orderedItems: undefined,
+            changeHistory: undefined,
+            orderStatus: e.target.value
+        };
         rescueDBOperation(
-            () => updateCustomerOrderAPI(deletedCustomerOrder),
-            DBOperation.DELETE,
-            () => {
-                push('/customer-orders/');
+            () => updateCustomerOrderAPI(cleanUpdatedCo),
+            DBOperation.UPDATE,
+            (resp: CustomerOrder) => {
+                setCo(resp);
             }
-        );
+        )
     }
 
-    const columnHeaderSpacing = 1;
+    const statusSelect = (<OrderStatusSelect
+        entityType={EntityType.CustomerOrder}
+        status={orderStatus}
+        onChange={handleChangePOStatus}
+        selectValues={columnInfo.get('orderStatus')?.selectFields}
+    />);
 
     return (
-        <BlankCard>
-            <CardContent>
-                <Grid container direction={"column"} rowSpacing={3}>
-                    <Grid item>
-                        <Grid container spacing={2} alignItems={"center"}>
-                            <Grid item xs={1}>
-                                <Grid container direction="column" spacing={columnHeaderSpacing}>
-                                    <Grid item>
-                                        <Typography variant="h6" color="textSecondary">
-                                            Status
-                                        </Typography>
-                                    </Grid>
-                                    <Grid item>
-                                        {orderStatusMap[orderStatus]}
-                                    </Grid>
-                                </Grid>
-                            </Grid>
-                            <Grid item xs={3}>
-                                <Grid container direction="column" spacing={columnHeaderSpacing}>
-                                    <Grid item>
-                                        <Typography variant="h6" color="textSecondary">
-                                            Date Needed
-                                        </Typography>
-                                    </Grid>
-                                    <Grid item>
-                                        <Typography variant="body1" color="textSecondary">
-                                            <DateTime value={dateNeededBy} />
-                                        </Typography>
-                                    </Grid>
-                                </Grid>
-                            </Grid>
-                            <Grid item xs={3}>
-                                <Grid container direction="column" spacing={columnHeaderSpacing}>
-                                    <Grid item>
-                                        <Typography variant="h6" color="textSecondary">
-                                            Date Created
-                                        </Typography>
-                                    </Grid>
-                                    <Grid item>
-                                        <Typography variant="body1" color="textSecondary">
-                                            <DateTime value={createdAt} />
-                                        </Typography>
-                                    </Grid>
-                                </Grid>
-                            </Grid>
-                            <Grid item xs={3}>
-                                <Grid container direction="column" spacing={columnHeaderSpacing}>
-                                    <Grid item>
-                                        <Typography variant="h6" color="textSecondary">
-                                            Last Modified
-                                        </Typography>
-                                    </Grid>
-                                    <Grid item>
-                                        <Typography variant="body1" color="textSecondary">
-                                            <DateTime value={updatedAt} />
-                                        </Typography>
-                                    </Grid>
-                                </Grid>
-                            </Grid>
-                            <Grid item xs={2}>
-                                <Button
-                                    id="delete-co-button"
-                                    color={"error"}
-                                    variant="contained"
-                                    size="small"
-                                    onClick={handleDeleteCustomerOrder}
-                                >
-                                    Delete Order
-                                </Button>
-                            </Grid>
-                        </Grid>
-                    </Grid>
-                    <Grid item>
-                        <Grid container spacing={2}>
-                            <Grid item xs={3}>
-                                <Grid container direction="column" spacing={columnHeaderSpacing}>
-                                    <Grid item>
-                                        <Typography variant="h6" color="textSecondary">
-                                            Customer Name
-                                        </Typography>
-                                    </Grid>
-                                    <Grid item>
-                                        <Typography variant="body1" color="textSecondary">
-                                            {customerName}
-                                        </Typography>
-                                    </Grid>
-                                </Grid>
-                            </Grid>
-                            <Grid item xs={3}>
-                                <Grid container direction="column" spacing={columnHeaderSpacing}>
-                                    <Grid item>
-                                        <Typography variant="h6" color="textSecondary">
-                                            Customer Email
-                                        </Typography>
-                                    </Grid>
-                                    <Grid item>
-                                        <Typography variant="body1" color="textSecondary">
-                                            {getStrOrDash(customerEmail)}
-                                        </Typography>
-                                    </Grid>
-                                </Grid>
-                            </Grid>
-                            <Grid item xs={3}>
-                                <Grid container direction="column" spacing={columnHeaderSpacing}>
-                                    <Grid item>
-                                        <Typography variant="h6" color="textSecondary">
-                                            Customer Phone Number
-                                        </Typography>
-                                    </Grid>
-                                    <Grid item>
-                                        <Typography variant="body1" color="textSecondary">
-                                            {getStrOrDash(customerPhoneNumber)}
-                                        </Typography>
-                                    </Grid>
-                                </Grid>
-                            </Grid>
-                            <Grid item xs={2}>
-                                <Button
-                                    id="edit-co-button"
-                                    color={"success"}
-                                    variant="contained"
-                                    size="small"
-                                    onClick={() => setShowEditPopup(true)}
-                                >
-                                    Edit Order
-                                </Button>
-                            </Grid>
-                        </Grid>
-                    </Grid>
-                    <Grid item>
-                        <Grid container direction="column" spacing={columnHeaderSpacing}>
-                            <Grid item>
-                                <Typography variant="h6" color="textSecondary">
-                                    Order Notes
-                                </Typography>
-                            </Grid>
-                            <Grid item>
-                                <Typography variant="body1" color="textSecondary">
-                                    {getStrOrDash(orderNotes)}
-                                </Typography>
-                            </Grid>
-                        </Grid>
-                    </Grid>
-                </Grid>
+        <>
+            <BlankCard>
+                <CardContent>
+                    <Grid container rowSpacing={3}>
+                        {getFieldWithHeader("Status", statusSelect, 6)}
+                        {getFieldWithHeader("Order #", getTextField(orderNumber), 6)}
 
-                <EditOrderHeaderPopup
-                    open={showEditPopup}
-                    order={co}
-                    onSubmit={handleUpdateCO}
-                    onClose={() => setShowEditPopup(false)}
-                    orderType={EntityType.CustomerOrder}
-                    getTableColumns={getTableColumns}
-                    columnInfo={columnInfo}
-                />
-            </CardContent>
-        </BlankCard>
+                        {getFieldWithHeader("Date Needed", <DateTime value={dateNeededBy} />, 4)}
+                        {getFieldWithHeader("Date Created", <DateTime value={createdAt} />, 4)}
+                        {getFieldWithHeader("Last Modified", <DateTime value={updatedAt} />, 4)}
+
+                        {getFieldWithHeader("Customer Name", getTextField(customerName), 4)}
+                        {getFieldWithHeader("Customer Email", getTextField(getStrOrDash(customerEmail)), 4)}
+                        {getFieldWithHeader("Customer Phone Number", getTextField(getStrOrDash(customerPhoneNumber)), 4)}
+
+                        {getFieldWithHeader("Order Notes", getTextField(getStrOrDash(orderNotes)), 12)}
+                    </Grid>
+                </CardContent>
+            </BlankCard>
+
+            <EditOrderHeaderPopup
+                open={showEditPopup}
+                order={co}
+                onSubmit={handleUpdateCO}
+                onClose={() => setShowEditPopup(false)}
+                orderType={EntityType.CustomerOrder}
+                getTableColumns={getTableColumns}
+                columnInfo={columnInfo}
+            />
+        </>
     );
 };
 

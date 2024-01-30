@@ -1,27 +1,58 @@
-import { POStatus, PurchaseOrder, UpdatePurchaseOrderInput } from "@/API";
+import { PurchaseOrder } from "@/API";
 import DateTime from "@/app/(DashboardLayout)/components/datetime/DateTime";
+import { getFieldWithHeader, getTextField } from "@/app/(DashboardLayout)/components/po-customer-order-shared-components/ViewOrderHeader/util/viewOrderHeadersUtil";
 import BlankCard from "@/app/(DashboardLayout)/components/shared/BlankCard";
 import { DBOperation, useDBOperationContext } from "@/contexts/DBErrorContext";
 import { updatePurchaseOrderAPI } from "@/graphql-helpers/update-apis";
-import { Button, CardContent, Grid, TextField, Typography } from "@mui/material";
-import { useRouter } from "next/navigation";
+import { CardContent, Grid } from "@mui/material";
+import { columnInfo, getTableColumns } from "../../table-constants";
+import EditOrderHeaderPopup from "@/app/(DashboardLayout)/components/po-customer-order-shared-components/ViewOrderHeader/EditOrderHeaderPopup";
+import { EntityType } from "@/app/(DashboardLayout)/components/po-customer-order-shared-components/CreateOrderPage";
+import OrderStatusSelect from "@/app/(DashboardLayout)/components/po-customer-order-shared-components/ViewOrderHeader/OrderStatusSelect";
 
 type ViewPOHeaderFieldsProps = {
   po: PurchaseOrder;
   setPo: React.Dispatch<React.SetStateAction<PurchaseOrder>>;
+  showEditPopup: boolean;
+  setShowEditPopup: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
-const ViewPOHeaderFields = ({ po, setPo }: ViewPOHeaderFieldsProps) => {
-  const { push } = useRouter();
+const ViewPOHeaderFields = ({ po, setPo, showEditPopup, setShowEditPopup }: ViewPOHeaderFieldsProps) => {
   const { rescueDBOperation } = useDBOperationContext();
-  const { vendor, createdAt, updatedAt, status } = po;
+  const {
+    orderNumber,
+    vendor,
+    createdAt,
+    updatedAt,
+    status,
+    shippingAddress,
+    orderNotes,
+    dateExpected
+  } = po;
 
-  const handleChangePOStatus = () => {
+  const handleUpdatePO = (newPo: PurchaseOrder, resetForm: () => void) => {
+    const cleanPo = {
+      ...newPo,
+      orderedItems: undefined,
+      changeHistory: undefined
+    };
+    rescueDBOperation(
+      () => updatePurchaseOrderAPI(cleanPo),
+      DBOperation.UPDATE,
+      (resp: PurchaseOrder) => {
+        setPo(resp);
+        setShowEditPopup(false);
+        resetForm();
+      }
+    )
+  }
+
+  const handleChangePOStatus = (e: any) => {
     const cleanedUpdatedPo: PurchaseOrder = {
       ...po,
       orderedItems: undefined,
       changeHistory: undefined,
-      status: po.status === POStatus.Open ? POStatus.Closed : POStatus.Open
+      status: e.target.value
     };
     rescueDBOperation(
       () => updatePurchaseOrderAPI(cleanedUpdatedPo),
@@ -32,137 +63,48 @@ const ViewPOHeaderFields = ({ po, setPo }: ViewPOHeaderFieldsProps) => {
     )
   }
 
-  const handleDeletePurchaseOrder = () => {
-    if (!confirm(`Are you sure you want to delete this purchase order?`)) {
-      return;
-    }
-    const deletedPurchaseOrder: UpdatePurchaseOrderInput = { id: po.id, isDeleted: true };
-    rescueDBOperation(
-      () => updatePurchaseOrderAPI(deletedPurchaseOrder),
-      DBOperation.DELETE,
-      () => {
-        push('/purchase-orders/');
-      }
-    );
-  }
+  const statusSelect = (<OrderStatusSelect
+    entityType={EntityType.PurchaseOrder}
+    status={status}
+    onChange={handleChangePOStatus}
+    selectValues={columnInfo.get('status')?.selectFields}
+  />);
 
-  const columnHeaderSpacing = 1;
-  const renderFirstRow = () => (
-    <Grid item>
-      <Grid container spacing={2} alignItems={"center"}>
-        <Grid item xs={2}>
-          <Grid container direction="column" spacing={columnHeaderSpacing}>
-            <Grid item>
-              <Typography variant="h6" color="textSecondary">
-                Status
-              </Typography>
-            </Grid>
-            <Grid item>
-              <TextField
-                id="po-status"
-                color={status === POStatus.Open ? "success" : "error"}
-                variant="contained"
-                size="small"
-                onClick={handleChangePOStatus}
-              >
-                {status}
-              </TextField>
-            </Grid>
-          </Grid>
-        </Grid>
-        <Grid item xs={2}>
-          <Grid container direction="column" spacing={columnHeaderSpacing}>
-            <Grid item>
-              <Typography variant="h6" color="textSecondary">
-                Vendor
-              </Typography>
-            </Grid>
-            <Grid item>
-              <Typography variant="body1" color="textSecondary">
-                {vendor}
-              </Typography>
-            </Grid>
-          </Grid>
-        </Grid>
-        <Grid item xs={3}>
-          <Grid container direction="column" spacing={columnHeaderSpacing}>
-            <Grid item>
-              <Typography variant="h6" color="textSecondary">
-                Date Created
-              </Typography>
-            </Grid>
-            <Grid item>
-              <Typography variant="body1" color="textSecondary">
-                <DateTime value={createdAt} />
-              </Typography>
-            </Grid>
-          </Grid>
-        </Grid>
-        <Grid item xs={3}>
-          <Grid container direction="column" spacing={columnHeaderSpacing}>
-            <Grid item>
-              <Typography variant="h6" color="textSecondary">
-                Last Modified
-              </Typography>
-            </Grid>
-            <Grid item>
-              <Typography variant="body1" color="textSecondary">
-                <DateTime value={updatedAt} />
-              </Typography>
-            </Grid>
-          </Grid>
-        </Grid>
-        <Grid item xs={2}>
-          <Button
-            id="delete-po-button"
-            color={"error"}
-            variant="contained"
-            size="small"
-            onClick={handleDeletePurchaseOrder}
-          >
-            Delete Purchase Order
-          </Button>
-        </Grid>
-      </Grid>
-    </Grid>
-  )
-
-  const renderSecondRow = () => (
-    <Grid item>
-      <Grid container spacing={2} alignItems={"center"}>
-        <Grid item xs={2}>
-          <Grid container direction="column" spacing={columnHeaderSpacing}>
-            <Grid item>
-              <Typography variant="h6" color="textSecondary">
-                Status
-              </Typography>
-            </Grid>
-            <Grid item>
-              <Button
-                id="po-status"
-                color={status === POStatus.Open ? "success" : "error"}
-                variant="contained"
-                size="small"
-                onClick={handleChangePOStatus}
-              >
-                {status}
-              </Button>
-            </Grid>
-          </Grid>
-        </Grid>
-      </Grid>
-    </Grid>
-  )
   return (
-    <BlankCard>
-      <CardContent>
-        <Grid container direction={"column"} rowSpacing={3}>
-          {renderFirstRow()}
-          {renderSecondRow()}
-        </Grid>
-      </CardContent>
-    </BlankCard>
+    <>
+      <BlankCard>
+        <CardContent>
+          <Grid container rowSpacing={3}>
+            {getFieldWithHeader("Status", statusSelect, 4)}
+            {getFieldWithHeader("Order #", getTextField(orderNumber), 4)}
+            {getFieldWithHeader("Vendor", getTextField(vendor), 4)}
+
+            {getFieldWithHeader("Date Created", <DateTime value={createdAt} />, 4)}
+            {getFieldWithHeader("Last Modified", <DateTime value={updatedAt} />, 4)}
+            {getFieldWithHeader("Expected Date", <DateTime value={dateExpected} />, 4)}
+
+            {getFieldWithHeader("Shipping Address", getTextField(getStrOrDash(shippingAddress)), 3)}
+
+            {getFieldWithHeader("Order Notes", getTextField(getStrOrDash(orderNotes)), 12)}
+          </Grid>
+        </CardContent>
+      </BlankCard>
+
+      <EditOrderHeaderPopup
+        open={showEditPopup}
+        order={po}
+        onSubmit={handleUpdatePO}
+        onClose={() => setShowEditPopup(false)}
+        orderType={EntityType.PurchaseOrder}
+        getTableColumns={getTableColumns}
+        columnInfo={columnInfo}
+      />
+    </>
   );
 };
 
 export default ViewPOHeaderFields;
+
+const getStrOrDash = (value: string | null | undefined) => {
+  return value !== "" && value !== null && value !== undefined ? value : "-"
+}

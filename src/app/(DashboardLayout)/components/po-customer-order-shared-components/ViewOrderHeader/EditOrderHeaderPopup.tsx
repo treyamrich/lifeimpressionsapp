@@ -7,9 +7,9 @@ import { DateTimePicker } from "@mui/x-date-pickers";
 import { validateEmail, validatePhoneNumber } from "@/utils/field-validation";
 import React from "react";
 import MyTelInput from "@/app/(DashboardLayout)/components/inputs/MyTelInput";
-import { EntityType } from "./CreateOrderPage";
-import NonNegativeFloatInput from "./NonNegativeFloatInput";
-import { ColumnInfo, SelectValue } from "../../purchase-orders/table-constants";
+import { ColumnInfo, SelectValue } from "@/app/(DashboardLayout)/purchase-orders/table-constants";
+import NonNegativeFloatInput from "../NonNegativeFloatInput";
+import { EntityType } from "../CreateOrderPage";
 
 
 function EditOrderHeaderPopup<T extends Record<any, any>>({ open, order, onSubmit, onClose, orderType, getTableColumns, columnInfo }: {

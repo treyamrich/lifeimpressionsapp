@@ -5,6 +5,7 @@ import {
     CustomerOrder,
     OrderChange,
     TShirtOrder,
+    UpdateCustomerOrderInput,
 } from "@/API";
 import PageContainer from "@/app/(DashboardLayout)/components/container/PageContainer";
 import BlankCard from "@/app/(DashboardLayout)/components/shared/BlankCard";
@@ -15,7 +16,7 @@ import {
     DBOperation, useDBOperationContext,
 } from "@/contexts/DBErrorContext";
 
-import { Typography, CardContent } from "@mui/material";
+import { Typography, CardContent, Grid } from "@mui/material";
 import { useState, useEffect } from "react";
 
 import { MRT_Row } from "material-react-table";
@@ -26,6 +27,10 @@ import { UpdateOrderTransactionInput, UpdateOrderTransactionResponse, updateOrde
 import NegativeInventoryConfirmPopup, { NegativeInventoryWarningState, initialNegativeInventoryWarningState } from "@/app/(DashboardLayout)/components/forms/confirm-popup/NegativeInventoryConfirmPopup";
 import OrderChangeHistory from "@/app/(DashboardLayout)/components/po-customer-order-shared-components/OrderChangeHistory/OrderChangeHistory";
 import OrderTotalCard from "@/app/(DashboardLayout)/components/po-customer-order-shared-components/OrderTotalCard";
+import ViewOrderActions from "@/app/(DashboardLayout)/components/po-customer-order-shared-components/ViewOrderHeader/ViewOrderActions";
+import { updateCustomerOrderAPI } from "@/graphql-helpers/update-apis";
+import { useRouter } from "next/navigation";
+import Section from "@/app/(DashboardLayout)/components/po-customer-order-shared-components/ViewOrderHeader/Section";
 
 type ViewCustomerOrderProps = {
     params: { id: string };
@@ -33,8 +38,10 @@ type ViewCustomerOrderProps = {
 
 const ViewCustomerOrder = ({ params }: ViewCustomerOrderProps) => {
     const { id } = params;
+    const { push } = useRouter();
     const { rescueDBOperation } = useDBOperationContext();
     const [co, setCo] = useState<CustomerOrder>({} as CustomerOrder);
+    const [showEditPopup, setShowEditPopup] = useState(false);
     const [editHistory, setEditHistory] = useState<OrderChange[]>([]);
     const [updatedOrderedItems, setUpdatedOrderedItems] = useState<TShirtOrder[]>(
         () => {
@@ -62,6 +69,20 @@ const ViewCustomerOrder = ({ params }: ViewCustomerOrderProps) => {
         );
     };
 
+    const handleDeleteCustomerOrder = () => {
+        if (!confirm(`Are you sure you want to delete this customer order?`)) {
+            return;
+        }
+        const deletedCustomerOrder: UpdateCustomerOrderInput = { id: co.id, isDeleted: true };
+        rescueDBOperation(
+            () => updateCustomerOrderAPI(deletedCustomerOrder),
+            DBOperation.DELETE,
+            () => {
+                push('/customer-orders/');
+            }
+        );
+    }
+
     useEffect(() => {
         fetchCustomerOrder();
     }, []);
@@ -75,17 +96,29 @@ const ViewCustomerOrder = ({ params }: ViewCustomerOrderProps) => {
             description="this is View Customer Order"
         >
             <DashboardCard title={`Customer Order: ${co.orderNumber}`}>
-                <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
-                    <div>
-                        <ViewCOHeaderFields co={co} setCo={setCo} />
-                    </div>
-                    <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
-                        <div>
-                            <Typography variant="h6" color="textSecondary">
-                                Ordered Items
-                            </Typography>
-                        </div>
-                        <div>
+                <>
+                    <ViewOrderActions
+                        onEdit={() => setShowEditPopup(true)}
+                        onDelete={handleDeleteCustomerOrder}
+                    />
+                    <Grid container rowSpacing={5} columnSpacing={5}>
+                        <Section header="Order Details" columnWidth={7}>
+                            <ViewCOHeaderFields
+                                co={co}
+                                setCo={setCo}
+                                showEditPopup={showEditPopup}
+                                setShowEditPopup={setShowEditPopup}
+                            />
+                        </Section>
+
+                        <Section header="Order Total" columnWidth={5}>
+                            <OrderTotalCard
+                                order={co}
+                                orderedItems={updatedOrderedItems}
+                            />
+                        </Section>
+
+                        <Section header="Ordered Items" columnWidth={12}>
                             <OrderedItemsTable
                                 tableData={updatedOrderedItems}
                                 setTableData={setUpdatedOrderedItems}
@@ -94,23 +127,13 @@ const ViewCustomerOrder = ({ params }: ViewCustomerOrderProps) => {
                                 changeHistory={editHistory}
                                 setChangeHistory={setEditHistory}
                             />
-                        </div>
-                    </div>
-                    <OrderTotalCard
-                        order={co}
-                        orderedItems={updatedOrderedItems}
-                    />
-                    <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-                        <div>
-                            <Typography variant="h6" color="textSecondary">
-                                Change History
-                            </Typography>
-                        </div>
-                        <div>
+                        </Section>
+
+                        <Section header="Change History" columnWidth={12}>
                             <ChangeHistoryTable changeHistory={editHistory} />
-                        </div>
-                    </div>
-                </div>
+                        </Section>
+                    </Grid>
+                </>
             </DashboardCard>
         </PageContainer>
     );

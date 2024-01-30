@@ -45,7 +45,7 @@ export const getTableColumns = (): MRT_ColumnDef<PurchaseOrder>[] => {
     } as MRT_ColumnDef<PurchaseOrder>,
     {
       accessorKey: "status",
-      header: " Status",
+      header: "Status",
     } as MRT_ColumnDef<PurchaseOrder>,
     {
       accessorKey: "createdAt",
@@ -96,6 +96,12 @@ export const getTableColumns = (): MRT_ColumnDef<PurchaseOrder>[] => {
   ];
 };
 
+export const poStatusToHeaderMap = {
+  [POStatus.Open]: "Open",
+  [POStatus.SentToVendor]: "Sent To Vendor",
+  [POStatus.Closed]: "Closed",
+} as any;
+
 export type ColumnInfo = {
   disabledOnCreate: boolean | undefined;
   disabledOnEdit: boolean | undefined;
@@ -117,13 +123,11 @@ export const columnInfo = new Map<string | number | symbol | undefined, ColumnIn
   ["id", { excludeOnCreate: true } as ColumnInfo],
   ["updatedAt", { excludeOnCreate: true } as ColumnInfo],
   ["createdAt", { excludeOnCreate: true } as ColumnInfo],
-  ["vendor", { isRequired: true } as ColumnInfo],
+  ["vendor", { isRequired: true, isEditable: true } as ColumnInfo],
   ["status", {
-    selectFields: [
-      { label: POStatus.Open, value: POStatus.Open },
-      { label: "Sent To Vendor", value: POStatus.SentToVendor },
-      { label: POStatus.Closed, value: POStatus.Closed },
-    ]
+    selectFields: Object.keys(poStatusToHeaderMap).map((key: string) => {
+      return { label: poStatusToHeaderMap[key], value: key }
+    })
   } as ColumnInfo],
   ["orderNumber", { isRequired: true } as ColumnInfo],
   ["orderNotes", { isEditable: true } as ColumnInfo],

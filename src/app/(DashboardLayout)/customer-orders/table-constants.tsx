@@ -95,7 +95,7 @@ export const getTableColumns = (): MRT_ColumnDef<CustomerOrder>[] => {
   ];
 };
 
-export const orderStatusMap = {
+export const coStatusToHeaderMap = {
   [CustomerOrderStatus.NEW]: "New",
   [CustomerOrderStatus.IN_PROGRESS]: "In Progress",
   [CustomerOrderStatus.BLOCKED]: "Blocked",
@@ -110,9 +110,8 @@ export const columnInfo = new Map<string | number | symbol | undefined, ColumnIn
   ["orderNumber", { isRequired: true } as ColumnInfo],
   ["orderStatus", {
     disabledOnCreate: true,
-    isEditable: true,
-    selectFields: Object.keys(orderStatusMap).map((key: string) => {
-      return { label: orderStatusMap[key], value: key }
+    selectFields: Object.keys(coStatusToHeaderMap).map((key: string) => {
+      return { label: coStatusToHeaderMap[key], value: key }
     })
   } as ColumnInfo],
   ["orderNotes", {
