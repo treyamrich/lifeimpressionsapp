@@ -3,7 +3,7 @@
 import PageContainer from "@/app/(DashboardLayout)/components/container/PageContainer";
 import DashboardCard from "@/app/(DashboardLayout)/components/shared/DashboardCard";
 import React, { useMemo, useState } from "react";
-import { TextField, Stack, MenuItem, Box, Button } from "@mui/material";
+import { TextField, Stack, MenuItem, Box, Button, Typography } from "@mui/material";
 
 import { MRT_ColumnDef, MRT_Row } from "material-react-table";
 import { CreateOrderChangeInput, TShirtOrder } from "@/API";
@@ -222,6 +222,9 @@ function CreateOrderPage<T extends Record<any, any>>({
                                 <React.Fragment key={index}> {getFormField(column)} </React.Fragment>
                             ))
                         }
+                        <Typography variant="h6" color="textSecondary">
+                            T-Shirts
+                        </Typography>
                         <TShirtOrderTable
                             tableData={values.orderedItems}
                             setTableData={(newValues) =>

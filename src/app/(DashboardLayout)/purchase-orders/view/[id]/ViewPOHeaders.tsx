@@ -3,7 +3,7 @@ import DateTime from "@/app/(DashboardLayout)/components/datetime/DateTime";
 import BlankCard from "@/app/(DashboardLayout)/components/shared/BlankCard";
 import { DBOperation, useDBOperationContext } from "@/contexts/DBErrorContext";
 import { updatePurchaseOrderAPI } from "@/graphql-helpers/update-apis";
-import { Button, CardContent, Grid, Typography } from "@mui/material";
+import { Button, CardContent, Grid, TextField, Typography } from "@mui/material";
 import { useRouter } from "next/navigation";
 
 type ViewPOHeaderFieldsProps = {
@@ -47,83 +47,118 @@ const ViewPOHeaderFields = ({ po, setPo }: ViewPOHeaderFieldsProps) => {
   }
 
   const columnHeaderSpacing = 1;
+  const renderFirstRow = () => (
+    <Grid item>
+      <Grid container spacing={2} alignItems={"center"}>
+        <Grid item xs={2}>
+          <Grid container direction="column" spacing={columnHeaderSpacing}>
+            <Grid item>
+              <Typography variant="h6" color="textSecondary">
+                Status
+              </Typography>
+            </Grid>
+            <Grid item>
+              <TextField
+                id="po-status"
+                color={status === POStatus.Open ? "success" : "error"}
+                variant="contained"
+                size="small"
+                onClick={handleChangePOStatus}
+              >
+                {status}
+              </TextField>
+            </Grid>
+          </Grid>
+        </Grid>
+        <Grid item xs={2}>
+          <Grid container direction="column" spacing={columnHeaderSpacing}>
+            <Grid item>
+              <Typography variant="h6" color="textSecondary">
+                Vendor
+              </Typography>
+            </Grid>
+            <Grid item>
+              <Typography variant="body1" color="textSecondary">
+                {vendor}
+              </Typography>
+            </Grid>
+          </Grid>
+        </Grid>
+        <Grid item xs={3}>
+          <Grid container direction="column" spacing={columnHeaderSpacing}>
+            <Grid item>
+              <Typography variant="h6" color="textSecondary">
+                Date Created
+              </Typography>
+            </Grid>
+            <Grid item>
+              <Typography variant="body1" color="textSecondary">
+                <DateTime value={createdAt} />
+              </Typography>
+            </Grid>
+          </Grid>
+        </Grid>
+        <Grid item xs={3}>
+          <Grid container direction="column" spacing={columnHeaderSpacing}>
+            <Grid item>
+              <Typography variant="h6" color="textSecondary">
+                Last Modified
+              </Typography>
+            </Grid>
+            <Grid item>
+              <Typography variant="body1" color="textSecondary">
+                <DateTime value={updatedAt} />
+              </Typography>
+            </Grid>
+          </Grid>
+        </Grid>
+        <Grid item xs={2}>
+          <Button
+            id="delete-po-button"
+            color={"error"}
+            variant="contained"
+            size="small"
+            onClick={handleDeletePurchaseOrder}
+          >
+            Delete Purchase Order
+          </Button>
+        </Grid>
+      </Grid>
+    </Grid>
+  )
+
+  const renderSecondRow = () => (
+    <Grid item>
+      <Grid container spacing={2} alignItems={"center"}>
+        <Grid item xs={2}>
+          <Grid container direction="column" spacing={columnHeaderSpacing}>
+            <Grid item>
+              <Typography variant="h6" color="textSecondary">
+                Status
+              </Typography>
+            </Grid>
+            <Grid item>
+              <Button
+                id="po-status"
+                color={status === POStatus.Open ? "success" : "error"}
+                variant="contained"
+                size="small"
+                onClick={handleChangePOStatus}
+              >
+                {status}
+              </Button>
+            </Grid>
+          </Grid>
+        </Grid>
+      </Grid>
+    </Grid>
+  )
   return (
     <BlankCard>
       <CardContent>
-        <Grid container spacing={3} alignItems={"center"}>
-          <Grid item xs={2}>
-            <Grid container direction="column" spacing={columnHeaderSpacing}>
-              <Grid item>
-                <Typography variant="h6" color="textSecondary">
-                  Status
-                </Typography>
-              </Grid>
-              <Grid item>
-                <Button
-                  id="po-status"
-                  color={status === POStatus.Open ? "success" : "error"}
-                  variant="contained"
-                  size="small"
-                  onClick={handleChangePOStatus}
-                >
-                  {status}
-                </Button>
-              </Grid>
-            </Grid>
-          </Grid>
-          <Grid item xs={2}>
-            <Grid container direction="column" spacing={columnHeaderSpacing}>
-              <Grid item>
-                <Typography variant="h6" color="textSecondary">
-                  Vendor
-                </Typography>
-              </Grid>
-              <Grid item>
-                <Typography variant="body1" color="textSecondary">
-                  {vendor}
-                </Typography>
-              </Grid>
-            </Grid>
-          </Grid>
-          <Grid item xs={3}>
-            <Grid container direction="column" spacing={columnHeaderSpacing}>
-              <Grid item>
-                <Typography variant="h6" color="textSecondary">
-                  Date Created
-                </Typography>
-              </Grid>
-              <Grid item>
-                <Typography variant="body1" color="textSecondary">
-                  <DateTime value={createdAt} />
-                </Typography>
-              </Grid>
-            </Grid>
-          </Grid>
-          <Grid item xs={3}>
-            <Grid container direction="column" spacing={columnHeaderSpacing}>
-              <Grid item>
-                <Typography variant="h6" color="textSecondary">
-                  Last Modified
-                </Typography>
-              </Grid>
-              <Grid item>
-                <Typography variant="body1" color="textSecondary">
-                  <DateTime value={updatedAt} />
-                </Typography>
-              </Grid>
-            </Grid>
-          </Grid>
-          <Grid item xs={2}>
-            <Button
-              id="delete-po-button"
-              color={"error"}
-              variant="contained"
-              size="small"
-              onClick={handleDeletePurchaseOrder}
-            >
-              Delete Purchase Order
-            </Button>
-          </Grid>
+        <Grid container direction={"column"} rowSpacing={3}>
+          {renderFirstRow()}
+          {renderSecondRow()}
         </Grid>
       </CardContent>
     </BlankCard>

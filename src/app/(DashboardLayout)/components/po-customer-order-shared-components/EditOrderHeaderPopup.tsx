@@ -52,9 +52,9 @@ function EditOrderHeaderPopup<T extends Record<any, any>>({ open, order, onSubmi
     }
 
     useEffect(() => {
-        setValues(getInitialFormState());
+        resetForm();
     }, [order])
-    
+
     const handleSubmit = () => {
         //Validate input
         const newErrors = getInitialOrderFormErrorMap();

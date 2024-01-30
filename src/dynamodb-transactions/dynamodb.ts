@@ -65,3 +65,7 @@ export const customerOrderTable = `CustomerOrder${tableNameSuffix}`;
 export const getStrOrNull = (str: string | undefined | null): AttributeValue => {
     return str ? { S: str } : { NULL: true };
 }
+
+export const getBoolOrNull = (bool: boolean | undefined | null): AttributeValue => {
+    return bool !== undefined && bool !== null ? { BOOL: bool } : { NULL: true };
+}

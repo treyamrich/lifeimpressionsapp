@@ -141,7 +141,6 @@ export const createPurchaseOrder = /* GraphQL */ `
       shippingAddress
       fees
       discount
-      sentToVendor
       dateExpected
       isDeleted
       type
@@ -230,7 +229,6 @@ export const updatePurchaseOrder = /* GraphQL */ `
       shippingAddress
       fees
       discount
-      sentToVendor
       dateExpected
       isDeleted
       type
@@ -319,7 +317,6 @@ export const deletePurchaseOrder = /* GraphQL */ `
       shippingAddress
       fees
       discount
-      sentToVendor
       dateExpected
       isDeleted
       type

@@ -55,7 +55,6 @@ type PurchaseOrder @model @auth(rules: [
   shippingAddress: String
   fees: Float!
   discount: Float!
-  sentToVendor: Boolean @default(value: "false")
   dateExpected: AWSDateTime!
 
   isDeleted: Boolean @default(value: "false")
@@ -66,6 +65,7 @@ type PurchaseOrder @model @auth(rules: [
 enum POStatus {
   Open
   Closed
+  SentToVendor
 }
 
 type FieldChange {

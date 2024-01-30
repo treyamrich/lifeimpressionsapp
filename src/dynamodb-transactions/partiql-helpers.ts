@@ -1,6 +1,6 @@
 import { CustomerOrder, CustomerOrderStatus, FieldChange, PurchaseOrder, TShirtOrder } from "@/API";
 import { EntityType } from "../app/(DashboardLayout)/components/po-customer-order-shared-components/CreateOrderPage"
-import { customerOrderTable, getStrOrNull, orderChangeTable, purchaseOrderTable, tshirtOrderTable, tshirtTable } from "./dynamodb"
+import { customerOrderTable, getBoolOrNull, getStrOrNull, orderChangeTable, purchaseOrderTable, tshirtOrderTable, tshirtTable } from "./dynamodb"
 import { AttributeValue, ParameterizedStatement } from "@aws-sdk/client-dynamodb";
 import { TShirtOrderFields } from "@/app/(DashboardLayout)/components/TShirtOrderTable/table-constants";
 
@@ -154,9 +154,14 @@ export const getInsertOrderPartiQL = (
                 'id': ?,
                 'orderNumber': ?,
                 'vendor': ?,
+                'orderNotes': ?,
                 'status': ?,
                 'taxRate': ?,
+                'shipping': ?,
+                'shippingAddress': ?,
+                'fees': ?,
                 'discount': ?,
+                'dateExpected': ?,
                 'isDeleted': ?,
                 'type': ?,
                 'createdAt': ?,
@@ -168,9 +173,14 @@ export const getInsertOrderPartiQL = (
                 { S: orderUuid },
                 { S: purchaseOrder.orderNumber },
                 { S: purchaseOrder.vendor },
+                getStrOrNull(purchaseOrder.orderNotes),
                 { S: purchaseOrder.status },
                 { N: purchaseOrder.taxRate.toString() },
+                { N: purchaseOrder.shipping.toString() },
+                getStrOrNull(purchaseOrder.shippingAddress),
+                { N: purchaseOrder.fees.toString() },
                 { N: purchaseOrder.discount.toString() },
+                { S: purchaseOrder.dateExpected },
                 { BOOL: false },
                 { S: typename },
                 { S: createdAt },
