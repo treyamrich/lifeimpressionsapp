@@ -23,3 +23,8 @@ export const validateEmail = (str: string): string | undefined => {
     }
     return trimmedStr === "" ? "" : undefined;
 }
+
+export const validateISO8601 = (str: string) => {
+    const iso8601Regex = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(\.\d{3})?([Zz]|([+-])(\d{2}):(\d{2}))$/;
+    return iso8601Regex.test(str);
+}

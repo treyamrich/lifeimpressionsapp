@@ -15,7 +15,7 @@ import {
   getUpdateTShirtTablePartiQL,
 } from "./partiql-helpers";
 import { v4 } from "uuid";
-import { validateEmail, validatePhoneNumber } from "@/utils/field-validation";
+import { validateEmail, validateISO8601, validatePhoneNumber } from "@/utils/field-validation";
 import { validateTShirtOrderInput } from "./validation";
 import { DBOperation } from "@/contexts/DBErrorContext";
 
@@ -84,6 +84,10 @@ const validateCreateOrderInput = (input: PurchaseOrderOrCustomerOrder, entityTyp
     validateTShirtOrderInput(item, DBOperation.CREATE);
     if (item.amountReceived !== 0) throw Error("Received amount should be 0 on order creation");
   });
+
+  if(input.discount < 0) throw Error("Invalid discount for order");
+  if(input.taxRate < 0) throw Error("Invalid tax rate");
+
   const isValidStr = (str: string | undefined | null) => str !== undefined && str !== null;
   if (entityType === EntityType.CustomerOrder) {
     let order = input as CustomerOrder;
@@ -91,6 +95,14 @@ const validateCreateOrderInput = (input: PurchaseOrderOrCustomerOrder, entityTyp
       throw Error("Invalid phone number input");
     if (isValidStr(order.customerEmail) && validateEmail(order.customerEmail!) === undefined)
       throw Error("Invalid email input.")
+    if(isValidStr(order.dateNeededBy) && !validateISO8601(order.dateNeededBy))
+      throw Error("Invalid date for date needed by field");
+  } else {
+    let order = input as PurchaseOrder;
+    if(isValidStr(order.dateExpected) && !validateISO8601(order.dateExpected))
+      throw Error("Invalid date for date expected by field");
+    if(order.fees < 0) throw Error("Invalid value for order fees");
+    if(order.shipping < 0) throw Error("Invalid shipping value");
   }
 }
 
