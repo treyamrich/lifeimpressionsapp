@@ -1,7 +1,7 @@
 "use client";
 
 import { MRT_ColumnDef } from "material-react-table";
-import { useState } from "react";
+import React, { useState } from "react";
 import {
   type SelectValue,
   excludeOnCreateFields,
@@ -132,6 +132,7 @@ const CreateTShirtModal = <TShirt extends Record<string, any>>({
               .map((column) => {
                 return isNumberInputField(column.accessorKey) ? 
                 <NumberInput
+                  key={column.accessorKey as React.Key}
                   label={column.header}
                   initialValue={values[column.accessorKey]}
                   onChange={(newValue: number, hasError: boolean) => {
