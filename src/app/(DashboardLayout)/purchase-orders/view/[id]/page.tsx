@@ -16,7 +16,7 @@ import {
     DBOperation, useDBOperationContext,
 } from "@/contexts/DBErrorContext";
 
-import { Typography, CardContent, Grid, Stack } from "@mui/material";
+import { CardContent, Grid } from "@mui/material";
 import React, { useState, useEffect } from "react";
 import ViewPOHeaderFields from "./ViewPOHeaders";
 
@@ -82,7 +82,8 @@ const ViewPurchaseOrder = ({ params }: ViewPurchaseOrderProps) => {
         );
     }
 
-    useEffect(() => {
+    useEffect(() => { 
+        document.title = 'View Purchase Order';
         fetchPurchaseOrder();
     }, []);
 

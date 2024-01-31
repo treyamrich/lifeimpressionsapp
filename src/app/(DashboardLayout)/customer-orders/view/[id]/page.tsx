@@ -84,6 +84,7 @@ const ViewCustomerOrder = ({ params }: ViewCustomerOrderProps) => {
     }
 
     useEffect(() => {
+        document.title = 'View Customer Order';
         fetchCustomerOrder();
     }, []);
 
