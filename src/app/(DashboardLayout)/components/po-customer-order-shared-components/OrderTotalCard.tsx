@@ -70,7 +70,7 @@ const OrderTotalCard = ({ order, orderedItems }: {
 
     return (
         <BlankCard>
-            <CardContent>
+            <CardContent style={{ height: "350px", overflowY: "auto"}}>
                 <Grid container rowSpacing={3}>
                     <GridSection>
                         {getGridRow("Total Qty", orderedItems.length)}
