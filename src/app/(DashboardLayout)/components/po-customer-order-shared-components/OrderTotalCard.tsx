@@ -2,6 +2,7 @@ import { TShirtOrder } from "@/API";
 import { CardContent, Grid, Typography } from "@mui/material";
 import BlankCard from "../shared/BlankCard";
 import { ReactNode } from "react";
+import React from "react";
 
 export interface OrderTotalModel {
     taxRate: number;
@@ -36,16 +37,18 @@ const OrderTotalCard = ({ order, orderedItems }: {
     const total = discountsApplied + tax + shipping + fees;
     const tableRowColor = '#e6e6e6';
 
-    const getGridRow = (label: string, value: any, color: string = "") => (
-        <>
-            <Grid item xs={9} style={{ backgroundColor: color }} key={label + "-label"}>
+    let rowCount = 0
+    const getGridRow = (label: string, value: any, color: string = "") => {
+        rowCount += 1
+        return (<React.Fragment key={`ordertotal-row-${rowCount}`}>
+            <Grid item xs={9} style={{ backgroundColor: color }}>
                 <Typography variant="body1">{label}</Typography>
             </Grid>
-            <Grid item xs={3} style={{ backgroundColor: color }} key={value + "-label"}>
+            <Grid item xs={3} style={{ backgroundColor: color }} >
                 <Typography variant="body1">{value}</Typography>
             </Grid>
-        </>
-    )
+        </React.Fragment>)
+    }
 
     const GridSection = ({ children }: { children: ReactNode }) => (
         <Grid item xs={12}>

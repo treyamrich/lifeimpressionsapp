@@ -1,7 +1,9 @@
 import {
   IconLayoutDashboard,
-  IconLogin,
-  IconUserPlus,
+  IconUsersGroup,
+  IconReceipt,
+  IconBox,
+  IconChecklist
 } from "@tabler/icons-react";
 
 import { uniqueId } from "lodash";
@@ -20,20 +22,26 @@ const Menuitems = [
   {
     id: uniqueId(),
     title: "Inventory",
-    icon: IconLayoutDashboard,
+    icon: IconChecklist,
     href: "/",
   },
   {
     id: uniqueId(),
     title: "Purchase Orders",
-    icon: IconLayoutDashboard,
+    icon: IconBox,
     href: "/purchase-orders",
   },
   {
     id: uniqueId(),
     title: "Customer Orders",
-    icon: IconLayoutDashboard,
+    icon: IconUsersGroup,
     href: "/customer-orders",
+  },
+  {
+    id: uniqueId(),
+    title: "Report Generation",
+    icon: IconReceipt,
+    href: "/report-generation",
   },
   // {
   //   navlabel: true,
