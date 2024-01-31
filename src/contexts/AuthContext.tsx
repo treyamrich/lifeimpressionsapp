@@ -14,7 +14,7 @@ import { CognitoUser } from '@aws-amplify/auth';
 import { usePathname, useRouter } from "next/navigation";
 import { isProtectedRoute } from "@/app/authentication/route-protection/route-protection";
 import { useDBOperationContext } from "./DBErrorContext";
-import { Button } from "@mui/material";
+import { Button, CircularProgress } from "@mui/material";
 
 type authContextType = {
   user: any;
@@ -221,6 +221,17 @@ export const AuthContextProvider = ({ children }: Props) => {
     return unsubscribe;
   }, []);
 
+  // authorization is not used in this app since sign up is disabled
+  const unauthorized = (
+    <> User not authorized: <Button
+          color="error"
+          size="small"
+          variant="contained"
+          onClick={logout}>
+          Logout
+        </Button></>
+  );
+
   const showRoute = user !== null || !routeIsProtected;
   return (
     <AuthContext.Provider
@@ -237,14 +248,7 @@ export const AuthContextProvider = ({ children }: Props) => {
         forgotPasswordSubmit,
         completeNewPassword
       }}>
-      {showRoute ? <> {children} </> :
-        <> User not authorized: <Button
-          color="error"
-          size="small"
-          variant="contained"
-          onClick={logout}>
-          Logout
-        </Button></>}
+      {showRoute ? <> {children} </> : <CircularProgress />}
     </AuthContext.Provider>
   );
 };
