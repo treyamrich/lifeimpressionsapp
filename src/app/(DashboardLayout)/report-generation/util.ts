@@ -101,8 +101,9 @@ export const downloadOrderLevelCSV = (orders: Order[], orderIdToTotal: Map<strin
 
 
     const headers: CSVHeader[] = [
-        { columnKey: "__typename", headerName: "Order Type" },
         { columnKey: "id", headerName: "Order ID" },
+        { columnKey: "__typename", headerName: "Order Type" },
+        
         { columnKey: "orderNumber", headerName: "Order #" },
         { columnKey: "createdAt", headerName: "Date" },
         { columnKey: "updatedAt", headerName: "Updated At" },
