@@ -3,38 +3,24 @@ import { CardContent, Grid, Typography } from "@mui/material";
 import BlankCard from "../shared/BlankCard";
 import { ReactNode } from "react";
 import React from "react";
-
-export interface OrderTotalModel {
-    taxRate: number;
-    shipping?: number;
-    fees?: number;
-    discount: number;
-}
+import { OrderTotalModel, calculateOrderTotal } from "@/utils/orderTotal";
 
 const OrderTotalCard = ({ order, orderedItems }: {
     order: OrderTotalModel;
     orderedItems: TShirtOrder[];
 }) => {
+    const {
+        subtotal,
+        itemDiscounts,
+        fullOrderDiscounts,
+        totalDiscounts,
+        taxRate,
+        fees,
+        shipping,
+        tax,
+        total
+    } = calculateOrderTotal(order, orderedItems);
 
-    const subtotal = orderedItems
-        .map(item => item.costPerUnit * item.quantity)
-        .reduce((prev, curr) => prev + curr, 0);
-
-    const fullOrderDiscounts = order.discount;
-    const tshirtDiscounts = orderedItems
-        .map(item => item.discount)
-        .reduce((prev, curr) => prev + curr, 0);
-    const totalDiscounts = fullOrderDiscounts + tshirtDiscounts;
-
-    const discountsApplied = Math.max(0, subtotal - totalDiscounts);
-
-    const taxRate = order.taxRate / 100;
-    const fees = order.fees ?? 0;
-    const shipping = order.shipping ?? 0;
-
-    const tax = taxRate * discountsApplied;
-
-    const total = discountsApplied + tax + shipping + fees;
     const tableRowColor = '#e6e6e6';
 
     let rowCount = 0
@@ -84,7 +70,7 @@ const OrderTotalCard = ({ order, orderedItems }: {
                     </GridSection>
 
                     <GridSection>
-                        {getGridRow("Per Item Discounts", `-$${tshirtDiscounts}`)}
+                        {getGridRow("Per Item Discounts", `-$${itemDiscounts}`)}
                         {getGridRow("Full Order Discounts", `-$${fullOrderDiscounts}`)}
                         {getGridRow("Total Discounts", `-$${totalDiscounts}`, tableRowColor)}
                     </GridSection>

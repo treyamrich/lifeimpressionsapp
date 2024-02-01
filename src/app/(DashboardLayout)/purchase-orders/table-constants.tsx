@@ -92,6 +92,11 @@ export const getTableColumns = (): MRT_ColumnDef<PurchaseOrder>[] => {
     {
       accessorKey: "dateExpected",
       header: "Expected Date",
+      Cell: ({ renderedCellValue, row }) => (
+        <>
+          {toReadableDateTime(row.original.dateExpected)}
+        </>
+      )
     } as MRT_ColumnDef<PurchaseOrder>,
   ];
 };
@@ -130,12 +135,12 @@ export const columnInfo = new Map<string | number | symbol | undefined, ColumnIn
     })
   } as ColumnInfo],
   ["orderNumber", { isRequired: true } as ColumnInfo],
-  ["orderNotes", { isEditable: true } as ColumnInfo],
-  ["taxRate", { isFloatField: true, isEditable: true } as ColumnInfo],
-  ["shipping", { isFloatField: true, isEditable: true } as ColumnInfo],
-  ["shippingAddress", { isEditable: true } as ColumnInfo],
-  ["fees", { isFloatField: true, isEditable: true } as ColumnInfo],
-  ["discount", { isFloatField: true, isEditable: true } as ColumnInfo],
+  ["orderNotes", { isEditable: true, hideInTable: true } as ColumnInfo],
+  ["taxRate", { isFloatField: true, isEditable: true, hideInTable: true } as ColumnInfo],
+  ["shipping", { isFloatField: true, isEditable: true, hideInTable: true } as ColumnInfo],
+  ["shippingAddress", { isEditable: true, hideInTable: true } as ColumnInfo],
+  ["fees", { isFloatField: true, isEditable: true, hideInTable: true } as ColumnInfo],
+  ["discount", { isFloatField: true, isEditable: true, hideInTable: true } as ColumnInfo],
   ["dateExpected", { isDatetimeField: true, isEditable: true } as ColumnInfo],
 ]);
 

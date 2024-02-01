@@ -143,7 +143,7 @@ function CreateOrderPage<T extends Record<any, any>>({
                     onChange={(newVal: any) =>
                         setValues({ ...values, [column.accessorKey as string]: newVal })
                     }
-                    views={['year', 'month', 'day', 'hours', 'minutes', 'seconds']}
+                    views={['year', 'month', 'day', 'hours', 'minutes']}
                 />)
         }
         if (colInfo?.isPhoneNumField) {

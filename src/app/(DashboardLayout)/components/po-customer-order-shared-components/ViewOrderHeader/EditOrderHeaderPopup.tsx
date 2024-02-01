@@ -124,7 +124,7 @@ function EditOrderHeaderPopup<T extends Record<any, any>>({ open, order, onSubmi
                     onChange={(newVal) =>
                         setValues({ ...values, [column.accessorKey as string]: newVal })
                     }
-                    views={['year', 'month', 'day', 'hours', 'minutes', 'seconds']}
+                    views={['year', 'month', 'day', 'hours', 'minutes']}
                 />
             )
         }

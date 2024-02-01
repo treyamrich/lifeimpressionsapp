@@ -35,6 +35,10 @@ export const getStartOfTomorrow = () => {
     return dayjs().tz(configuredTimeZone).startOf('day').add(1, 'day');
 }
 
+export const getTodayInSetTz = () => {
+    return dayjs().tz(configuredTimeZone);
+}
+
 export const toAWSDateTime = (datetime: Dayjs): string => {
     return datetime.utc().format().toString()
 }

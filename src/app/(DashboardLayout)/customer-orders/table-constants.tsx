@@ -143,6 +143,14 @@ export const columnInfo = new Map<string | number | symbol | undefined, ColumnIn
     placeholderText: "XXX-XXX-XXXX",
     isEditable: true
   } as ColumnInfo],
-  ["taxRate", { isFloatField: true, isEditable: true } as ColumnInfo],
-  ["discount", { isFloatField: true, isEditable: true } as ColumnInfo],
+  ["taxRate", {
+    isFloatField: true,
+    isEditable: true,
+    hideInTable: true
+  } as ColumnInfo],
+  ["discount", {
+    isFloatField: true,
+    isEditable: true,
+    hideInTable: true
+  } as ColumnInfo],
 ]);

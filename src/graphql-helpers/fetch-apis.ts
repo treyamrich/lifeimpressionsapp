@@ -1,4 +1,4 @@
-import { ListTShirtsQuery, TShirt, ModelTShirtFilterInput, ModelPurchaseOrderFilterInput, ListPurchaseOrdersQuery, PurchaseOrder, GetPurchaseOrderQueryVariables, GetPurchaseOrderQuery, ListCustomerOrdersQuery, ModelCustomerOrderFilterInput, CustomerOrder, GetCustomerOrderQueryVariables, GetCustomerOrderQuery, ModelSortDirection, CustomerOrdersByCreatedAtQuery, PurchaseOrdersByCreatedAtQuery, POStatus } from "@/API";
+import { ListTShirtsQuery, TShirt, ModelTShirtFilterInput, ModelPurchaseOrderFilterInput, PurchaseOrder, GetPurchaseOrderQueryVariables, GetPurchaseOrderQuery, ModelCustomerOrderFilterInput, CustomerOrder, GetCustomerOrderQueryVariables, GetCustomerOrderQuery, ModelSortDirection, CustomerOrdersByCreatedAtQuery, PurchaseOrdersByCreatedAtQuery, ModelStringKeyConditionInput } from '@/API';
 import { API } from "aws-amplify";
 import { GraphQLQuery } from "@aws-amplify/api";
 import { customerOrdersByCreatedAt, getCustomerOrder, getPurchaseOrder, listCustomerOrders, listPurchaseOrders, listTShirts, purchaseOrdersByCreatedAt } from "@/graphql/queries";
@@ -20,10 +20,11 @@ export const listTShirtAPI = async (filters: ModelTShirtFilterInput): Promise<TS
   return resp;
 };
 
-export const listPurchaseOrderAPI = async (filters: ModelPurchaseOrderFilterInput, sortDirection: ModelSortDirection): Promise<PurchaseOrder[]> => {
+export const listPurchaseOrderAPI = async (filters?: ModelPurchaseOrderFilterInput, sortDirection?: ModelSortDirection, createdAt?: ModelStringKeyConditionInput): Promise<PurchaseOrder[]> => {
   const resp = await API.graphql<GraphQLQuery<PurchaseOrdersByCreatedAtQuery>>({
     query: purchaseOrdersByCreatedAt,
     variables: {
+      createdAt: createdAt,
       filter: filters,
       sortDirection: sortDirection,
       type: "PurchaseOrder"
@@ -38,10 +39,11 @@ export const listPurchaseOrderAPI = async (filters: ModelPurchaseOrderFilterInpu
   return resp;
 }
 
-export const listCustomerOrderAPI = async (filters: ModelCustomerOrderFilterInput, sortDirection: ModelSortDirection): Promise<CustomerOrder[]> => {
+export const listCustomerOrderAPI = async (filters?: ModelCustomerOrderFilterInput, sortDirection?: ModelSortDirection, createdAt?: ModelStringKeyConditionInput): Promise<CustomerOrder[]> => {
   const resp = await API.graphql<GraphQLQuery<CustomerOrdersByCreatedAtQuery>>({
     query: customerOrdersByCreatedAt,
     variables: {
+      createdAt: createdAt,
       filter: filters,
       sortDirection: sortDirection,
       type: "CustomerOrder"

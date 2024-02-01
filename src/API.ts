@@ -537,16 +537,6 @@ export type ModelPurchaseOrderConnection = {
   nextToken?: string | null,
 };
 
-export type ModelStringKeyConditionInput = {
-  eq?: string | null,
-  le?: string | null,
-  lt?: string | null,
-  ge?: string | null,
-  gt?: string | null,
-  between?: Array< string | null > | null,
-  beginsWith?: string | null,
-};
-
 export type ModelOrderChangeFilterInput = {
   reason?: ModelStringInput | null,
   and?: Array< ModelOrderChangeFilterInput | null > | null,
@@ -593,6 +583,16 @@ export type ModelCustomerOrderConnection = {
   __typename: "ModelCustomerOrderConnection",
   items:  Array<CustomerOrder | null >,
   nextToken?: string | null,
+};
+
+export type ModelStringKeyConditionInput = {
+  eq?: string | null,
+  le?: string | null,
+  lt?: string | null,
+  ge?: string | null,
+  gt?: string | null,
+  between?: Array< string | null > | null,
+  beginsWith?: string | null,
 };
 
 export type ModelSubscriptionTShirtFilterInput = {
@@ -1663,110 +1663,15 @@ export type GetPurchaseOrderQuery = {
 };
 
 export type ListPurchaseOrdersQueryVariables = {
+  id?: string | null,
   filter?: ModelPurchaseOrderFilterInput | null,
   limit?: number | null,
   nextToken?: string | null,
+  sortDirection?: ModelSortDirection | null,
 };
 
 export type ListPurchaseOrdersQuery = {
   listPurchaseOrders?:  {
-    __typename: "ModelPurchaseOrderConnection",
-    items:  Array< {
-      __typename: "PurchaseOrder",
-      id: string,
-      orderNumber: string,
-      vendor: string,
-      orderedItems?:  {
-        __typename: "ModelTShirtOrderConnection",
-        items:  Array< {
-          __typename: "TShirtOrder",
-          tshirt:  {
-            __typename: "TShirt",
-            id: string,
-            styleNumber: string,
-            brand: string,
-            color: string,
-            size: TShirtSize,
-            type: TShirtType,
-            quantityOnHand?: number | null,
-            isDeleted?: boolean | null,
-            createdAt: string,
-            updatedAt: string,
-          },
-          quantity: number,
-          amountReceived?: number | null,
-          costPerUnit: number,
-          discount: number,
-          id: string,
-          createdAt: string,
-          updatedAt: string,
-          purchaseOrderOrderedItemsId?: string | null,
-          customerOrderOrderedItemsId?: string | null,
-          tShirtOrderTshirtId: string,
-        } | null >,
-        nextToken?: string | null,
-      } | null,
-      orderNotes?: string | null,
-      status: POStatus,
-      changeHistory?:  {
-        __typename: "ModelOrderChangeConnection",
-        items:  Array< {
-          __typename: "OrderChange",
-          tshirt:  {
-            __typename: "TShirt",
-            id: string,
-            styleNumber: string,
-            brand: string,
-            color: string,
-            size: TShirtSize,
-            type: TShirtType,
-            quantityOnHand?: number | null,
-            isDeleted?: boolean | null,
-            createdAt: string,
-            updatedAt: string,
-          },
-          reason: string,
-          fieldChanges:  Array< {
-            __typename: "FieldChange",
-            oldValue: string,
-            newValue: string,
-            fieldName: string,
-          } >,
-          id: string,
-          createdAt: string,
-          updatedAt: string,
-          purchaseOrderChangeHistoryId?: string | null,
-          customerOrderChangeHistoryId?: string | null,
-          orderChangeTshirtId: string,
-        } | null >,
-        nextToken?: string | null,
-      } | null,
-      taxRate: number,
-      shipping: number,
-      shippingAddress?: string | null,
-      fees: number,
-      discount: number,
-      dateExpected: string,
-      isDeleted?: boolean | null,
-      type?: string | null,
-      createdAt: string,
-      updatedAt: string,
-    } | null >,
-    nextToken?: string | null,
-  } | null,
-};
-
-export type PurchaseOrdersByCreatedAtQueryVariables = {
-  type: string,
-  createdAt?: ModelStringKeyConditionInput | null,
-  sortDirection?: ModelSortDirection | null,
-  filter?: ModelPurchaseOrderFilterInput | null,
-  limit?: number | null,
-  nextToken?: string | null,
-};
-
-export type PurchaseOrdersByCreatedAtQuery = {
-  purchaseOrdersByCreatedAt?:  {
     __typename: "ModelPurchaseOrderConnection",
     items:  Array< {
       __typename: "PurchaseOrder",
@@ -2091,9 +1996,11 @@ export type GetCustomerOrderQuery = {
 };
 
 export type ListCustomerOrdersQueryVariables = {
+  id?: string | null,
   filter?: ModelCustomerOrderFilterInput | null,
   limit?: number | null,
   nextToken?: string | null,
+  sortDirection?: ModelSortDirection | null,
 };
 
 export type ListCustomerOrdersQuery = {
@@ -2174,6 +2081,103 @@ export type ListCustomerOrdersQuery = {
       } | null,
       taxRate: number,
       discount: number,
+      isDeleted?: boolean | null,
+      type?: string | null,
+      createdAt: string,
+      updatedAt: string,
+    } | null >,
+    nextToken?: string | null,
+  } | null,
+};
+
+export type PurchaseOrdersByCreatedAtQueryVariables = {
+  type: string,
+  createdAt?: ModelStringKeyConditionInput | null,
+  sortDirection?: ModelSortDirection | null,
+  filter?: ModelPurchaseOrderFilterInput | null,
+  limit?: number | null,
+  nextToken?: string | null,
+};
+
+export type PurchaseOrdersByCreatedAtQuery = {
+  purchaseOrdersByCreatedAt?:  {
+    __typename: "ModelPurchaseOrderConnection",
+    items:  Array< {
+      __typename: "PurchaseOrder",
+      id: string,
+      orderNumber: string,
+      vendor: string,
+      orderedItems?:  {
+        __typename: "ModelTShirtOrderConnection",
+        items:  Array< {
+          __typename: "TShirtOrder",
+          tshirt:  {
+            __typename: "TShirt",
+            id: string,
+            styleNumber: string,
+            brand: string,
+            color: string,
+            size: TShirtSize,
+            type: TShirtType,
+            quantityOnHand?: number | null,
+            isDeleted?: boolean | null,
+            createdAt: string,
+            updatedAt: string,
+          },
+          quantity: number,
+          amountReceived?: number | null,
+          costPerUnit: number,
+          discount: number,
+          id: string,
+          createdAt: string,
+          updatedAt: string,
+          purchaseOrderOrderedItemsId?: string | null,
+          customerOrderOrderedItemsId?: string | null,
+          tShirtOrderTshirtId: string,
+        } | null >,
+        nextToken?: string | null,
+      } | null,
+      orderNotes?: string | null,
+      status: POStatus,
+      changeHistory?:  {
+        __typename: "ModelOrderChangeConnection",
+        items:  Array< {
+          __typename: "OrderChange",
+          tshirt:  {
+            __typename: "TShirt",
+            id: string,
+            styleNumber: string,
+            brand: string,
+            color: string,
+            size: TShirtSize,
+            type: TShirtType,
+            quantityOnHand?: number | null,
+            isDeleted?: boolean | null,
+            createdAt: string,
+            updatedAt: string,
+          },
+          reason: string,
+          fieldChanges:  Array< {
+            __typename: "FieldChange",
+            oldValue: string,
+            newValue: string,
+            fieldName: string,
+          } >,
+          id: string,
+          createdAt: string,
+          updatedAt: string,
+          purchaseOrderChangeHistoryId?: string | null,
+          customerOrderChangeHistoryId?: string | null,
+          orderChangeTshirtId: string,
+        } | null >,
+        nextToken?: string | null,
+      } | null,
+      taxRate: number,
+      shipping: number,
+      shippingAddress?: string | null,
+      fees: number,
+      discount: number,
+      dateExpected: string,
       isDeleted?: boolean | null,
       type?: string | null,
       createdAt: string,

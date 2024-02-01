@@ -42,7 +42,7 @@ enum TShirtType {
 
 type PurchaseOrder @model @auth(rules: [
   { allow: groups, groups: ["admin"], provider: userPools}]) {
-  id: ID!
+  id: ID! @primaryKey
   orderNumber: String!
   vendor: String!
   orderedItems: [TShirtOrder!] @hasMany
@@ -92,7 +92,7 @@ type TShirtOrder @model @auth(rules: [
 
 type CustomerOrder @model @auth(rules: [
   { allow: groups, groups: ["admin"], provider: userPools}]) {
-  id: ID!
+  id: ID! @primaryKey
 
   customerName: String!
   customerEmail: AWSEmail

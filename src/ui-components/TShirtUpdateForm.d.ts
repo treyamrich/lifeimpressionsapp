@@ -6,7 +6,6 @@
 
 import * as React from "react";
 import { GridProps, SelectFieldProps, SwitchFieldProps, TextFieldProps } from "@aws-amplify/ui-react";
-import { TShirt } from "../API.ts";
 export declare type EscapeHatchProps = {
     [elementHierarchy: string]: Record<string, unknown>;
 } | null;
@@ -55,7 +54,7 @@ export declare type TShirtUpdateFormProps = React.PropsWithChildren<{
     overrides?: TShirtUpdateFormOverridesProps | undefined | null;
 } & {
     id?: string;
-    tShirt?: TShirt;
+    tShirt?: any;
     onSubmit?: (fields: TShirtUpdateFormInputValues) => TShirtUpdateFormInputValues;
     onSuccess?: (fields: TShirtUpdateFormInputValues) => void;
     onError?: (fields: TShirtUpdateFormInputValues, errorMessage: string) => void;
