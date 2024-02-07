@@ -107,7 +107,7 @@ const EditTShirtOrderPopup = ({
   return (
     <Dialog open={open} maxWidth="md">
       <DialogTitle textAlign="center">{title}</DialogTitle>
-      <DialogContent style={{ padding: "25px" }}>
+      <DialogContent style={{ paddingLeft: "25px", paddingRight: "25px" }}>
         <Grid container spacing={3} direction="column">
           <Grid item>
             <ChosenTShirtCard tshirt={row?.original.tshirt}/>

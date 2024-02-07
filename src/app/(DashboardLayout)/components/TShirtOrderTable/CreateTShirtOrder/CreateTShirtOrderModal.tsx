@@ -139,7 +139,7 @@ const CreateTShirtOrderModal = <TShirtOrder extends Record<string, any>>({
   return (
     <Dialog open={open}>
       <DialogTitle textAlign="center">{modalTitle}</DialogTitle>
-      <DialogContent style={{ padding: "25px" }}>
+      <DialogContent style={{ paddingLeft: "25px", paddingRight: "25px" }}>
         <form onSubmit={(e) => e.preventDefault()}>
           <Stack
             sx={{
