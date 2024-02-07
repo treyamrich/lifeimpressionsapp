@@ -82,6 +82,7 @@ const EditCard = ({
                                     newQty={newAmtReceived}
                                     setNewQty={setNewAmtReceived}
                                     currentQty={currentAmtReceived}
+                                    allowNewQtyToBeZero={true}
                                 />
                             </Grid>
                         )}
@@ -91,6 +92,7 @@ const EditCard = ({
                                 newQty={newAmtOrdered}
                                 setNewQty={setNewAmtOrdered}
                                 currentQty={currentAmtOrdered}
+                                allowNewQtyToBeZero={false}
                             />
                         </Grid>
                         <Grid item>

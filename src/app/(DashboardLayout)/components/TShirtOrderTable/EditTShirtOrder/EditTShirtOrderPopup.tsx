@@ -132,10 +132,12 @@ const EditTShirtOrderPopup = ({
 
               editReason={editReason}
               setEditReason={setEditReason}
+
               otherInput={otherInput}
               setOtherInput={setOtherInput}
               otherInputError={otherInputError}
               setOtherInputError={setOtherInputError}
+
               entityType={entityType}
               mode={mode}
             />

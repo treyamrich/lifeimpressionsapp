@@ -6,9 +6,10 @@ type QuantityChangerProps = {
     setNewQty: React.Dispatch<SetStateAction<number>>;
     title: String;
     currentQty: number;
+    allowNewQtyToBeZero: boolean;
 };
 
-const QuantityChanger = ({ newQty, setNewQty, title, currentQty }: QuantityChangerProps) => {
+const QuantityChanger = ({ newQty, setNewQty, title, currentQty, allowNewQtyToBeZero }: QuantityChangerProps) => {
     const newTotal = newQty + currentQty;
     return (
         <Grid container direction="column" spacing={1}>
@@ -35,7 +36,7 @@ const QuantityChanger = ({ newQty, setNewQty, title, currentQty }: QuantityChang
                                     color="error"
                                     variant="contained"
                                     size="small"
-                                    disabled={newTotal === 0}
+                                    disabled={newTotal === 0 || (!allowNewQtyToBeZero && newTotal === 1)}
                                     onClick={() =>
                                         setNewQty((prev: number) => prev - 1)
                                     }
