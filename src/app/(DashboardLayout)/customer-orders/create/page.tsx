@@ -29,13 +29,13 @@ const initialNegativeInventoryWarningState = {
 };
 
 const CreatePurchaseOrderPage = () => {
-  const { user } = useAuthContext();
+  const { user, refreshSession } = useAuthContext();
   const { rescueDBOperation } = useDBOperationContext();
   const [negativeInventoryWarning, setNegativeInventoryWarning] = useState<NegativeInventoryWarningState>({...initialNegativeInventoryWarningState});
 
   const handleCreateCustomerOrder = (co: CustomerOrder, callback: () => void, allowNegativeInventory: boolean = false) => {
     rescueDBOperation(
-      () => createOrderTransactionAPI(co, EntityType.CustomerOrder, user, allowNegativeInventory),
+      () => createOrderTransactionAPI(co, EntityType.CustomerOrder, user, allowNegativeInventory, refreshSession),
       DBOperation.CREATE,
       (resp: string[]) => {
         if (resp.length > 0) {

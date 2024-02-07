@@ -15,12 +15,12 @@ import { createOrderTransactionAPI } from "@/dynamodb-transactions/create-order-
 import { useAuthContext } from "@/contexts/AuthContext";
 
 const CreatePurchaseOrderPage = () => {
-  const { user } = useAuthContext();
+  const { user, refreshSession } = useAuthContext();
   const { rescueDBOperation } = useDBOperationContext();
   
   const handleCreatePurchaseOrder = (po: PurchaseOrder, callback: () => void) => {
     rescueDBOperation(
-      () => createOrderTransactionAPI(po, EntityType.PurchaseOrder, user, false),
+      () => createOrderTransactionAPI(po, EntityType.PurchaseOrder, user, false, refreshSession),
       DBOperation.CREATE,
       (resp: any) => {
         callback();

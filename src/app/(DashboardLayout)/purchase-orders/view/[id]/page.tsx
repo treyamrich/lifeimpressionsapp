@@ -157,7 +157,7 @@ const OrderedItemsTable = ({
     changeHistory,
     setChangeHistory,
 }: OrderedItemsTableProps) => {
-    const { user } = useAuthContext();
+    const { user, refreshSession } = useAuthContext();
     const { rescueDBOperation } = useDBOperationContext();
     const [negativeInventoryWarning, setNegativeInventoryWarning] =
         useState<NegativeInventoryWarningState>({ ...initialNegativeInventoryWarningState });
@@ -191,7 +191,8 @@ const OrderedItemsTable = ({
                 EntityType.PurchaseOrder,
                 user,
                 DBOperation.UPDATE,
-                allowNegativeInventory
+                allowNegativeInventory,
+                refreshSession
             ),
             DBOperation.UPDATE,
             (resp: UpdateOrderTransactionResponse) => {
@@ -241,7 +242,8 @@ const OrderedItemsTable = ({
                 EntityType.PurchaseOrder,
                 user,
                 DBOperation.CREATE,
-                true
+                true,
+                refreshSession
             ),
             DBOperation.CREATE,
             (resp: UpdateOrderTransactionResponse) => {

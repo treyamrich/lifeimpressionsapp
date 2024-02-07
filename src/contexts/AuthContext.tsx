@@ -19,12 +19,17 @@ import { Button, CircularProgress } from "@mui/material";
 type authContextType = {
   user: any;
   setUser: Dispatch<SetStateAction<CognitoUser | null>>;
+
+  refreshSession: () => Promise<any | undefined>;
   login: (creds: LoginCredentials) => void;
   logout: () => void;
+
   register: (creds: RegisterCredentials) => void;
   confirmRegister: (input: ConfirmRegisterInput) => void;
+
   authError: AuthError,
   setAuthError: Dispatch<SetStateAction<AuthError>>;
+
   forgotPassword: (username: string) => void;
   forgotPasswordSubmit: (input: ForgotPasswordInput) => void;
   completeNewPassword: (newPw: string, name: string) => void;
@@ -33,12 +38,18 @@ type authContextType = {
 const authContextDefaultValues: authContextType = {
   user: null,
   setUser: () => { },
+
+  refreshSession: () => Promise.resolve(),
+
   login: () => { },
   logout: () => { },
+
   register: () => { },
   confirmRegister: () => { },
+
   authError: { errMsg: "" },
   setAuthError: () => { },
+
   forgotPassword: () => { },
   forgotPasswordSubmit: () => { },
   completeNewPassword: () => {}
@@ -174,7 +185,7 @@ export const AuthContextProvider = ({ children }: Props) => {
     })
   }
 
-  const checkUser = async (): Promise<void> => {
+  const checkUser = async (): Promise<any | undefined> => {
     try {
       let userData = await Auth.currentAuthenticatedUser();
       const groups = userData.signInUserSession.accessToken.payload["cognito:groups"];
@@ -183,6 +194,7 @@ export const AuthContextProvider = ({ children }: Props) => {
         userData = null;
       }
       setUser(userData);
+      return userData
     } catch (error: any) {
       setUser(null);
       // No user
@@ -200,7 +212,6 @@ export const AuthContextProvider = ({ children }: Props) => {
   // Refresh session token every 59 minutes
   useEffect(() => {
     const checkUserInterval = setInterval(() => {
-      console.log("REFRESHING SESSION TOKENS");
       checkUser();
     }, EVERY_59_MIN_AS_MS);
     return () => clearInterval(checkUserInterval);
@@ -238,12 +249,18 @@ export const AuthContextProvider = ({ children }: Props) => {
       value={{
         user,
         setUser,
+
+        refreshSession: checkUser,
+
         login,
         logout,
+
         register,
         confirmRegister,
+
         authError,
         setAuthError,
+
         forgotPassword,
         forgotPasswordSubmit,
         completeNewPassword

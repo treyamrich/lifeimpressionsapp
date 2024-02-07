@@ -15,7 +15,11 @@ import {
   getUpdateTShirtTablePartiQL,
 } from "./partiql-helpers";
 import { v4 } from "uuid";
-import { validateEmail, validateISO8601, validatePhoneNumber } from "@/utils/field-validation";
+import {
+  validateEmail,
+  validateISO8601,
+  validatePhoneNumber,
+} from "@/utils/field-validation";
 import { validateTShirtOrderInput } from "./validation";
 import { DBOperation } from "@/contexts/DBErrorContext";
 
@@ -78,40 +82,52 @@ export const assembleCreateOrderTransactionStatements = (
   return transactionStatements;
 };
 
-const validateCreateOrderInput = (input: PurchaseOrderOrCustomerOrder, entityType: EntityType) => {
+const validateCreateOrderInput = (
+  input: PurchaseOrderOrCustomerOrder,
+  entityType: EntityType
+) => {
   const orderedItems = input.orderedItems as any as TShirtOrder[]; // Locally orderedItems is just an array
-  orderedItems.forEach(item => {
+  orderedItems.forEach((item) => {
     validateTShirtOrderInput(item, DBOperation.CREATE);
-    if (item.amountReceived !== 0) throw Error("Received amount should be 0 on order creation");
+    if (item.amountReceived !== 0)
+      throw Error("Received amount should be 0 on order creation");
   });
 
-  if(input.discount < 0) throw Error("Invalid discount for order");
-  if(input.taxRate < 0) throw Error("Invalid tax rate");
+  if (input.discount < 0) throw Error("Invalid discount for order");
+  if (input.taxRate < 0) throw Error("Invalid tax rate");
 
-  const isValidStr = (str: string | undefined | null) => str !== undefined && str !== null;
+  const isValidStr = (str: string | undefined | null) =>
+    str !== undefined && str !== null;
   if (entityType === EntityType.CustomerOrder) {
     let order = input as CustomerOrder;
-    if (isValidStr(order.customerPhoneNumber) && validatePhoneNumber(order.customerPhoneNumber!) === undefined)
+    if (
+      isValidStr(order.customerPhoneNumber) &&
+      validatePhoneNumber(order.customerPhoneNumber!) === undefined
+    )
       throw Error("Invalid phone number input");
-    if (isValidStr(order.customerEmail) && validateEmail(order.customerEmail!) === undefined)
-      throw Error("Invalid email input.")
-    if(isValidStr(order.dateNeededBy) && !validateISO8601(order.dateNeededBy))
+    if (
+      isValidStr(order.customerEmail) &&
+      validateEmail(order.customerEmail!) === undefined
+    )
+      throw Error("Invalid email input.");
+    if (isValidStr(order.dateNeededBy) && !validateISO8601(order.dateNeededBy))
       throw Error("Invalid date for date needed by field");
   } else {
     let order = input as PurchaseOrder;
-    if(isValidStr(order.dateExpected) && !validateISO8601(order.dateExpected))
+    if (isValidStr(order.dateExpected) && !validateISO8601(order.dateExpected))
       throw Error("Invalid date for date expected by field");
-    if(order.fees < 0) throw Error("Invalid value for order fees");
-    if(order.shipping < 0) throw Error("Invalid shipping value");
+    if (order.fees < 0) throw Error("Invalid value for order fees");
+    if (order.shipping < 0) throw Error("Invalid shipping value");
   }
-}
+};
 
 // If allow negative inventory is set to false, then an array of tshirt order style numbers will be returned that would've caused negative inventory
 export const createOrderTransactionAPI = async (
   input: PurchaseOrderOrCustomerOrder,
   entityType: EntityType,
   user: CognitoUser,
-  allowNegativeInventory: boolean
+  allowNegativeInventory: boolean,
+  refreshTokenFn?: () => Promise<CognitoUser | undefined>
 ): Promise<Array<string>> => {
 
   const orderedItems = input.orderedItems as any as TShirtOrder[]; // Locally orderedItems is just an array
@@ -131,9 +147,17 @@ export const createOrderTransactionAPI = async (
     throw new Error(`Failed to create ${entityType} order`);
   }
 
-
   const dynamodbClient = await createDynamoDBObj(user);
-  return dynamodbClient.send(command).catch((e) => {
+  return dynamodbClient.send(command).catch(async (e) => {
+    // Retry and try refresh token
+    if (e.message.includes("Token expired") && refreshTokenFn) {
+      let updatedSession = await refreshTokenFn();
+      if (updatedSession) {
+        // Don't retry session renewal again
+        return createOrderTransactionAPI(input, entityType, updatedSession, allowNegativeInventory);
+      }
+    }
+    
     if (!allowNegativeInventory && e.CancellationReasons) {
       const negativeInventoryShirts = e.CancellationReasons.slice(1)
         .map((cancellationObj: any, index: number) => {
