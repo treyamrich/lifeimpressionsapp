@@ -31,9 +31,11 @@ export const toTimezoneWithoutAdjustingHours = (dateString: string): Dayjs => {
         .set('millisecond', milliseconds);
 }
 
-export const getStartOfTomorrow = () => {
-    return dayjs().tz(configuredTimeZone).startOf('day').add(1, 'day');
-}
+export const getStartOfDay = (dayOffset: number) => 
+    dayjs().tz(configuredTimeZone).startOf('day').add(dayOffset, 'day')
+
+export const getEndOfDay = (dayOffset: number) =>
+    dayjs().tz(configuredTimeZone).endOf('day').add(dayOffset, 'day')
 
 export const getTodayInSetTz = () => {
     return dayjs().tz(configuredTimeZone);

@@ -12,7 +12,7 @@ import ConfirmPopup from "../../components/forms/confirm-popup/ConfirmPopup";
 import { useRouter } from "next/navigation";
 import { ColumnInfo, SelectValue } from "../../purchase-orders/table-constants";
 import { DateTimePicker } from "@mui/x-date-pickers";
-import { getStartOfTomorrow, toAWSDateTime } from "@/utils/datetimeConversions";
+import { getStartOfDay, toAWSDateTime } from "@/utils/datetimeConversions";
 import { Dayjs } from "dayjs";
 import MyTelInput from "../inputs/MyTelInput";
 import { validateEmail, validatePhoneNumber } from "@/utils/field-validation";
@@ -48,7 +48,7 @@ function CreateOrderPage<T extends Record<any, any>>({
         const formState = {} as any;
         Object.keys(initialOrderFormState).forEach(field => {
             if (columnInfo.get(field)?.isDatetimeField) {
-                formState[field] = getStartOfTomorrow();
+                formState[field] = getStartOfDay(1);
             } else {
                 formState[field] = initialOrderFormState[field];
             }

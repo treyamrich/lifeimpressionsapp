@@ -1,64 +1,68 @@
 "use client";
 
-import DashboardCard from '@/app/(DashboardLayout)/components/shared/DashboardCard';
-import PageContainer from '../components/container/PageContainer';
-import { Grid } from '@mui/material';
-import GenerateReportForm, { FormState } from './GenerateReportForm';
-import Section from '../components/po-customer-order-shared-components/ViewOrderHeader/Section';
-import { TShirtOrder } from '../../../API';
-import { useState } from 'react';
-import { handleReportRequest } from './util';
-import ViewReport from './ViewReport/ViewReport';
-import dayjs from 'dayjs';
-import { useDBOperationContext } from '@/contexts/DBErrorContext';
+import DashboardCard from "@/app/(DashboardLayout)/components/shared/DashboardCard";
+import PageContainer from "../components/container/PageContainer";
+import GenerateReportForm, { FormState, ReportType } from "./GenerateReportForm";
+import { TShirtOrder } from "../../../API";
+import { useState } from "react";
+import { downloadDetailedReport, downloadHighLevelReport, handleReportRequest } from "./util";
+import dayjs from "dayjs";
+import { useDBOperationContext } from "@/contexts/DBErrorContext";
+import { getTodayInSetTz, toReadableDateTime } from "@/utils/datetimeConversions";
+import { OrderTotal, calculateOrderTotal } from "@/utils/orderTotal";
 
 export interface Order {
-    __typename: string;
-    id: string;
-    orderNumber: string;
-    createdAt: string;
-    updatedAt: string;
-    taxRate: number;
-    discount: number;
-    orderedItems: TShirtOrder[];
+  __typename: string;
+  id: string;
+  orderNumber: string;
+  createdAt: string;
+  updatedAt: string;
+  taxRate: number;
+  discount: number;
+  orderedItems: TShirtOrder[];
 }
 
 const ReportGeneration = () => {
-    const [orders, setOrders] = useState<Order[]>([]);
-    const { rescueDBOperationBatch } = useDBOperationContext();
+  const { rescueDBOperationBatch } = useDBOperationContext();
 
-    const handleGenerateSubmission = async (form: FormState) => {
-        const newOrders = await handleReportRequest(form, rescueDBOperationBatch);
-        // Sorting by the date the order was placed
-        newOrders.sort((a, b) => {
-            let l, r
-            l = dayjs(a.createdAt)
-            r = dayjs(b.createdAt)
-            if(l.isBefore(r)) return -1;
-            if(l.isAfter(r)) return 1;
-            return 0;
-        })
-        setOrders(newOrders);
+  const handleGenerateSubmission = async (form: FormState) => {
+    const orders = await handleReportRequest(form, rescueDBOperationBatch);
+    // Sorting by the date the order was modified
+    orders.sort((a, b) => {
+      let l, r;
+      l = dayjs(a.updatedAt);
+      r = dayjs(b.updatedAt);
+      if (l.isBefore(r)) return -1;
+      if (l.isAfter(r)) return 1;
+      return 0;
+    });
+
+    let today = toReadableDateTime(getTodayInSetTz().toString())
+    switch(form.reportType) {
+        case ReportType.Detailed:
+            downloadDetailedReport(orders, today)
+            break
+        default:
+            let orderIdToTotalMap = new Map<string, OrderTotal>(
+                orders.map(order => {
+                    const total = calculateOrderTotal(order, order.orderedItems);
+                    return [order.id, total]
+                })
+            );
+            downloadHighLevelReport(orders, orderIdToTotalMap, today)
     }
+  };
 
-    return (
-        <PageContainer
-            title="Report Generation"
-            description={`this is the report generation page`}
-        >
-            <DashboardCard title="Generate Report">
-                <Grid container rowSpacing={5} columnSpacing={5}>
-                    <Section header="Report Details" columnWidth={12}>
-                        <GenerateReportForm onSubmit={handleGenerateSubmission} />
-                    </Section>
-
-                    <Section header="Report" columnWidth={12}>
-                        <ViewReport orders={orders} />
-                    </Section>
-                </Grid>
-            </DashboardCard>
-        </PageContainer>
-    );
-}
+  return (
+    <PageContainer
+      title="Report Generation"
+      description={`this is the report generation page`}
+    >
+      <DashboardCard title="Generate Report">
+        <GenerateReportForm onSubmit={handleGenerateSubmission} />
+      </DashboardCard>
+    </PageContainer>
+  );
+};
 
 export default ReportGeneration;

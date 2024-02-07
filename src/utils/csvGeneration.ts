@@ -9,7 +9,7 @@ declare global {
     }
 }
 
-export const generateCSV = (filename: string, headers: CSVHeader[], data: any[]): Blob => {
+export const downloadCSV = (filename: string, headers: CSVHeader[], data: any[]): Blob => {
 
     const processRow = (row: any) =>
         headers.map(header => processRowValue(row[header.columnKey])).join(',') + '\n';

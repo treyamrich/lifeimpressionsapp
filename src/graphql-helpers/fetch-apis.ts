@@ -20,11 +20,11 @@ export const listTShirtAPI = async (filters: ModelTShirtFilterInput): Promise<TS
   return resp;
 };
 
-export const listPurchaseOrderAPI = async (filters?: ModelPurchaseOrderFilterInput, sortDirection?: ModelSortDirection, createdAt?: ModelStringKeyConditionInput): Promise<PurchaseOrder[]> => {
+export const listPurchaseOrderAPI = async (filters?: ModelPurchaseOrderFilterInput, sortDirection?: ModelSortDirection, updatedAt?: ModelStringKeyConditionInput): Promise<PurchaseOrder[]> => {
   const resp = await API.graphql<GraphQLQuery<PurchaseOrdersByCreatedAtQuery>>({
     query: purchaseOrdersByCreatedAt,
     variables: {
-      createdAt: createdAt,
+      updatedAt: updatedAt,
       filter: filters,
       sortDirection: sortDirection,
       type: "PurchaseOrder"
@@ -39,11 +39,11 @@ export const listPurchaseOrderAPI = async (filters?: ModelPurchaseOrderFilterInp
   return resp;
 }
 
-export const listCustomerOrderAPI = async (filters?: ModelCustomerOrderFilterInput, sortDirection?: ModelSortDirection, createdAt?: ModelStringKeyConditionInput): Promise<CustomerOrder[]> => {
+export const listCustomerOrderAPI = async (filters?: ModelCustomerOrderFilterInput, sortDirection?: ModelSortDirection, updatedAt?: ModelStringKeyConditionInput): Promise<CustomerOrder[]> => {
   const resp = await API.graphql<GraphQLQuery<CustomerOrdersByCreatedAtQuery>>({
     query: customerOrdersByCreatedAt,
     variables: {
-      createdAt: createdAt,
+      updatedAt: updatedAt,
       filter: filters,
       sortDirection: sortDirection,
       type: "CustomerOrder"

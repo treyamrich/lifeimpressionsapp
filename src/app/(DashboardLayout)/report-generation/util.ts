@@ -4,15 +4,16 @@ import { listCustomerOrderAPI, listPurchaseOrderAPI } from "@/graphql-helpers/fe
 import { toAWSDateTime, toReadableDateTime } from "@/utils/datetimeConversions";
 import { FormState } from "./GenerateReportForm";
 import { Order } from "./page";
-import { CSVHeader, generateCSV } from "@/utils/csvGeneration";
+import { CSVHeader, downloadCSV } from "@/utils/csvGeneration";
 import { OrderTotal } from "@/utils/orderTotal";
+import dayjs from "dayjs";
 
 export type RequestFilters = {
     poFilter: ModelPurchaseOrderFilterInput;
     coFilter: ModelCustomerOrderFilterInput;
 };
 
-export const getFilters = (form: FormState) => {
+export const getOrderRequestFilters = (form: FormState) => {
     const { dateEnd, dateStart, includeDeletedCOs, includeDeletedPOs } = form;
     const excludeDeletedFilter = { isDeleted: { ne: true } };
     const dateFilter = { between: [toAWSDateTime(dateStart), toAWSDateTime(dateEnd)]};
@@ -35,7 +36,7 @@ export const handleReportRequest = async (
     let resPO: any[] = [];
     let resCO: any[] = []
 
-    const { coFilter, poFilter, dateFilter } = getFilters(form);
+    const { coFilter, poFilter, dateFilter } = getOrderRequestFilters(form);
 
     const batchItems: AsyncBatchItem<any>[] = [];
     let hadError = false;
@@ -83,7 +84,7 @@ export const handleReportRequest = async (
     return Promise.resolve(newOrders);
 }
 
-export const downloadOrderLevelCSV = (orders: Order[], orderIdToTotal: Map<string, OrderTotal>, todaysDate: string) => {
+export const downloadHighLevelReport = (orders: Order[], orderIdToTotal: Map<string, OrderTotal>, todaysDate: string) => {
     let csvData: any[] = orders;
     const enhancedOrders = csvData.map(order => {
         const { total, shipping, tax, fees, itemDiscounts, totalDiscounts, subtotal } = orderIdToTotal.get(order.id)!;
@@ -105,8 +106,8 @@ export const downloadOrderLevelCSV = (orders: Order[], orderIdToTotal: Map<strin
         { columnKey: "__typename", headerName: "Order Type" },
         
         { columnKey: "orderNumber", headerName: "Order #" },
-        { columnKey: "createdAt", headerName: "Date" },
-        { columnKey: "updatedAt", headerName: "Updated At" },
+        { columnKey: "createdAt", headerName: "Order Date" },
+        { columnKey: "updatedAt", headerName: "Last Modified" },
 
         { columnKey: "itemDiscounts", headerName: "Item Discounts" },
         { columnKey: "discount", headerName: "Full Order Discounts" },
@@ -121,6 +122,58 @@ export const downloadOrderLevelCSV = (orders: Order[], orderIdToTotal: Map<strin
         { columnKey: "total", headerName: "Total" }
     ];
 
-    const csvName = `Report-${todaysDate}.csv`;
-    generateCSV(csvName, headers, enhancedOrders);
+    const csvName = `LIH-HighLevelReport-${todaysDate}.csv`;
+    downloadCSV(csvName, headers, enhancedOrders);
+}
+
+export const downloadDetailedReport = (orders: Order[], todaysDate: string) => {
+    let csvData: any[] = orders;
+    const enhancedOrderItems = csvData.flatMap(order => {
+        const orderCreatedAt = toReadableDateTime(order.createdAt);
+        // const updatedAt = toReadableDateTime(order.updatedAt);
+        return order.orderedItems.map((orderItem: TShirtOrder) => {
+            return {
+                orderId: order.id,
+                orderNumber: order.orderNumber,
+                __typename: order.__typename,
+                createdAt: orderCreatedAt,
+
+                sortKey: dayjs(orderItem.updatedAt), // ONLY USED FOR SORTING
+
+                updatedAt: toReadableDateTime(orderItem.updatedAt),
+                tshirtStyleNumber: orderItem.tshirt.styleNumber,
+                tshirtColor: orderItem.tshirt.color,
+                tshirtSize: orderItem.tshirt.size,
+                
+                orderedQuantity: orderItem.quantity,
+                costPerUnit: orderItem.costPerUnit,
+                itemDiscounts: orderItem.discount,
+            }
+        })
+    });
+
+    // Sort the order items by updated at
+    enhancedOrderItems.sort((a, b) => {
+        if(a.sortKey.isBefore(b)) return -1;
+        if(a.sortKey.isAfter(b)) return 1;
+        return 0;
+    })
+
+
+    const headers: CSVHeader[] = [
+        { columnKey: "orderId", headerName: "Order ID" },
+        { columnKey: "orderNumber", headerName: "Order #" },
+        { columnKey: "__typename", headerName: "Order Type" },
+        { columnKey: "createdAt", headerName: "Order Date Placed" },
+        
+        { columnKey: "updatedAt", headerName: "Order Item: Last Modified" },
+        { columnKey: "tshirtStyleNumber", headerName: "Style No."},
+        { columnKey: "tshirtColor", headerName: "Color"},
+        { columnKey: "tshirtSize", headerName: "Size"},
+        { columnKey: "orderedQuantity", headerName: "Qty"},
+        { columnKey: "costPerUnit", headerName: "Cost Per Unit ($/unit)"},
+        { columnKey: "itemDiscounts", headerName: "Item Discounts" },
+    ];
+    const csvName = `LIH-DetailedReport-${todaysDate}.csv`;
+    downloadCSV(csvName, headers, enhancedOrderItems);
 }
