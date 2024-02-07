@@ -122,7 +122,6 @@ const EditCard = ({
                                     return err
                                 }}
                                 onChange={(newValue: number, hasError: boolean) => {
-                                    console.log(newValue)
                                     setNewDiscount({ value: newValue, hasError: hasError });
                                 }}
                                 name="discount"
