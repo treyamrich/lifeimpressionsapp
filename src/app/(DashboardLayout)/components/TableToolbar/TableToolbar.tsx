@@ -4,13 +4,16 @@ import LoadMorePaginationButton from "../pagination/LoadMorePaginationButton";
 import { SetStateAction } from "react";
 import { ListAPIResponse } from "@/graphql-helpers/fetch-apis";
 
-const AddNewEntityButton = ({ onClick, text }: { 
-    onClick?: () => void; 
-    text?: string;
+const AddNewEntityButton = ({
+  onClick,
+  text,
+}: {
+  onClick?: () => void;
+  text?: string;
 }) => (
   <Tooltip title="Add new item">
     <IconButton onClick={onClick} color="primary" size="small">
-        {text}
+      {text}
       <AddIcon />
     </IconButton>
   </Tooltip>
@@ -20,15 +23,17 @@ function TableToolbar<T>({
   items,
   setItems,
   fetchFunc,
+  itemTransformerFn,
   onAdd,
   addButtonText,
-  showAddButton
+  showAddButton,
 }: {
   items: T[];
   setItems: React.Dispatch<SetStateAction<T[]>>;
   fetchFunc: (
     nextToken: string | undefined | null
   ) => Promise<ListAPIResponse<T>>;
+  itemTransformerFn?: (items: T) => T;
 
   showAddButton?: boolean;
   onAdd?: () => void;
@@ -40,12 +45,10 @@ function TableToolbar<T>({
         items={items}
         setItems={setItems}
         fetchFunc={fetchFunc}
+        itemTransformerFn={itemTransformerFn}
       />
       {showAddButton && (
-         <AddNewEntityButton
-         text={addButtonText}
-         onClick={onAdd}
-       />
+        <AddNewEntityButton text={addButtonText} onClick={onAdd} />
       )}
     </Stack>
   );

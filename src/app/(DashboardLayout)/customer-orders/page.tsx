@@ -2,62 +2,64 @@
 
 import { CustomerOrder, CustomerOrderStatus, ModelSortDirection } from "@/API";
 import React, { useState } from "react";
-import { useRouter } from 'next/navigation';
+import { useRouter } from "next/navigation";
 import { listCustomerOrderAPI } from "@/graphql-helpers/fetch-apis";
 
 import {
-  DBOperation, useDBOperationContext,
-} from "@/contexts/DBErrorContext";
-import {
-    columnInfo,
+  columnInfo,
   entityName,
   getTableColumns,
   coStatusToHeaderMap,
 } from "./table-constants";
-import {
-  type MRT_Row,
-} from "material-react-table";
+import { type MRT_Row } from "material-react-table";
 import OrderViewAddPage from "../components/po-customer-order-shared-components/ViewOrdersPage";
 
 const CustomerOrders = () => {
-  const { rescueDBOperation } = useDBOperationContext();
   const { push } = useRouter();
   const [tableData, setTableData] = useState<CustomerOrder[]>([]);
 
   const handleRowClick = (row: MRT_Row<CustomerOrder>) => {
-    const orderId = row.getValue('id')
+    const orderId = row.getValue("id");
     push(`/customer-orders/view/${orderId}`);
-  }
-  const handleAddRow = () => push('/customer-orders/create');
-  const handleFetchCustomerOrders = () => {
+  };
+  const handleAddRow = () => push("/customer-orders/create");
+
+  const fetchCustomerOrdersPaginationFn = (
+    nextToken: string | null | undefined
+  ) => {
     const deletedFilter = { isDeleted: { ne: true } };
-    rescueDBOperation(
-      () => listCustomerOrderAPI(false, deletedFilter, ModelSortDirection.DESC),
-      DBOperation.LIST,
-      (resp: CustomerOrder[]) => {
-        setTableData(
-          resp.map((order: CustomerOrder) => {
-            return {
-              ...order,
-              orderStatus: coStatusToHeaderMap[order.orderStatus] as CustomerOrderStatus
-            };
-          })
-        );
-      }
-    );
+    return listCustomerOrderAPI({
+      filters: deletedFilter,
+      nextToken: nextToken,
+      sortDirection: ModelSortDirection.DESC,
+    });
+  };
+
+  const fetchedCOTransformerFn = (order: CustomerOrder) => {
+    return {
+      ...order,
+      orderStatus: coStatusToHeaderMap[
+        order.orderStatus
+      ] as CustomerOrderStatus,
+    };
   }
+  
   return (
-    <OrderViewAddPage 
+
+    <OrderViewAddPage
       tableData={tableData}
+      setTableData={setTableData}
       onRowClick={handleRowClick}
       onAddRow={handleAddRow}
-      onFetchTableData={handleFetchCustomerOrders}
       pageTitle="Customer Orders"
       entityName={entityName}
       getTableColumns={getTableColumns}
       columnInfo={columnInfo}
+
+      fetchOrdersPaginationFn={fetchCustomerOrdersPaginationFn}
+      fetchedItemTransformerFn={fetchedCOTransformerFn}
     />
-  )
-}
+  );
+};
 
 export default CustomerOrders;

@@ -14,7 +14,7 @@ import {
   type MRT_Row,
   type MRT_ColumnFiltersState,
 } from "material-react-table";
-import { listTShirtAPI } from "@/graphql-helpers/fetch-apis";
+import { ListAPIResponse, listTShirtAPI } from "@/graphql-helpers/fetch-apis";
 import CreateTShirtOrderModal from "./CreateTShirtOrder/CreateTShirtOrderModal";
 import EditRowPopup from "./EditTShirtOrder/EditTShirtOrderPopup";
 import { useDBOperationContext, DBOperation } from "@/contexts/DBErrorContext";
@@ -88,9 +88,12 @@ const TShirtOrderTable = ({
   const fetchTShirts = () => {
     const deletedFilter = { isDeleted: { ne: true } };
     rescueDBOperation(
-      () => listTShirtAPI(deletedFilter),
+      () => listTShirtAPI({
+        filters: deletedFilter,
+        doCompletePagination: true
+      }),
       DBOperation.LIST,
-      (resp: TShirt[]) => setTShirtChoices(resp)
+      (resp: ListAPIResponse<TShirt>) => setTShirtChoices(resp.result)
     );
   };
 

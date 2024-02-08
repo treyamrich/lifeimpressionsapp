@@ -14,10 +14,8 @@ import {
   type MRT_Row,
 } from "material-react-table";
 import OrderViewAddPage from "../components/po-customer-order-shared-components/ViewOrdersPage";
-import { useDBOperationContext, DBOperation } from "@/contexts/DBErrorContext";
 
 const PurchaseOrders = () => {
-  const { rescueDBOperation } = useDBOperationContext();
   const { push } = useRouter();
   const [tableData, setTableData] = useState<PurchaseOrder[]>([]);
 
@@ -26,26 +24,30 @@ const PurchaseOrders = () => {
     push(`/purchase-orders/view/${poId}`);
   }
   const handleAddRow = () => push('/purchase-orders/create');
-  const handleFetchPurchaseOrders = () => {
+
+  const fetchPurchaseOrdersPaginationFn = (
+    nextToken: string | null | undefined
+  ) => {
     const deletedFilter = { isDeleted: { ne: true } };
-    rescueDBOperation(
-      () => listPurchaseOrderAPI(false, deletedFilter, ModelSortDirection.DESC),
-      DBOperation.LIST,
-      (resp: PurchaseOrder[]) => {
-        setTableData(resp);
-      }
-    );
-  }
+    return listPurchaseOrderAPI({
+      filters: deletedFilter,
+      nextToken: nextToken,
+      sortDirection: ModelSortDirection.DESC,
+    });
+  };
+
   return (
     <OrderViewAddPage 
       tableData={tableData}
+      setTableData={setTableData}
       onRowClick={handleRowClick}
       onAddRow={handleAddRow}
-      onFetchTableData={handleFetchPurchaseOrders}
       pageTitle="Purchase Orders"
       entityName={entityName}
       getTableColumns={getTableColumns}
       columnInfo={columnInfo}
+
+      fetchOrdersPaginationFn={fetchPurchaseOrdersPaginationFn}
     />
   )
 }

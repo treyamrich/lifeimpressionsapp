@@ -9,12 +9,14 @@ function LoadMorePaginationButton<T>({
   items,
   setItems,
   fetchFunc,
+  itemTransformerFn
 }: {
   items: T[];
   setItems: React.Dispatch<SetStateAction<T[]>>;
   fetchFunc: (
     nextToken: string | undefined | null
   ) => Promise<ListAPIResponse<T>>;
+  itemTransformerFn?: (item: T) => T;
 }) {
   const { rescueDBOperation } = useDBOperationContext();
   const [nextToken, setNextToken] = useState<string | undefined | null>(
@@ -26,8 +28,11 @@ function LoadMorePaginationButton<T>({
       () => fetchFunc(nextToken),
       DBOperation.LIST,
       (resp: ListAPIResponse<T>) => {
-        console.log(resp);
-        setItems(items.concat(resp.result));
+        let newRes = resp.result;
+        if(itemTransformerFn) {
+            newRes = newRes.map(itemTransformerFn)
+        }
+        setItems(items.concat(newRes));
         setNextToken(resp.nextToken);
       }
     );
