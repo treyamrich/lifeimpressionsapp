@@ -48,6 +48,15 @@ export const getTableColumns = (): MRT_ColumnDef<PurchaseOrder>[] => {
       header: "Status",
     } as MRT_ColumnDef<PurchaseOrder>,
     {
+      accessorKey: "dateExpected",
+      header: "Expected Date",
+      Cell: ({ renderedCellValue, row }) => (
+        <>
+          {toReadableDateTime(row.original.dateExpected)}
+        </>
+      )
+    } as MRT_ColumnDef<PurchaseOrder>,
+    {
       accessorKey: "createdAt",
       header: "Created on",
       Cell: ({ renderedCellValue, row }) => (
@@ -88,15 +97,6 @@ export const getTableColumns = (): MRT_ColumnDef<PurchaseOrder>[] => {
     {
       accessorKey: "discount",
       header: "Discount $",
-    } as MRT_ColumnDef<PurchaseOrder>,
-    {
-      accessorKey: "dateExpected",
-      header: "Expected Date",
-      Cell: ({ renderedCellValue, row }) => (
-        <>
-          {toReadableDateTime(row.original.dateExpected)}
-        </>
-      )
     } as MRT_ColumnDef<PurchaseOrder>,
   ];
 };
