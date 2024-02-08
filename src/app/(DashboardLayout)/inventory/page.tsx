@@ -16,7 +16,7 @@ import {
   getTableColumns,
   hiddenColumns,
 } from "./table-constants";
-import { Box, Button, IconButton, Tooltip } from "@mui/material";
+import { Box, Button, IconButton, Stack, Tooltip } from "@mui/material";
 import {
   MaterialReactTable,
   type MaterialReactTableProps,
@@ -27,6 +27,7 @@ import {
 } from "material-react-table";
 import CreateTShirtModal from "./CreateTShirtModal";
 import LoadMorePaginationButton from "../components/pagination/LoadMorePaginationButton";
+import TableToolbar from "../components/TableToolbar/TableToolbar";
 
 const Inventory = () => {
   const { rescueDBOperation } = useDBOperationContext();
@@ -141,7 +142,7 @@ const Inventory = () => {
 
   const fetchTShirtsPaginationFn = (nextToken: string | null | undefined) => {
     const deletedFilter = { isDeleted: { ne: true } };
-    return listTShirtAPI(deletedFilter, nextToken)
+    return listTShirtAPI({ filters: deletedFilter, nextToken: nextToken });
   };
 
   return (
@@ -196,20 +197,14 @@ const Inventory = () => {
               </Box>
             )}
             renderTopToolbarCustomActions={() => (
-              <>
-              <Button
-                color="primary"
-                onClick={() => setCreateModalOpen(true)}
-                variant="contained"
-              >
-                Add New Item
-              </Button>
-              <LoadMorePaginationButton
+              <TableToolbar
                 items={tableData}
                 setItems={setTableData}
                 fetchFunc={fetchTShirtsPaginationFn}
+                onAdd={() => setCreateModalOpen(true)}
+                showAddButton={true}
+                addButtonText=""
               />
-              </>
             )}
           />
           <CreateTShirtModal

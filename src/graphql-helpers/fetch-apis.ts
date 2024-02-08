@@ -34,7 +34,7 @@ export interface ListAPIInput<T> {
   filters?: T;
   sortDirection?: ModelSortDirection;
   createdAt?: ModelStringKeyConditionInput;
-  nextToken?: string;
+  nextToken?: string | null;
 }
 
 export type ListAPIResponse<T> = {
@@ -51,7 +51,6 @@ async function completePagination<T>(
 ): Promise<ListAPIResponse<any>> {
   let done = false;
   let result: any[] = [];
-  options.variables = { ...options.variables, limit: PAGINATION_LIMIT };
 
   while (!done) {
     await API.graphql<GraphQLQuery<T>>(options)
@@ -78,6 +77,7 @@ export const listTShirtAPI = async (
       filter: input.filters,
       sortDirection: input.sortDirection,
       nextToken: input.nextToken,
+      limit: PAGINATION_LIMIT,
     },
     authMode: configuredAuthMode,
   };
@@ -113,6 +113,7 @@ export const listPurchaseOrderAPI = async (
       filter: input.filters,
       sortDirection: input.sortDirection,
       type: "PurchaseOrder",
+      limit: PAGINATION_LIMIT,
     },
     authMode: configuredAuthMode,
   };
@@ -154,6 +155,7 @@ export const listCustomerOrderAPI = async (
       filter: input.filters,
       sortDirection: input.sortDirection,
       type: "CustomerOrder",
+      limit: PAGINATION_LIMIT,
     },
     authMode: configuredAuthMode,
   };
