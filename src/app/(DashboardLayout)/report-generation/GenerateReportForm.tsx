@@ -16,8 +16,9 @@ import {
   Stack,
   Typography,
 } from "@mui/material";
+import DownloadIcon from '@mui/icons-material/Download';
 import { DateTimePicker } from "@mui/x-date-pickers";
-import dayjs, { Dayjs } from "dayjs";
+import { Dayjs } from "dayjs";
 import { useState } from "react";
 import { getEndOfDay, getStartOfDay } from "@/utils/datetimeConversions";
 
@@ -174,7 +175,7 @@ const ReportGenerationForm = ({
         onClick={handleSubmit}
         type="submit"
       >
-        Generate Report
+        <DownloadIcon/>
       </Button>
     </Box>
   );
