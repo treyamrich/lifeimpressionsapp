@@ -63,10 +63,11 @@ const CreateTShirtModal = <TShirt extends Record<string, any>>({
     //Validate input
     const newErrors = new Map<string, string>(errorMap);
     let allValid = true;
+
     Object.keys(values).forEach((key) => {
       let errMsg = "";
       let value = values[key];
-      if (key === "quantityOnHand" && errorMap.get(key) !== undefined) {
+      if (key === "quantityOnHand" && errorMap.get(key) !== "") {
         errMsg = errorMap.get(key)!;
       } else if (value.toString().length < 1) {
         errMsg = "Field is required";
@@ -138,6 +139,9 @@ const CreateTShirtModal = <TShirt extends Record<string, any>>({
                   onChange={(newValue: number, hasError: boolean) => {
                     handleUpdateNumberField(column.accessorKey as string, newValue, hasError)
                   }}
+                  isValidFn={(newValue: number) => newValue < 0 ?
+                    "Negative values not allowed" : ""
+                  }
                   name={column.accessorKey as string}
                 /> :
                 <TextField
