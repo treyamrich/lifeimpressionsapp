@@ -9,28 +9,21 @@ import { createTShirtAPI } from "@/graphql-helpers/create-apis";
 import { listTShirtAPI } from "@/graphql-helpers/fetch-apis";
 import { updateTShirtAPI } from "@/graphql-helpers/update-apis";
 
-import {
-  DBOperation, useDBOperationContext,
-} from "@/contexts/DBErrorContext";
+import { DBOperation, useDBOperationContext } from "@/contexts/DBErrorContext";
 import {
   tshirtPrimaryKey,
   entityName,
   getTableColumns,
   hiddenColumns,
 } from "./table-constants";
-import {
-  Box,
-  Button,
-  IconButton,
-  Tooltip,
-} from "@mui/material";
+import { Box, Button, IconButton, Tooltip } from "@mui/material";
 import {
   MaterialReactTable,
   type MaterialReactTableProps,
   type MRT_ColumnDef,
   type MRT_Cell,
   type MRT_Row,
-  type MRT_ColumnFiltersState
+  type MRT_ColumnFiltersState,
 } from "material-react-table";
 import CreateTShirtModal from "./CreateTShirtModal";
 
@@ -57,6 +50,9 @@ const Inventory = () => {
 
   const handleSaveRowEdits: MaterialReactTableProps<TShirt>["onEditingRowSave"] =
     async ({ exitEditingMode, row, values }) => {
+      Object.keys(values).forEach((key) => {
+        if (typeof key === "string") values[key] = values[key].trim();
+      });
       if (!Object.keys(validationErrors).length) {
         rescueDBOperation(
           () => updateTShirtAPI(values),
@@ -112,8 +108,9 @@ const Inventory = () => {
               errMsg = "must be non-negative";
               break;
             default:
-              if(typeof event.target.value === 'string') {
-                isValid = isValid && validateRequired(event.target.value.trim());
+              if (typeof event.target.value === "string") {
+                isValid =
+                  isValid && validateRequired(event.target.value.trim());
                 errMsg = "is required";
               }
           }
@@ -170,19 +167,21 @@ const Inventory = () => {
             }}
             columns={columns}
             data={tableData}
-            initialState={{ 
+            initialState={{
               showColumnFilters: true,
-              sorting: [{
-                id: 'quantityOnHand',
-                desc: false,
-            }]
+              sorting: [
+                {
+                  id: "quantityOnHand",
+                  desc: false,
+                },
+              ],
             }}
             editingMode="modal" //default
             enableColumnOrdering
             onColumnFiltersChange={setColumnFilters}
             state={{
               columnFilters,
-              columnVisibility: hiddenColumns
+              columnVisibility: hiddenColumns,
             }}
             enableEditing
             onEditingRowSave={handleSaveRowEdits}

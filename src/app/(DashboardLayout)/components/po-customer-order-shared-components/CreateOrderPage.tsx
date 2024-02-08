@@ -75,8 +75,11 @@ function CreateOrderPage<T extends Record<any, any>>({
             if (columnInfo.get(key)?.isFloatField && errorMap.get(key) !== "") {
                 errMsg = errorMap.get(key)!;
             }
-            else if (columnInfo.get(key)?.isRequired && value.toString().length < 1) {
-                errMsg = "Field is required";
+            else if (columnInfo.get(key)?.isRequired) {
+                if(typeof value === 'string')
+                    values[key] = value.trim();
+                if(values[key].length < 1)
+                    errMsg = "Field is required";
             }
             else if (columnInfo.get(key)?.isPhoneNumField) {
                 const validatedPhoneNum = validatePhoneNumber(values[key]);

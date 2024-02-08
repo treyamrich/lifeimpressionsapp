@@ -8,7 +8,7 @@ import {
   getInitialTShirtFormErrorMap,
   initialTShirtFormState,
   selectInputFields,
-  numberInputFields
+  numberInputFields,
 } from "./create-tshirt-constants";
 import {
   Button,
@@ -18,7 +18,7 @@ import {
   DialogTitle,
   MenuItem,
   Stack,
-  TextField
+  TextField,
 } from "@mui/material";
 import NumberInput from "../components/inputs/NumberInput";
 
@@ -67,20 +67,25 @@ const CreateTShirtModal = <TShirt extends Record<string, any>>({
     Object.keys(values).forEach((key) => {
       let errMsg = "";
       let value = values[key];
-      
+
       if (key === "quantityOnHand" && errorMap.get(key) !== "") {
         errMsg = errorMap.get(key)!;
-      } else if (typeof value === 'string' && value.trim().toString().length < 1) {
-        errMsg = "Field is required";
+      } else if (typeof value === "string") {
+        values[key] = value.trim();
+        if (values[key].length < 1) errMsg = "Field is required";
       }
       newErrors.set(key, errMsg);
       allValid = allValid && errMsg === "";
     });
 
-    let hasDuplicate = records.reduce((prev, curr) => prev ||
-      curr.styleNumber.toLowerCase() === values.styleNumber.toLowerCase() &&
-      curr.size.toLowerCase() === values.size.toLowerCase() &&
-      curr.color.toLowerCase() === values.color.toLowerCase(), false);
+    let hasDuplicate = records.reduce(
+      (prev, curr) =>
+        prev ||
+        (curr.styleNumber.toLowerCase() === values.styleNumber.toLowerCase() &&
+          curr.size.toLowerCase() === values.size.toLowerCase() &&
+          curr.color.toLowerCase() === values.color.toLowerCase()),
+      false
+    );
     if (hasDuplicate) {
       allValid = false;
       const dupMsg = "Tshirt with style number, size, color already exists";
@@ -94,7 +99,8 @@ const CreateTShirtModal = <TShirt extends Record<string, any>>({
     if (allValid) {
       values.styleNumber = values.styleNumber.trim();
       values.color = values.color.trim();
-      values.color = values.color.substring(0, 1).toUpperCase() + values.color.substring(1);
+      values.color =
+        values.color.substring(0, 1).toUpperCase() + values.color.substring(1);
       values.brand = values.brand.trim();
       onSubmit(values);
       resetForm();
@@ -102,16 +108,20 @@ const CreateTShirtModal = <TShirt extends Record<string, any>>({
     }
   };
 
-  const handleUpdateNumberField = (key: string, newValue: number, hasError: boolean) => {
+  const handleUpdateNumberField = (
+    key: string,
+    newValue: number,
+    hasError: boolean
+  ) => {
     const newErrorMap = new Map<string, string>(errorMap);
     if (hasError) {
       newErrorMap.set(key, "Invalid input");
     } else {
-      newErrorMap.set(key, '');
+      newErrorMap.set(key, "");
       setValues({ ...values, [key]: newValue });
     }
     setErrorMap(newErrorMap);
-  }
+  };
 
   return (
     <Dialog open={open}>
@@ -132,42 +142,52 @@ const CreateTShirtModal = <TShirt extends Record<string, any>>({
                   !excludeOnCreateFields.includes(col.accessorKey as string)
               )
               .map((column) => {
-                return isNumberInputField(column.accessorKey) ? 
-                <NumberInput
-                  key={column.accessorKey as React.Key}
-                  label={column.header}
-                  initialValue={values[column.accessorKey]}
-                  onChange={(newValue: number, hasError: boolean) => {
-                    handleUpdateNumberField(column.accessorKey as string, newValue, hasError)
-                  }}
-                  isValidFn={(newValue: number) => newValue < 0 ?
-                    "Negative values not allowed" : ""
-                  }
-                  name={column.accessorKey as string}
-                /> :
-                <TextField
-                  select={isSelectInputField(column.accessorKey)}
-                  key={column.accessorKey as React.Key}
-                  label={column.header}
-                  name={column.accessorKey as string}
-                  onChange={(e) =>
-                    setValues({ ...values, [e.target.name]: e.target.value })
-                  }
-                  type={isNumberInputField(column.accessorKey) ? "number" : undefined}
-                  value={values[column.accessorKey]}
-                  required={true}
-                  error={errorMap.get(column.accessorKey as string) !== ""}
-                  helperText={errorMap.get(column.accessorKey as string)}
-                >
-                  {isSelectInputField(column.accessorKey) &&
-                    selectInputFields
-                      .get(column.accessorKey)
-                      ?.map((selectValue: SelectValue, idx: number) => (
-                        <MenuItem key={idx} value={selectValue.value}>
-                          {selectValue.label}
-                        </MenuItem>
-                      ))}
-                </TextField>
+                return isNumberInputField(column.accessorKey) ? (
+                  <NumberInput
+                    key={column.accessorKey as React.Key}
+                    label={column.header}
+                    initialValue={values[column.accessorKey]}
+                    onChange={(newValue: number, hasError: boolean) => {
+                      handleUpdateNumberField(
+                        column.accessorKey as string,
+                        newValue,
+                        hasError
+                      );
+                    }}
+                    isValidFn={(newValue: number) =>
+                      newValue < 0 ? "Negative values not allowed" : ""
+                    }
+                    name={column.accessorKey as string}
+                  />
+                ) : (
+                  <TextField
+                    select={isSelectInputField(column.accessorKey)}
+                    key={column.accessorKey as React.Key}
+                    label={column.header}
+                    name={column.accessorKey as string}
+                    onChange={(e) =>
+                      setValues({ ...values, [e.target.name]: e.target.value })
+                    }
+                    type={
+                      isNumberInputField(column.accessorKey)
+                        ? "number"
+                        : undefined
+                    }
+                    value={values[column.accessorKey]}
+                    required={true}
+                    error={errorMap.get(column.accessorKey as string) !== ""}
+                    helperText={errorMap.get(column.accessorKey as string)}
+                  >
+                    {isSelectInputField(column.accessorKey) &&
+                      selectInputFields
+                        .get(column.accessorKey)
+                        ?.map((selectValue: SelectValue, idx: number) => (
+                          <MenuItem key={idx} value={selectValue.value}>
+                            {selectValue.label}
+                          </MenuItem>
+                        ))}
+                  </TextField>
+                );
               })}
           </Stack>
         </form>
@@ -196,4 +216,4 @@ const isNumberInputField = (
 ) => {
   let nameOfField = fieldName ? fieldName.toString() : "";
   return numberInputFields.has(nameOfField);
-}
+};
