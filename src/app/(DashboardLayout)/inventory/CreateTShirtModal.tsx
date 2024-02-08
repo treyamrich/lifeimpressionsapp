@@ -67,9 +67,10 @@ const CreateTShirtModal = <TShirt extends Record<string, any>>({
     Object.keys(values).forEach((key) => {
       let errMsg = "";
       let value = values[key];
+      
       if (key === "quantityOnHand" && errorMap.get(key) !== "") {
         errMsg = errorMap.get(key)!;
-      } else if (value.toString().length < 1) {
+      } else if (typeof value === 'string' && value.trim().toString().length < 1) {
         errMsg = "Field is required";
       }
       newErrors.set(key, errMsg);

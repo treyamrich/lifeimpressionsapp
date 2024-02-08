@@ -112,8 +112,10 @@ const Inventory = () => {
               errMsg = "must be non-negative";
               break;
             default:
-              isValid = isValid && validateRequired(event.target.value);
-              errMsg = "is required";
+              if(typeof event.target.value === 'string') {
+                isValid = isValid && validateRequired(event.target.value.trim());
+                errMsg = "is required";
+              }
           }
           if (!isValid) {
             //set validation error for cell if invalid
