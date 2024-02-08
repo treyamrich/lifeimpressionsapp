@@ -96,7 +96,7 @@ export const getTableColumns = (): MRT_ColumnDef<PurchaseOrder>[] => {
     } as MRT_ColumnDef<PurchaseOrder>,
     {
       accessorKey: "discount",
-      header: "Discount $",
+      header: "Order Discount $",
     } as MRT_ColumnDef<PurchaseOrder>,
   ];
 };
