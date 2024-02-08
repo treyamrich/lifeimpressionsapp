@@ -82,6 +82,11 @@ const TShirtPicker = ({ choices, onChange, errorMessage, disabled }: {
             newPickerState.tshirtColor = '';
         }
 
+        // Reset color when size changes
+        if (fieldName === TShirtPickerFields.tshirtSize) {
+            newPickerState.tshirtColor = ''
+        }
+
         onChange(pickedShirt ? pickedShirt : null);
         setPickerState(newPickerState);
     }
