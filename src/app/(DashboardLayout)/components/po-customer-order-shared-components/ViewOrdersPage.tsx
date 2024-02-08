@@ -2,12 +2,7 @@
 
 import PageContainer from "@/app/(DashboardLayout)/components/container/PageContainer";
 import DashboardCard from "@/app/(DashboardLayout)/components/shared/DashboardCard";
-import React, {
-  SetStateAction,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import React, { SetStateAction, useMemo, useRef, useState } from "react";
 
 import {
   MaterialReactTable,
@@ -19,6 +14,8 @@ import {
 import { ColumnInfo } from "../../purchase-orders/table-constants";
 import TableToolbar from "../Table/TableToolbar";
 import { ListAPIResponse } from "@/graphql-helpers/fetch-apis";
+import TableInfoHeader from "../Table/TableInfoHeader";
+import { Stack } from "@mui/material";
 
 function ViewOrdersPage<T extends Record<any, any>>({
   tableData,
@@ -32,16 +29,18 @@ function ViewOrdersPage<T extends Record<any, any>>({
   getTableColumns,
   columnInfo,
 }: {
-  tableData: T[],
-  setTableData: React.Dispatch<SetStateAction<T[]>>,
-  onRowClick: (row: MRT_Row<T>) => void,
-  onAddRow: () => void,
-  fetchOrdersPaginationFn: (nextToken: string | null | undefined) => Promise<ListAPIResponse<T>>,
-  fetchedItemTransformerFn?: (item: T) => T,
-  pageTitle: string,
-  entityName: string,
-  getTableColumns: () => MRT_ColumnDef<T>[],
-  columnInfo: Map<string | number | symbol | undefined, ColumnInfo>,
+  tableData: T[];
+  setTableData: React.Dispatch<SetStateAction<T[]>>;
+  onRowClick: (row: MRT_Row<T>) => void;
+  onAddRow: () => void;
+  fetchOrdersPaginationFn: (
+    nextToken: string | null | undefined
+  ) => Promise<ListAPIResponse<T>>;
+  fetchedItemTransformerFn?: (item: T) => T;
+  pageTitle: string;
+  entityName: string;
+  getTableColumns: () => MRT_ColumnDef<T>[];
+  columnInfo: Map<string | number | symbol | undefined, ColumnInfo>;
 }) {
   const [columnFilters, setColumnFilters] = useState<MRT_ColumnFiltersState>(
     []
@@ -64,7 +63,8 @@ function ViewOrdersPage<T extends Record<any, any>>({
       description={`this is ${pageTitle} page`}
     >
       <DashboardCard title={`${pageTitle}`}>
-        <>
+        <Stack rowGap={2}>
+          <TableInfoHeader subheaderText="This table loads records created most recently first."/>
           <MaterialReactTable
             displayColumnDefOptions={{
               "mrt-row-actions": {
@@ -98,10 +98,10 @@ function ViewOrdersPage<T extends Record<any, any>>({
             renderTopToolbarCustomActions={() => (
               <TableToolbar
                 paginationProps={{
-                    items: tableData,
-                    setItems: setTableData,
-                    fetchFunc: fetchOrdersPaginationFn,
-                    itemTransformerFn: fetchedItemTransformerFn,
+                  items: tableData,
+                  setItems: setTableData,
+                  fetchFunc: fetchOrdersPaginationFn,
+                  itemTransformerFn: fetchedItemTransformerFn,
                 }}
                 onAdd={onAddRow}
                 showPaginationButton={true}
@@ -109,7 +109,7 @@ function ViewOrdersPage<T extends Record<any, any>>({
               />
             )}
           />
-        </>
+        </Stack>
       </DashboardCard>
     </PageContainer>
   );

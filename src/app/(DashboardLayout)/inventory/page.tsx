@@ -16,7 +16,7 @@ import {
   getTableColumns,
   hiddenColumns,
 } from "./table-constants";
-import { Box, IconButton, Tooltip } from "@mui/material";
+import { Box, IconButton, Stack, Tooltip } from "@mui/material";
 import {
   MaterialReactTable,
   type MaterialReactTableProps,
@@ -28,6 +28,7 @@ import {
 import CreateTShirtModal from "./CreateTShirtModal";
 import LoadMorePaginationButton from "../components/pagination/LoadMorePaginationButton";
 import TableToolbar from "../components/Table/TableToolbar";
+import TableInfoHeader from "../components/Table/TableInfoHeader";
 
 const Inventory = () => {
   const { rescueDBOperation } = useDBOperationContext();
@@ -148,7 +149,8 @@ const Inventory = () => {
   return (
     <PageContainer title="Inventory" description="this is Inventory">
       <DashboardCard title="Inventory">
-        <>
+        <Stack rowGap={2}>
+          <TableInfoHeader subheaderText="This table loads records with the lowest quantity first."/>
           <MaterialReactTable
             displayColumnDefOptions={{
               "mrt-row-actions": {
@@ -217,7 +219,7 @@ const Inventory = () => {
             entityName={entityName}
             records={tableData}
           />
-        </>
+        </Stack>
       </DashboardCard>
     </PageContainer>
   );
