@@ -60,6 +60,7 @@ type PurchaseOrder @model @auth(rules: [
   isDeleted: Boolean @default(value: "false")
   type: String @default(value: "PurchaseOrder") @index(name: "purchaseOrdersByCreatedAt", queryField: "purchaseOrdersByCreatedAt", sortKeyFields: ["createdAt"])
   createdAt: String!
+  updatedAt: String!
 }
 
 enum POStatus {
@@ -112,6 +113,7 @@ type CustomerOrder @model @auth(rules: [
   isDeleted: Boolean @default(value: "false")
   type: String @default(value: "CustomerOrder") @index(name: "customerOrdersByCreatedAt", queryField: "customerOrdersByCreatedAt", sortKeyFields: ["createdAt"])
   createdAt: String!
+  updatedAt: String!
 }
 
 enum CustomerOrderStatus {

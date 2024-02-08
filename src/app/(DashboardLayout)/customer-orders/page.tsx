@@ -32,7 +32,7 @@ const CustomerOrders = () => {
   const handleFetchCustomerOrders = () => {
     const deletedFilter = { isDeleted: { ne: true } };
     rescueDBOperation(
-      () => listCustomerOrderAPI(deletedFilter, ModelSortDirection.DESC),
+      () => listCustomerOrderAPI(false, deletedFilter, ModelSortDirection.DESC),
       DBOperation.LIST,
       (resp: CustomerOrder[]) => {
         setTableData(

@@ -29,7 +29,7 @@ const PurchaseOrders = () => {
   const handleFetchPurchaseOrders = () => {
     const deletedFilter = { isDeleted: { ne: true } };
     rescueDBOperation(
-      () => listPurchaseOrderAPI(deletedFilter, ModelSortDirection.DESC),
+      () => listPurchaseOrderAPI(false, deletedFilter, ModelSortDirection.DESC),
       DBOperation.LIST,
       (resp: PurchaseOrder[]) => {
         setTableData(resp);

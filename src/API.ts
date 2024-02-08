@@ -171,6 +171,7 @@ export type CreatePurchaseOrderInput = {
   isDeleted?: boolean | null,
   type?: string | null,
   createdAt?: string | null,
+  updatedAt?: string | null,
 };
 
 export enum POStatus {
@@ -194,6 +195,7 @@ export type ModelPurchaseOrderConditionInput = {
   isDeleted?: ModelBooleanInput | null,
   type?: ModelStringInput | null,
   createdAt?: ModelStringInput | null,
+  updatedAt?: ModelStringInput | null,
   and?: Array< ModelPurchaseOrderConditionInput | null > | null,
   or?: Array< ModelPurchaseOrderConditionInput | null > | null,
   not?: ModelPurchaseOrderConditionInput | null,
@@ -299,6 +301,7 @@ export type UpdatePurchaseOrderInput = {
   isDeleted?: boolean | null,
   type?: string | null,
   createdAt?: string | null,
+  updatedAt?: string | null,
 };
 
 export type DeletePurchaseOrderInput = {
@@ -412,6 +415,7 @@ export type CreateCustomerOrderInput = {
   isDeleted?: boolean | null,
   type?: string | null,
   createdAt?: string | null,
+  updatedAt?: string | null,
 };
 
 export enum CustomerOrderStatus {
@@ -435,6 +439,7 @@ export type ModelCustomerOrderConditionInput = {
   isDeleted?: ModelBooleanInput | null,
   type?: ModelStringInput | null,
   createdAt?: ModelStringInput | null,
+  updatedAt?: ModelStringInput | null,
   and?: Array< ModelCustomerOrderConditionInput | null > | null,
   or?: Array< ModelCustomerOrderConditionInput | null > | null,
   not?: ModelCustomerOrderConditionInput | null,
@@ -479,6 +484,7 @@ export type UpdateCustomerOrderInput = {
   isDeleted?: boolean | null,
   type?: string | null,
   createdAt?: string | null,
+  updatedAt?: string | null,
 };
 
 export type DeleteCustomerOrderInput = {
@@ -526,6 +532,7 @@ export type ModelPurchaseOrderFilterInput = {
   isDeleted?: ModelBooleanInput | null,
   type?: ModelStringInput | null,
   createdAt?: ModelStringInput | null,
+  updatedAt?: ModelStringInput | null,
   and?: Array< ModelPurchaseOrderFilterInput | null > | null,
   or?: Array< ModelPurchaseOrderFilterInput | null > | null,
   not?: ModelPurchaseOrderFilterInput | null,
@@ -574,6 +581,7 @@ export type ModelCustomerOrderFilterInput = {
   isDeleted?: ModelBooleanInput | null,
   type?: ModelStringInput | null,
   createdAt?: ModelStringInput | null,
+  updatedAt?: ModelStringInput | null,
   and?: Array< ModelCustomerOrderFilterInput | null > | null,
   or?: Array< ModelCustomerOrderFilterInput | null > | null,
   not?: ModelCustomerOrderFilterInput | null,
@@ -670,6 +678,7 @@ export type ModelSubscriptionPurchaseOrderFilterInput = {
   isDeleted?: ModelSubscriptionBooleanInput | null,
   type?: ModelSubscriptionStringInput | null,
   createdAt?: ModelSubscriptionStringInput | null,
+  updatedAt?: ModelSubscriptionStringInput | null,
   and?: Array< ModelSubscriptionPurchaseOrderFilterInput | null > | null,
   or?: Array< ModelSubscriptionPurchaseOrderFilterInput | null > | null,
 };
@@ -715,6 +724,7 @@ export type ModelSubscriptionCustomerOrderFilterInput = {
   isDeleted?: ModelSubscriptionBooleanInput | null,
   type?: ModelSubscriptionStringInput | null,
   createdAt?: ModelSubscriptionStringInput | null,
+  updatedAt?: ModelSubscriptionStringInput | null,
   and?: Array< ModelSubscriptionCustomerOrderFilterInput | null > | null,
   or?: Array< ModelSubscriptionCustomerOrderFilterInput | null > | null,
 };

@@ -1,7 +1,7 @@
 import { CustomerOrder, ModelCustomerOrderFilterInput, ModelPurchaseOrderFilterInput, ModelSortDirection, PurchaseOrder, TShirtOrder } from "@/API";
 import { AsyncBatchItem, DBOperation } from "@/contexts/DBErrorContext";
 import { listCustomerOrderAPI, listPurchaseOrderAPI } from "@/graphql-helpers/fetch-apis";
-import { toAWSDateTime, toReadableDateTime } from "@/utils/datetimeConversions";
+import { toReadableDateTime } from "@/utils/datetimeConversions";
 import { FormState } from "./GenerateReportForm";
 import { Order } from "./page";
 import { CSVHeader, downloadCSV } from "@/utils/csvGeneration";
@@ -16,7 +16,7 @@ export type RequestFilters = {
 export const getOrderRequestFilters = (form: FormState) => {
     const { dateEnd, dateStart, includeDeletedCOs, includeDeletedPOs } = form;
     const excludeDeletedFilter = { isDeleted: { ne: true } };
-    const dateFilter = { between: [toAWSDateTime(dateStart), toAWSDateTime(dateEnd)]};
+    const createdAtRangeFilter = { between: [dateStart.startOf('day').toISOString(), dateEnd.endOf('day').toISOString()]};
     let poFilter = undefined;
     let coFilter = undefined;
     if (!includeDeletedPOs) {
@@ -25,7 +25,7 @@ export const getOrderRequestFilters = (form: FormState) => {
     if (!includeDeletedCOs) {
         coFilter = excludeDeletedFilter
     }
-    return { poFilter, coFilter, dateFilter }
+    return { poFilter, coFilter, createdAtRangeFilter }
 }
 
 export const handleReportRequest = async (
@@ -36,14 +36,14 @@ export const handleReportRequest = async (
     let resPO: any[] = [];
     let resCO: any[] = []
 
-    const { coFilter, poFilter, dateFilter } = getOrderRequestFilters(form);
+    const { coFilter, poFilter, createdAtRangeFilter } = getOrderRequestFilters(form);
 
     const batchItems: AsyncBatchItem<any>[] = [];
     let hadError = false;
 
     if (includePOs) {
         let item: AsyncBatchItem<PurchaseOrder[]> = {
-            requestFn: () => listPurchaseOrderAPI(poFilter, ModelSortDirection.ASC, dateFilter),
+            requestFn: () => listPurchaseOrderAPI(true, poFilter, ModelSortDirection.ASC, createdAtRangeFilter),
             dbOperation: DBOperation.LIST,
             successHandler: (resp: PurchaseOrder[]) => {
                 resPO = resPO.concat(resp);
@@ -56,7 +56,7 @@ export const handleReportRequest = async (
     }
     if (includeCOs) {
         let item: AsyncBatchItem<CustomerOrder[]> = {
-            requestFn: () => listCustomerOrderAPI(coFilter, ModelSortDirection.ASC, dateFilter),
+            requestFn: () => listCustomerOrderAPI(true, coFilter, ModelSortDirection.ASC, createdAtRangeFilter),
             dbOperation: DBOperation.LIST,
             successHandler: (resp: CustomerOrder[]) => {
                 resCO = resCO.concat(resp);
@@ -68,6 +68,7 @@ export const handleReportRequest = async (
         batchItems.push(item);
     }
 
+    // This await is necessary
     await rescueDBOperationBatch(batchItems, "Failed to generate report.");
 
     if (hadError) {

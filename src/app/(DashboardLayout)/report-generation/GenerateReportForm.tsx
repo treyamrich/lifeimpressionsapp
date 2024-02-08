@@ -100,13 +100,13 @@ const ReportGenerationForm = ({
   const renderDateRangeInput = () => (
     <Stack direction={"row"} spacing={3}>
       <DateTimePicker
-        label="Date Start"
+        label="Start of day"
         value={dateStart}
         onChange={(newVal: any) => updateFormField("dateStart", newVal)}
         views={["year", "month", "day"]}
       />
       <DateTimePicker
-        label="Date End"
+        label="End of day"
         value={dateEnd}
         onChange={(newVal: any) => updateFormField("dateEnd", newVal)}
         views={["year", "month", "day"]}
