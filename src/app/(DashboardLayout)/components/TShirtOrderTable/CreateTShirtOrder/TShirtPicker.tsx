@@ -56,9 +56,17 @@ const TShirtPicker = ({ choices, onChange, errorMessage, disabled }: {
 }) => {
     const [pickerState, setPickerState] = useState<TShirtPickerState>({ ...initialTShirtPickerState });
 
+    const uniqueStyleNumbers = Array.from(new Set(choices.map(tshirt => tshirt.styleNumber)));
+
     const tshirtsByStyleNumber = choices.filter(tshirt => tshirt.styleNumber === pickerState.tshirtStyleNo);
-    const availableTShirtColors = tshirtsByStyleNumber.map(tshirt => ({ label: tshirt.color, value: tshirt.color }));
-    const availableTShirtSizes = tshirtsByStyleNumber.map(tshirt => ({ label: tshirtSizeToLabel[tshirt.size], value: tshirt.size }));
+
+    const availableTShirtSizes = Array.from(new Set(
+        tshirtsByStyleNumber.map(tshirt => tshirt.size)
+    )).map(size => ({ label: tshirtSizeToLabel[size], value: size }));
+
+    // Should have no duplicate colors at this point since there can't be duplicate (style no, size, color) records
+    const tshirtsByStyleNumberAndSize = tshirtsByStyleNumber.filter(tshirt => tshirt.size === pickerState.tshirtSize);
+    const availableTShirtColors = tshirtsByStyleNumberAndSize.map(tshirt => ({ label: tshirt.color, value: tshirt.color }));
 
     const handleFieldChange = (fieldName: string, newValue: any) => {
         const newPickerState = { ...pickerState, [fieldName]: newValue };
@@ -90,7 +98,7 @@ const TShirtPicker = ({ choices, onChange, errorMessage, disabled }: {
 
             <Autocomplete
                 id="tshirt-auto-complete"
-                options={choices.map(tshirt => tshirt.styleNumber)}
+                options={uniqueStyleNumbers}
                 getOptionLabel={(option: string) => option}
                 autoComplete
                 disabled={disabled}
