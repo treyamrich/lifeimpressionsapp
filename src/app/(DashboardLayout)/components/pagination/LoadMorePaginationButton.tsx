@@ -5,19 +5,21 @@ import DownloadIcon from "@mui/icons-material/Download";
 
 import { SetStateAction, useEffect, useState } from "react";
 
-function LoadMorePaginationButton<T>({
-  items,
-  setItems,
-  fetchFunc,
-  itemTransformerFn
-}: {
+export type LoadMorePaginationButtonProps<T> = {
   items: T[];
   setItems: React.Dispatch<SetStateAction<T[]>>;
   fetchFunc: (
     nextToken: string | undefined | null
   ) => Promise<ListAPIResponse<T>>;
   itemTransformerFn?: (item: T) => T;
-}) {
+};
+
+function LoadMorePaginationButton<T>({
+  items,
+  setItems,
+  fetchFunc,
+  itemTransformerFn,
+}: LoadMorePaginationButtonProps<T>) {
   const { rescueDBOperation } = useDBOperationContext();
   const [nextToken, setNextToken] = useState<string | undefined | null>(
     undefined
@@ -29,8 +31,8 @@ function LoadMorePaginationButton<T>({
       DBOperation.LIST,
       (resp: ListAPIResponse<T>) => {
         let newRes = resp.result;
-        if(itemTransformerFn) {
-            newRes = newRes.map(itemTransformerFn)
+        if (itemTransformerFn) {
+          newRes = newRes.map(itemTransformerFn);
         }
         setItems(items.concat(newRes));
         setNextToken(resp.nextToken);
@@ -45,11 +47,11 @@ function LoadMorePaginationButton<T>({
 
   return (
     <Tooltip title="Loads more table items">
-      <IconButton 
-      disabled={nextToken === null} 
-      onClick={handleLoadMore}
-      color="primary"
-      size="small"
+      <IconButton
+        disabled={nextToken === null}
+        onClick={handleLoadMore}
+        color="primary"
+        size="small"
       >
         <DownloadIcon />
       </IconButton>

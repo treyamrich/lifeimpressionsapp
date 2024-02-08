@@ -17,7 +17,7 @@ import {
   MRT_VisibilityState,
 } from "material-react-table";
 import { ColumnInfo } from "../../purchase-orders/table-constants";
-import TableToolbar from "../TableToolbar/TableToolbar";
+import TableToolbar from "../Table/TableToolbar";
 import { ListAPIResponse } from "@/graphql-helpers/fetch-apis";
 
 function ViewOrdersPage<T extends Record<any, any>>({
@@ -97,12 +97,15 @@ function ViewOrdersPage<T extends Record<any, any>>({
             }}
             renderTopToolbarCustomActions={() => (
               <TableToolbar
-                items={tableData}
-                setItems={setTableData}
-                fetchFunc={fetchOrdersPaginationFn}
+                paginationProps={{
+                    items: tableData,
+                    setItems: setTableData,
+                    fetchFunc: fetchOrdersPaginationFn,
+                    itemTransformerFn: fetchedItemTransformerFn,
+                }}
                 onAdd={onAddRow}
+                showPaginationButton={true}
                 showAddButton={true}
-                itemTransformerFn={fetchedItemTransformerFn}
               />
             )}
           />

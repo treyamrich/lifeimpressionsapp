@@ -19,6 +19,7 @@ import CreateTShirtOrderModal from "./CreateTShirtOrder/CreateTShirtOrderModal";
 import EditRowPopup from "./EditTShirtOrder/EditTShirtOrderPopup";
 import { useDBOperationContext, DBOperation } from "@/contexts/DBErrorContext";
 import { EntityType } from "../po-customer-order-shared-components/CreateOrderPage";
+import TableToolbar from "../Table/TableToolbar";
 
 interface TShirtOrderTableProps {
   tableData: TShirtOrder[];
@@ -138,13 +139,10 @@ const TShirtOrderTable = ({
           })}
         enableEditing={undefined}
         renderTopToolbarCustomActions={() => (
-          <Button
-            color="primary"
-            onClick={() => setCreateModalOpen(true)}
-            variant="contained"
-          >
-            {modalTitle}
-          </Button>
+          <TableToolbar 
+            showAddButton={true}
+            onAdd={() => setCreateModalOpen(true)}
+          />
         )}
       />
       <CreateTShirtOrderModal

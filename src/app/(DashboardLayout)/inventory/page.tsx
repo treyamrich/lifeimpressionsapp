@@ -16,7 +16,7 @@ import {
   getTableColumns,
   hiddenColumns,
 } from "./table-constants";
-import { Box, Button, IconButton, Stack, Tooltip } from "@mui/material";
+import { Box, IconButton, Tooltip } from "@mui/material";
 import {
   MaterialReactTable,
   type MaterialReactTableProps,
@@ -27,7 +27,7 @@ import {
 } from "material-react-table";
 import CreateTShirtModal from "./CreateTShirtModal";
 import LoadMorePaginationButton from "../components/pagination/LoadMorePaginationButton";
-import TableToolbar from "../components/TableToolbar/TableToolbar";
+import TableToolbar from "../components/Table/TableToolbar";
 
 const Inventory = () => {
   const { rescueDBOperation } = useDBOperationContext();
@@ -198,12 +198,14 @@ const Inventory = () => {
             )}
             renderTopToolbarCustomActions={() => (
               <TableToolbar
-                items={tableData}
-                setItems={setTableData}
-                fetchFunc={fetchTShirtsPaginationFn}
+                paginationProps={{
+                  items: tableData,
+                  setItems: setTableData,
+                  fetchFunc: fetchTShirtsPaginationFn,
+                }}
                 onAdd={() => setCreateModalOpen(true)}
+                showPaginationButton={true}
                 showAddButton={true}
-                addButtonText=""
               />
             )}
           />
