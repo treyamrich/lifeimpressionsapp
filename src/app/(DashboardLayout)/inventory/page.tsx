@@ -26,6 +26,7 @@ import {
   type MRT_ColumnFiltersState,
 } from "material-react-table";
 import CreateTShirtModal from "./CreateTShirtModal";
+import LoadMorePaginationButton from "../components/pagination/LoadMorePaginationButton";
 
 const Inventory = () => {
   const { rescueDBOperation } = useDBOperationContext();
@@ -138,20 +139,11 @@ const Inventory = () => {
     [getCommonEditTextFieldProps]
   );
 
-  const fetchTShirts = () => {
+  const fetchTShirtsPaginationFn = (nextToken: string | null | undefined) => {
     const deletedFilter = { isDeleted: { ne: true } };
-    rescueDBOperation(
-      () => listTShirtAPI(deletedFilter),
-      DBOperation.LIST,
-      (resp: TShirt[]) => {
-        setTableData(resp);
-      }
-    );
+    return listTShirtAPI(deletedFilter, nextToken)
   };
 
-  useEffect(() => {
-    fetchTShirts();
-  }, []);
   return (
     <PageContainer title="Inventory" description="this is Inventory">
       <DashboardCard title="Inventory">
@@ -204,6 +196,7 @@ const Inventory = () => {
               </Box>
             )}
             renderTopToolbarCustomActions={() => (
+              <>
               <Button
                 color="primary"
                 onClick={() => setCreateModalOpen(true)}
@@ -211,6 +204,12 @@ const Inventory = () => {
               >
                 Add New Item
               </Button>
+              <LoadMorePaginationButton
+                items={tableData}
+                setItems={setTableData}
+                fetchFunc={fetchTShirtsPaginationFn}
+              />
+              </>
             )}
           />
           <CreateTShirtModal

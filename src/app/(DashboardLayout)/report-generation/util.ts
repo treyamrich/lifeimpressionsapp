@@ -1,6 +1,6 @@
 import { CustomerOrder, ModelCustomerOrderFilterInput, ModelPurchaseOrderFilterInput, ModelSortDirection, PurchaseOrder, TShirtOrder } from "@/API";
 import { AsyncBatchItem, DBOperation } from "@/contexts/DBErrorContext";
-import { listCustomerOrderAPI, listPurchaseOrderAPI } from "@/graphql-helpers/fetch-apis";
+import { ListAPIResponse, listCustomerOrderAPI, listPurchaseOrderAPI } from "@/graphql-helpers/fetch-apis";
 import { toReadableDateTime } from "@/utils/datetimeConversions";
 import { FormState } from "./GenerateReportForm";
 import { Order } from "./page";
@@ -42,11 +42,16 @@ export const handleReportRequest = async (
     let hadError = false;
 
     if (includePOs) {
-        let item: AsyncBatchItem<PurchaseOrder[]> = {
-            requestFn: () => listPurchaseOrderAPI(true, poFilter, ModelSortDirection.ASC, createdAtRangeFilter),
+        let item: AsyncBatchItem<ListAPIResponse<PurchaseOrder>> = {
+            requestFn: () => listPurchaseOrderAPI({
+                doCompletePagination: true,
+                filters: poFilter,
+                sortDirection: ModelSortDirection.ASC,
+                createdAt: createdAtRangeFilter
+            }),
             dbOperation: DBOperation.LIST,
-            successHandler: (resp: PurchaseOrder[]) => {
-                resPO = resPO.concat(resp);
+            successHandler: (resp: ListAPIResponse<PurchaseOrder>) => {
+                resPO = resPO.concat(resp.result);
             },
             errorHandler: e => {
                 hadError = true
@@ -55,11 +60,16 @@ export const handleReportRequest = async (
         batchItems.push(item);
     }
     if (includeCOs) {
-        let item: AsyncBatchItem<CustomerOrder[]> = {
-            requestFn: () => listCustomerOrderAPI(true, coFilter, ModelSortDirection.ASC, createdAtRangeFilter),
+        let item: AsyncBatchItem<ListAPIResponse<CustomerOrder>> = {
+            requestFn: () => listCustomerOrderAPI({
+                doCompletePagination: true,
+                filters: coFilter,
+                sortDirection: ModelSortDirection.ASC,
+                createdAt: createdAtRangeFilter
+            }),
             dbOperation: DBOperation.LIST,
-            successHandler: (resp: CustomerOrder[]) => {
-                resCO = resCO.concat(resp);
+            successHandler: (resp: ListAPIResponse<CustomerOrder>) => {
+                resCO = resCO.concat(resp.result);
             },
             errorHandler: e => {
                 hadError = true

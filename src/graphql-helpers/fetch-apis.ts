@@ -29,23 +29,36 @@ import {
 import { configuredAuthMode } from "./auth-mode";
 import { GraphQLOptions, GraphQLResult } from "@aws-amplify/api-graphql";
 
+export interface ListAPIInput<T> {
+  doCompletePagination?: boolean;
+  filters?: T;
+  sortDirection?: ModelSortDirection;
+  createdAt?: ModelStringKeyConditionInput;
+  nextToken?: string;
+}
+
+export type ListAPIResponse<T> = {
+  result: T[];
+  nextToken: string | null | undefined;
+};
+
 const PAGINATION_LIMIT = 100;
 
 async function completePagination<T>(
   options: GraphQLOptions,
   dataExtractor: (res: GraphQLResult<T>) => any,
   onErrMsg: string
-): Promise<any[]> {
+): Promise<ListAPIResponse<any>> {
   let done = false;
-  let result: any = [];
-  options.variables = { ...options.variables, limit: PAGINATION_LIMIT }
+  let result: any[] = [];
+  options.variables = { ...options.variables, limit: PAGINATION_LIMIT };
 
   while (!done) {
     await API.graphql<GraphQLQuery<T>>(options)
       .then((res: any) => {
         const data = dataExtractor(res);
         done = !data.nextToken;
-        options.variables = {...options.variables, nextToken: data.nextToken};
+        options.variables = { ...options.variables, nextToken: data.nextToken };
         result = result.concat(data.items);
       })
       .catch((e: any) => {
@@ -53,51 +66,59 @@ async function completePagination<T>(
         throw new Error(onErrMsg);
       });
   }
-  return result;
+  return { result: result, nextToken: null };
 }
 
 export const listTShirtAPI = async (
-  filters: ModelTShirtFilterInput
-): Promise<TShirt[]> => {
+  input: ListAPIInput<ModelTShirtFilterInput>
+): Promise<ListAPIResponse<TShirt>> => {
   const options: GraphQLOptions = {
     query: listTShirts,
     variables: {
-      filter: filters,
+      filter: input.filters,
+      sortDirection: input.sortDirection,
+      nextToken: input.nextToken,
     },
     authMode: configuredAuthMode,
   };
+  const errorMessage = "Failed to fetch TShirts";
+
+  if (input.doCompletePagination) {
+    return await completePagination(
+      options,
+      (res: GraphQLResult<ListTShirtsQuery>) => res.data?.listTShirts,
+      errorMessage
+    );
+  }
 
   const resp = await API.graphql<GraphQLQuery<ListTShirtsQuery>>(options)
-    .then(
-      (res: GraphQLResult<ListTShirtsQuery>) =>
-        res.data?.listTShirts?.items as TShirt[]
-    )
+    .then((res: GraphQLResult<ListTShirtsQuery>) => {
+      let data = res.data?.listTShirts;
+      return { result: data?.items as TShirt[], nextToken: data?.nextToken };
+    })
     .catch((e) => {
       console.log(e);
-      throw new Error("Failed to fetch TShirts");
+      throw new Error(errorMessage);
     });
   return resp;
 };
 
 export const listPurchaseOrderAPI = async (
-  doCompletePagination: boolean,
-  filters?: ModelPurchaseOrderFilterInput,
-  sortDirection?: ModelSortDirection,
-  createdAt?: ModelStringKeyConditionInput
-): Promise<PurchaseOrder[]> => {
+  input: ListAPIInput<ModelPurchaseOrderFilterInput>
+): Promise<ListAPIResponse<PurchaseOrder>> => {
   const options: GraphQLOptions = {
     query: purchaseOrdersByCreatedAt,
     variables: {
-      createdAt: createdAt,
-      filter: filters,
-      sortDirection: sortDirection,
+      createdAt: input.createdAt,
+      filter: input.filters,
+      sortDirection: input.sortDirection,
       type: "PurchaseOrder",
     },
     authMode: configuredAuthMode,
   };
   const errorMessage = "Failed to fetch Purchase Orders";
 
-  if (doCompletePagination) {
+  if (input.doCompletePagination) {
     return await completePagination(
       options,
       (res: GraphQLResult<PurchaseOrdersByCreatedAtQuery>) =>
@@ -109,10 +130,13 @@ export const listPurchaseOrderAPI = async (
   const resp = await API.graphql<GraphQLQuery<PurchaseOrdersByCreatedAtQuery>>(
     options
   )
-    .then(
-      (res: GraphQLResult<PurchaseOrdersByCreatedAtQuery>) =>
-        res.data?.purchaseOrdersByCreatedAt?.items as PurchaseOrder[]
-    )
+    .then((res: GraphQLResult<PurchaseOrdersByCreatedAtQuery>) => {
+      let data = res.data?.purchaseOrdersByCreatedAt;
+      return {
+        result: data?.items as PurchaseOrder[],
+        nextToken: data?.nextToken,
+      };
+    })
     .catch((e) => {
       console.log(e);
       throw new Error(errorMessage);
@@ -121,25 +145,21 @@ export const listPurchaseOrderAPI = async (
 };
 
 export const listCustomerOrderAPI = async (
-  doCompletePagination: boolean,
-  filters?: ModelCustomerOrderFilterInput,
-  sortDirection?: ModelSortDirection,
-  createdAt?: ModelStringKeyConditionInput,
-): Promise<CustomerOrder[]> => {
-
+  input: ListAPIInput<ModelCustomerOrderFilterInput>
+): Promise<ListAPIResponse<CustomerOrder>> => {
   const options: GraphQLOptions = {
     query: customerOrdersByCreatedAt,
     variables: {
-      createdAt: createdAt,
-      filter: filters,
-      sortDirection: sortDirection,
+      createdAt: input.createdAt,
+      filter: input.filters,
+      sortDirection: input.sortDirection,
       type: "CustomerOrder",
     },
     authMode: configuredAuthMode,
   };
   const errorMessage = "Failed to fetch Customer Orders";
 
-  if (doCompletePagination) {
+  if (input.doCompletePagination) {
     return await completePagination(
       options,
       (res: GraphQLResult<CustomerOrdersByCreatedAtQuery>) =>
@@ -152,7 +172,11 @@ export const listCustomerOrderAPI = async (
     options
   )
     .then((res: GraphQLResult<CustomerOrdersByCreatedAtQuery>) => {
-      return res.data?.customerOrdersByCreatedAt?.items as CustomerOrder[];
+      let data = res.data?.customerOrdersByCreatedAt;
+      return {
+        result: data?.items as CustomerOrder[],
+        nextToken: data?.nextToken,
+      };
     })
     .catch((e) => {
       console.log(e);
