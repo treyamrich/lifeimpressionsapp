@@ -70,7 +70,8 @@ const EditTShirtOrderPopup = ({
   };
 
   const handleSubmit = () => {
-    if (editReason === "other" && !otherInput.length && mode === TableMode.Edit) {
+    let cleanOtherInput = otherInput.trim();
+    if (editReason === "other" && !cleanOtherInput.length && mode === TableMode.Edit) {
       setOtherInputError(true);
       return;
     }
@@ -78,7 +79,7 @@ const EditTShirtOrderPopup = ({
     if (newCostPerUnit.hasError || newDiscount.hasError)
       return;
 
-    const editReasonMsg = editReason === "other" ? otherInput : editReason;
+    const editReasonMsg = editReason === "other" ? cleanOtherInput : editReason;
     const newTShirtOrder: TShirtOrder = {
       ...row!.original,
       costPerUnit: newCostPerUnit.value,
