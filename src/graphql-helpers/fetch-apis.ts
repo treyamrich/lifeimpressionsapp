@@ -14,6 +14,7 @@ import {
   CustomerOrdersByCreatedAtQuery,
   PurchaseOrdersByCreatedAtQuery,
   ModelStringKeyConditionInput,
+  TshirtsByQtyQuery,
 } from "@/API";
 import { API } from "aws-amplify";
 import { GraphQLQuery } from "@aws-amplify/api";
@@ -21,10 +22,8 @@ import {
   customerOrdersByCreatedAt,
   getCustomerOrder,
   getPurchaseOrder,
-  listCustomerOrders,
-  listPurchaseOrders,
-  listTShirts,
   purchaseOrdersByCreatedAt,
+  tshirtsByQty,
 } from "@/graphql/queries";
 import { configuredAuthMode } from "./auth-mode";
 import { GraphQLOptions, GraphQLResult } from "@aws-amplify/api-graphql";
@@ -72,11 +71,12 @@ export const listTShirtAPI = async (
   input: ListAPIInput<ModelTShirtFilterInput>
 ): Promise<ListAPIResponse<TShirt>> => {
   const options: GraphQLOptions = {
-    query: listTShirts,
+    query: tshirtsByQty,
     variables: {
       filter: input.filters,
       sortDirection: input.sortDirection,
       nextToken: input.nextToken,
+      indexField: "TShirtIndexField", // Required to access 2nd index
       limit: PAGINATION_LIMIT,
     },
     authMode: configuredAuthMode,
@@ -86,14 +86,14 @@ export const listTShirtAPI = async (
   if (input.doCompletePagination) {
     return await completePagination(
       options,
-      (res: GraphQLResult<ListTShirtsQuery>) => res.data?.listTShirts,
+      (res: GraphQLResult<TshirtsByQtyQuery>) => res.data?.tshirtsByQty,
       errorMessage
     );
   }
 
-  const resp = await API.graphql<GraphQLQuery<ListTShirtsQuery>>(options)
-    .then((res: GraphQLResult<ListTShirtsQuery>) => {
-      let data = res.data?.listTShirts;
+  const resp = await API.graphql<GraphQLQuery<TshirtsByQtyQuery>>(options)
+    .then((res: GraphQLResult<TshirtsByQtyQuery>) => {
+      let data = res.data?.tshirtsByQty;
       return { result: data?.items as TShirt[], nextToken: data?.nextToken };
     })
     .catch((e) => {

@@ -1,6 +1,6 @@
 projects:
   lifeimpressionsapp:
-    schemaPath: amplify/backend/api/lifeimpressionsapp/build/schema.graphql
+    schemaPath: src/graphql/schema.json
     includes:
       - src/graphql/**/*.ts
     excludes:
@@ -10,8 +10,6 @@ projects:
         codeGenTarget: typescript
         generatedFileName: src/API.ts
         docsFilePath: src/graphql
-        region: us-west-2
-        apiId: null
         maxDepth: 10
 extensions:
   amplify:

@@ -13,6 +13,7 @@ export const onCreateTShirt = /* GraphQL */ `
       type
       quantityOnHand
       isDeleted
+      indexField
       createdAt
       updatedAt
       __typename
@@ -30,6 +31,7 @@ export const onUpdateTShirt = /* GraphQL */ `
       type
       quantityOnHand
       isDeleted
+      indexField
       createdAt
       updatedAt
       __typename
@@ -47,6 +49,7 @@ export const onDeleteTShirt = /* GraphQL */ `
       type
       quantityOnHand
       isDeleted
+      indexField
       createdAt
       updatedAt
       __typename
@@ -72,6 +75,7 @@ export const onCreatePurchaseOrder = /* GraphQL */ `
             type
             quantityOnHand
             isDeleted
+            indexField
             createdAt
             updatedAt
             __typename
@@ -104,6 +108,7 @@ export const onCreatePurchaseOrder = /* GraphQL */ `
             type
             quantityOnHand
             isDeleted
+            indexField
             createdAt
             updatedAt
             __typename
@@ -159,6 +164,7 @@ export const onUpdatePurchaseOrder = /* GraphQL */ `
             type
             quantityOnHand
             isDeleted
+            indexField
             createdAt
             updatedAt
             __typename
@@ -191,6 +197,7 @@ export const onUpdatePurchaseOrder = /* GraphQL */ `
             type
             quantityOnHand
             isDeleted
+            indexField
             createdAt
             updatedAt
             __typename
@@ -246,6 +253,7 @@ export const onDeletePurchaseOrder = /* GraphQL */ `
             type
             quantityOnHand
             isDeleted
+            indexField
             createdAt
             updatedAt
             __typename
@@ -278,6 +286,7 @@ export const onDeletePurchaseOrder = /* GraphQL */ `
             type
             quantityOnHand
             isDeleted
+            indexField
             createdAt
             updatedAt
             __typename
@@ -328,6 +337,7 @@ export const onCreateOrderChange = /* GraphQL */ `
         type
         quantityOnHand
         isDeleted
+        indexField
         createdAt
         updatedAt
         __typename
@@ -363,6 +373,7 @@ export const onUpdateOrderChange = /* GraphQL */ `
         type
         quantityOnHand
         isDeleted
+        indexField
         createdAt
         updatedAt
         __typename
@@ -398,6 +409,7 @@ export const onDeleteOrderChange = /* GraphQL */ `
         type
         quantityOnHand
         isDeleted
+        indexField
         createdAt
         updatedAt
         __typename
@@ -433,6 +445,7 @@ export const onCreateTShirtOrder = /* GraphQL */ `
         type
         quantityOnHand
         isDeleted
+        indexField
         createdAt
         updatedAt
         __typename
@@ -465,6 +478,7 @@ export const onUpdateTShirtOrder = /* GraphQL */ `
         type
         quantityOnHand
         isDeleted
+        indexField
         createdAt
         updatedAt
         __typename
@@ -497,6 +511,7 @@ export const onDeleteTShirtOrder = /* GraphQL */ `
         type
         quantityOnHand
         isDeleted
+        indexField
         createdAt
         updatedAt
         __typename
@@ -535,6 +550,7 @@ export const onCreateCustomerOrder = /* GraphQL */ `
             type
             quantityOnHand
             isDeleted
+            indexField
             createdAt
             updatedAt
             __typename
@@ -569,6 +585,7 @@ export const onCreateCustomerOrder = /* GraphQL */ `
             type
             quantityOnHand
             isDeleted
+            indexField
             createdAt
             updatedAt
             __typename
@@ -621,6 +638,7 @@ export const onUpdateCustomerOrder = /* GraphQL */ `
             type
             quantityOnHand
             isDeleted
+            indexField
             createdAt
             updatedAt
             __typename
@@ -655,6 +673,7 @@ export const onUpdateCustomerOrder = /* GraphQL */ `
             type
             quantityOnHand
             isDeleted
+            indexField
             createdAt
             updatedAt
             __typename
@@ -707,6 +726,7 @@ export const onDeleteCustomerOrder = /* GraphQL */ `
             type
             quantityOnHand
             isDeleted
+            indexField
             createdAt
             updatedAt
             __typename
@@ -741,6 +761,7 @@ export const onDeleteCustomerOrder = /* GraphQL */ `
             type
             quantityOnHand
             isDeleted
+            indexField
             createdAt
             updatedAt
             __typename

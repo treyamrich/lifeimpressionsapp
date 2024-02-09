@@ -13,6 +13,7 @@ export const getTShirt = /* GraphQL */ `
       type
       quantityOnHand
       isDeleted
+      indexField
       createdAt
       updatedAt
       __typename
@@ -43,6 +44,43 @@ export const listTShirts = /* GraphQL */ `
         type
         quantityOnHand
         isDeleted
+        indexField
+        createdAt
+        updatedAt
+        __typename
+      }
+      nextToken
+      __typename
+    }
+  }
+`;
+export const tshirtsByQty = /* GraphQL */ `
+  query TshirtsByQty(
+    $indexField: String!
+    $quantityOnHand: ModelIntKeyConditionInput
+    $sortDirection: ModelSortDirection
+    $filter: ModelTShirtFilterInput
+    $limit: Int
+    $nextToken: String
+  ) {
+    tshirtsByQty(
+      indexField: $indexField
+      quantityOnHand: $quantityOnHand
+      sortDirection: $sortDirection
+      filter: $filter
+      limit: $limit
+      nextToken: $nextToken
+    ) {
+      items {
+        id
+        styleNumber
+        brand
+        color
+        size
+        type
+        quantityOnHand
+        isDeleted
+        indexField
         createdAt
         updatedAt
         __typename
@@ -69,6 +107,7 @@ export const getPurchaseOrder = /* GraphQL */ `
             type
             quantityOnHand
             isDeleted
+            indexField
             createdAt
             updatedAt
             __typename
@@ -101,6 +140,7 @@ export const getPurchaseOrder = /* GraphQL */ `
             type
             quantityOnHand
             isDeleted
+            indexField
             createdAt
             updatedAt
             __typename
@@ -167,6 +207,7 @@ export const listPurchaseOrders = /* GraphQL */ `
               type
               quantityOnHand
               isDeleted
+              indexField
               createdAt
               updatedAt
               __typename
@@ -199,6 +240,112 @@ export const listPurchaseOrders = /* GraphQL */ `
               type
               quantityOnHand
               isDeleted
+              indexField
+              createdAt
+              updatedAt
+              __typename
+            }
+            reason
+            fieldChanges {
+              oldValue
+              newValue
+              fieldName
+              __typename
+            }
+            id
+            createdAt
+            updatedAt
+            purchaseOrderChangeHistoryId
+            customerOrderChangeHistoryId
+            orderChangeTshirtId
+            __typename
+          }
+          nextToken
+          __typename
+        }
+        taxRate
+        shipping
+        shippingAddress
+        fees
+        discount
+        dateExpected
+        isDeleted
+        type
+        createdAt
+        updatedAt
+        __typename
+      }
+      nextToken
+      __typename
+    }
+  }
+`;
+export const purchaseOrdersByCreatedAt = /* GraphQL */ `
+  query PurchaseOrdersByCreatedAt(
+    $type: String!
+    $createdAt: ModelStringKeyConditionInput
+    $sortDirection: ModelSortDirection
+    $filter: ModelPurchaseOrderFilterInput
+    $limit: Int
+    $nextToken: String
+  ) {
+    purchaseOrdersByCreatedAt(
+      type: $type
+      createdAt: $createdAt
+      sortDirection: $sortDirection
+      filter: $filter
+      limit: $limit
+      nextToken: $nextToken
+    ) {
+      items {
+        id
+        orderNumber
+        vendor
+        orderedItems {
+          items {
+            tshirt {
+              id
+              styleNumber
+              brand
+              color
+              size
+              type
+              quantityOnHand
+              isDeleted
+              indexField
+              createdAt
+              updatedAt
+              __typename
+            }
+            quantity
+            amountReceived
+            costPerUnit
+            discount
+            id
+            createdAt
+            updatedAt
+            purchaseOrderOrderedItemsId
+            customerOrderOrderedItemsId
+            tShirtOrderTshirtId
+            __typename
+          }
+          nextToken
+          __typename
+        }
+        orderNotes
+        status
+        changeHistory {
+          items {
+            tshirt {
+              id
+              styleNumber
+              brand
+              color
+              size
+              type
+              quantityOnHand
+              isDeleted
+              indexField
               createdAt
               updatedAt
               __typename
@@ -250,6 +397,7 @@ export const getOrderChange = /* GraphQL */ `
         type
         quantityOnHand
         isDeleted
+        indexField
         createdAt
         updatedAt
         __typename
@@ -288,6 +436,7 @@ export const listOrderChanges = /* GraphQL */ `
           type
           quantityOnHand
           isDeleted
+          indexField
           createdAt
           updatedAt
           __typename
@@ -324,6 +473,7 @@ export const getTShirtOrder = /* GraphQL */ `
         type
         quantityOnHand
         isDeleted
+        indexField
         createdAt
         updatedAt
         __typename
@@ -359,6 +509,7 @@ export const listTShirtOrders = /* GraphQL */ `
           type
           quantityOnHand
           isDeleted
+          indexField
           createdAt
           updatedAt
           __typename
@@ -398,6 +549,7 @@ export const getCustomerOrder = /* GraphQL */ `
             type
             quantityOnHand
             isDeleted
+            indexField
             createdAt
             updatedAt
             __typename
@@ -432,6 +584,7 @@ export const getCustomerOrder = /* GraphQL */ `
             type
             quantityOnHand
             isDeleted
+            indexField
             createdAt
             updatedAt
             __typename
@@ -495,6 +648,7 @@ export const listCustomerOrders = /* GraphQL */ `
               type
               quantityOnHand
               isDeleted
+              indexField
               createdAt
               updatedAt
               __typename
@@ -529,6 +683,7 @@ export const listCustomerOrders = /* GraphQL */ `
               type
               quantityOnHand
               isDeleted
+              indexField
               createdAt
               updatedAt
               __typename
@@ -553,109 +708,6 @@ export const listCustomerOrders = /* GraphQL */ `
         }
         taxRate
         discount
-        isDeleted
-        type
-        createdAt
-        updatedAt
-        __typename
-      }
-      nextToken
-      __typename
-    }
-  }
-`;
-export const purchaseOrdersByCreatedAt = /* GraphQL */ `
-  query PurchaseOrdersByCreatedAt(
-    $type: String!
-    $createdAt: ModelStringKeyConditionInput
-    $sortDirection: ModelSortDirection
-    $filter: ModelPurchaseOrderFilterInput
-    $limit: Int
-    $nextToken: String
-  ) {
-    purchaseOrdersByCreatedAt(
-      type: $type
-      createdAt: $createdAt
-      sortDirection: $sortDirection
-      filter: $filter
-      limit: $limit
-      nextToken: $nextToken
-    ) {
-      items {
-        id
-        orderNumber
-        vendor
-        orderedItems {
-          items {
-            tshirt {
-              id
-              styleNumber
-              brand
-              color
-              size
-              type
-              quantityOnHand
-              isDeleted
-              createdAt
-              updatedAt
-              __typename
-            }
-            quantity
-            amountReceived
-            costPerUnit
-            discount
-            id
-            createdAt
-            updatedAt
-            purchaseOrderOrderedItemsId
-            customerOrderOrderedItemsId
-            tShirtOrderTshirtId
-            __typename
-          }
-          nextToken
-          __typename
-        }
-        orderNotes
-        status
-        changeHistory {
-          items {
-            tshirt {
-              id
-              styleNumber
-              brand
-              color
-              size
-              type
-              quantityOnHand
-              isDeleted
-              createdAt
-              updatedAt
-              __typename
-            }
-            reason
-            fieldChanges {
-              oldValue
-              newValue
-              fieldName
-              __typename
-            }
-            id
-            createdAt
-            updatedAt
-            purchaseOrderChangeHistoryId
-            customerOrderChangeHistoryId
-            orderChangeTshirtId
-            __typename
-          }
-          nextToken
-          __typename
-        }
-        taxRate
-        shipping
-        shippingAddress
-        fees
-        discount
-        dateExpected
         isDeleted
         type
         createdAt
@@ -700,6 +752,7 @@ export const customerOrdersByCreatedAt = /* GraphQL */ `
               type
               quantityOnHand
               isDeleted
+              indexField
               createdAt
               updatedAt
               __typename
@@ -734,6 +787,7 @@ export const customerOrdersByCreatedAt = /* GraphQL */ `
               type
               quantityOnHand
               isDeleted
+              indexField
               createdAt
               updatedAt
               __typename

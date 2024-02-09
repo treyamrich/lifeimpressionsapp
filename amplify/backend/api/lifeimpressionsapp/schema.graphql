@@ -6,8 +6,9 @@ type TShirt @model @auth(rules: [
   color: String!
   size: TShirtSize!
   type: TShirtType!
-  quantityOnHand: Int @default(value: "0")
+  quantityOnHand: Int! @default(value: "0")
   isDeleted: Boolean @default(value: "false")
+  indexField: String @default(value: "TShirtIndexField") @index(name: "tshirtsByQty", queryField: "tshirtsByQty", sortKeyFields: ["quantityOnHand"])
 }
 
 enum TShirtSize {
@@ -122,3 +123,4 @@ enum CustomerOrderStatus {
   BLOCKED
   COMPLETED
 }
+
