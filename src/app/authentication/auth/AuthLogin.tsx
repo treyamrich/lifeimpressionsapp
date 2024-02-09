@@ -4,11 +4,8 @@ import React, { useState } from "react";
 import {
   Box,
   Typography,
-  FormGroup,
-  FormControlLabel,
   Button,
   Stack,
-  Checkbox,
 } from "@mui/material";
 import { LoginCredentials, useAuthContext } from "@/contexts/AuthContext";
 

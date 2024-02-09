@@ -7,14 +7,15 @@ import {
   createContext,
   useContext,
   SetStateAction,
-  useEffect
+  useEffect,
 } from "react";
 import { Auth, Hub } from "aws-amplify";
-import { CognitoUser } from '@aws-amplify/auth';
+import { CognitoUser } from "@aws-amplify/auth";
 import { usePathname, useRouter } from "next/navigation";
 import { isProtectedRoute } from "@/app/authentication/route-protection/route-protection";
 import { useDBOperationContext } from "./DBErrorContext";
 import { Button, CircularProgress } from "@mui/material";
+import SessionLogout from "@/app/(DashboardLayout)/components/session/SessionLogout";
 
 type authContextType = {
   user: any;
@@ -27,7 +28,7 @@ type authContextType = {
   register: (creds: RegisterCredentials) => void;
   confirmRegister: (input: ConfirmRegisterInput) => void;
 
-  authError: AuthError,
+  authError: AuthError;
   setAuthError: Dispatch<SetStateAction<AuthError>>;
 
   forgotPassword: (username: string) => void;
@@ -37,22 +38,22 @@ type authContextType = {
 
 const authContextDefaultValues: authContextType = {
   user: null,
-  setUser: () => { },
+  setUser: () => {},
 
   refreshSession: () => Promise.resolve(),
 
-  login: () => { },
-  logout: () => { },
+  login: () => {},
+  logout: () => {},
 
-  register: () => { },
-  confirmRegister: () => { },
+  register: () => {},
+  confirmRegister: () => {},
 
   authError: { errMsg: "" },
-  setAuthError: () => { },
+  setAuthError: () => {},
 
-  forgotPassword: () => { },
-  forgotPasswordSubmit: () => { },
-  completeNewPassword: () => {}
+  forgotPassword: () => {},
+  forgotPasswordSubmit: () => {},
+  completeNewPassword: () => {},
 };
 
 const AuthContext = createContext<authContextType>(authContextDefaultValues);
@@ -65,7 +66,7 @@ type Props = {
 export type LoginCredentials = {
   username: string;
   password: string;
-}
+};
 
 export type RegisterCredentials = {
   username: string;
@@ -73,27 +74,27 @@ export type RegisterCredentials = {
   confirmPassword: string;
   name: string;
   email: string;
-}
+};
 
 export type ConfirmRegisterInput = {
   username: string;
   confirmationCode: string;
-}
+};
 
 export type ForgotPasswordInput = {
   username: string;
   code: string;
   newPassword: string;
   confirmNewPassword: string;
-}
+};
 
 export type AuthError = {
-  errMsg: string
-}
+  errMsg: string;
+};
 
 const EVERY_59_MIN_AS_MS = 3540000;
-export const loginPath = '/authentication/login';
-export const registerSuccessPath = '/authentication/register/success';
+export const loginPath = "/authentication/login";
+export const registerSuccessPath = "/authentication/register/success";
 
 export const AuthContextProvider = ({ children }: Props) => {
   const [user, setUser] = useState<CognitoUser | null>(null);
@@ -107,27 +108,28 @@ export const AuthContextProvider = ({ children }: Props) => {
   const login = async (creds: LoginCredentials) => {
     const { username, password } = creds;
     await Auth.signIn(username, password)
-      .then(user => {
-        if (user.challengeName === 'NEW_PASSWORD_REQUIRED') {
+      .then((user) => {
+        if (user.challengeName === "NEW_PASSWORD_REQUIRED") {
           setUser(user);
-         router.push('/authentication/complete-new-password');
+          router.push("/authentication/complete-new-password");
         }
       })
-      .catch(e => {
-        setAuthError({ errMsg: "Invalid Credentials" })
-      })
-  }
+      .catch((e) => {
+        setAuthError({ errMsg: "Invalid Credentials" });
+      });
+  };
   const logout = async () => {
     clearDBOperationErrors();
     // Reset auth errors
     setAuthError({ errMsg: "" });
+    setUser(null);
 
     await Auth.signOut()
       .then(() => {
         router.push(loginPath);
       })
-      .catch(e => console.log('Error signing out:', e));
-  }
+      .catch((e) => console.log("Error signing out:", e));
+  };
 
   const register = async (creds: RegisterCredentials) => {
     const { username, password, confirmPassword, name, email } = creds;
@@ -140,24 +142,25 @@ export const AuthContextProvider = ({ children }: Props) => {
       password,
       attributes: {
         name,
-        email
-      }
+        email,
+      },
     })
-      .then(() => router.push(`/authentication/register/confirm/${encodeURIComponent(username)}`))
-      .catch(e => {
-        setAuthError({ errMsg: e.message })
-      })
-  }
+      .then(() =>
+        router.push(
+          `/authentication/register/confirm/${encodeURIComponent(username)}`
+        )
+      )
+      .catch((e) => {
+        setAuthError({ errMsg: e.message });
+      });
+  };
 
   const confirmRegister = async (input: ConfirmRegisterInput) => {
     const { username, confirmationCode } = input;
-    await Auth.confirmSignUp(
-      username,
-      confirmationCode
-    )
+    await Auth.confirmSignUp(username, confirmationCode)
       .then(() => router.push(registerSuccessPath))
-      .catch(e => setAuthError({ errMsg: e.message }))
-  }
+      .catch((e) => setAuthError({ errMsg: e.message }));
+  };
 
   const forgotPasswordSubmit = async (input: ForgotPasswordInput) => {
     const { username, newPassword, confirmNewPassword, code } = input;
@@ -167,34 +170,38 @@ export const AuthContextProvider = ({ children }: Props) => {
     }
     await Auth.forgotPasswordSubmit(username, code, newPassword)
       .then(() => router.push(loginPath))
-      .catch(e => setAuthError({ errMsg: e.message }));
-  }
+      .catch((e) => setAuthError({ errMsg: e.message }));
+  };
   const forgotPassword = async (username: string) => {
     await Auth.forgotPassword(username)
-      .then(() => router.push(`/authentication/forgot/confirm/${encodeURIComponent(username)}`))
-      .catch(e => setAuthError({ errMsg: e.message }))
-  }
+      .then(() =>
+        router.push(
+          `/authentication/forgot/confirm/${encodeURIComponent(username)}`
+        )
+      )
+      .catch((e) => setAuthError({ errMsg: e.message }));
+  };
 
   const completeNewPassword = async (newPw: string, name: string) => {
-    if(!user) return;
+    if (!user) return;
 
-    const requiredAttributes = { name: name }
-    Auth.completeNewPassword(user, newPw, requiredAttributes)
-    .catch(e => {
-      setAuthError({ errMsg: e.message});
-    })
-  }
+    const requiredAttributes = { name: name };
+    Auth.completeNewPassword(user, newPw, requiredAttributes).catch((e) => {
+      setAuthError({ errMsg: e.message });
+    });
+  };
 
   const checkUser = async (): Promise<any | undefined> => {
     try {
       let userData = await Auth.currentAuthenticatedUser();
-      const groups = userData.signInUserSession.accessToken.payload["cognito:groups"];
+      const groups =
+        userData.signInUserSession.accessToken.payload["cognito:groups"];
       // Is User is not admin
       if (!groups || !groups.includes("admin")) {
         userData = null;
       }
       setUser(userData);
-      return userData
+      return userData;
     } catch (error: any) {
       setUser(null);
       // No user
@@ -234,16 +241,17 @@ export const AuthContextProvider = ({ children }: Props) => {
 
   // authorization is not used in this app since sign up is disabled
   const unauthorized = (
-    <> User not authorized: <Button
-          color="error"
-          size="small"
-          variant="contained"
-          onClick={logout}>
-          Logout
-        </Button></>
+    <>
+      {" "}
+      User not authorized:{" "}
+      <Button color="error" size="small" variant="contained" onClick={logout}>
+        Logout
+      </Button>
+    </>
   );
 
   const showRoute = user !== null || !routeIsProtected;
+  console.log(user);
   return (
     <AuthContext.Provider
       value={{
@@ -263,8 +271,10 @@ export const AuthContextProvider = ({ children }: Props) => {
 
         forgotPassword,
         forgotPasswordSubmit,
-        completeNewPassword
-      }}>
+        completeNewPassword,
+      }}
+    >
+      <SessionLogout signOut={logout} />
       {showRoute ? <> {children} </> : <CircularProgress />}
     </AuthContext.Provider>
   );
