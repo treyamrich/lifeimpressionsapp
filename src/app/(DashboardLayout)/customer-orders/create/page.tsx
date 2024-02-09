@@ -28,7 +28,7 @@ const initialNegativeInventoryWarningState = {
   failedTShirts: []
 };
 
-const CreatePurchaseOrderPage = () => {
+const CreateCustomerOrderPage = () => {
   const { user, refreshSession } = useAuthContext();
   const { rescueDBOperation } = useDBOperationContext();
   const [negativeInventoryWarning, setNegativeInventoryWarning] = useState<NegativeInventoryWarningState>({...initialNegativeInventoryWarningState});
@@ -74,4 +74,4 @@ const CreatePurchaseOrderPage = () => {
   )
 };
 
-export default CreatePurchaseOrderPage;
+export default CreateCustomerOrderPage;
