@@ -2,7 +2,7 @@
 
 import PageContainer from "@/app/(DashboardLayout)/components/container/PageContainer";
 import DashboardCard from "@/app/(DashboardLayout)/components/shared/DashboardCard";
-import { TShirt } from "@/API";
+import { TShirt, UpdateTShirtInput } from "@/API";
 import React, { useEffect, useMemo, useState, useCallback } from "react";
 import { Delete, Edit } from "@mui/icons-material";
 import { createTShirtAPI } from "@/graphql-helpers/create-apis";
@@ -26,13 +26,22 @@ import {
   type MRT_ColumnFiltersState,
 } from "material-react-table";
 import CreateTShirtModal from "./CreateTShirtModal";
-import LoadMorePaginationButton from "../components/pagination/LoadMorePaginationButton";
 import TableToolbar from "../components/Table/TableToolbar";
 import TableInfoHeader from "../components/Table/TableInfoHeader";
+import EditTShirtModal from "./EditTShirtModal";
+
+type EditRowState = {
+  showEditPopup: boolean;
+  row: MRT_Row<TShirt> | undefined;
+};
 
 const Inventory = () => {
   const { rescueDBOperation } = useDBOperationContext();
   const [createModalOpen, setCreateModalOpen] = useState(false);
+  const [editRowState, setEditRowState] = useState<EditRowState>({
+    showEditPopup: false,
+    row: undefined,
+  });
   const [tableData, setTableData] = useState<TShirt[]>([]);
   const [validationErrors, setValidationErrors] = useState<{
     [cellId: string]: string;
@@ -40,6 +49,9 @@ const Inventory = () => {
   const [columnFilters, setColumnFilters] = useState<MRT_ColumnFiltersState>(
     []
   );
+
+  const resetEditFormState = () =>
+    setEditRowState({ row: undefined, showEditPopup: false });
 
   const handleCreateNewRow = (values: TShirt) => {
     rescueDBOperation(
@@ -51,26 +63,30 @@ const Inventory = () => {
     );
   };
 
-  const handleSaveRowEdits: MaterialReactTableProps<TShirt>["onEditingRowSave"] =
-    async ({ exitEditingMode, row, values }) => {
-      Object.keys(values).forEach((key) => {
-        if (typeof key === "string") values[key] = values[key].trim();
-      });
-      if (!Object.keys(validationErrors).length) {
-        rescueDBOperation(
-          () => updateTShirtAPI(values),
-          DBOperation.UPDATE,
-          (resp: TShirt) => {
-            tableData[row.index] = resp;
-            setTableData([...tableData]);
-          }
-        );
-        exitEditingMode(); //required to exit editing mode and close modal
-      }
-    };
+  const handleUpdateTShirt = (
+    newTShirtInput: UpdateTShirtInput,
+    originalRow: MRT_Row<TShirt>,
+    resetForm: () => void
+  ) => {
+    let hasChanged = Object.keys(newTShirtInput).reduce((prev, curr) => 
+      prev || newTShirtInput[curr as keyof UpdateTShirtInput] !== originalRow.getValue(curr), false);
 
-  const handleCancelRowEdits = () => {
-    setValidationErrors({});
+    if(!hasChanged) {
+      resetEditFormState();
+      resetForm();
+      return;
+    }
+
+    rescueDBOperation(
+      () => updateTShirtAPI(newTShirtInput),
+      DBOperation.UPDATE,
+      (resp: TShirt) => {
+        tableData[originalRow.index] = resp;
+        setTableData([...tableData]);
+        resetEditFormState();
+        resetForm();
+      }
+    );
   };
 
   const handleDeleteRow = useCallback(
@@ -95,51 +111,7 @@ const Inventory = () => {
     [tableData]
   );
 
-  const getCommonEditTextFieldProps = useCallback(
-    (
-      cell: MRT_Cell<TShirt>
-    ): MRT_ColumnDef<TShirt>["muiTableBodyCellEditTextFieldProps"] => {
-      return {
-        error: !!validationErrors[cell.id],
-        helperText: validationErrors[cell.id],
-        onBlur: (event) => {
-          let isValid = true;
-          let errMsg = "";
-          switch (cell.column.id) {
-            case "quantityOnHand":
-              isValid = isValid && validateQuantity(+event.target.value);
-              errMsg = "must be non-negative";
-              break;
-            default:
-              if (typeof event.target.value === "string") {
-                isValid =
-                  isValid && validateRequired(event.target.value.trim());
-                errMsg = "is required";
-              }
-          }
-          if (!isValid) {
-            //set validation error for cell if invalid
-            setValidationErrors({
-              ...validationErrors,
-              [cell.id]: `${cell.column.columnDef.header} ${errMsg}`,
-            });
-          } else {
-            //remove validation error for cell if valid
-            delete validationErrors[cell.id];
-            setValidationErrors({
-              ...validationErrors,
-            });
-          }
-        },
-      };
-    },
-    [validationErrors]
-  );
-
-  const columns = useMemo<MRT_ColumnDef<TShirt>[]>(
-    () => getTableColumns(getCommonEditTextFieldProps),
-    [getCommonEditTextFieldProps]
-  );
+  const columns = useMemo<MRT_ColumnDef<TShirt>[]>(() => getTableColumns(), []);
 
   const fetchTShirtsPaginationFn = (nextToken: string | null | undefined) => {
     const deletedFilter = { isDeleted: { ne: true } };
@@ -150,7 +122,7 @@ const Inventory = () => {
     <PageContainer title="Inventory" description="this is Inventory">
       <DashboardCard title="Inventory">
         <Stack rowGap={2}>
-          <TableInfoHeader subheaderText="This table loads records with the lowest quantity first."/>
+          <TableInfoHeader subheaderText="This table loads records with the lowest quantity first." />
           <MaterialReactTable
             displayColumnDefOptions={{
               "mrt-row-actions": {
@@ -171,7 +143,6 @@ const Inventory = () => {
                 },
               ],
             }}
-            editingMode="modal" //default
             enableColumnOrdering
             onColumnFiltersChange={setColumnFilters}
             state={{
@@ -179,12 +150,14 @@ const Inventory = () => {
               columnVisibility: hiddenColumns,
             }}
             enableEditing
-            onEditingRowSave={handleSaveRowEdits}
-            onEditingRowCancel={handleCancelRowEdits}
             renderRowActions={({ row, table }) => (
               <Box sx={{ display: "flex", gap: "1rem" }}>
                 <Tooltip arrow placement="left" title="Edit">
-                  <IconButton onClick={() => table.setEditingRow(row)}>
+                  <IconButton
+                    onClick={() =>
+                      setEditRowState({ showEditPopup: true, row: row })
+                    }
+                  >
                     <Edit />
                   </IconButton>
                 </Tooltip>
@@ -218,6 +191,13 @@ const Inventory = () => {
             onSubmit={handleCreateNewRow}
             entityName={entityName}
             records={tableData}
+          />
+          <EditTShirtModal
+            open={editRowState.showEditPopup}
+            row={editRowState.row}
+            onSubmit={handleUpdateTShirt}
+            onClose={() => resetEditFormState()}
+            getTableColumns={getTableColumns}
           />
         </Stack>
       </DashboardCard>

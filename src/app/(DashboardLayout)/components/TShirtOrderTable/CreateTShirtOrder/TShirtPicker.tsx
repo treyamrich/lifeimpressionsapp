@@ -1,7 +1,8 @@
 import { TShirt } from "@/API";
 import { Autocomplete, AutocompleteRenderInputParams, Chip, MenuItem, Stack, TextField, Typography } from "@mui/material";
 import { useState } from "react";
-import { SelectValue, tshirtSizeToLabel } from "../../../inventory/create-tshirt-constants";
+import { SelectValue } from "../../../inventory/create-tshirt-constants";
+import { tshirtSizeToLabel } from "@/app/(DashboardLayout)/inventory/table-constants";
 
 type TShirtPickerState = {
     inputValue: string;

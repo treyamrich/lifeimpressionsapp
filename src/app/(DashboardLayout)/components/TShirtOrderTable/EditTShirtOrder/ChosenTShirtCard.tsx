@@ -1,7 +1,7 @@
 import { TShirt } from "@/API";
 import BlankCard from "../../shared/BlankCard";
 import { CardContent, Stack, Typography } from "@mui/material";
-import { tshirtSizeToLabel } from "@/app/(DashboardLayout)/inventory/create-tshirt-constants";
+import { tshirtSizeToLabel } from "@/app/(DashboardLayout)/inventory/table-constants";
 
 const ChosenTShirtCard = ({ tshirt }: { tshirt: TShirt | undefined }) => (
     <BlankCard>

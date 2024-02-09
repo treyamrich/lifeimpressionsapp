@@ -4,11 +4,8 @@ import { MRT_ColumnDef } from "material-react-table";
 import React, { useState } from "react";
 import {
   type SelectValue,
-  excludeOnCreateFields,
   getInitialTShirtFormErrorMap,
   initialTShirtFormState,
-  selectInputFields,
-  numberInputFields,
 } from "./create-tshirt-constants";
 import {
   Button,
@@ -21,6 +18,7 @@ import {
   TextField,
 } from "@mui/material";
 import NumberInput from "../components/inputs/NumberInput";
+import { columnInfo } from "./table-constants";
 
 interface CreateTShirtModalProps<TShirt extends Record<string, any>> {
   columns: MRT_ColumnDef<TShirt>[];
@@ -123,6 +121,53 @@ const CreateTShirtModal = <TShirt extends Record<string, any>>({
     setErrorMap(newErrorMap);
   };
 
+  const getFormField = (column: MRT_ColumnDef<TShirt>) => {
+    const errMsg = errorMap.get(column.accessorKey as string);
+    const hasError = errMsg !== "" && errMsg !== undefined;
+    const colInfo = columnInfo.get(column.accessorKey);
+    if (colInfo?.isNumberField) {
+      return (
+        <NumberInput
+          key={column.accessorKey as React.Key}
+          label={column.header}
+          initialValue={values[column.accessorKey]}
+          onChange={(newValue: number, hasError: boolean) => {
+            handleUpdateNumberField(
+              column.accessorKey as string,
+              newValue,
+              hasError
+            );
+          }}
+          isValidFn={(newValue: number) =>
+            newValue < 0 ? "Negative values not allowed" : ""
+          }
+          name={column.accessorKey as string}
+        />
+      );
+    }
+    return (
+      <TextField
+        select={colInfo?.selectFields !== undefined}
+        key={column.accessorKey as React.Key}
+        label={column.header}
+        name={column.accessorKey as string}
+        onChange={(e) =>
+          setValues({ ...values, [e.target.name]: e.target.value })
+        }
+        value={values[column.accessorKey]}
+        required={colInfo?.isRequired}
+        error={errorMap.get(column.accessorKey as string) !== ""}
+        helperText={errorMap.get(column.accessorKey as string)}
+      >
+        {colInfo?.selectFields?.map((selectValue: SelectValue, idx: number) => (
+          <MenuItem key={idx} value={selectValue.value}>
+            {selectValue.label}
+          </MenuItem>
+        ))}
+      </TextField>
+    );
+  };
+
   return (
     <Dialog open={open}>
       <DialogTitle textAlign="center">{"Create New " + entityName}</DialogTitle>
@@ -138,57 +183,9 @@ const CreateTShirtModal = <TShirt extends Record<string, any>>({
           >
             {columns
               .filter(
-                (col) =>
-                  !excludeOnCreateFields.includes(col.accessorKey as string)
+                (col) => !columnInfo.get(col.accessorKey)?.excludeOnCreate
               )
-              .map((column) => {
-                return isNumberInputField(column.accessorKey) ? (
-                  <NumberInput
-                    key={column.accessorKey as React.Key}
-                    label={column.header}
-                    initialValue={values[column.accessorKey]}
-                    onChange={(newValue: number, hasError: boolean) => {
-                      handleUpdateNumberField(
-                        column.accessorKey as string,
-                        newValue,
-                        hasError
-                      );
-                    }}
-                    isValidFn={(newValue: number) =>
-                      newValue < 0 ? "Negative values not allowed" : ""
-                    }
-                    name={column.accessorKey as string}
-                  />
-                ) : (
-                  <TextField
-                    select={isSelectInputField(column.accessorKey)}
-                    key={column.accessorKey as React.Key}
-                    label={column.header}
-                    name={column.accessorKey as string}
-                    onChange={(e) =>
-                      setValues({ ...values, [e.target.name]: e.target.value })
-                    }
-                    type={
-                      isNumberInputField(column.accessorKey)
-                        ? "number"
-                        : undefined
-                    }
-                    value={values[column.accessorKey]}
-                    required={true}
-                    error={errorMap.get(column.accessorKey as string) !== ""}
-                    helperText={errorMap.get(column.accessorKey as string)}
-                  >
-                    {isSelectInputField(column.accessorKey) &&
-                      selectInputFields
-                        .get(column.accessorKey)
-                        ?.map((selectValue: SelectValue, idx: number) => (
-                          <MenuItem key={idx} value={selectValue.value}>
-                            {selectValue.label}
-                          </MenuItem>
-                        ))}
-                  </TextField>
-                );
-              })}
+              .map((column) => getFormField(column))}
           </Stack>
         </form>
       </DialogContent>
@@ -203,17 +200,3 @@ const CreateTShirtModal = <TShirt extends Record<string, any>>({
 };
 
 export default CreateTShirtModal;
-
-const isSelectInputField = (
-  fieldName: string | number | symbol | undefined
-) => {
-  let nameOfField = fieldName ? fieldName.toString() : "";
-  return selectInputFields.has(nameOfField);
-};
-
-const isNumberInputField = (
-  fieldName: string | number | symbol | undefined
-) => {
-  let nameOfField = fieldName ? fieldName.toString() : "";
-  return numberInputFields.has(nameOfField);
-};

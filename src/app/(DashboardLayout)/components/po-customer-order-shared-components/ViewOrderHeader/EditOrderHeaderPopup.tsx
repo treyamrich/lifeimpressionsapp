@@ -20,7 +20,6 @@ function EditOrderHeaderPopup<T extends Record<any, any>>({ open, order, onSubmi
     orderType: EntityType;
     getTableColumns: () => MRT_ColumnDef<T>[];
     columnInfo: Map<string | number | symbol | undefined, ColumnInfo>;
-
 }) {
     const columns = useMemo<MRT_ColumnDef<T>[]>(
         () => getTableColumns(),

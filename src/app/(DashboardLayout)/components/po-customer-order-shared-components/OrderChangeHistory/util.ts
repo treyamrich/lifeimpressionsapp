@@ -1,6 +1,6 @@
 import { CreateOrderChangeInput, FieldChange, TShirtOrder } from "@/API";
 import { EntityType } from "../CreateOrderPage";
-import { columnInfo, iterateColumnInfo } from "../../TShirtOrderTable/table-constants";
+import { iterateColumnInfo } from "../../TShirtOrderTable/table-constants";
 
 export type BuildOrderChangeInput = {
     oldTShirtOrder: TShirtOrder;
