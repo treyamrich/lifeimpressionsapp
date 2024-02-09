@@ -91,6 +91,9 @@ const ViewCustomerOrder = ({ params }: ViewCustomerOrderProps) => {
     if (co.__typename === undefined)
         return (<></>);
 
+    if (co.isDeleted)
+        return <Typography variant="body2">Order was deleted.</Typography>
+
     return (
         <PageContainer
             title="View Customer Order"
