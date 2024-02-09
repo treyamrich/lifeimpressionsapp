@@ -20,6 +20,7 @@ export interface Order {
   taxRate: number;
   discount: number;
   orderedItems: TShirtOrder[];
+  isDeleted?: boolean | null;
 }
 
 const ReportGeneration = () => {
@@ -38,9 +39,10 @@ const ReportGeneration = () => {
     });
 
     let today = toReadableDateTime(getTodayInSetTz().toString())
+    const showDeletedOrderColumn = form.includeDeletedCOs || form.includeDeletedPOs;
     switch(form.reportType) {
         case ReportType.Detailed:
-            downloadDetailedReport(orders, today)
+            downloadDetailedReport(orders, today, showDeletedOrderColumn)
             break
         default:
             let orderIdToTotalMap = new Map<string, OrderTotal>(
@@ -49,7 +51,7 @@ const ReportGeneration = () => {
                     return [order.id, total]
                 })
             );
-            downloadHighLevelReport(orders, orderIdToTotalMap, today)
+            downloadHighLevelReport(orders, orderIdToTotalMap, today, showDeletedOrderColumn)
     }
   };
 
