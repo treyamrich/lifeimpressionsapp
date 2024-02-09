@@ -29,6 +29,7 @@ import CreateTShirtModal from "./CreateTShirtModal";
 import TableToolbar from "../components/Table/TableToolbar";
 import TableInfoHeader from "../components/Table/TableInfoHeader";
 import EditTShirtModal from "./EditTShirtModal";
+import TableRowActions from "../components/Table/TableRowActions";
 
 type EditRowState = {
   showEditPopup: boolean;
@@ -151,25 +152,10 @@ const Inventory = () => {
             }}
             enableEditing
             renderRowActions={({ row, table }) => (
-              <Box sx={{ display: "flex", gap: "1rem" }}>
-                <Tooltip arrow placement="left" title="Edit">
-                  <IconButton
-                    onClick={() =>
-                      setEditRowState({ showEditPopup: true, row: row })
-                    }
-                  >
-                    <Edit />
-                  </IconButton>
-                </Tooltip>
-                <Tooltip arrow placement="right" title="Delete">
-                  <IconButton
-                    color="error"
-                    onClick={() => handleDeleteRow(row)}
-                  >
-                    <Delete />
-                  </IconButton>
-                </Tooltip>
-              </Box>
+              <TableRowActions
+                onEdit={()=>setEditRowState({ showEditPopup: true, row: row })}
+                onDelete={() => handleDeleteRow(row)}
+              />
             )}
             renderTopToolbarCustomActions={() => (
               <TableToolbar
