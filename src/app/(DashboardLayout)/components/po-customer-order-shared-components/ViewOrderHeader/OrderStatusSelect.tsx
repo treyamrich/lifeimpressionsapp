@@ -10,45 +10,25 @@ const colors = {
     yellow: "#FFAE1F"
 }
 
+const poStatusToColor = {
+    [POStatus.Open]: colors.green,
+    [POStatus.Closed]: colors.red,
+    [POStatus.SentToVendor]: colors.blue
+};
+
+const coStatusToColor = {
+    [CustomerOrderStatus.NEW]: colors.yellow,
+    [CustomerOrderStatus.BLOCKED]: colors.red,
+    [CustomerOrderStatus.COMPLETED]: colors.green,
+    [CustomerOrderStatus.IN_PROGRESS]: colors.blue
+}
+
 const OrderStatusSelect = ({ status, onChange, entityType, selectValues }: {
-    status: string;
+    status: POStatus | CustomerOrderStatus;
     onChange: (e: any) => void;
     entityType: EntityType;
     selectValues: SelectValue[] | undefined;
 }) => {
-    const getPOStatusStyle = (status: POStatus) => {
-        let bg = "";
-        switch (status) {
-            case POStatus.Open:
-                bg = colors.green
-                break;
-            case POStatus.Closed:
-                bg = colors.red
-                break;
-            case POStatus.SentToVendor:
-                bg = colors.blue
-        }
-        return bg
-    }
-
-    const getCOStatusStyle = (status: CustomerOrderStatus) => {
-        let bg = ""
-        switch (status) {
-            case CustomerOrderStatus.NEW:
-                bg = colors.yellow
-                break;
-            case CustomerOrderStatus.BLOCKED:
-                bg = colors.red
-                break;
-            case CustomerOrderStatus.COMPLETED:
-                bg = colors.green
-                break;
-            case CustomerOrderStatus.IN_PROGRESS:
-                bg = colors.blue
-                break;
-        }
-        return bg
-    }
     return (
         <FormControl sx={{ m: 1, minWidth: 150 }} size="small">
             <TextField
@@ -58,8 +38,8 @@ const OrderStatusSelect = ({ status, onChange, entityType, selectValues }: {
                         color: "#ffffff",
                         boxShadow: '0px 4px 8px rgba(0, 0, 0, 0.1)',
                         backgroundColor: entityType === EntityType.PurchaseOrder ?
-                            getPOStatusStyle(status as POStatus) :
-                            getCOStatusStyle(status as CustomerOrderStatus)
+                            poStatusToColor[status as POStatus] :
+                            coStatusToColor[status as CustomerOrderStatus]
                     }
                 }}
                 select={true}

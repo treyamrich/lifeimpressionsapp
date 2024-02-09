@@ -1,5 +1,6 @@
 import { POStatus, PurchaseOrder } from "@/API";
 import { toReadableDateTime } from "@/utils/datetimeConversions";
+import { Chip } from "@mui/material";
 import dayjs from "dayjs";
 import { MRT_ColumnDef } from "material-react-table";
 
@@ -27,6 +28,12 @@ export const initialPurchaseOrderFormState: any = {
   dateExpected: dayjs()
 };
 
+const poStatusToColor = {
+  [POStatus.Open]: "success",
+  [POStatus.Closed]: "error",
+  [POStatus.SentToVendor]: "info"
+};
+
 export const getTableColumns = (): MRT_ColumnDef<PurchaseOrder>[] => {
   return [
     {
@@ -45,6 +52,13 @@ export const getTableColumns = (): MRT_ColumnDef<PurchaseOrder>[] => {
     {
       accessorKey: "status",
       header: "Status",
+      Cell: ({ renderedCellValue, row }) => (
+        <Chip
+          variant="filled"
+          label={poStatusToHeaderMap[row.original.status]}
+          color={poStatusToColor[row.original.status] as any}
+        />
+      )
     } as MRT_ColumnDef<PurchaseOrder>,
     {
       accessorKey: "dateExpected",

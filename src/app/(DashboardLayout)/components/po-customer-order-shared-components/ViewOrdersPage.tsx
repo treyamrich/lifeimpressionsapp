@@ -24,7 +24,6 @@ function ViewOrdersPage<T extends Record<any, any>>({
   onRowClick,
   onAddRow,
   fetchOrdersPaginationFn,
-  fetchedItemTransformerFn,
   pageTitle,
   entityType,
   getTableColumns,
@@ -37,7 +36,6 @@ function ViewOrdersPage<T extends Record<any, any>>({
   fetchOrdersPaginationFn: (
     nextToken: string | null | undefined
   ) => Promise<ListAPIResponse<T>>;
-  fetchedItemTransformerFn?: (item: T) => T;
   pageTitle: string;
   entityType: EntityType;
   getTableColumns: () => MRT_ColumnDef<T>[];
@@ -102,7 +100,6 @@ function ViewOrdersPage<T extends Record<any, any>>({
                   items: tableData,
                   setItems: setTableData,
                   fetchFunc: fetchOrdersPaginationFn,
-                  itemTransformerFn: fetchedItemTransformerFn,
                 }}
                 onAdd={onAddRow}
                 showPaginationButton={true}

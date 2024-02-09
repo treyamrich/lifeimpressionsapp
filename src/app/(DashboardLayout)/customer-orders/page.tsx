@@ -35,15 +35,6 @@ const CustomerOrders = () => {
     });
   };
 
-  const fetchedCOTransformerFn = (order: CustomerOrder) => {
-    return {
-      ...order,
-      orderStatus: coStatusToHeaderMap[
-        order.orderStatus
-      ] as CustomerOrderStatus,
-    };
-  }
-  
   return (
 
     <OrderViewAddPage
@@ -57,7 +48,6 @@ const CustomerOrders = () => {
       columnInfo={columnInfo}
 
       fetchOrdersPaginationFn={fetchCustomerOrdersPaginationFn}
-      fetchedItemTransformerFn={fetchedCOTransformerFn}
     />
   );
 };

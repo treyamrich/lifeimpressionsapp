@@ -3,6 +3,7 @@ import { MRT_ColumnDef } from "material-react-table";
 import { ColumnInfo } from "../purchase-orders/table-constants";
 import dayjs from "dayjs";
 import { toReadableDateTime } from "@/utils/datetimeConversions";
+import { Chip } from "@mui/material";
 
 export interface SelectValue {
   label: string;
@@ -24,6 +25,13 @@ export const initialCustomerOrderFormState: any = {
   taxRate: 0,
   discount: 0
 };
+
+const coStatusToColor = {
+  [CustomerOrderStatus.NEW]: "warning",
+  [CustomerOrderStatus.BLOCKED]: "error",
+  [CustomerOrderStatus.COMPLETED]: "success",
+  [CustomerOrderStatus.IN_PROGRESS]: "info"
+}
 
 export const getTableColumns = (): MRT_ColumnDef<CustomerOrder>[] => {
   return [
@@ -48,6 +56,13 @@ export const getTableColumns = (): MRT_ColumnDef<CustomerOrder>[] => {
     {
       accessorKey: "orderStatus",
       header: "Status",
+      Cell: ({ renderedCellValue, row }) => (
+        <Chip
+          variant="filled"
+          label={coStatusToHeaderMap[row.original.orderStatus]}
+          color={coStatusToColor[row.original.orderStatus] as any}
+        />
+      )
     } as MRT_ColumnDef<CustomerOrder>,
     {
       accessorKey: "createdAt",
