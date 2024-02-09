@@ -1,7 +1,7 @@
 import { MRT_ColumnDef } from "material-react-table";
 import { useEffect, useMemo, useState } from "react";
 import { Dayjs } from "dayjs";
-import { toAWSDateTime, toTimezoneWithoutAdjustingHours } from "@/utils/datetimeConversions";
+import { fromUTC, toAWSDateTime } from "@/utils/datetimeConversions";
 import { Button, Dialog, DialogContent, DialogTitle, Grid, MenuItem, Stack, TextField } from "@mui/material";
 import { DateTimePicker } from "@mui/x-date-pickers";
 import { validateEmail, validatePhoneNumber } from "@/utils/field-validation";
@@ -29,7 +29,7 @@ function EditOrderHeaderPopup<T extends Record<any, any>>({ open, order, onSubmi
         const formState = { ...order } as any;
         Object.keys(formState).forEach((field: string) => {
             if (columnInfo.get(field)?.isDatetimeField) {
-                formState[field] = toTimezoneWithoutAdjustingHours(formState[field]);
+                formState[field] = fromUTC(formState[field]);
             } else if (formState[field] === null) {
                 formState[field] = "";
             }

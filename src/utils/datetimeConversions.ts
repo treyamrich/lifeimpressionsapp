@@ -8,28 +8,10 @@ const readableTimeFormat = 'lll';
 dayjs.extend(utc)
 dayjs.extend(timezone);
 
-//Takes an ISO 8601 date string and converts it to a readable date string
-export const toReadableDateTime = (date: string) => {
-    let readableTime = dayjs(date).tz(configuredTimeZone).format(readableTimeFormat);
-    return readableTime;
-}
+//Takes an ISO 8601 date string and converts it to a local readable date string
+export const toReadableDateTime = (date: string) => fromUTC(date).format(readableTimeFormat)
 
-// Takes a date string that comes from toReadableDateTime function and converts to a Dayjs object
-export const toTimezoneWithoutAdjustingHours = (dateString: string): Dayjs => {
-    const dayjsObj = dayjs(dateString);
-
-    // Save the time info
-    const hours = dayjsObj.hour();
-    const minutes = dayjsObj.minute();
-    const seconds = dayjsObj.second();
-    const milliseconds = dayjsObj.millisecond();
-
-    return dayjsObj.tz(configuredTimeZone)
-        .set('hour', hours)
-        .set('minute', minutes)
-        .set('second', seconds)
-        .set('millisecond', milliseconds);
-}
+export const fromUTC = (dateString: string): Dayjs => dayjs.utc(dateString).tz(configuredTimeZone);
 
 export const getStartOfDay = (dayOffset: number) => 
     dayjs().tz(configuredTimeZone).startOf('day').add(dayOffset, 'day')
