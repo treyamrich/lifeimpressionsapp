@@ -155,6 +155,8 @@ const Inventory = () => {
               <TableRowActions
                 onEdit={()=>setEditRowState({ showEditPopup: true, row: row })}
                 onDelete={() => handleDeleteRow(row)}
+                showEditButton
+                showDeleteButton
               />
             )}
             renderTopToolbarCustomActions={() => (

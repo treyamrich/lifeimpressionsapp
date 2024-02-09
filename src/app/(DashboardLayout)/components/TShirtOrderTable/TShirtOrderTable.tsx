@@ -20,6 +20,7 @@ import EditRowPopup from "./EditTShirtOrder/EditTShirtOrderPopup";
 import { useDBOperationContext, DBOperation } from "@/contexts/DBErrorContext";
 import { EntityType } from "../po-customer-order-shared-components/CreateOrderPage";
 import TableToolbar from "../Table/TableToolbar";
+import TableRowActions from "../Table/TableRowActions";
 
 interface TShirtOrderTableProps {
   tableData: TShirtOrder[];
@@ -128,16 +129,13 @@ const TShirtOrderTable = ({
           columnFilters,
           columnVisibility: hiddenColumns
         }}
-        muiTableBodyRowProps={
-          ({ row }: { row: any }) => ({
-            onClick: () => {
-              setEditMode({ show: true, row: row });
-            },
-            sx: {
-              cursor: "pointer", //you might want to change the cursor too when adding an onClick
-            },
-          })}
-        enableEditing={undefined}
+        enableEditing
+        renderRowActions={({ row, table }) => (
+          <TableRowActions
+            onEdit={()=>setEditMode({ show: true, row: row })}
+            showEditButton
+          />
+        )}
         renderTopToolbarCustomActions={() => (
           <TableToolbar 
             showAddButton={true}
