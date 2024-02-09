@@ -6,8 +6,7 @@ import {
   TShirtOrder,
 } from "@/API";
 import React, { useMemo, useState, useEffect } from "react";
-import { modalTitle, getTableColumns, TShirtOrderFields } from "./table-constants";
-import { Button } from "@mui/material";
+import { getTableColumns, TShirtOrderFields } from "./table-constants";
 import {
   MaterialReactTable,
   type MRT_ColumnDef,
@@ -121,13 +120,26 @@ const TShirtOrderTable = ({
         }}
         columns={columns}
         data={tableData}
-        initialState={{ showColumnFilters: true }}
         editingMode="modal" //default
         enableColumnOrdering
         onColumnFiltersChange={setColumnFilters}
         state={{
           columnFilters,
           columnVisibility: hiddenColumns
+        }}
+        muiTableBodyRowProps={({ row }: { row: MRT_Row<TShirtOrder> }) => ({
+            sx: {
+              opacity: row.original.quantity <= 0 ? "50%" : "100%"
+            }
+        })}
+        initialState={{
+          showColumnFilters: true,
+          sorting: [
+            {
+              id: "quantity",
+              desc: true,
+            },
+          ],
         }}
         enableEditing
         renderRowActions={({ row, table }) => (

@@ -16,6 +16,7 @@ import TableToolbar from "../Table/TableToolbar";
 import { ListAPIResponse } from "@/graphql-helpers/fetch-apis";
 import TableInfoHeader from "../Table/TableInfoHeader";
 import { Stack } from "@mui/material";
+import { EntityType } from "./CreateOrderPage";
 
 function ViewOrdersPage<T extends Record<any, any>>({
   tableData,
@@ -25,7 +26,7 @@ function ViewOrdersPage<T extends Record<any, any>>({
   fetchOrdersPaginationFn,
   fetchedItemTransformerFn,
   pageTitle,
-  entityName,
+  entityType,
   getTableColumns,
   columnInfo,
 }: {
@@ -38,7 +39,7 @@ function ViewOrdersPage<T extends Record<any, any>>({
   ) => Promise<ListAPIResponse<T>>;
   fetchedItemTransformerFn?: (item: T) => T;
   pageTitle: string;
-  entityName: string;
+  entityType: EntityType;
   getTableColumns: () => MRT_ColumnDef<T>[];
   columnInfo: Map<string | number | symbol | undefined, ColumnInfo>;
 }) {

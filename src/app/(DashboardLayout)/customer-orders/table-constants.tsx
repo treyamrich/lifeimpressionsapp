@@ -10,7 +10,6 @@ export interface SelectValue {
 }
 
 export const tablePrimaryKey = "id";
-export const entityName = "Customer Order";
 
 export const initialCustomerOrderFormState: any = {
   __typename: "CustomerOrder",

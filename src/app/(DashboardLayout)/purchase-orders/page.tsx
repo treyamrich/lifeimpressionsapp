@@ -7,13 +7,13 @@ import { listPurchaseOrderAPI } from "@/graphql-helpers/fetch-apis";
 
 import {
   columnInfo,
-  entityName,
   getTableColumns,
 } from "./table-constants";
 import {
   type MRT_Row,
 } from "material-react-table";
 import OrderViewAddPage from "../components/po-customer-order-shared-components/ViewOrdersPage";
+import { EntityType } from "../components/po-customer-order-shared-components/CreateOrderPage";
 
 const PurchaseOrders = () => {
   const { push } = useRouter();
@@ -43,7 +43,7 @@ const PurchaseOrders = () => {
       onRowClick={handleRowClick}
       onAddRow={handleAddRow}
       pageTitle="Purchase Orders"
-      entityName={entityName}
+      entityType={EntityType.PurchaseOrder}
       getTableColumns={getTableColumns}
       columnInfo={columnInfo}
 

@@ -7,12 +7,12 @@ import { listCustomerOrderAPI } from "@/graphql-helpers/fetch-apis";
 
 import {
   columnInfo,
-  entityName,
   getTableColumns,
   coStatusToHeaderMap,
 } from "./table-constants";
 import { type MRT_Row } from "material-react-table";
 import OrderViewAddPage from "../components/po-customer-order-shared-components/ViewOrdersPage";
+import { EntityType } from "../components/po-customer-order-shared-components/CreateOrderPage";
 
 const CustomerOrders = () => {
   const { push } = useRouter();
@@ -52,7 +52,7 @@ const CustomerOrders = () => {
       onRowClick={handleRowClick}
       onAddRow={handleAddRow}
       pageTitle="Customer Orders"
-      entityName={entityName}
+      entityType={EntityType.CustomerOrder}
       getTableColumns={getTableColumns}
       columnInfo={columnInfo}
 
