@@ -22,19 +22,13 @@ import { Dayjs } from "dayjs";
 import { useState } from "react";
 import { getEndOfDay, getStartOfDay } from "@/utils/datetimeConversions";
 
-const checkboxes: any = {
-  includePOs: {
-    label: "Purchase Orders",
-  },
-  includeCOs: {
-    label: "Customer Orders",
-  },
-  includeDeletedPOs: {
-    label: "Deleted Purchase Orders",
-  },
-  includeDeletedCOs: {
-    label: "Deleted Customer Orders",
-  },
+const checkboxLabels: any = {
+  includePOs: "Purchase Orders",
+  includeCOs: "Customer Orders",
+  includeDeletedPOs: "Deleted Purchase Orders",
+  includeDeletedCOs: "Deleted Customer Orders",
+  includeZeroQtyOrders: "Orders with 0 items",
+  includeZeroQtyOrderItems: "Items in orders with 0 quantity"
 };
 
 export enum ReportType {
@@ -56,11 +50,18 @@ const radiobuttons: any = {
 export type FormState = {
   dateStart: Dayjs;
   dateEnd: Dayjs;
+
   includePOs: boolean;
   includeCOs: boolean;
+
   includeDeletedPOs: boolean;
   includeDeletedCOs: boolean;
+
+  includeZeroQtyOrders: boolean;
+  includeZeroQtyOrderItems: boolean;
+
   reportType: ReportType;
+
   errMsg: string;
 };
 
@@ -71,6 +72,8 @@ const getInitialFormState = (): FormState => ({
   includeCOs: true,
   includeDeletedPOs: false,
   includeDeletedCOs: false,
+  includeZeroQtyOrders: false,
+  includeZeroQtyOrderItems: false,
   reportType: ReportType.HighLevel,
   errMsg: "",
 });
@@ -119,10 +122,10 @@ const ReportGenerationForm = ({
     <FormControl>
       <FormLabel component="legend">Include in report:</FormLabel>
       <FormGroup row>
-        {Object.keys(checkboxes).map((key, idx) => (
+        {Object.keys(checkboxLabels).map((key, idx) => (
           <FormControlLabel
             key={`Checkbox-${idx}`}
-            label={checkboxes[key].label}
+            label={checkboxLabels[key]}
             control={
               <Checkbox
                 checked={formState[key as keyof FormState] as boolean}

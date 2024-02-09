@@ -85,14 +85,28 @@ export const handleReportRequest = async (
         return [];
     }
 
-    let res = resCO.concat(resPO)
+    let res = resCO.concat(resPO);
+
     let newOrders: Order[] = res.map((order: CustomerOrder | PurchaseOrder) => {
         let orderedItems = order.orderedItems?.items ?? [];
         let cleanedItems = orderedItems.filter(item => item !== null) as TShirtOrder[];
         return { ...order, orderedItems: cleanedItems }
     });
 
-    return Promise.resolve(newOrders);
+    // Apply additional filters; some filters can't be done via query.
+    let filteredOrders = newOrders
+    if(!form.includeZeroQtyOrders) {
+        filteredOrders = filteredOrders.filter((order: Order) => order.orderedItems.length > 0) 
+    }
+
+    if(!form.includeZeroQtyOrderItems) {
+        filteredOrders.forEach((order: Order) => {
+            order.orderedItems = order.orderedItems
+                .filter((item: TShirtOrder) => item.quantity > 0);
+        })
+    }
+
+    return Promise.resolve(filteredOrders);
 }
 
 export const downloadHighLevelReport = (orders: Order[], orderIdToTotal: Map<string, OrderTotal>, todaysDate: string) => {
@@ -149,7 +163,7 @@ export const downloadDetailedReport = (orders: Order[], todaysDate: string) => {
                 __typename: order.__typename,
                 createdAt: orderCreatedAt,
 
-                sortKey: dayjs(orderItem.updatedAt), // ONLY USED FOR SORTING
+                sortKey: orderItem.updatedAt, // ONLY USED FOR SORTING
 
                 updatedAt: toReadableDateTime(orderItem.updatedAt),
                 tshirtStyleNumber: orderItem.tshirt.styleNumber,
@@ -165,8 +179,10 @@ export const downloadDetailedReport = (orders: Order[], todaysDate: string) => {
 
     // Sort the order items by updated at
     enhancedOrderItems.sort((a, b) => {
-        if(a.sortKey.isBefore(b)) return -1;
-        if(a.sortKey.isAfter(b)) return 1;
+        let l = dayjs(a.sortKey)
+        let r = dayjs(b.sortKey)
+        if(l.isBefore(r)) return -1;
+        if(l.isAfter(r)) return 1;
         return 0;
     })
 
