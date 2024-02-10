@@ -251,7 +251,6 @@ export const AuthContextProvider = ({ children }: Props) => {
   );
 
   const showRoute = user !== null || !routeIsProtected;
-  console.log(user);
   return (
     <AuthContext.Provider
       value={{
