@@ -170,7 +170,7 @@ export const createOrderTransactionAPI = async (
         .filter((x: string) => x != null);
       return negativeInventoryShirts;
     }
-    console.log(e);
+    console.log(e.message);
     throw new Error(`Failed to create ${entityType} order`);
   });
 };

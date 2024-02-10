@@ -217,7 +217,7 @@ export const updateOrderTransactionAPI = async (
       if (!allowNegativeInventory) {
         return null;
       }
-      console.log(e);
+      console.log(e.message);
       throw new Error(`Failed to update ${entityType} order`);
     });
 };

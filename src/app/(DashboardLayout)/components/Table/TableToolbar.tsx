@@ -37,13 +37,13 @@ function TableToolbar<T>({
 }) {
   return (
     <Stack direction={"row"} gap={1} padding={1}>
+      {showAddButton && (
+        <AddNewEntityButton text={addButtonText} onClick={onAdd} />
+      )}
       {showPaginationButton && paginationProps && (
         <LoadMorePaginationButton
           {...paginationProps}
         />
-      )}
-      {showAddButton && (
-        <AddNewEntityButton text={addButtonText} onClick={onAdd} />
       )}
     </Stack>
   );
