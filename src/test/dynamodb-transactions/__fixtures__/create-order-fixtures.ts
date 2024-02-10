@@ -52,7 +52,8 @@ export const tshirtOrders: TShirtOrder[] = [
         createdAt: '',
         updatedAt: '',
         tshirt: tshirts[0],
-        costPerUnit: 52.1
+        costPerUnit: 52.1,
+        discount: 0,
     },
     {
         __typename: "TShirtOrder",
@@ -63,7 +64,8 @@ export const tshirtOrders: TShirtOrder[] = [
         createdAt: '',
         updatedAt: '',
         tshirt: tshirts[1],
-        costPerUnit: 52.4
+        costPerUnit: 52.4,
+        discount: 0,
     }
 ]
 
@@ -78,6 +80,11 @@ export const po: PurchaseOrder = {
     type: "PurchaseOrder",
     createdAt: '',
     updatedAt: '',
+    shipping: 0,
+    taxRate: 0,
+    fees: 0,
+    discount: 0,
+    dateExpected: ""
 };
 
 export const coWithNulls: CustomerOrder = {
@@ -95,6 +102,8 @@ export const coWithNulls: CustomerOrder = {
     type: "CustomerOrder",
     createdAt: '',
     updatedAt: '',
+    taxRate: 0,
+    discount: 0,
 };
 
 export const co: CustomerOrder = {
@@ -112,4 +121,6 @@ export const co: CustomerOrder = {
     type: "CustomerOrder",
     createdAt: '',
     updatedAt: '',
+    taxRate: 0,
+    discount: 0,
 };

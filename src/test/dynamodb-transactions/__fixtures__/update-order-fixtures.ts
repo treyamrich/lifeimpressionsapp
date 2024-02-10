@@ -23,21 +23,29 @@ export const updatedTShirtOrder: TShirtOrder = {
     tShirtOrderTshirtId: updatedTShirt.id,
     createdAt: '',
     updatedAt: '',
-    tshirt: updatedTShirt
+    tshirt: updatedTShirt,
+    costPerUnit: 0,
+    discount: 0,
 };
 
 export const updateOrderInput: UpdateOrderTransactionInput = {
-    reason: "None",
-    tshirtTableQtyDelta: 2,
-    orderedQtyDelta: 4,
+    createOrderChangeInput: {
+        reason: "",
+        fieldChanges: [],
+        orderChangeTshirtId: ""
+    },
+    inventoryQtyDelta: 2,
     updatedTShirtOrder: updatedTShirtOrder,
     parentOrderId: "123"
 }
 
 export const negativeUpdateOrderInput: UpdateOrderTransactionInput = {
-    reason: "None",
-    tshirtTableQtyDelta: -2,
-    orderedQtyDelta: -4,
+    createOrderChangeInput: {
+        reason: "",
+        fieldChanges: [],
+        orderChangeTshirtId: ""
+    },
+    inventoryQtyDelta: -2,
     updatedTShirtOrder: updatedTShirtOrder,
     parentOrderId: "123"
 }
