@@ -129,8 +129,8 @@ export const createOrderTransactionAPI = async (
   allowNegativeInventory: boolean,
   refreshTokenFn?: () => Promise<CognitoUser | undefined>
 ): Promise<Array<string>> => {
-  console.log(process.env.USER_BRANCH)
-  
+  console.log(process.env.AWS_BRANCH)
+
   const orderedItems = input.orderedItems as any as TShirtOrder[]; // Locally orderedItems is just an array
   validateCreateOrderInput(input, entityType);
 
