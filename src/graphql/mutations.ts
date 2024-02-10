@@ -17,6 +17,16 @@ export const createTShirt = /* GraphQL */ `
       quantityOnHand
       isDeleted
       indexField
+      changeHistory {
+        reason
+        fieldChanges {
+          oldValue
+          newValue
+          fieldName
+          __typename
+        }
+        __typename
+      }
       createdAt
       updatedAt
       __typename
@@ -38,6 +48,16 @@ export const updateTShirt = /* GraphQL */ `
       quantityOnHand
       isDeleted
       indexField
+      changeHistory {
+        reason
+        fieldChanges {
+          oldValue
+          newValue
+          fieldName
+          __typename
+        }
+        __typename
+      }
       createdAt
       updatedAt
       __typename
@@ -59,6 +79,16 @@ export const deleteTShirt = /* GraphQL */ `
       quantityOnHand
       isDeleted
       indexField
+      changeHistory {
+        reason
+        fieldChanges {
+          oldValue
+          newValue
+          fieldName
+          __typename
+        }
+        __typename
+      }
       createdAt
       updatedAt
       __typename
@@ -86,6 +116,16 @@ export const createPurchaseOrder = /* GraphQL */ `
             quantityOnHand
             isDeleted
             indexField
+            changeHistory {
+              reason
+              fieldChanges {
+                oldValue
+                newValue
+                fieldName
+                __typename
+              }
+              __typename
+            }
             createdAt
             updatedAt
             __typename
@@ -119,6 +159,16 @@ export const createPurchaseOrder = /* GraphQL */ `
             quantityOnHand
             isDeleted
             indexField
+            changeHistory {
+              reason
+              fieldChanges {
+                oldValue
+                newValue
+                fieldName
+                __typename
+              }
+              __typename
+            }
             createdAt
             updatedAt
             __typename
@@ -176,6 +226,16 @@ export const updatePurchaseOrder = /* GraphQL */ `
             quantityOnHand
             isDeleted
             indexField
+            changeHistory {
+              reason
+              fieldChanges {
+                oldValue
+                newValue
+                fieldName
+                __typename
+              }
+              __typename
+            }
             createdAt
             updatedAt
             __typename
@@ -209,6 +269,16 @@ export const updatePurchaseOrder = /* GraphQL */ `
             quantityOnHand
             isDeleted
             indexField
+            changeHistory {
+              reason
+              fieldChanges {
+                oldValue
+                newValue
+                fieldName
+                __typename
+              }
+              __typename
+            }
             createdAt
             updatedAt
             __typename
@@ -266,6 +336,16 @@ export const deletePurchaseOrder = /* GraphQL */ `
             quantityOnHand
             isDeleted
             indexField
+            changeHistory {
+              reason
+              fieldChanges {
+                oldValue
+                newValue
+                fieldName
+                __typename
+              }
+              __typename
+            }
             createdAt
             updatedAt
             __typename
@@ -299,6 +379,16 @@ export const deletePurchaseOrder = /* GraphQL */ `
             quantityOnHand
             isDeleted
             indexField
+            changeHistory {
+              reason
+              fieldChanges {
+                oldValue
+                newValue
+                fieldName
+                __typename
+              }
+              __typename
+            }
             createdAt
             updatedAt
             __typename
@@ -351,6 +441,16 @@ export const createOrderChange = /* GraphQL */ `
         quantityOnHand
         isDeleted
         indexField
+        changeHistory {
+          reason
+          fieldChanges {
+            oldValue
+            newValue
+            fieldName
+            __typename
+          }
+          __typename
+        }
         createdAt
         updatedAt
         __typename
@@ -388,6 +488,16 @@ export const updateOrderChange = /* GraphQL */ `
         quantityOnHand
         isDeleted
         indexField
+        changeHistory {
+          reason
+          fieldChanges {
+            oldValue
+            newValue
+            fieldName
+            __typename
+          }
+          __typename
+        }
         createdAt
         updatedAt
         __typename
@@ -425,6 +535,16 @@ export const deleteOrderChange = /* GraphQL */ `
         quantityOnHand
         isDeleted
         indexField
+        changeHistory {
+          reason
+          fieldChanges {
+            oldValue
+            newValue
+            fieldName
+            __typename
+          }
+          __typename
+        }
         createdAt
         updatedAt
         __typename
@@ -462,6 +582,16 @@ export const createTShirtOrder = /* GraphQL */ `
         quantityOnHand
         isDeleted
         indexField
+        changeHistory {
+          reason
+          fieldChanges {
+            oldValue
+            newValue
+            fieldName
+            __typename
+          }
+          __typename
+        }
         createdAt
         updatedAt
         __typename
@@ -496,6 +626,16 @@ export const updateTShirtOrder = /* GraphQL */ `
         quantityOnHand
         isDeleted
         indexField
+        changeHistory {
+          reason
+          fieldChanges {
+            oldValue
+            newValue
+            fieldName
+            __typename
+          }
+          __typename
+        }
         createdAt
         updatedAt
         __typename
@@ -530,6 +670,16 @@ export const deleteTShirtOrder = /* GraphQL */ `
         quantityOnHand
         isDeleted
         indexField
+        changeHistory {
+          reason
+          fieldChanges {
+            oldValue
+            newValue
+            fieldName
+            __typename
+          }
+          __typename
+        }
         createdAt
         updatedAt
         __typename
@@ -570,6 +720,16 @@ export const createCustomerOrder = /* GraphQL */ `
             quantityOnHand
             isDeleted
             indexField
+            changeHistory {
+              reason
+              fieldChanges {
+                oldValue
+                newValue
+                fieldName
+                __typename
+              }
+              __typename
+            }
             createdAt
             updatedAt
             __typename
@@ -605,6 +765,16 @@ export const createCustomerOrder = /* GraphQL */ `
             quantityOnHand
             isDeleted
             indexField
+            changeHistory {
+              reason
+              fieldChanges {
+                oldValue
+                newValue
+                fieldName
+                __typename
+              }
+              __typename
+            }
             createdAt
             updatedAt
             __typename
@@ -659,6 +829,16 @@ export const updateCustomerOrder = /* GraphQL */ `
             quantityOnHand
             isDeleted
             indexField
+            changeHistory {
+              reason
+              fieldChanges {
+                oldValue
+                newValue
+                fieldName
+                __typename
+              }
+              __typename
+            }
             createdAt
             updatedAt
             __typename
@@ -694,6 +874,16 @@ export const updateCustomerOrder = /* GraphQL */ `
             quantityOnHand
             isDeleted
             indexField
+            changeHistory {
+              reason
+              fieldChanges {
+                oldValue
+                newValue
+                fieldName
+                __typename
+              }
+              __typename
+            }
             createdAt
             updatedAt
             __typename
@@ -748,6 +938,16 @@ export const deleteCustomerOrder = /* GraphQL */ `
             quantityOnHand
             isDeleted
             indexField
+            changeHistory {
+              reason
+              fieldChanges {
+                oldValue
+                newValue
+                fieldName
+                __typename
+              }
+              __typename
+            }
             createdAt
             updatedAt
             __typename
@@ -783,6 +983,16 @@ export const deleteCustomerOrder = /* GraphQL */ `
             quantityOnHand
             isDeleted
             indexField
+            changeHistory {
+              reason
+              fieldChanges {
+                oldValue
+                newValue
+                fieldName
+                __typename
+              }
+              __typename
+            }
             createdAt
             updatedAt
             __typename

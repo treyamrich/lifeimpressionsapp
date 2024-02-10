@@ -6,6 +6,7 @@ import NumberInput from "../../inputs/NumberInput";
 import QuantityChanger from "./QuantityChanger";
 import { FormValue } from "./EditTShirtOrderPopup";
 import { TShirtOrderFields, toColumnHeaderMap } from "../table-constants";
+import EditReasonRadioGroup, { EditReasonFormState } from "../../EditReasonRadioGroup/EditReasonRadioGroup";
 
 type EditCardProps = {
     currentAmtReceived: number;
@@ -24,13 +25,8 @@ type EditCardProps = {
     newDiscount: FormValue<number>;
     setNewDiscount: React.Dispatch<React.SetStateAction<FormValue<number>>>;
 
-    editReason: string;
-    setEditReason: React.Dispatch<React.SetStateAction<string>>;
-
-    otherInput: string;
-    setOtherInput: React.Dispatch<React.SetStateAction<string>>;
-    setOtherInputError: React.Dispatch<React.SetStateAction<boolean>>;
-    otherInputError: boolean;
+    editReason: EditReasonFormState;
+    setEditReason: React.Dispatch<React.SetStateAction<EditReasonFormState>>;
 
     entityType: EntityType;
     mode: TableMode
@@ -56,19 +52,9 @@ const EditCard = ({
     editReason,
     setEditReason,
 
-    otherInput,
-    setOtherInput,
-
-    otherInputError,
-    setOtherInputError,
-
     entityType,
     mode
 }: EditCardProps) => {
-    const handleChangeEditReason = (newReason: string) => {
-        setEditReason(newReason);
-        if (newReason !== "other") setOtherInputError(false);
-    };
 
     return (
         <BlankCard>
@@ -129,45 +115,11 @@ const EditCard = ({
                         </Grid>
                         {mode === TableMode.Edit && (
                             <Grid item>
-                                <FormLabel id="radio-buttons-group-label">
-                                    Please enter the reason for editing
-                                </FormLabel>
-                                <RadioGroup
-                                    aria-labelledby="radio-buttons-group-label"
-                                    name="radio-buttons-group"
-                                    value={editReason}
-                                    onChange={(e) => handleChangeEditReason(e.target.value)}
-                                >
-                                    {entityType === EntityType.PurchaseOrder && (
-                                        <>
-                                            <FormControlLabel
-                                                value="Received Item"
-                                                control={<Radio />}
-                                                label="Received Item"
-                                            />
-                                            <FormControlLabel
-                                                value="Damaged Item"
-                                                control={<Radio />}
-                                                label="Damaged Item"
-                                            />
-                                        </>
-                                    )}
-                                    <FormControlLabel
-                                        value="other"
-                                        control={<Radio />}
-                                        label="Other"
-                                    />
-                                    <TextField
-                                        name="other-text-input"
-                                        onChange={(e) => setOtherInput(e.target.value)}
-                                        variant="standard"
-                                        value={otherInput}
-                                        disabled={editReason !== "other"}
-                                        required={editReason === "other"}
-                                        error={otherInputError}
-                                        helperText="Other reason"
-                                    />
-                                </RadioGroup>
+                                <EditReasonRadioGroup
+                                    formState={editReason}
+                                    setFormState={setEditReason}
+                                    showMandatoryRadioButtons={entityType === EntityType.PurchaseOrder}
+                                />
                             </Grid>
                         )}
                     </Grid>

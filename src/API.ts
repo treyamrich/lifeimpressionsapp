@@ -12,6 +12,7 @@ export type CreateTShirtInput = {
   quantityOnHand: number,
   isDeleted?: boolean | null,
   indexField?: string | null,
+  changeHistory?: Array< TShirtFieldChangeInput > | null,
 };
 
 export enum TShirtSize {
@@ -45,6 +46,17 @@ export enum TShirtType {
   Blend = "Blend",
 }
 
+
+export type TShirtFieldChangeInput = {
+  reason: string,
+  fieldChanges: Array< FieldChangeInput >,
+};
+
+export type FieldChangeInput = {
+  oldValue: string,
+  newValue: string,
+  fieldName: string,
+};
 
 export type ModelTShirtConditionInput = {
   styleNumber?: ModelStringInput | null,
@@ -140,8 +152,22 @@ export type TShirt = {
   quantityOnHand: number,
   isDeleted?: boolean | null,
   indexField?: string | null,
+  changeHistory?:  Array<TShirtFieldChange > | null,
   createdAt: string,
   updatedAt: string,
+};
+
+export type TShirtFieldChange = {
+  __typename: "TShirtFieldChange",
+  reason: string,
+  fieldChanges:  Array<FieldChange >,
+};
+
+export type FieldChange = {
+  __typename: "FieldChange",
+  oldValue: string,
+  newValue: string,
+  fieldName: string,
 };
 
 export type UpdateTShirtInput = {
@@ -154,6 +180,7 @@ export type UpdateTShirtInput = {
   quantityOnHand?: number | null,
   isDeleted?: boolean | null,
   indexField?: string | null,
+  changeHistory?: Array< TShirtFieldChangeInput > | null,
 };
 
 export type DeleteTShirtInput = {
@@ -283,13 +310,6 @@ export type OrderChange = {
   orderChangeTshirtId: string,
 };
 
-export type FieldChange = {
-  __typename: "FieldChange",
-  oldValue: string,
-  newValue: string,
-  fieldName: string,
-};
-
 export type UpdatePurchaseOrderInput = {
   id: string,
   orderNumber?: string | null,
@@ -319,12 +339,6 @@ export type CreateOrderChangeInput = {
   purchaseOrderChangeHistoryId?: string | null,
   customerOrderChangeHistoryId?: string | null,
   orderChangeTshirtId: string,
-};
-
-export type FieldChangeInput = {
-  oldValue: string,
-  newValue: string,
-  fieldName: string,
 };
 
 export type ModelOrderChangeConditionInput = {
@@ -761,6 +775,16 @@ export type CreateTShirtMutation = {
     quantityOnHand: number,
     isDeleted?: boolean | null,
     indexField?: string | null,
+    changeHistory?:  Array< {
+      __typename: "TShirtFieldChange",
+      reason: string,
+      fieldChanges:  Array< {
+        __typename: "FieldChange",
+        oldValue: string,
+        newValue: string,
+        fieldName: string,
+      } >,
+    } > | null,
     createdAt: string,
     updatedAt: string,
   } | null,
@@ -783,6 +807,16 @@ export type UpdateTShirtMutation = {
     quantityOnHand: number,
     isDeleted?: boolean | null,
     indexField?: string | null,
+    changeHistory?:  Array< {
+      __typename: "TShirtFieldChange",
+      reason: string,
+      fieldChanges:  Array< {
+        __typename: "FieldChange",
+        oldValue: string,
+        newValue: string,
+        fieldName: string,
+      } >,
+    } > | null,
     createdAt: string,
     updatedAt: string,
   } | null,
@@ -805,6 +839,16 @@ export type DeleteTShirtMutation = {
     quantityOnHand: number,
     isDeleted?: boolean | null,
     indexField?: string | null,
+    changeHistory?:  Array< {
+      __typename: "TShirtFieldChange",
+      reason: string,
+      fieldChanges:  Array< {
+        __typename: "FieldChange",
+        oldValue: string,
+        newValue: string,
+        fieldName: string,
+      } >,
+    } > | null,
     createdAt: string,
     updatedAt: string,
   } | null,
@@ -836,6 +880,16 @@ export type CreatePurchaseOrderMutation = {
           quantityOnHand: number,
           isDeleted?: boolean | null,
           indexField?: string | null,
+          changeHistory?:  Array< {
+            __typename: "TShirtFieldChange",
+            reason: string,
+            fieldChanges:  Array< {
+              __typename: "FieldChange",
+              oldValue: string,
+              newValue: string,
+              fieldName: string,
+            } >,
+          } > | null,
           createdAt: string,
           updatedAt: string,
         },
@@ -869,6 +923,16 @@ export type CreatePurchaseOrderMutation = {
           quantityOnHand: number,
           isDeleted?: boolean | null,
           indexField?: string | null,
+          changeHistory?:  Array< {
+            __typename: "TShirtFieldChange",
+            reason: string,
+            fieldChanges:  Array< {
+              __typename: "FieldChange",
+              oldValue: string,
+              newValue: string,
+              fieldName: string,
+            } >,
+          } > | null,
           createdAt: string,
           updatedAt: string,
         },
@@ -927,6 +991,16 @@ export type UpdatePurchaseOrderMutation = {
           quantityOnHand: number,
           isDeleted?: boolean | null,
           indexField?: string | null,
+          changeHistory?:  Array< {
+            __typename: "TShirtFieldChange",
+            reason: string,
+            fieldChanges:  Array< {
+              __typename: "FieldChange",
+              oldValue: string,
+              newValue: string,
+              fieldName: string,
+            } >,
+          } > | null,
           createdAt: string,
           updatedAt: string,
         },
@@ -960,6 +1034,16 @@ export type UpdatePurchaseOrderMutation = {
           quantityOnHand: number,
           isDeleted?: boolean | null,
           indexField?: string | null,
+          changeHistory?:  Array< {
+            __typename: "TShirtFieldChange",
+            reason: string,
+            fieldChanges:  Array< {
+              __typename: "FieldChange",
+              oldValue: string,
+              newValue: string,
+              fieldName: string,
+            } >,
+          } > | null,
           createdAt: string,
           updatedAt: string,
         },
@@ -1018,6 +1102,16 @@ export type DeletePurchaseOrderMutation = {
           quantityOnHand: number,
           isDeleted?: boolean | null,
           indexField?: string | null,
+          changeHistory?:  Array< {
+            __typename: "TShirtFieldChange",
+            reason: string,
+            fieldChanges:  Array< {
+              __typename: "FieldChange",
+              oldValue: string,
+              newValue: string,
+              fieldName: string,
+            } >,
+          } > | null,
           createdAt: string,
           updatedAt: string,
         },
@@ -1051,6 +1145,16 @@ export type DeletePurchaseOrderMutation = {
           quantityOnHand: number,
           isDeleted?: boolean | null,
           indexField?: string | null,
+          changeHistory?:  Array< {
+            __typename: "TShirtFieldChange",
+            reason: string,
+            fieldChanges:  Array< {
+              __typename: "FieldChange",
+              oldValue: string,
+              newValue: string,
+              fieldName: string,
+            } >,
+          } > | null,
           createdAt: string,
           updatedAt: string,
         },
@@ -1102,6 +1206,16 @@ export type CreateOrderChangeMutation = {
       quantityOnHand: number,
       isDeleted?: boolean | null,
       indexField?: string | null,
+      changeHistory?:  Array< {
+        __typename: "TShirtFieldChange",
+        reason: string,
+        fieldChanges:  Array< {
+          __typename: "FieldChange",
+          oldValue: string,
+          newValue: string,
+          fieldName: string,
+        } >,
+      } > | null,
       createdAt: string,
       updatedAt: string,
     },
@@ -1140,6 +1254,16 @@ export type UpdateOrderChangeMutation = {
       quantityOnHand: number,
       isDeleted?: boolean | null,
       indexField?: string | null,
+      changeHistory?:  Array< {
+        __typename: "TShirtFieldChange",
+        reason: string,
+        fieldChanges:  Array< {
+          __typename: "FieldChange",
+          oldValue: string,
+          newValue: string,
+          fieldName: string,
+        } >,
+      } > | null,
       createdAt: string,
       updatedAt: string,
     },
@@ -1178,6 +1302,16 @@ export type DeleteOrderChangeMutation = {
       quantityOnHand: number,
       isDeleted?: boolean | null,
       indexField?: string | null,
+      changeHistory?:  Array< {
+        __typename: "TShirtFieldChange",
+        reason: string,
+        fieldChanges:  Array< {
+          __typename: "FieldChange",
+          oldValue: string,
+          newValue: string,
+          fieldName: string,
+        } >,
+      } > | null,
       createdAt: string,
       updatedAt: string,
     },
@@ -1216,6 +1350,16 @@ export type CreateTShirtOrderMutation = {
       quantityOnHand: number,
       isDeleted?: boolean | null,
       indexField?: string | null,
+      changeHistory?:  Array< {
+        __typename: "TShirtFieldChange",
+        reason: string,
+        fieldChanges:  Array< {
+          __typename: "FieldChange",
+          oldValue: string,
+          newValue: string,
+          fieldName: string,
+        } >,
+      } > | null,
       createdAt: string,
       updatedAt: string,
     },
@@ -1251,6 +1395,16 @@ export type UpdateTShirtOrderMutation = {
       quantityOnHand: number,
       isDeleted?: boolean | null,
       indexField?: string | null,
+      changeHistory?:  Array< {
+        __typename: "TShirtFieldChange",
+        reason: string,
+        fieldChanges:  Array< {
+          __typename: "FieldChange",
+          oldValue: string,
+          newValue: string,
+          fieldName: string,
+        } >,
+      } > | null,
       createdAt: string,
       updatedAt: string,
     },
@@ -1286,6 +1440,16 @@ export type DeleteTShirtOrderMutation = {
       quantityOnHand: number,
       isDeleted?: boolean | null,
       indexField?: string | null,
+      changeHistory?:  Array< {
+        __typename: "TShirtFieldChange",
+        reason: string,
+        fieldChanges:  Array< {
+          __typename: "FieldChange",
+          oldValue: string,
+          newValue: string,
+          fieldName: string,
+        } >,
+      } > | null,
       createdAt: string,
       updatedAt: string,
     },
@@ -1329,6 +1493,16 @@ export type CreateCustomerOrderMutation = {
           quantityOnHand: number,
           isDeleted?: boolean | null,
           indexField?: string | null,
+          changeHistory?:  Array< {
+            __typename: "TShirtFieldChange",
+            reason: string,
+            fieldChanges:  Array< {
+              __typename: "FieldChange",
+              oldValue: string,
+              newValue: string,
+              fieldName: string,
+            } >,
+          } > | null,
           createdAt: string,
           updatedAt: string,
         },
@@ -1364,6 +1538,16 @@ export type CreateCustomerOrderMutation = {
           quantityOnHand: number,
           isDeleted?: boolean | null,
           indexField?: string | null,
+          changeHistory?:  Array< {
+            __typename: "TShirtFieldChange",
+            reason: string,
+            fieldChanges:  Array< {
+              __typename: "FieldChange",
+              oldValue: string,
+              newValue: string,
+              fieldName: string,
+            } >,
+          } > | null,
           createdAt: string,
           updatedAt: string,
         },
@@ -1419,6 +1603,16 @@ export type UpdateCustomerOrderMutation = {
           quantityOnHand: number,
           isDeleted?: boolean | null,
           indexField?: string | null,
+          changeHistory?:  Array< {
+            __typename: "TShirtFieldChange",
+            reason: string,
+            fieldChanges:  Array< {
+              __typename: "FieldChange",
+              oldValue: string,
+              newValue: string,
+              fieldName: string,
+            } >,
+          } > | null,
           createdAt: string,
           updatedAt: string,
         },
@@ -1454,6 +1648,16 @@ export type UpdateCustomerOrderMutation = {
           quantityOnHand: number,
           isDeleted?: boolean | null,
           indexField?: string | null,
+          changeHistory?:  Array< {
+            __typename: "TShirtFieldChange",
+            reason: string,
+            fieldChanges:  Array< {
+              __typename: "FieldChange",
+              oldValue: string,
+              newValue: string,
+              fieldName: string,
+            } >,
+          } > | null,
           createdAt: string,
           updatedAt: string,
         },
@@ -1509,6 +1713,16 @@ export type DeleteCustomerOrderMutation = {
           quantityOnHand: number,
           isDeleted?: boolean | null,
           indexField?: string | null,
+          changeHistory?:  Array< {
+            __typename: "TShirtFieldChange",
+            reason: string,
+            fieldChanges:  Array< {
+              __typename: "FieldChange",
+              oldValue: string,
+              newValue: string,
+              fieldName: string,
+            } >,
+          } > | null,
           createdAt: string,
           updatedAt: string,
         },
@@ -1544,6 +1758,16 @@ export type DeleteCustomerOrderMutation = {
           quantityOnHand: number,
           isDeleted?: boolean | null,
           indexField?: string | null,
+          changeHistory?:  Array< {
+            __typename: "TShirtFieldChange",
+            reason: string,
+            fieldChanges:  Array< {
+              __typename: "FieldChange",
+              oldValue: string,
+              newValue: string,
+              fieldName: string,
+            } >,
+          } > | null,
           createdAt: string,
           updatedAt: string,
         },
@@ -1588,6 +1812,16 @@ export type GetTShirtQuery = {
     quantityOnHand: number,
     isDeleted?: boolean | null,
     indexField?: string | null,
+    changeHistory?:  Array< {
+      __typename: "TShirtFieldChange",
+      reason: string,
+      fieldChanges:  Array< {
+        __typename: "FieldChange",
+        oldValue: string,
+        newValue: string,
+        fieldName: string,
+      } >,
+    } > | null,
     createdAt: string,
     updatedAt: string,
   } | null,
@@ -1615,6 +1849,16 @@ export type ListTShirtsQuery = {
       quantityOnHand: number,
       isDeleted?: boolean | null,
       indexField?: string | null,
+      changeHistory?:  Array< {
+        __typename: "TShirtFieldChange",
+        reason: string,
+        fieldChanges:  Array< {
+          __typename: "FieldChange",
+          oldValue: string,
+          newValue: string,
+          fieldName: string,
+        } >,
+      } > | null,
       createdAt: string,
       updatedAt: string,
     } | null >,
@@ -1645,6 +1889,16 @@ export type TshirtsByQtyQuery = {
       quantityOnHand: number,
       isDeleted?: boolean | null,
       indexField?: string | null,
+      changeHistory?:  Array< {
+        __typename: "TShirtFieldChange",
+        reason: string,
+        fieldChanges:  Array< {
+          __typename: "FieldChange",
+          oldValue: string,
+          newValue: string,
+          fieldName: string,
+        } >,
+      } > | null,
       createdAt: string,
       updatedAt: string,
     } | null >,
@@ -1677,6 +1931,16 @@ export type GetPurchaseOrderQuery = {
           quantityOnHand: number,
           isDeleted?: boolean | null,
           indexField?: string | null,
+          changeHistory?:  Array< {
+            __typename: "TShirtFieldChange",
+            reason: string,
+            fieldChanges:  Array< {
+              __typename: "FieldChange",
+              oldValue: string,
+              newValue: string,
+              fieldName: string,
+            } >,
+          } > | null,
           createdAt: string,
           updatedAt: string,
         },
@@ -1710,6 +1974,16 @@ export type GetPurchaseOrderQuery = {
           quantityOnHand: number,
           isDeleted?: boolean | null,
           indexField?: string | null,
+          changeHistory?:  Array< {
+            __typename: "TShirtFieldChange",
+            reason: string,
+            fieldChanges:  Array< {
+              __typename: "FieldChange",
+              oldValue: string,
+              newValue: string,
+              fieldName: string,
+            } >,
+          } > | null,
           createdAt: string,
           updatedAt: string,
         },
@@ -1773,6 +2047,16 @@ export type ListPurchaseOrdersQuery = {
             quantityOnHand: number,
             isDeleted?: boolean | null,
             indexField?: string | null,
+            changeHistory?:  Array< {
+              __typename: "TShirtFieldChange",
+              reason: string,
+              fieldChanges:  Array< {
+                __typename: "FieldChange",
+                oldValue: string,
+                newValue: string,
+                fieldName: string,
+              } >,
+            } > | null,
             createdAt: string,
             updatedAt: string,
           },
@@ -1806,6 +2090,16 @@ export type ListPurchaseOrdersQuery = {
             quantityOnHand: number,
             isDeleted?: boolean | null,
             indexField?: string | null,
+            changeHistory?:  Array< {
+              __typename: "TShirtFieldChange",
+              reason: string,
+              fieldChanges:  Array< {
+                __typename: "FieldChange",
+                oldValue: string,
+                newValue: string,
+                fieldName: string,
+              } >,
+            } > | null,
             createdAt: string,
             updatedAt: string,
           },
@@ -1872,6 +2166,16 @@ export type PurchaseOrdersByCreatedAtQuery = {
             quantityOnHand: number,
             isDeleted?: boolean | null,
             indexField?: string | null,
+            changeHistory?:  Array< {
+              __typename: "TShirtFieldChange",
+              reason: string,
+              fieldChanges:  Array< {
+                __typename: "FieldChange",
+                oldValue: string,
+                newValue: string,
+                fieldName: string,
+              } >,
+            } > | null,
             createdAt: string,
             updatedAt: string,
           },
@@ -1905,6 +2209,16 @@ export type PurchaseOrdersByCreatedAtQuery = {
             quantityOnHand: number,
             isDeleted?: boolean | null,
             indexField?: string | null,
+            changeHistory?:  Array< {
+              __typename: "TShirtFieldChange",
+              reason: string,
+              fieldChanges:  Array< {
+                __typename: "FieldChange",
+                oldValue: string,
+                newValue: string,
+                fieldName: string,
+              } >,
+            } > | null,
             createdAt: string,
             updatedAt: string,
           },
@@ -1957,6 +2271,16 @@ export type GetOrderChangeQuery = {
       quantityOnHand: number,
       isDeleted?: boolean | null,
       indexField?: string | null,
+      changeHistory?:  Array< {
+        __typename: "TShirtFieldChange",
+        reason: string,
+        fieldChanges:  Array< {
+          __typename: "FieldChange",
+          oldValue: string,
+          newValue: string,
+          fieldName: string,
+        } >,
+      } > | null,
       createdAt: string,
       updatedAt: string,
     },
@@ -1998,6 +2322,16 @@ export type ListOrderChangesQuery = {
         quantityOnHand: number,
         isDeleted?: boolean | null,
         indexField?: string | null,
+        changeHistory?:  Array< {
+          __typename: "TShirtFieldChange",
+          reason: string,
+          fieldChanges:  Array< {
+            __typename: "FieldChange",
+            oldValue: string,
+            newValue: string,
+            fieldName: string,
+          } >,
+        } > | null,
         createdAt: string,
         updatedAt: string,
       },
@@ -2037,6 +2371,16 @@ export type GetTShirtOrderQuery = {
       quantityOnHand: number,
       isDeleted?: boolean | null,
       indexField?: string | null,
+      changeHistory?:  Array< {
+        __typename: "TShirtFieldChange",
+        reason: string,
+        fieldChanges:  Array< {
+          __typename: "FieldChange",
+          oldValue: string,
+          newValue: string,
+          fieldName: string,
+        } >,
+      } > | null,
       createdAt: string,
       updatedAt: string,
     },
@@ -2075,6 +2419,16 @@ export type ListTShirtOrdersQuery = {
         quantityOnHand: number,
         isDeleted?: boolean | null,
         indexField?: string | null,
+        changeHistory?:  Array< {
+          __typename: "TShirtFieldChange",
+          reason: string,
+          fieldChanges:  Array< {
+            __typename: "FieldChange",
+            oldValue: string,
+            newValue: string,
+            fieldName: string,
+          } >,
+        } > | null,
         createdAt: string,
         updatedAt: string,
       },
@@ -2119,6 +2473,16 @@ export type GetCustomerOrderQuery = {
           quantityOnHand: number,
           isDeleted?: boolean | null,
           indexField?: string | null,
+          changeHistory?:  Array< {
+            __typename: "TShirtFieldChange",
+            reason: string,
+            fieldChanges:  Array< {
+              __typename: "FieldChange",
+              oldValue: string,
+              newValue: string,
+              fieldName: string,
+            } >,
+          } > | null,
           createdAt: string,
           updatedAt: string,
         },
@@ -2154,6 +2518,16 @@ export type GetCustomerOrderQuery = {
           quantityOnHand: number,
           isDeleted?: boolean | null,
           indexField?: string | null,
+          changeHistory?:  Array< {
+            __typename: "TShirtFieldChange",
+            reason: string,
+            fieldChanges:  Array< {
+              __typename: "FieldChange",
+              oldValue: string,
+              newValue: string,
+              fieldName: string,
+            } >,
+          } > | null,
           createdAt: string,
           updatedAt: string,
         },
@@ -2214,6 +2588,16 @@ export type ListCustomerOrdersQuery = {
             quantityOnHand: number,
             isDeleted?: boolean | null,
             indexField?: string | null,
+            changeHistory?:  Array< {
+              __typename: "TShirtFieldChange",
+              reason: string,
+              fieldChanges:  Array< {
+                __typename: "FieldChange",
+                oldValue: string,
+                newValue: string,
+                fieldName: string,
+              } >,
+            } > | null,
             createdAt: string,
             updatedAt: string,
           },
@@ -2249,6 +2633,16 @@ export type ListCustomerOrdersQuery = {
             quantityOnHand: number,
             isDeleted?: boolean | null,
             indexField?: string | null,
+            changeHistory?:  Array< {
+              __typename: "TShirtFieldChange",
+              reason: string,
+              fieldChanges:  Array< {
+                __typename: "FieldChange",
+                oldValue: string,
+                newValue: string,
+                fieldName: string,
+              } >,
+            } > | null,
             createdAt: string,
             updatedAt: string,
           },
@@ -2312,6 +2706,16 @@ export type CustomerOrdersByCreatedAtQuery = {
             quantityOnHand: number,
             isDeleted?: boolean | null,
             indexField?: string | null,
+            changeHistory?:  Array< {
+              __typename: "TShirtFieldChange",
+              reason: string,
+              fieldChanges:  Array< {
+                __typename: "FieldChange",
+                oldValue: string,
+                newValue: string,
+                fieldName: string,
+              } >,
+            } > | null,
             createdAt: string,
             updatedAt: string,
           },
@@ -2347,6 +2751,16 @@ export type CustomerOrdersByCreatedAtQuery = {
             quantityOnHand: number,
             isDeleted?: boolean | null,
             indexField?: string | null,
+            changeHistory?:  Array< {
+              __typename: "TShirtFieldChange",
+              reason: string,
+              fieldChanges:  Array< {
+                __typename: "FieldChange",
+                oldValue: string,
+                newValue: string,
+                fieldName: string,
+              } >,
+            } > | null,
             createdAt: string,
             updatedAt: string,
           },
@@ -2393,6 +2807,16 @@ export type OnCreateTShirtSubscription = {
     quantityOnHand: number,
     isDeleted?: boolean | null,
     indexField?: string | null,
+    changeHistory?:  Array< {
+      __typename: "TShirtFieldChange",
+      reason: string,
+      fieldChanges:  Array< {
+        __typename: "FieldChange",
+        oldValue: string,
+        newValue: string,
+        fieldName: string,
+      } >,
+    } > | null,
     createdAt: string,
     updatedAt: string,
   } | null,
@@ -2414,6 +2838,16 @@ export type OnUpdateTShirtSubscription = {
     quantityOnHand: number,
     isDeleted?: boolean | null,
     indexField?: string | null,
+    changeHistory?:  Array< {
+      __typename: "TShirtFieldChange",
+      reason: string,
+      fieldChanges:  Array< {
+        __typename: "FieldChange",
+        oldValue: string,
+        newValue: string,
+        fieldName: string,
+      } >,
+    } > | null,
     createdAt: string,
     updatedAt: string,
   } | null,
@@ -2435,6 +2869,16 @@ export type OnDeleteTShirtSubscription = {
     quantityOnHand: number,
     isDeleted?: boolean | null,
     indexField?: string | null,
+    changeHistory?:  Array< {
+      __typename: "TShirtFieldChange",
+      reason: string,
+      fieldChanges:  Array< {
+        __typename: "FieldChange",
+        oldValue: string,
+        newValue: string,
+        fieldName: string,
+      } >,
+    } > | null,
     createdAt: string,
     updatedAt: string,
   } | null,
@@ -2465,6 +2909,16 @@ export type OnCreatePurchaseOrderSubscription = {
           quantityOnHand: number,
           isDeleted?: boolean | null,
           indexField?: string | null,
+          changeHistory?:  Array< {
+            __typename: "TShirtFieldChange",
+            reason: string,
+            fieldChanges:  Array< {
+              __typename: "FieldChange",
+              oldValue: string,
+              newValue: string,
+              fieldName: string,
+            } >,
+          } > | null,
           createdAt: string,
           updatedAt: string,
         },
@@ -2498,6 +2952,16 @@ export type OnCreatePurchaseOrderSubscription = {
           quantityOnHand: number,
           isDeleted?: boolean | null,
           indexField?: string | null,
+          changeHistory?:  Array< {
+            __typename: "TShirtFieldChange",
+            reason: string,
+            fieldChanges:  Array< {
+              __typename: "FieldChange",
+              oldValue: string,
+              newValue: string,
+              fieldName: string,
+            } >,
+          } > | null,
           createdAt: string,
           updatedAt: string,
         },
@@ -2555,6 +3019,16 @@ export type OnUpdatePurchaseOrderSubscription = {
           quantityOnHand: number,
           isDeleted?: boolean | null,
           indexField?: string | null,
+          changeHistory?:  Array< {
+            __typename: "TShirtFieldChange",
+            reason: string,
+            fieldChanges:  Array< {
+              __typename: "FieldChange",
+              oldValue: string,
+              newValue: string,
+              fieldName: string,
+            } >,
+          } > | null,
           createdAt: string,
           updatedAt: string,
         },
@@ -2588,6 +3062,16 @@ export type OnUpdatePurchaseOrderSubscription = {
           quantityOnHand: number,
           isDeleted?: boolean | null,
           indexField?: string | null,
+          changeHistory?:  Array< {
+            __typename: "TShirtFieldChange",
+            reason: string,
+            fieldChanges:  Array< {
+              __typename: "FieldChange",
+              oldValue: string,
+              newValue: string,
+              fieldName: string,
+            } >,
+          } > | null,
           createdAt: string,
           updatedAt: string,
         },
@@ -2645,6 +3129,16 @@ export type OnDeletePurchaseOrderSubscription = {
           quantityOnHand: number,
           isDeleted?: boolean | null,
           indexField?: string | null,
+          changeHistory?:  Array< {
+            __typename: "TShirtFieldChange",
+            reason: string,
+            fieldChanges:  Array< {
+              __typename: "FieldChange",
+              oldValue: string,
+              newValue: string,
+              fieldName: string,
+            } >,
+          } > | null,
           createdAt: string,
           updatedAt: string,
         },
@@ -2678,6 +3172,16 @@ export type OnDeletePurchaseOrderSubscription = {
           quantityOnHand: number,
           isDeleted?: boolean | null,
           indexField?: string | null,
+          changeHistory?:  Array< {
+            __typename: "TShirtFieldChange",
+            reason: string,
+            fieldChanges:  Array< {
+              __typename: "FieldChange",
+              oldValue: string,
+              newValue: string,
+              fieldName: string,
+            } >,
+          } > | null,
           createdAt: string,
           updatedAt: string,
         },
@@ -2728,6 +3232,16 @@ export type OnCreateOrderChangeSubscription = {
       quantityOnHand: number,
       isDeleted?: boolean | null,
       indexField?: string | null,
+      changeHistory?:  Array< {
+        __typename: "TShirtFieldChange",
+        reason: string,
+        fieldChanges:  Array< {
+          __typename: "FieldChange",
+          oldValue: string,
+          newValue: string,
+          fieldName: string,
+        } >,
+      } > | null,
       createdAt: string,
       updatedAt: string,
     },
@@ -2765,6 +3279,16 @@ export type OnUpdateOrderChangeSubscription = {
       quantityOnHand: number,
       isDeleted?: boolean | null,
       indexField?: string | null,
+      changeHistory?:  Array< {
+        __typename: "TShirtFieldChange",
+        reason: string,
+        fieldChanges:  Array< {
+          __typename: "FieldChange",
+          oldValue: string,
+          newValue: string,
+          fieldName: string,
+        } >,
+      } > | null,
       createdAt: string,
       updatedAt: string,
     },
@@ -2802,6 +3326,16 @@ export type OnDeleteOrderChangeSubscription = {
       quantityOnHand: number,
       isDeleted?: boolean | null,
       indexField?: string | null,
+      changeHistory?:  Array< {
+        __typename: "TShirtFieldChange",
+        reason: string,
+        fieldChanges:  Array< {
+          __typename: "FieldChange",
+          oldValue: string,
+          newValue: string,
+          fieldName: string,
+        } >,
+      } > | null,
       createdAt: string,
       updatedAt: string,
     },
@@ -2839,6 +3373,16 @@ export type OnCreateTShirtOrderSubscription = {
       quantityOnHand: number,
       isDeleted?: boolean | null,
       indexField?: string | null,
+      changeHistory?:  Array< {
+        __typename: "TShirtFieldChange",
+        reason: string,
+        fieldChanges:  Array< {
+          __typename: "FieldChange",
+          oldValue: string,
+          newValue: string,
+          fieldName: string,
+        } >,
+      } > | null,
       createdAt: string,
       updatedAt: string,
     },
@@ -2873,6 +3417,16 @@ export type OnUpdateTShirtOrderSubscription = {
       quantityOnHand: number,
       isDeleted?: boolean | null,
       indexField?: string | null,
+      changeHistory?:  Array< {
+        __typename: "TShirtFieldChange",
+        reason: string,
+        fieldChanges:  Array< {
+          __typename: "FieldChange",
+          oldValue: string,
+          newValue: string,
+          fieldName: string,
+        } >,
+      } > | null,
       createdAt: string,
       updatedAt: string,
     },
@@ -2907,6 +3461,16 @@ export type OnDeleteTShirtOrderSubscription = {
       quantityOnHand: number,
       isDeleted?: boolean | null,
       indexField?: string | null,
+      changeHistory?:  Array< {
+        __typename: "TShirtFieldChange",
+        reason: string,
+        fieldChanges:  Array< {
+          __typename: "FieldChange",
+          oldValue: string,
+          newValue: string,
+          fieldName: string,
+        } >,
+      } > | null,
       createdAt: string,
       updatedAt: string,
     },
@@ -2949,6 +3513,16 @@ export type OnCreateCustomerOrderSubscription = {
           quantityOnHand: number,
           isDeleted?: boolean | null,
           indexField?: string | null,
+          changeHistory?:  Array< {
+            __typename: "TShirtFieldChange",
+            reason: string,
+            fieldChanges:  Array< {
+              __typename: "FieldChange",
+              oldValue: string,
+              newValue: string,
+              fieldName: string,
+            } >,
+          } > | null,
           createdAt: string,
           updatedAt: string,
         },
@@ -2984,6 +3558,16 @@ export type OnCreateCustomerOrderSubscription = {
           quantityOnHand: number,
           isDeleted?: boolean | null,
           indexField?: string | null,
+          changeHistory?:  Array< {
+            __typename: "TShirtFieldChange",
+            reason: string,
+            fieldChanges:  Array< {
+              __typename: "FieldChange",
+              oldValue: string,
+              newValue: string,
+              fieldName: string,
+            } >,
+          } > | null,
           createdAt: string,
           updatedAt: string,
         },
@@ -3038,6 +3622,16 @@ export type OnUpdateCustomerOrderSubscription = {
           quantityOnHand: number,
           isDeleted?: boolean | null,
           indexField?: string | null,
+          changeHistory?:  Array< {
+            __typename: "TShirtFieldChange",
+            reason: string,
+            fieldChanges:  Array< {
+              __typename: "FieldChange",
+              oldValue: string,
+              newValue: string,
+              fieldName: string,
+            } >,
+          } > | null,
           createdAt: string,
           updatedAt: string,
         },
@@ -3073,6 +3667,16 @@ export type OnUpdateCustomerOrderSubscription = {
           quantityOnHand: number,
           isDeleted?: boolean | null,
           indexField?: string | null,
+          changeHistory?:  Array< {
+            __typename: "TShirtFieldChange",
+            reason: string,
+            fieldChanges:  Array< {
+              __typename: "FieldChange",
+              oldValue: string,
+              newValue: string,
+              fieldName: string,
+            } >,
+          } > | null,
           createdAt: string,
           updatedAt: string,
         },
@@ -3127,6 +3731,16 @@ export type OnDeleteCustomerOrderSubscription = {
           quantityOnHand: number,
           isDeleted?: boolean | null,
           indexField?: string | null,
+          changeHistory?:  Array< {
+            __typename: "TShirtFieldChange",
+            reason: string,
+            fieldChanges:  Array< {
+              __typename: "FieldChange",
+              oldValue: string,
+              newValue: string,
+              fieldName: string,
+            } >,
+          } > | null,
           createdAt: string,
           updatedAt: string,
         },
@@ -3162,6 +3776,16 @@ export type OnDeleteCustomerOrderSubscription = {
           quantityOnHand: number,
           isDeleted?: boolean | null,
           indexField?: string | null,
+          changeHistory?:  Array< {
+            __typename: "TShirtFieldChange",
+            reason: string,
+            fieldChanges:  Array< {
+              __typename: "FieldChange",
+              oldValue: string,
+              newValue: string,
+              fieldName: string,
+            } >,
+          } > | null,
           createdAt: string,
           updatedAt: string,
         },

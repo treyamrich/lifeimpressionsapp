@@ -1,3 +1,8 @@
+type TShirtFieldChange {
+  reason: String!
+  fieldChanges: [FieldChange!]!
+}
+
 type TShirt @model @auth(rules: [
   { allow: groups, groups: ["admin"], provider: userPools}]) {
   id: ID! @primaryKey
@@ -9,6 +14,9 @@ type TShirt @model @auth(rules: [
   quantityOnHand: Int! @default(value: "0")
   isDeleted: Boolean @default(value: "false")
   indexField: String @default(value: "TShirtIndexField") @index(name: "tshirtsByQty", queryField: "tshirtsByQty", sortKeyFields: ["quantityOnHand"])
+  
+  # Only for editing tshirts manually
+  changeHistory: [TShirtFieldChange!]
 }
 
 enum TShirtSize {

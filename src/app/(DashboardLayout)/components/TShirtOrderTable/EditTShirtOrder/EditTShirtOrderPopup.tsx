@@ -14,6 +14,7 @@ import { TShirtOrderFields} from "../table-constants";
 import { BuildOrderChangeInput, buildOrderChangeInput } from "../../po-customer-order-shared-components/OrderChangeHistory/util";
 import EditCard from "./EditCard";
 import ChosenTShirtCard from "./ChosenTShirtCard";
+import { EditReasonFormState } from "../../EditReasonRadioGroup/EditReasonRadioGroup";
 
 interface EditTShirtOrderPopupProps {
   onSubmit: (createOrderChangeInput: CreateOrderChangeInput, resetFormCallback: () => void) => void;
@@ -25,8 +26,6 @@ interface EditTShirtOrderPopupProps {
   entityType: EntityType;
   mode: TableMode;
 }
-
-const initialEditReasonState = "other"; // This provides easy form validation for both purchase/customer order edit forms
 
 export interface FormValue<T> {
   value: T;
@@ -56,30 +55,27 @@ const EditTShirtOrderPopup = ({
   const currentDiscount = row ? row.getValue(TShirtOrderFields.Discount) as number : 0.0;
   const [newDiscount, setNewDiscount] = useState<FormValue<number>>({ value: 0, hasError: false});
 
-  const [editReason, setEditReason] = useState(initialEditReasonState);
-  const [otherInput, setOtherInput] = useState(""); // When user selects "other"
-  const [otherInputError, setOtherInputError] = useState(false);
+  const getInitialEditReasonState = () => ({ editReason: "other", otherInput: "", otherInputError: false})
+  const [editReason, setEditReason] = useState<EditReasonFormState>(getInitialEditReasonState());
 
   const resetForm = () => {
-    setOtherInputError(false);
-    setOtherInput("");
-    setEditReason(initialEditReasonState);
+    setEditReason(getInitialEditReasonState);
     setNewAmtReceived(0);
     setNewAmtOrdered(0);
     setNewCostPerUnit({ value: 0, hasError: false });
   };
 
   const handleSubmit = () => {
-    let cleanOtherInput = otherInput.trim();
-    if (editReason === "other" && !cleanOtherInput.length && mode === TableMode.Edit) {
-      setOtherInputError(true);
+    let cleanOtherInput = editReason.otherInput.trim();
+    if (editReason.editReason === "other" && !cleanOtherInput.length && mode === TableMode.Edit) {
+      setEditReason({...editReason, otherInputError: true});
       return;
     }
 
     if (newCostPerUnit.hasError || newDiscount.hasError)
       return;
 
-    const editReasonMsg = editReason === "other" ? cleanOtherInput : editReason;
+    const editReasonMsg = editReason.editReason === "other" ? cleanOtherInput : editReason.editReason;
     const newTShirtOrder: TShirtOrder = {
       ...row!.original,
       costPerUnit: newCostPerUnit.value,
@@ -133,11 +129,6 @@ const EditTShirtOrderPopup = ({
 
               editReason={editReason}
               setEditReason={setEditReason}
-
-              otherInput={otherInput}
-              setOtherInput={setOtherInput}
-              otherInputError={otherInputError}
-              setOtherInputError={setOtherInputError}
 
               entityType={entityType}
               mode={mode}
