@@ -41,6 +41,8 @@ function ViewOrdersPage<T extends Record<any, any>>({
   getTableColumns: () => MRT_ColumnDef<T>[];
   columnInfo: Map<string | number | symbol | undefined, ColumnInfo>;
 }) {
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+
   const [columnFilters, setColumnFilters] = useState<MRT_ColumnFiltersState>(
     []
   );
@@ -93,6 +95,7 @@ function ViewOrdersPage<T extends Record<any, any>>({
             onColumnFiltersChange={setColumnFilters}
             state={{
               columnFilters,
+              isLoading
             }}
             renderTopToolbarCustomActions={() => (
               <TableToolbar
@@ -100,6 +103,7 @@ function ViewOrdersPage<T extends Record<any, any>>({
                   items: tableData,
                   setItems: setTableData,
                   fetchFunc: fetchOrdersPaginationFn,
+                  setIsLoading: setIsLoading
                 }}
                 onAdd={onAddRow}
                 showPaginationButton={true}

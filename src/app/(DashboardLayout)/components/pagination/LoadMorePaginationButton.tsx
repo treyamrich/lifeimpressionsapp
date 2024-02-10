@@ -3,7 +3,7 @@ import { ListAPIResponse } from "@/graphql-helpers/fetch-apis";
 import { IconButton, Tooltip } from "@mui/material";
 import CloudSyncIcon from "@mui/icons-material/CloudSync";
 
-import { SetStateAction, useEffect, useState } from "react";
+import React, { SetStateAction, useEffect, useState } from "react";
 
 export type LoadMorePaginationButtonProps<T> = {
   items: T[];
@@ -12,6 +12,7 @@ export type LoadMorePaginationButtonProps<T> = {
     nextToken: string | undefined | null
   ) => Promise<ListAPIResponse<T>>;
   itemTransformerFn?: (item: T) => T;
+  setIsLoading?: React.Dispatch<SetStateAction<boolean>>;
 };
 
 function LoadMorePaginationButton<T>({
@@ -19,6 +20,7 @@ function LoadMorePaginationButton<T>({
   setItems,
   fetchFunc,
   itemTransformerFn,
+  setIsLoading
 }: LoadMorePaginationButtonProps<T>) {
   const { rescueDBOperation } = useDBOperationContext();
   const [nextToken, setNextToken] = useState<string | undefined | null>(
@@ -26,6 +28,8 @@ function LoadMorePaginationButton<T>({
   );
 
   const handleLoadMore = () => {
+    if(setIsLoading) setIsLoading(true);
+
     rescueDBOperation(
       () => fetchFunc(nextToken),
       DBOperation.LIST,
@@ -36,6 +40,8 @@ function LoadMorePaginationButton<T>({
         }
         setItems(items.concat(newRes));
         setNextToken(resp.nextToken);
+
+        if(setIsLoading) setIsLoading(false);
       }
     );
   };

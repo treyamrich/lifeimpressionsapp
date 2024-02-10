@@ -38,15 +38,13 @@ type EditRowState = {
 
 const Inventory = () => {
   const { rescueDBOperation } = useDBOperationContext();
-  const [createModalOpen, setCreateModalOpen] = useState(false);
+  const [createModalOpen, setCreateModalOpen] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const [editRowState, setEditRowState] = useState<EditRowState>({
     showEditPopup: false,
     row: undefined,
   });
   const [tableData, setTableData] = useState<TShirt[]>([]);
-  const [validationErrors, setValidationErrors] = useState<{
-    [cellId: string]: string;
-  }>({});
   const [columnFilters, setColumnFilters] = useState<MRT_ColumnFiltersState>(
     []
   );
@@ -149,6 +147,7 @@ const Inventory = () => {
             state={{
               columnFilters,
               columnVisibility: hiddenColumns,
+              isLoading
             }}
             enableEditing
             renderRowActions={({ row, table }) => (
@@ -165,6 +164,7 @@ const Inventory = () => {
                   items: tableData,
                   setItems: setTableData,
                   fetchFunc: fetchTShirtsPaginationFn,
+                  setIsLoading: setIsLoading
                 }}
                 onAdd={() => setCreateModalOpen(true)}
                 showPaginationButton={true}
