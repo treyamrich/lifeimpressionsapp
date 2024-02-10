@@ -24,10 +24,10 @@ export const createDynamoDBObj = async (user: CognitoUser) => {
     return dynamodbClient;
 }
 
-const currBranch = process.env.AWS_BRANCH;
+const currentEnv = process.env.NEXT_PUBLIC_BUILD_ENV;
 const envDevSuffix = "-gs6ngrttgnfvhl2tsnfjohefei-dev"
 const envProdSuffix = '-2b7fbmfe6vhyvp6v7hmm6hxopm-prod'
-const tableNameSuffix = currBranch == "master" ? envProdSuffix : envDevSuffix;
+const tableNameSuffix = currentEnv == "prod" ? envProdSuffix : envDevSuffix;
 
 export interface DynamoDBTableInfo {
     tableName: string;
