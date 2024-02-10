@@ -1,8 +1,6 @@
 import { IconButton, Stack, Tooltip } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import LoadMorePaginationButton, { LoadMorePaginationButtonProps } from "../pagination/LoadMorePaginationButton";
-import { SetStateAction } from "react";
-import { ListAPIResponse } from "@/graphql-helpers/fetch-apis";
 
 const AddNewEntityButton = ({
   onClick,

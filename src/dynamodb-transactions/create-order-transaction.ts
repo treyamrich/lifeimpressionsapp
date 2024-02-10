@@ -129,7 +129,8 @@ export const createOrderTransactionAPI = async (
   allowNegativeInventory: boolean,
   refreshTokenFn?: () => Promise<CognitoUser | undefined>
 ): Promise<Array<string>> => {
-
+  console.log(process.env.USER_BRANCH)
+  
   const orderedItems = input.orderedItems as any as TShirtOrder[]; // Locally orderedItems is just an array
   validateCreateOrderInput(input, entityType);
 
@@ -157,7 +158,7 @@ export const createOrderTransactionAPI = async (
         return createOrderTransactionAPI(input, entityType, updatedSession, allowNegativeInventory);
       }
     }
-    
+    console.log(e.message);
     if (!allowNegativeInventory && e.CancellationReasons) {
       const negativeInventoryShirts = e.CancellationReasons.slice(1)
         .map((cancellationObj: any, index: number) => {
@@ -170,7 +171,7 @@ export const createOrderTransactionAPI = async (
         .filter((x: string) => x != null);
       return negativeInventoryShirts;
     }
-    console.log(e.message);
+    
     throw new Error(`Failed to create ${entityType} order`);
   });
 };
