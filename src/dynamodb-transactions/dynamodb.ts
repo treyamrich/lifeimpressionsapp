@@ -26,7 +26,7 @@ export const createDynamoDBObj = async (user: CognitoUser) => {
 
 const currEnv = process.env.USER_BRANCH;
 const envDevSuffix = "-gs6ngrttgnfvhl2tsnfjohefei-dev"
-const envProdSuffix = '-juolr2cid5ewhfpo4shhbdrtta-prod'
+const envProdSuffix = '-2b7fbmfe6vhyvp6v7hmm6hxopm-prod'
 const tableNameSuffix = currEnv == "prod" ? envProdSuffix : envDevSuffix;
 
 export interface DynamoDBTableInfo {
