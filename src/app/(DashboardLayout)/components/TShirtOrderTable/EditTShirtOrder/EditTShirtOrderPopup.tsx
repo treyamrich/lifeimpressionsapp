@@ -14,7 +14,7 @@ import { TShirtOrderFields} from "../table-constants";
 import { BuildOrderChangeInput, buildOrderChangeInput } from "../../po-customer-order-shared-components/OrderChangeHistory/util";
 import EditCard from "./EditCard";
 import ChosenTShirtCard from "./ChosenTShirtCard";
-import { EditReasonFormState } from "../../EditReasonRadioGroup/EditReasonRadioGroup";
+import { EditReasonFormState, getInitialEditReasonState, validateAndGetEditReason } from "../../EditReasonRadioGroup/EditReasonRadioGroup";
 
 interface EditTShirtOrderPopupProps {
   onSubmit: (createOrderChangeInput: CreateOrderChangeInput, resetFormCallback: () => void) => void;
@@ -55,27 +55,22 @@ const EditTShirtOrderPopup = ({
   const currentDiscount = row ? row.getValue(TShirtOrderFields.Discount) as number : 0.0;
   const [newDiscount, setNewDiscount] = useState<FormValue<number>>({ value: 0, hasError: false});
 
-  const getInitialEditReasonState = () => ({ editReason: "other", otherInput: "", otherInputError: false})
   const [editReason, setEditReason] = useState<EditReasonFormState>(getInitialEditReasonState());
 
   const resetForm = () => {
-    setEditReason(getInitialEditReasonState);
+    setEditReason(getInitialEditReasonState());
     setNewAmtReceived(0);
     setNewAmtOrdered(0);
     setNewCostPerUnit({ value: 0, hasError: false });
   };
 
   const handleSubmit = () => {
-    let cleanOtherInput = editReason.otherInput.trim();
-    if (editReason.editReason === "other" && !cleanOtherInput.length && mode === TableMode.Edit) {
-      setEditReason({...editReason, otherInputError: true});
-      return;
-    }
+    let editReasonMsg = validateAndGetEditReason(editReason, setEditReason, mode === TableMode.Edit)
+    if(!editReasonMsg) return;
 
     if (newCostPerUnit.hasError || newDiscount.hasError)
       return;
 
-    const editReasonMsg = editReason.editReason === "other" ? cleanOtherInput : editReason.editReason;
     const newTShirtOrder: TShirtOrder = {
       ...row!.original,
       costPerUnit: newCostPerUnit.value,

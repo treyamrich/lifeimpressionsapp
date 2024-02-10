@@ -3,6 +3,7 @@ import {
   Dialog,
   DialogContent,
   DialogTitle,
+  FormControl,
   Grid,
   MenuItem,
   Stack,
@@ -14,6 +15,11 @@ import { MRT_ColumnDef, MRT_Row } from "material-react-table";
 import { TShirt, UpdateTShirtInput } from "@/API";
 import { SelectValue } from "../purchase-orders/table-constants";
 import { columnInfo } from "./table-constants";
+import EditReasonRadioGroup, {
+  EditReasonFormState,
+  getInitialEditReasonState,
+  validateAndGetEditReason,
+} from "../components/EditReasonRadioGroup/EditReasonRadioGroup";
 
 const editableFields = Array.from(columnInfo)
   .filter((keyPair) => keyPair[1].isEditable)
@@ -37,8 +43,12 @@ function EditTShirtModal({
   getTableColumns: () => MRT_ColumnDef<TShirt>[];
 }) {
   const columns = useMemo<MRT_ColumnDef<TShirt>[]>(() => getTableColumns(), []);
+  const [editReason, setEditReason] = useState<EditReasonFormState>(
+    getInitialEditReasonState()
+  );
+
   const getInitialFormState = () => {
-    const formState = {} as any;
+    const formState = { id: "" } as any;
     editableFields.forEach((columnKey: any) => {
       formState[columnKey] = "";
 
@@ -62,6 +72,7 @@ function EditTShirtModal({
   const [errorMap, setErrorMap] = useState(() => getInitialFormErrorMap());
 
   const resetForm = () => {
+    setEditReason(getInitialEditReasonState());
     setErrorMap(getInitialFormErrorMap());
     setValues(getInitialFormState());
   };
@@ -88,6 +99,13 @@ function EditTShirtModal({
       allValid = allValid && errMsg === "";
     });
     setErrorMap(newErrors);
+
+    let editReasonMsg = validateAndGetEditReason(
+      editReason,
+      setEditReason,
+      true
+    );
+    allValid = !editReasonMsg ? false : allValid;
 
     if (allValid) {
       // Convert the datetime that was input with user's timezone to UTC timezone
@@ -205,6 +223,15 @@ function EditTShirtModal({
                   {getFormField(column)}
                 </React.Fragment>
               ))}
+
+            <FormControl>
+              <EditReasonRadioGroup
+                formState={editReason}
+                setFormState={setEditReason}
+                showMandatoryRadioButtons
+              />
+            </FormControl>
+
             <Grid container justifyContent={"space-between"}>
               <Grid item>
                 <Button

@@ -13,6 +13,19 @@ export type EditReasonFormState = {
   otherInputError: boolean;
 };
 
+export const getInitialEditReasonState = () => ({ editReason: "other", otherInput: "", otherInputError: false});
+
+export const validateAndGetEditReason = (
+  editReason: EditReasonFormState, 
+  setEditReason: React.Dispatch<SetStateAction<EditReasonFormState>>,
+  shouldSetErrorState: boolean): string | undefined => {
+  let cleanOtherInput = editReason.otherInput.trim();
+    if (editReason.editReason === "other" && !cleanOtherInput.length && shouldSetErrorState) {
+      setEditReason({...editReason, otherInputError: true});
+      return;
+    }
+  return editReason.editReason === "other" ? cleanOtherInput : editReason.editReason;
+}
 const EditReasonRadioGroup = ({
   formState,
   setFormState,
