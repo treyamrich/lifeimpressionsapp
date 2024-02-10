@@ -60,7 +60,7 @@ const AuthForgotPassword = ({ title, subtitle, subtext }: forceChangePasswordTyp
                         type="password"
                     />
                     <Typography variant="subtitle1"
-                        color="red"
+                        color="grey"
                         fontWeight={400} mb="5px" mt="25px">
                         Passwords must have 8+ characters
                     </Typography>

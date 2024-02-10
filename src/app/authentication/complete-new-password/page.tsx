@@ -7,7 +7,7 @@ import AuthForceChangePassword from "../auth/AuthForceChangePassword";
 
 const ForceChangePasswordPage = () => {
     return (
-        <PageContainer title="Complete New Password" description="this isComplete New Password page">
+        <PageContainer title="Complete New Password" description="this is Complete New Password page">
             <Box
                 sx={{
                     position: "relative",
@@ -53,6 +53,7 @@ const ForceChangePasswordPage = () => {
                                         textAlign="center"
                                         color="textSecondary"
                                         mb={1}
+                                        fontWeight={700}
                                     >
                                         New Password Required On First Sign On
                                     </Typography>
