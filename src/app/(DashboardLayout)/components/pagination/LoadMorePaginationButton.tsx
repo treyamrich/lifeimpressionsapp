@@ -1,7 +1,7 @@
 import { DBOperation, useDBOperationContext } from "@/contexts/DBErrorContext";
 import { ListAPIResponse } from "@/graphql-helpers/fetch-apis";
 import { IconButton, Tooltip } from "@mui/material";
-import CloudSyncIcon from '@mui/icons-material/CloudSync';
+import CloudSyncIcon from "@mui/icons-material/CloudSync";
 
 import { SetStateAction, useEffect, useState } from "react";
 
@@ -47,14 +47,16 @@ function LoadMorePaginationButton<T>({
 
   return (
     <Tooltip title="Loads more table items">
-      <IconButton
-        disabled={nextToken === null}
-        onClick={handleLoadMore}
-        color="success"
-        size="small"
-      >
-        Load More <CloudSyncIcon />
-      </IconButton>
+      <span>
+        <IconButton
+          disabled={!nextToken}
+          onClick={handleLoadMore}
+          color="success"
+          size="small"
+        >
+          Load More <CloudSyncIcon />
+        </IconButton>
+      </span>
     </Tooltip>
   );
 }
