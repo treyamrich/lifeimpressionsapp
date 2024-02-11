@@ -31,7 +31,7 @@ import {
 import { useAuthContext } from "@/contexts/AuthContext";
 import BlankCard from "../../components/shared/BlankCard";
 import { CreateOrderChangeInput, OrderChange, TShirt } from "@/API";
-import React, { useMemo, useState, useCallback, SetStateAction } from "react";
+import React, { useMemo, useState, useCallback, SetStateAction, useEffect } from "react";
 
 type EditRowState = {
   showEditPopup: boolean;
@@ -139,6 +139,25 @@ const InventoryTable = ({
     return listTShirtAPI({ filters: deletedFilter, nextToken: nextToken });
   };
 
+  const [duplicateTShirtSet, setDuplicateTShirtSet] = useState<Set<string>>(() => new Set());
+
+  useEffect(() => {
+    // Initialize the set once when the component mounts
+    setDuplicateTShirtSet(new Set());
+  }, []);
+  
+  // const paginationFilterDuplicates = (nextPageResult: TShirt[]): TShirt[] => {
+  //   const filteredResults: TShirt[] = [];
+  //   nextPageResult.forEach(a => {
+  //     if (!duplicateTShirtSet.has(a.id)) {
+  //       duplicateTShirtSet.add(a.id);
+  //       filteredResults.push(a);
+  //     }
+  //   });
+  //   console.log(duplicateTShirtSet);
+  //   return filteredResults;
+  // }
+
   return (
     <BlankCard>
       <CardContent>
@@ -194,6 +213,9 @@ const InventoryTable = ({
                   setItems: setTableData,
                   fetchFunc: fetchTShirtsPaginationFn,
                   setIsLoading: setIsLoading,
+                  filterDuplicates: {
+                    getHashkey: (tshirt: TShirt) => tshirt.id
+                  }
                 }}
                 onAdd={() => setCreateModalOpen(true)}
                 showPaginationButton={true}

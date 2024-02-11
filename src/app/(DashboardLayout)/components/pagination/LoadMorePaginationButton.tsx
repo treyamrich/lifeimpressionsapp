@@ -3,7 +3,7 @@ import { ListAPIResponse } from "@/graphql-helpers/fetch-apis";
 import { IconButton, Tooltip } from "@mui/material";
 import CloudSyncIcon from "@mui/icons-material/CloudSync";
 
-import React, { SetStateAction, useEffect, useState } from "react";
+import React, { SetStateAction, useEffect, useMemo, useState } from "react";
 
 export type LoadMorePaginationButtonProps<T> = {
   items: T[];
@@ -11,7 +11,9 @@ export type LoadMorePaginationButtonProps<T> = {
   fetchFunc: (
     nextToken: string | undefined | null
   ) => Promise<ListAPIResponse<T>>;
-  itemTransformerFn?: (item: T) => T;
+  filterDuplicates?: {
+    getHashkey: (obj: T) => string;
+  }
   setIsLoading?: React.Dispatch<SetStateAction<boolean>>;
 };
 
@@ -19,13 +21,26 @@ function LoadMorePaginationButton<T>({
   items,
   setItems,
   fetchFunc,
-  itemTransformerFn,
-  setIsLoading
+  setIsLoading,
+  filterDuplicates
 }: LoadMorePaginationButtonProps<T>) {
   const { rescueDBOperation } = useDBOperationContext();
   const [nextToken, setNextToken] = useState<string | undefined | null>(
     undefined
   );
+  
+  const _filterDuplicates = (results: T[]): T[] => {
+    const seen = new Set<string>(items.map(x => filterDuplicates!.getHashkey(x)));
+    const filteredResults: T[] = [];
+    results.forEach(a => {
+      let key = filterDuplicates!.getHashkey(a);
+      if (!seen.has(key)) {
+        seen.add(key);
+        filteredResults.push(a);
+      }
+    });
+    return filteredResults;
+  }
 
   const handleLoadMore = () => {
     if(setIsLoading) setIsLoading(true);
@@ -35,9 +50,11 @@ function LoadMorePaginationButton<T>({
       DBOperation.LIST,
       (resp: ListAPIResponse<T>) => {
         let newRes = resp.result;
-        if (itemTransformerFn) {
-          newRes = newRes.map(itemTransformerFn);
+        
+        if(filterDuplicates) {
+          newRes = _filterDuplicates(newRes)
         }
+
         setItems(items.concat(newRes));
         setNextToken(resp.nextToken);
 

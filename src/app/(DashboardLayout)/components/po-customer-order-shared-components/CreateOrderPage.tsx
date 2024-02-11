@@ -243,7 +243,6 @@ function CreateOrderPage<T extends Record<any, any>>({
                                 orderChange.fieldChanges.forEach(fieldChange => {
                                     tableData[row.index][fieldChange.fieldName] = fieldChange.newValue;
                                 })
-                                tableData[row.index] =
                                     setValues({ ...values, orderedItems: [...tableData] });
                                 exitEditingMode();
                             }}
