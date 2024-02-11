@@ -1,6 +1,6 @@
-import { CustomerOrder, CustomerOrderStatus, FieldChange, PurchaseOrder, TShirtOrder } from "@/API";
+import { CustomerOrder, CustomerOrderStatus, FieldChange, PurchaseOrder, TShirt, TShirtOrder, UpdateTShirtInput } from "@/API";
 import { EntityType } from "../app/(DashboardLayout)/components/po-customer-order-shared-components/CreateOrderPage"
-import { customerOrderTable, getBoolOrNull, getStrOrNull, orderChangeTable, purchaseOrderTable, tshirtOrderTable, tshirtTable } from "./dynamodb"
+import { customerOrderTable, getStrOrNull, orderChangeTable, purchaseOrderTable, tshirtOrderTable, tshirtTable } from "./dynamodb"
 import { AttributeValue, ParameterizedStatement } from "@aws-sdk/client-dynamodb";
 import { TShirtOrderFields } from "@/app/(DashboardLayout)/components/TShirtOrderTable/table-constants";
 
@@ -8,13 +8,12 @@ export type PurchaseOrderOrCustomerOrder = PurchaseOrder | CustomerOrder;
 
 export const getInsertOrderChangePartiQL = (
     orderChangeUuid: string,
-    typename: string,
-    parentOrderIdFieldName: string,
-    orderId: string,
     tshirtId: string,
     createdAtTimestamp: string,
     reason: string,
-    fieldChanges: FieldChange[]
+    fieldChanges: FieldChange[],
+    parentOrderIdFieldName?: string,
+    orderId?: string | null,
 ): ParameterizedStatement => {
     const attributeValues = fieldChanges.map(fieldChange => {
         let mapAttributeVal: any = {};
@@ -23,7 +22,6 @@ export const getInsertOrderChangePartiQL = (
         });
         return { M: mapAttributeVal } as unknown as AttributeValue;
     });
-
     return {
         Statement: `
                 INSERT INTO "${orderChangeTable.tableName}"
@@ -32,46 +30,69 @@ export const getInsertOrderChangePartiQL = (
                     '__typename': ?,
                     'fieldChanges': ?,
                     'reason': ?,
-                    '${parentOrderIdFieldName}': ?,
                     'orderChangeTshirtId': ?,
                     'createdAt': ?,
                     'updatedAt': ?
+                    ${parentOrderIdFieldName ? `,\n'${parentOrderIdFieldName}': ?` : ""}
                 }`,
         Parameters: [
             { S: orderChangeUuid },
-            { S: typename },
+            { S: "OrderChange" },
             { L: attributeValues },
             { S: reason },
-            { S: orderId },
             { S: tshirtId },
             { S: createdAtTimestamp },
-            { S: createdAtTimestamp }
+            { S: createdAtTimestamp },
+            getStrOrNull(orderId)
         ]
     }
 }
 
 export const getUpdateTShirtTablePartiQL = (
+    updatedTShirt: TShirt,
+    updatedAtTimestamp: string
+): ParameterizedStatement => ({
+    Statement: `
+        UPDATE "${tshirtTable.tableName}"
+        SET brand = ?
+        SET color = ?
+        SET "size" = ?
+        SET type = ?
+        SET ${tshirtTable.quantityOnHandField} = ?
+        SET updatedAt = ?
+        WHERE ${tshirtTable.pkFieldName} = ?
+    `,
+    Parameters: [
+        { S: updatedTShirt.brand },
+        { S: updatedTShirt.color },
+        { S: updatedTShirt.size },
+        { S: updatedTShirt.type },
+        { N: updatedTShirt.quantityOnHand.toString() },
+        { S: updatedAtTimestamp },
+        { S: updatedTShirt.id },
+    ]
+})
+
+export const getConditionalUpdateTShirtTablePartiQL = (
     tshirtQtyChange: number,
     allowNegativeInventory: boolean,
     createdAtTimestamp: string,
     tshirtId: string
-): ParameterizedStatement => {
-    return {
-        Statement: `
-            UPDATE "${tshirtTable.tableName}"
-            SET ${tshirtTable.quantityOnHandField} = ${tshirtTable.quantityOnHandField} + ?
-            SET updatedAt = ?
-            WHERE ${tshirtTable.pkFieldName} = ?
-            ${!allowNegativeInventory && tshirtQtyChange < 0 ? `AND  ${tshirtTable.quantityOnHandField} >= ?` : ""}
-        `,
-        Parameters: [
-            { N: tshirtQtyChange.toString() },
-            { S: createdAtTimestamp },
-            { S: tshirtId },
-            { N: Math.abs(tshirtQtyChange).toString() }
-        ]
-    }
-}
+): ParameterizedStatement => ({
+    Statement: `
+        UPDATE "${tshirtTable.tableName}"
+        SET ${tshirtTable.quantityOnHandField} = ${tshirtTable.quantityOnHandField} + ?
+        SET updatedAt = ?
+        WHERE ${tshirtTable.pkFieldName} = ?
+        ${!allowNegativeInventory && tshirtQtyChange < 0 ? `AND  ${tshirtTable.quantityOnHandField} >= ?` : ""}
+    `,
+    Parameters: [
+        { N: tshirtQtyChange.toString() },
+        { S: createdAtTimestamp },
+        { S: tshirtId },
+        { N: Math.abs(tshirtQtyChange).toString() }
+    ]
+})
 
 export const getUpdateTShirtOrderTablePartiQL = (
     tshirtOrder: TShirtOrder,

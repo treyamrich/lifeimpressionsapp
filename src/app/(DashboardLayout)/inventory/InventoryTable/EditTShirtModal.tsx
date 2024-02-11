@@ -10,20 +10,17 @@ import {
   TextField,
 } from "@mui/material";
 import React, { useEffect, useMemo, useState } from "react";
-import NumberInput from "../components/inputs/NumberInput";
+import NumberInput from "../../components/inputs/NumberInput";
 import { MRT_ColumnDef, MRT_Row } from "material-react-table";
-import { TShirt, UpdateTShirtInput } from "@/API";
-import { SelectValue } from "../purchase-orders/table-constants";
-import { columnInfo } from "./table-constants";
+import { CreateOrderChangeInput, TShirt } from "@/API";
+import { SelectValue } from "../../purchase-orders/table-constants";
+import { columnInfo, editableTShirtFields } from "./table-constants";
 import EditReasonRadioGroup, {
   EditReasonFormState,
   getInitialEditReasonState,
   validateAndGetEditReason,
-} from "../components/EditReasonRadioGroup/EditReasonRadioGroup";
-
-const editableFields = Array.from(columnInfo)
-  .filter((keyPair) => keyPair[1].isEditable)
-  .map((keyPair) => keyPair[0] as string);
+} from "../../components/EditReasonRadioGroup/EditReasonRadioGroup";
+import { BuildInventoryChangeInput, buildInventoryChangeInput } from "../../components/po-customer-order-shared-components/OrderChangeHistory/util";
 
 function EditTShirtModal({
   open,
@@ -35,8 +32,8 @@ function EditTShirtModal({
   open: boolean;
   row: MRT_Row<TShirt> | undefined;
   onSubmit: (
-    newTShirtInput: UpdateTShirtInput,
     row: MRT_Row<TShirt>,
+    tshirtChange: CreateOrderChangeInput,
     resetForm: () => void
   ) => void;
   onClose: () => void;
@@ -49,7 +46,7 @@ function EditTShirtModal({
 
   const getInitialFormState = () => {
     const formState = { id: "" } as any;
-    editableFields.forEach((columnKey: any) => {
+    editableTShirtFields.forEach((columnKey: any) => {
       formState[columnKey] = "";
 
       let colInfo = columnInfo.get(columnKey);
@@ -65,7 +62,7 @@ function EditTShirtModal({
     return formState;
   };
   const getInitialFormErrorMap = () =>
-    new Map<string, string>(editableFields.map((key) => [key, ""]));
+    new Map<string, string>(editableTShirtFields.map((key) => [key, ""]));
 
   // State starts here
   const [values, setValues] = useState<any>(() => getInitialFormState());
@@ -108,17 +105,22 @@ function EditTShirtModal({
     allValid = !editReasonMsg ? false : allValid;
 
     if (allValid) {
-      // Convert the datetime that was input with user's timezone to UTC timezone
-      const updatedTShirt = {} as any;
-      Object.keys(values).forEach((key: string) => {
-        // This field had to be optional
-        if (values[key] === "") {
-          updatedTShirt[key] = undefined;
-        } else {
-          updatedTShirt[key] = values[key];
-        }
-      });
-      onSubmit(updatedTShirt, row!, resetForm);
+      const updatedTShirt: TShirt = {
+        ...row!.original,
+        brand: values.brand,
+        color: values.color,
+        type: values.type,
+        size: values.size,
+        quantityOnHand: values.quantityOnHand
+      }
+
+      const inventoryChange: CreateOrderChangeInput = buildInventoryChangeInput({ 
+        oldTShirt: row!.original, 
+        newTShirt: updatedTShirt,
+        reason: editReasonMsg!
+      })
+
+      onSubmit(row!, inventoryChange, resetForm);
     }
   };
 

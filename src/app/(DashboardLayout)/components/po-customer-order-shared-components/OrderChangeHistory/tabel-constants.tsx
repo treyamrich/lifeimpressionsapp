@@ -3,7 +3,7 @@ import { toReadableDateTime } from "@/utils/datetimeConversions";
 import { Box, Stack, Typography } from "@mui/material";
 import { MRT_ColumnDef } from "material-react-table";
 import { toColumnHeaderMap } from "../../TShirtOrderTable/table-constants";
-import { tshirtSizeToLabel } from "@/app/(DashboardLayout)/inventory/table-constants";
+import { tshirtSizeToLabel } from "@/app/(DashboardLayout)/inventory/InventoryTable/table-constants";
 
 export const getTableColumns = (): MRT_ColumnDef<OrderChange>[] => {
   return [

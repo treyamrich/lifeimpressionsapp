@@ -1,7 +1,7 @@
 import { TShirt, TShirtSize, TShirtType } from "@/API";
 import { toReadableDateTime } from "@/utils/datetimeConversions";
 import { MRT_ColumnDef } from "material-react-table";
-import { ColumnInfo } from "../purchase-orders/table-constants";
+import { ColumnInfo } from "../../purchase-orders/table-constants";
 
 export const tshirtPrimaryKey = "styleNumber";
 export const entityName = "TShirt";
@@ -35,7 +35,7 @@ export const tshirtSizeToLabel: any = {
 export const tshirtTypeToLabel: any = {
   [TShirtType.Cotton]: "Cotton",
   [TShirtType.Blend]: "Blend",
-  [TShirtType.Drifit]: "Dri-Fit"
+  [TShirtType.Drifit]: "Dri-Fit",
 };
 
 export const getTableColumns = (): MRT_ColumnDef<TShirt>[] => {
@@ -104,7 +104,7 @@ export const columnInfo = new Map<
 
   ["styleNumber", { isRequired: true } as ColumnInfo],
 
-  ["brand", { isEditable: true, isRequired: true} as ColumnInfo],
+  ["brand", { isEditable: true, isRequired: true } as ColumnInfo],
   ["quantityOnHand", { isEditable: true, isNumberField: true } as ColumnInfo],
   ["color", { isEditable: true, isRequired: true } as ColumnInfo],
   [
@@ -126,3 +126,7 @@ export const columnInfo = new Map<
     } as ColumnInfo,
   ],
 ]);
+
+export const editableTShirtFields = Array.from(columnInfo)
+  .filter((keyPair) => keyPair[1].isEditable)
+  .map((keyPair) => keyPair[0] as string);

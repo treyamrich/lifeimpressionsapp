@@ -12,7 +12,7 @@ import {
   PurchaseOrderOrCustomerOrder,
   getInsertOrderPartiQL,
   getInsertTShirtOrderTablePartiQL,
-  getUpdateTShirtTablePartiQL,
+  getConditionalUpdateTShirtTablePartiQL,
 } from "./partiql-helpers";
 import { v4 } from "uuid";
 import {
@@ -36,7 +36,7 @@ export const getTShirtOrdersStatements = (
     if (entityType === EntityType.CustomerOrder) {
       const tshirtQtyChange = -tshirtOrder.quantity;
       res.push(
-        getUpdateTShirtTablePartiQL(
+        getConditionalUpdateTShirtTablePartiQL(
           tshirtQtyChange,
           allowNegativeInventory,
           createdAt,

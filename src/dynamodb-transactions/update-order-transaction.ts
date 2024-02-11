@@ -20,7 +20,7 @@ import {
   getInsertTShirtOrderTablePartiQL,
   getUpdateOrderPartiQL,
   getUpdateTShirtOrderTablePartiQL,
-  getUpdateTShirtTablePartiQL,
+  getConditionalUpdateTShirtTablePartiQL,
 } from "./partiql-helpers";
 import { DBOperation } from "@/contexts/DBErrorContext";
 import { validateTShirtOrderInput } from "./validation";
@@ -78,7 +78,7 @@ export const assembleUpdateOrderTransactionStatements = (
 
   const transactionStatements: ParameterizedStatement[] = [
     getUpdateOrderPartiQL(entityType, parentOrderId, createdAtTimestamp),
-    getUpdateTShirtTablePartiQL(
+    getConditionalUpdateTShirtTablePartiQL(
       maybeNegatedInventoryQtyDelta,
       allowNegativeInventory,
       createdAtTimestamp,
@@ -87,13 +87,12 @@ export const assembleUpdateOrderTransactionStatements = (
     getUpdateTShirtOrderStatement(),
     getInsertOrderChangePartiQL(
       orderChangeUuid,
-      typename,
-      parentOrderIdFieldName,
-      parentOrderId,
       updatedTShirtOrder.tshirt.id,
       createdAtTimestamp,
       createOrderChangeInput.reason,
-      fieldChanges
+      fieldChanges,
+      parentOrderIdFieldName,
+      parentOrderId,
     ),
   ];
 

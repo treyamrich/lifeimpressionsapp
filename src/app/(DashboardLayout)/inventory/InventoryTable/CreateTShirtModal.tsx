@@ -17,7 +17,7 @@ import {
   Stack,
   TextField,
 } from "@mui/material";
-import NumberInput from "../components/inputs/NumberInput";
+import NumberInput from "../../components/inputs/NumberInput";
 import { columnInfo } from "./table-constants";
 
 interface CreateTShirtModalProps<TShirt extends Record<string, any>> {

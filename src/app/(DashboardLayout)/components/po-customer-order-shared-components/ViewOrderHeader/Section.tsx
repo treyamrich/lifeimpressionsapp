@@ -15,7 +15,7 @@ const DashboardSection = ({ header, children, columnWidth }: {
             }}
         >
             <Typography variant="h6" color="textSecondary">
-                {header}
+                {header.toUpperCase()}
             </Typography>
             {children}
         </Stack>
