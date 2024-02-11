@@ -93,6 +93,7 @@ const CreateTShirtOrderModal = <TShirtOrder extends Record<string, any>>({
         fieldChanges: [
           { fieldName: TShirtOrderFields.Qty, oldValue: "-", newValue: values[TShirtOrderFields.Qty].toString() },
           { fieldName: TShirtOrderFields.CostPerUnit, oldValue: "-", newValue: values[TShirtOrderFields.CostPerUnit].toString() },
+          { fieldName: TShirtOrderFields.Discount, oldValue: "-", newValue: values[TShirtOrderFields.Discount].toString() }
         ],
         orderChangeTshirtId: values.tshirt.id,
         [`${entityType === EntityType.PurchaseOrder ? "purchase" : "customer"}OrderChangeHistoryId`]: parentOrderId,
