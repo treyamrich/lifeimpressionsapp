@@ -99,8 +99,7 @@ function EditTShirtModal({
 
     let editReasonMsg = validateAndGetEditReason(
       editReason,
-      setEditReason,
-      true
+      setEditReason
     );
     allValid = !editReasonMsg ? false : allValid;
 

@@ -17,10 +17,9 @@ export const getInitialEditReasonState = () => ({ editReason: "other", otherInpu
 
 export const validateAndGetEditReason = (
   editReason: EditReasonFormState, 
-  setEditReason: React.Dispatch<SetStateAction<EditReasonFormState>>,
-  shouldSetErrorState: boolean): string | undefined => {
+  setEditReason: React.Dispatch<SetStateAction<EditReasonFormState>>): string | undefined => {
   let cleanOtherInput = editReason.otherInput.trim();
-    if (editReason.editReason === "other" && !cleanOtherInput.length && shouldSetErrorState) {
+    if (editReason.editReason === "other" && !cleanOtherInput.length) {
       setEditReason({...editReason, otherInputError: true});
       return;
     }
