@@ -6,7 +6,7 @@ import {
   ExecuteTransactionCommand,
   ParameterizedStatement,
 } from "@aws-sdk/client-dynamodb";
-import { CustomerOrder, PurchaseOrder, TShirtOrder } from "@/API";
+import { CustomerOrder, CustomerOrderStatus, POStatus, PurchaseOrder, TShirtOrder } from "@/API";
 import { createDynamoDBObj } from "./dynamodb";
 import {
   PurchaseOrderOrCustomerOrder,
@@ -100,6 +100,11 @@ const validateCreateOrderInput = (
     str !== undefined && str !== null;
   if (entityType === EntityType.CustomerOrder) {
     let order = input as CustomerOrder;
+    const coStatuses = [CustomerOrderStatus.NEW, 
+      CustomerOrderStatus.IN_PROGRESS, 
+      CustomerOrderStatus.BLOCKED, 
+      CustomerOrderStatus.COMPLETED];
+
     if (
       isValidStr(order.customerPhoneNumber) &&
       validatePhoneNumber(order.customerPhoneNumber!) === undefined
@@ -112,12 +117,18 @@ const validateCreateOrderInput = (
       throw Error("Invalid email input.");
     if (isValidStr(order.dateNeededBy) && !validateISO8601(order.dateNeededBy))
       throw Error("Invalid date for date needed by field");
+    if(!coStatuses.find(status => order.orderStatus === status))
+      throw Error("Invalid customer order status")
   } else {
     let order = input as PurchaseOrder;
+    const poStatuses = [POStatus.SentToVendor, POStatus.Closed, POStatus.Open];
+
     if (isValidStr(order.dateExpected) && !validateISO8601(order.dateExpected))
       throw Error("Invalid date for date expected by field");
     if (order.fees < 0) throw Error("Invalid value for order fees");
     if (order.shipping < 0) throw Error("Invalid shipping value");
+    if(!poStatuses.find(status => status === order.status))
+      throw Error("Invalid purchase order status");
   }
 };
 
