@@ -92,13 +92,13 @@ export const assembleUpdateOrderTransactionStatements = (
 
   const transactionStatements: ParameterizedStatement[] = [
     getUpdateTShirtTablePartiQL(updatedTShirt, createdAtTimestamp),
-    // getInsertOrderChangePartiQL(
-    //   orderChangeUuid,
-    //   updatedTShirt.id,
-    //   createdAtTimestamp,
-    //   createInventoryChangeInput.reason,
-    //   fieldChanges
-    // ),
+    getInsertOrderChangePartiQL(
+      orderChangeUuid,
+      updatedTShirt.id,
+      createdAtTimestamp,
+      createInventoryChangeInput.reason,
+      fieldChanges
+    ),
   ];
 
   // Assemble response
