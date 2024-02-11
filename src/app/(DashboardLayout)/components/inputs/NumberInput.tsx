@@ -12,6 +12,7 @@ type NumberInputProps = {
     name: string;
 };
 
+// onChange passes a new updated value. if hasError is true then the value is always 0.
 const NumberInput = ({ label, initialValue, isFloat, onChange, decimalPlaceLimit = 2, isValidFn, placeholder, name }: NumberInputProps) => {
     const [inputValue, setInputValue] = useState<string | undefined>("");
     const [errorMsg, setErrorMsg] = useState<string>("");
@@ -32,7 +33,6 @@ const NumberInput = ({ label, initialValue, isFloat, onChange, decimalPlaceLimit
             onChange={e => {
                 // Remove leading zeros
                 let unparsedVal = e.target.value;
-                unparsedVal = unparsedVal.replace(/^0+/, '');
                 setInputValue(unparsedVal);
 
                 let newErrorMsg: string = "";
