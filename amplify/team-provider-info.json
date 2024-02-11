@@ -37,6 +37,9 @@
       "auth": {
         "lihDev": {},
         "userPoolGroups": {}
+      },
+      "api": {
+        "lifeimpressionsapp": {}
       }
     }
   }
