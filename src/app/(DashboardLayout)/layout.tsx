@@ -1,9 +1,9 @@
 "use client";
-import { styled, Container, Box, Alert } from "@mui/material";
+import { styled, Container, Box } from "@mui/material";
 import React, { useState } from "react";
 import Header from "@/app/(DashboardLayout)/layout/header/Header";
 import Sidebar from "@/app/(DashboardLayout)/layout/sidebar/Sidebar";
-import { useDBOperationContext, defaultDBOperationError } from "@/contexts/DBErrorContext";
+
 
 const MainWrapper = styled("div")(() => ({
   display: "flex",
@@ -27,7 +27,6 @@ export default function RootLayout({
 }) {
   const [isSidebarOpen, setSidebarOpen] = useState(true);
   const [isMobileSidebarOpen, setMobileSidebarOpen] = useState(false);
-  const { dbOperationError, clearDBOperationErrors } = useDBOperationContext();
   
   return (
     <MainWrapper className="mainwrapper">
@@ -56,18 +55,6 @@ export default function RootLayout({
             maxWidth: "1200px",
           }}
         >
-          <Box sx={{ marginBottom: "20px"}}>
-            {dbOperationError.errorMessage !== undefined ? (
-              <Alert
-                severity="error"
-                onClose={clearDBOperationErrors}
-              >
-                {dbOperationError.errorMessage}
-              </Alert>
-            ) : (
-              <></>
-            )}
-          </Box>
           {/* ------------------------------------------- */}
           {/* Page Route */}
           {/* ------------------------------------------- */}

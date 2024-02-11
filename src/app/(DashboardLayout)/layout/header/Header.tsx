@@ -1,34 +1,48 @@
-import React from 'react';
-import { Box, AppBar, Toolbar, styled, Stack, IconButton, Badge, Button } from '@mui/material';
-import PropTypes from 'prop-types';
+import React from "react";
+import {
+  Box,
+  AppBar,
+  Toolbar,
+  styled,
+  Stack,
+  IconButton,
+  Badge,
+  Button,
+  Alert,
+} from "@mui/material";
+import PropTypes from "prop-types";
+import {
+  useDBOperationContext,
+  defaultDBOperationError,
+} from "@/contexts/DBErrorContext";
 
 // components
-import Profile from './Profile';
-import { IconBellRinging, IconMenu } from '@tabler/icons-react';
+import Profile from "./Profile";
+import { IconBellRinging, IconMenu } from "@tabler/icons-react";
 
 interface ItemType {
-  toggleMobileSidebar:  (event: React.MouseEvent<HTMLElement>) => void;
+  toggleMobileSidebar: (event: React.MouseEvent<HTMLElement>) => void;
 }
 
-const Header = ({toggleMobileSidebar}: ItemType) => {
-
+const Header = ({ toggleMobileSidebar }: ItemType) => {
   // const lgUp = useMediaQuery((theme) => theme.breakpoints.up('lg'));
   // const lgDown = useMediaQuery((theme) => theme.breakpoints.down('lg'));
 
-
   const AppBarStyled = styled(AppBar)(({ theme }) => ({
-    boxShadow: 'none',
+    boxShadow: "none",
     background: theme.palette.background.paper,
-    justifyContent: 'center',
-    backdropFilter: 'blur(4px)',
-    [theme.breakpoints.up('lg')]: {
-      minHeight: '70px',
+    justifyContent: "center",
+    backdropFilter: "blur(4px)",
+    [theme.breakpoints.up("lg")]: {
+      minHeight: "70px",
     },
   }));
   const ToolbarStyled = styled(Toolbar)(({ theme }) => ({
-    width: '100%',
+    width: "100%",
     color: theme.palette.text.secondary,
   }));
+
+  const { dbOperationError, clearDBOperationErrors } = useDBOperationContext();
 
   return (
     <AppBarStyled position="sticky" color="default">
@@ -47,7 +61,6 @@ const Header = ({toggleMobileSidebar}: ItemType) => {
           <IconMenu width="20" height="20" />
         </IconButton>
 
-
         {/* <IconButton
           size="large"
           aria-label="show 11 new notifications"
@@ -65,6 +78,19 @@ const Header = ({toggleMobileSidebar}: ItemType) => {
           <Profile />
         </Stack>
       </ToolbarStyled>
+      <Box>
+        {dbOperationError.errorMessage !== undefined ? (
+          <Alert
+            severity="error"
+            variant="filled"
+            onClose={clearDBOperationErrors}
+          >
+            {dbOperationError.errorMessage}
+          </Alert>
+        ) : (
+          <></>
+        )}
+      </Box>
     </AppBarStyled>
   );
 };
