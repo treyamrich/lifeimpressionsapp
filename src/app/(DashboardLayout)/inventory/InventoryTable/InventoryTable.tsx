@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import { createTShirtAPI } from "@/graphql-helpers/create-apis";
 import { listTShirtAPI } from "@/graphql-helpers/fetch-apis";
@@ -34,20 +34,25 @@ import { CreateOrderChangeInput, OrderChange, TShirt } from "@/API";
 import React, { useMemo, useState, useCallback, SetStateAction } from "react";
 
 type EditRowState = {
-    showEditPopup: boolean;
-    row: MRT_Row<TShirt> | undefined;
-  };
+  showEditPopup: boolean;
+  row: MRT_Row<TShirt> | undefined;
+};
 
-const InventoryTable = ({ editHistory, setEditHistory, isLoading, setIsLoading }: {
-    editHistory: OrderChange[];
-    setEditHistory: React.Dispatch<SetStateAction<OrderChange[]>>;
-    isLoading: boolean;
-    setIsLoading: React.Dispatch<SetStateAction<boolean>>;
+const InventoryTable = ({
+  editHistory,
+  setEditHistory,
+  isLoading,
+  setIsLoading,
+}: {
+  editHistory: OrderChange[];
+  setEditHistory: React.Dispatch<SetStateAction<OrderChange[]>>;
+  isLoading: boolean;
+  setIsLoading: React.Dispatch<SetStateAction<boolean>>;
 }) => {
   const { rescueDBOperation } = useDBOperationContext();
   const { user, refreshSession } = useAuthContext();
   const [createModalOpen, setCreateModalOpen] = useState<boolean>(false);
-  
+
   const [editRowState, setEditRowState] = useState<EditRowState>({
     showEditPopup: false,
     row: undefined,
@@ -166,6 +171,11 @@ const InventoryTable = ({ editHistory, setEditHistory, isLoading, setIsLoading }
               columnVisibility: hiddenColumns,
               isLoading,
             }}
+            muiTableBodyRowProps={({ row }: { row: MRT_Row<TShirt> }) => ({
+              sx: {
+                opacity: row.original.quantityOnHand <= 0 ? "50%" : "100%",
+              },
+            })}
             enableEditing
             renderRowActions={({ row, table }) => (
               <TableRowActions
