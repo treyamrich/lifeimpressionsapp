@@ -1,4 +1,5 @@
 import {
+  Alert,
   Button,
   Dialog,
   DialogContent,
@@ -40,7 +41,7 @@ const EditTShirtOrderPopup = ({
   onClose,
   title,
   entityType,
-  mode
+  mode,
 }: EditTShirtOrderPopupProps) => {
 
   const [newAmtReceived, setNewAmtReceived] = useState<number>(0);
@@ -57,11 +58,14 @@ const EditTShirtOrderPopup = ({
 
   const [editReason, setEditReason] = useState<EditReasonFormState>(getInitialEditReasonState());
 
+  const [noChangeError, setNoChangeError] = useState<string|undefined>(undefined);
+
   const resetForm = () => {
     setEditReason(getInitialEditReasonState());
     setNewAmtReceived(0);
     setNewAmtOrdered(0);
     setNewCostPerUnit({ value: 0, hasError: false });
+    setNoChangeError(undefined)
   };
 
   const handleSubmit = () => {
@@ -88,6 +92,13 @@ const EditTShirtOrderPopup = ({
       entityType: entityType,
     }
     const createOrderChangeInput = buildOrderChangeInput(input)
+
+    if(createOrderChangeInput.fieldChanges.length <= 0) {
+      setNoChangeError("No changes were made.");
+      return;
+    }
+
+    setNoChangeError(undefined);
     onSubmit(createOrderChangeInput, resetForm);
   };
 
@@ -128,6 +139,11 @@ const EditTShirtOrderPopup = ({
               entityType={entityType}
               mode={mode}
             />
+          </Grid>
+          <Grid item>
+            {noChangeError && ( <Alert variant="filled" color="error">
+              { noChangeError }
+            </Alert>)}
           </Grid>
           <Grid item>
             <Grid container justifyContent={"space-between"}>

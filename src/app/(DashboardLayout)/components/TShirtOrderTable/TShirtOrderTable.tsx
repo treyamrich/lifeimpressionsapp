@@ -28,7 +28,7 @@ interface TShirtOrderTableProps {
   onRowEdit: (
     row: MRT_Row<TShirtOrder>,
     orderChange: CreateOrderChangeInput,
-    exitEditingMode: () => void
+    exitEditingMode: () => void,
   ) => void | undefined;
   onRowAdd: (
     newRowValue: TShirtOrder,
@@ -56,7 +56,7 @@ const TShirtOrderTable = ({
   onRowEdit,
   onRowAdd,
   entityType,
-  mode
+  mode,
 }: TShirtOrderTableProps) => {
   const { rescueDBOperation } = useDBOperationContext();
   const [createModalOpen, setCreateModalOpen] = useState(false);
