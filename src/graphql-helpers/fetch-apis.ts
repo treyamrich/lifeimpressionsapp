@@ -15,6 +15,10 @@ import {
   PurchaseOrdersByCreatedAtQuery,
   ModelStringKeyConditionInput,
   TshirtsByQtyQuery,
+  ListOrderChangesQuery,
+  OrderChange,
+  ModelOrderChangeFilterInput,
+  OrderChangesByCreatedAtQuery,
 } from "@/API";
 import { API } from "aws-amplify";
 import { GraphQLQuery } from "@aws-amplify/api";
@@ -22,6 +26,8 @@ import {
   customerOrdersByCreatedAt,
   getCustomerOrder,
   getPurchaseOrder,
+  listOrderChanges,
+  orderChangesByCreatedAt,
   purchaseOrdersByCreatedAt,
   tshirtsByQty,
 } from "@/graphql/queries";
@@ -179,6 +185,50 @@ export const listCustomerOrderAPI = async (
       let data = res.data?.customerOrdersByCreatedAt;
       return {
         result: data?.items as CustomerOrder[],
+        nextToken: data?.nextToken,
+      };
+    })
+    .catch((e) => {
+      console.log(e);
+      throw new Error(errorMessage);
+    });
+  return resp;
+};
+
+
+export const listOrderChangeHistoryAPI = async (
+  input: ListAPIInput<ModelOrderChangeFilterInput>
+): Promise<ListAPIResponse<OrderChange>> => {
+  const options: GraphQLOptions = {
+    query: orderChangesByCreatedAt,
+    variables: {
+      createdAt: input.createdAt,
+      filter: input.filters,
+      indexField: "OrderChangeIndexField", // Required to access 2nd index
+      sortDirection: input.sortDirection,
+      nextToken: input.nextToken,
+      limit: PAGINATION_LIMIT,
+    },
+    authMode: configuredAuthMode,
+  };
+  const errorMessage = "Failed to fetch Change History";
+
+  if (input.doCompletePagination) {
+    return await completePagination(
+      options,
+      (res: GraphQLResult<OrderChangesByCreatedAtQuery>) =>
+        res.data?.orderChangesByCreatedAt,
+      errorMessage
+    );
+  }
+
+  const resp = await API.graphql<GraphQLQuery<OrderChangesByCreatedAtQuery>>(
+    options
+  )
+    .then((res: GraphQLResult<OrderChangesByCreatedAtQuery>) => {
+      let data = res.data?.orderChangesByCreatedAt;
+      return {
+        result: data?.items as OrderChange[],
         nextToken: data?.nextToken,
       };
     })

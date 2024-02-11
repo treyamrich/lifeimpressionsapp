@@ -5,7 +5,7 @@ import { TableMode } from "../TShirtOrderTable";
 import NumberInput from "../../inputs/NumberInput";
 import QuantityChanger from "./QuantityChanger";
 import { FormValue } from "./EditTShirtOrderPopup";
-import { TShirtOrderFields, toColumnHeaderMap } from "../table-constants";
+import { TShirtOrderFields, toTShirtOrderColumnHeaderMap } from "../table-constants";
 import EditReasonRadioGroup, { EditReasonFormState } from "../../EditReasonRadioGroup/EditReasonRadioGroup";
 
 type EditCardProps = {
@@ -99,7 +99,7 @@ const EditCard = ({
                         </Grid>
                         <Grid item>
                             <NumberInput
-                                label={toColumnHeaderMap.get(TShirtOrderFields.Discount)!}
+                                label={toTShirtOrderColumnHeaderMap[TShirtOrderFields.Discount]}
                                 initialValue={currentDiscount}
                                 isFloat
                                 isValidFn={(newValue: number) => {

@@ -2,8 +2,11 @@ import { OrderChange } from "@/API";
 import { toReadableDateTime } from "@/utils/datetimeConversions";
 import { Box, Stack, Typography } from "@mui/material";
 import { MRT_ColumnDef } from "material-react-table";
-import { toColumnHeaderMap } from "../../TShirtOrderTable/table-constants";
-import { tshirtSizeToLabel } from "@/app/(DashboardLayout)/inventory/InventoryTable/table-constants";
+import { toTShirtOrderColumnHeaderMap } from "../../TShirtOrderTable/table-constants";
+import {
+  toTShirtColumnHeaderMap,
+  tshirtSizeToLabel,
+} from "@/app/(DashboardLayout)/inventory/InventoryTable/table-constants";
 
 export const getTableColumns = (): MRT_ColumnDef<OrderChange>[] => {
   return [
@@ -18,9 +21,9 @@ export const getTableColumns = (): MRT_ColumnDef<OrderChange>[] => {
       header: "Size",
       muiTableHeadCellProps: { sx: { color: "green" } }, //custom props
       size: 50,
-      Cell: ({ renderedCellValue, row}) => (
+      Cell: ({ renderedCellValue, row }) => (
         <> {tshirtSizeToLabel[row.original.tshirt.size]}</>
-      )
+      ),
     } as MRT_ColumnDef<OrderChange>,
     {
       accessorKey: "tshirt.color",
@@ -29,20 +32,29 @@ export const getTableColumns = (): MRT_ColumnDef<OrderChange>[] => {
       size: 50,
     } as MRT_ColumnDef<OrderChange>,
     {
-      accessorFn: (originalRow: OrderChange) => (
-        <Stack>
-          {originalRow.fieldChanges.map((fieldChange, idx) => (
-            <Box key={`order-change-${idx}`}>
-              <Typography variant="body1" fontWeight={500}>
-                {toColumnHeaderMap.get(fieldChange.fieldName)}
-              </Typography>
-              <Typography variant="body2">
-                From: {fieldChange.oldValue} To: {fieldChange.newValue}
-              </Typography>
-            </Box>
-          ))}
-        </Stack>
-      ),
+      accessorFn: (orderChange: OrderChange) => {
+        const changeIsForTShirtOrder =
+          orderChange.purchaseOrderChangeHistoryId ||
+          orderChange.customerOrderChangeHistoryId;
+
+        let fieldNameToColumnHeaderMap: any = changeIsForTShirtOrder
+          ? toTShirtOrderColumnHeaderMap
+          : toTShirtColumnHeaderMap;
+        return (
+          <Stack>
+            {orderChange.fieldChanges.map((fieldChange, idx) => (
+              <Box key={`order-change-${idx}`}>
+                <Typography variant="body1" fontWeight={500}>
+                  {fieldNameToColumnHeaderMap[fieldChange.fieldName]}
+                </Typography>
+                <Typography variant="body2">
+                  From: {fieldChange.oldValue} To: {fieldChange.newValue}
+                </Typography>
+              </Box>
+            ))}
+          </Stack>
+        );
+      },
       header: "Change",
     } as MRT_ColumnDef<OrderChange>,
     {
@@ -60,10 +72,8 @@ export const getTableColumns = (): MRT_ColumnDef<OrderChange>[] => {
         return 0;
       },
       Cell: ({ renderedCellValue, row }) => (
-        <>
-          {toReadableDateTime(row.original.createdAt)}
-        </>
-      )
-    } as MRT_ColumnDef<OrderChange>
+        <>{toReadableDateTime(row.original.createdAt)}</>
+      ),
+    } as MRT_ColumnDef<OrderChange>,
   ];
 };

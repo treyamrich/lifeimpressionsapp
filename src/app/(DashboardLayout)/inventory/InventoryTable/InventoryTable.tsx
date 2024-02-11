@@ -38,14 +38,15 @@ type EditRowState = {
     row: MRT_Row<TShirt> | undefined;
   };
 
-const InventoryTable = ({ editHistory, setEditHistory}: {
+const InventoryTable = ({ editHistory, setEditHistory, isLoading, setIsLoading }: {
     editHistory: OrderChange[];
     setEditHistory: React.Dispatch<SetStateAction<OrderChange[]>>;
+    isLoading: boolean;
+    setIsLoading: React.Dispatch<SetStateAction<boolean>>;
 }) => {
   const { rescueDBOperation } = useDBOperationContext();
   const { user, refreshSession } = useAuthContext();
   const [createModalOpen, setCreateModalOpen] = useState<boolean>(false);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
   
   const [editRowState, setEditRowState] = useState<EditRowState>({
     showEditPopup: false,

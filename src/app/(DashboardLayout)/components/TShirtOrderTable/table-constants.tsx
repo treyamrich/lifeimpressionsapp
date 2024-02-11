@@ -14,12 +14,12 @@ export enum TShirtOrderFields {
     Discount = "discount"
 }
 
-export const toColumnHeaderMap = new Map<string, string>([
-    [TShirtOrderFields.Qty, "Quantity"],
-    [TShirtOrderFields.AmtReceived, "Amt. Received"],
-    [TShirtOrderFields.CostPerUnit, "Cost/Unit $"],
-    [TShirtOrderFields.Discount, "Discount $"]
-]);
+export const toTShirtOrderColumnHeaderMap = {
+    [TShirtOrderFields.Qty]: "Quantity",
+    [TShirtOrderFields.AmtReceived]: "Amt. Received",
+    [TShirtOrderFields.CostPerUnit]: "Cost/Unit $",
+    [TShirtOrderFields.Discount]: "Discount $"
+};
 
 export const numberInputFields = new Set<string>([TShirtOrderFields.Qty, TShirtOrderFields.AmtReceived]);
 export const floatInputFields = new Set<string>([TShirtOrderFields.CostPerUnit]) ;
@@ -65,19 +65,19 @@ export const getTableColumns = (): MRT_ColumnDef<TShirtOrder>[] => {
         } as MRT_ColumnDef<TShirtOrder>,
         {
             accessorKey: TShirtOrderFields.Qty,
-            header: toColumnHeaderMap.get(TShirtOrderFields.Qty),
+            header: toTShirtOrderColumnHeaderMap[TShirtOrderFields.Qty],
         } as MRT_ColumnDef<TShirtOrder>,
         {
             accessorKey: TShirtOrderFields.AmtReceived,
-            header: toColumnHeaderMap.get(TShirtOrderFields.AmtReceived),
+            header: toTShirtOrderColumnHeaderMap[TShirtOrderFields.AmtReceived],
         } as MRT_ColumnDef<TShirtOrder>,
         {
             accessorKey: TShirtOrderFields.CostPerUnit,
-            header: toColumnHeaderMap.get(TShirtOrderFields.CostPerUnit),
+            header: toTShirtOrderColumnHeaderMap[TShirtOrderFields.CostPerUnit],
         } as MRT_ColumnDef<TShirtOrder>,
         {
             accessorKey: TShirtOrderFields.Discount,
-            header: toColumnHeaderMap.get(TShirtOrderFields.Discount),
+            header: toTShirtOrderColumnHeaderMap[TShirtOrderFields.Discount],
         } as MRT_ColumnDef<TShirtOrder>,
         {
             accessorKey: "id",

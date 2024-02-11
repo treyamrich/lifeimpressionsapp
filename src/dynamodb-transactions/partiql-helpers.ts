@@ -28,6 +28,7 @@ export const getInsertOrderChangePartiQL = (
                 value {
                     'id': ?,
                     '__typename': ?,
+                    'indexField': ?,
                     'fieldChanges': ?,
                     'reason': ?,
                     'orderChangeTshirtId': ?,
@@ -38,6 +39,7 @@ export const getInsertOrderChangePartiQL = (
         Parameters: [
             { S: orderChangeUuid },
             { S: "OrderChange" },
+            { S: "OrderChangeIndexField" },
             { L: attributeValues },
             { S: reason },
             { S: tshirtId },

@@ -38,6 +38,24 @@ export const tshirtTypeToLabel: any = {
   [TShirtType.Drifit]: "Dri-Fit",
 };
 
+export enum TShirtFields {
+  StyleNumber = "styleNumber",
+  Brand = "brand",
+  Color = "color",
+  Size = "size",
+  Type = "type",
+  QtyOnHand = "quantityOnHand",
+}
+
+export const toTShirtColumnHeaderMap = {
+  [TShirtFields.StyleNumber]: "Style No.",
+  [TShirtFields.Brand]: "Brand",
+  [TShirtFields.Color]: "Color",
+  [TShirtFields.Size]: "Size",
+  [TShirtFields.Type]: "Type",
+  [TShirtFields.QtyOnHand]: "Qty."
+}
+
 export const getTableColumns = (): MRT_ColumnDef<TShirt>[] => {
   return [
     {
@@ -46,28 +64,28 @@ export const getTableColumns = (): MRT_ColumnDef<TShirt>[] => {
       enableEditing: false,
     } as MRT_ColumnDef<TShirt>,
     {
-      accessorKey: "styleNumber",
-      header: "Style No.",
+      accessorKey: TShirtFields.StyleNumber,
+      header: toTShirtColumnHeaderMap[TShirtFields.StyleNumber],
       muiTableHeadCellProps: { sx: { color: "green" } }, //custom props
       enableEditing: false,
     } as MRT_ColumnDef<TShirt>,
     {
-      accessorKey: "quantityOnHand",
-      header: "Qty.",
+      accessorKey: TShirtFields.QtyOnHand,
+      header: toTShirtColumnHeaderMap[TShirtFields.QtyOnHand],
       size: 50,
     } as MRT_ColumnDef<TShirt>,
     {
-      accessorKey: "brand",
-      header: "Brand",
+      accessorKey: TShirtFields.Brand,
+      header: toTShirtColumnHeaderMap[TShirtFields.Brand],
     } as MRT_ColumnDef<TShirt>,
     {
-      accessorKey: "color",
-      header: "Color",
+      accessorKey: TShirtFields.Color,
+      header: toTShirtColumnHeaderMap[TShirtFields.Color],
       size: 50,
     } as MRT_ColumnDef<TShirt>,
     {
-      accessorKey: "size",
-      header: "Size",
+      accessorKey: TShirtFields.Size,
+      header: toTShirtColumnHeaderMap[TShirtFields.Size],
       size: 50,
       isSelectField: true,
       Cell: ({ renderedCellValue, row }) => (
@@ -75,8 +93,8 @@ export const getTableColumns = (): MRT_ColumnDef<TShirt>[] => {
       ),
     } as MRT_ColumnDef<TShirt>,
     {
-      accessorKey: "type",
-      header: "Type",
+      accessorKey: TShirtFields.Type,
+      header: toTShirtColumnHeaderMap[TShirtFields.Type],
       size: 50,
       isSelectField: true,
       Cell: ({ renderedCellValue, row }) => (

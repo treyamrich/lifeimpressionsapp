@@ -83,6 +83,8 @@ type OrderChange @model @auth(rules: [
   tshirt: TShirt! @hasOne
   reason: String!
   fieldChanges: [FieldChange!]!
+  createdAt: String!
+  indexField: String @default(value: "OrderChangeIndexField") @index(name: "orderChangesByCreatedAt", queryField: "orderChangesByCreatedAt", sortKeyFields: ["createdAt"])
 }
 
 type TShirtOrder @model @auth(rules: [
