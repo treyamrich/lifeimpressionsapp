@@ -28,6 +28,7 @@ export enum TShirtSize {
   YM = "YM",
   YL = "YL",
   YXL = "YXL",
+  AXS = "AXS",
   AS = "AS",
   AM = "AM",
   AL = "AL",

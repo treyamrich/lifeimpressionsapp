@@ -1,0 +1,130 @@
+type TShirt @model @auth(rules: [
+  { allow: groups, groups: ["admin"], provider: userPools}]) {
+  id: ID! @primaryKey
+  styleNumber: String!
+  brand: String!
+  color: String!
+  size: TShirtSize!
+  type: TShirtType!
+  quantityOnHand: Int! @default(value: "0")
+  isDeleted: Boolean @default(value: "false")
+  indexField: String @default(value: "TShirtIndexField") @index(name: "tshirtsByQty", queryField: "tshirtsByQty", sortKeyFields: ["quantityOnHand"])
+}
+
+enum TShirtSize {
+  NB
+  SixMonths
+  TwelveMonths
+  EighteenMonths
+  TwoT
+  ThreeT
+  FourT
+  FiveT
+  YXS
+  YS
+  YM
+  YL
+  YXL
+  AXS
+  AS
+  AM
+  AL
+  AXL
+  TwoX
+  ThreeX
+  FourX
+  FiveX
+}
+
+enum TShirtType {
+  Cotton
+  Drifit
+  Blend
+}
+
+type PurchaseOrder @model @auth(rules: [
+  { allow: groups, groups: ["admin"], provider: userPools}]) {
+  id: ID! @primaryKey
+  orderNumber: String!
+  vendor: String!
+  orderedItems: [TShirtOrder!] @hasMany
+  orderNotes: String
+  status: POStatus!
+  changeHistory: [OrderChange!] @hasMany
+
+  taxRate: Float!
+  shipping: Float!
+  shippingAddress: String
+  fees: Float!
+  discount: Float!
+  dateExpected: AWSDateTime!
+
+  isDeleted: Boolean @default(value: "false")
+  type: String @default(value: "PurchaseOrder") @index(name: "purchaseOrdersByCreatedAt", queryField: "purchaseOrdersByCreatedAt", sortKeyFields: ["createdAt"])
+  createdAt: String!
+  updatedAt: String!
+}
+
+enum POStatus {
+  Open
+  Closed
+  SentToVendor
+}
+
+type FieldChange {
+  oldValue: String!
+  newValue: String!
+  fieldName: String!
+}
+
+# Using this for ANY type of entity auditing: tshirt or order was updated
+# potentially can rename this to EntityAudit
+type OrderChange @model @auth(rules: [
+  { allow: groups, groups: ["admin"], provider: userPools}]) {
+  tshirt: TShirt! @hasOne
+  reason: String!
+  fieldChanges: [FieldChange!]!
+  createdAt: String!
+  indexField: String @default(value: "OrderChangeIndexField") @index(name: "orderChangesByCreatedAt", queryField: "orderChangesByCreatedAt", sortKeyFields: ["createdAt"])
+}
+
+type TShirtOrder @model @auth(rules: [
+  { allow: groups, groups: ["admin"], provider: userPools}]) {
+  tshirt: TShirt! @hasOne
+  quantity: Int!
+  amountReceived: Int @default(value: "0") # This is only used for PurchaseOrder
+  costPerUnit: Float!
+  discount: Float!
+}
+
+type CustomerOrder @model @auth(rules: [
+  { allow: groups, groups: ["admin"], provider: userPools}]) {
+  id: ID! @primaryKey
+
+  customerName: String!
+  customerEmail: AWSEmail
+  customerPhoneNumber: AWSPhone
+
+  orderedItems: [TShirtOrder!] @hasMany
+  orderNumber: String!
+  orderStatus: CustomerOrderStatus!
+  orderNotes: String
+
+  dateNeededBy: AWSDateTime!
+  changeHistory: [OrderChange!] @hasMany
+
+  taxRate: Float!
+  discount: Float!
+
+  isDeleted: Boolean @default(value: "false")
+  type: String @default(value: "CustomerOrder") @index(name: "customerOrdersByCreatedAt", queryField: "customerOrdersByCreatedAt", sortKeyFields: ["createdAt"])
+  createdAt: String!
+  updatedAt: String!
+}
+
+enum CustomerOrderStatus {
+  NEW
+  IN_PROGRESS
+  BLOCKED
+  COMPLETED
+}
