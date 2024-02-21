@@ -55,15 +55,18 @@ export const toTShirtColumnHeaderMap = {
   [TShirtFields.Color]: "Color",
   [TShirtFields.Size]: "Size",
   [TShirtFields.Type]: "Type",
-  [TShirtFields.QtyOnHand]: "Qty."
-}
+  [TShirtFields.QtyOnHand]: "Qty.",
+};
 
-export const tshirtSizeColumnFilterFn = (row: any, columnId: string, filterValue: string): boolean => {
-  let v = tshirtSizeToLabel[row.getValue(columnId)]
-    .toLowerCase();
+export const tshirtSizeColumnFilterFn = (
+  row: any,
+  columnId: string,
+  filterValue: string
+): boolean => {
+  let v = tshirtSizeToLabel[row.getValue(columnId)].toLowerCase();
   let filterV = filterValue.toLowerCase();
-  return v.includes(filterV)
-}
+  return v.includes(filterV);
+};
 
 export const getTableColumns = (): MRT_ColumnDef<TShirt>[] => {
   return [

@@ -25,7 +25,7 @@ export const getTableColumns = (): MRT_ColumnDef<OrderChange>[] => {
       Cell: ({ renderedCellValue, row }) => (
         <span>{tshirtSizeToLabel[row.original.tshirt.size]}</span>
       ),
-      filterFn: tshirtSizeColumnFilterFn
+      filterFn: tshirtSizeColumnFilterFn,
     } as MRT_ColumnDef<OrderChange>,
     {
       accessorKey: "tshirt.color",

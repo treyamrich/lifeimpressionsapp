@@ -25,13 +25,13 @@ export const initialPurchaseOrderFormState: any = {
   fees: 0,
   discount: 0,
   sentToVendor: false,
-  dateExpected: dayjs()
+  dateExpected: dayjs(),
 };
 
 const poStatusToColor = {
   [POStatus.Open]: "success",
   [POStatus.Closed]: "error",
-  [POStatus.SentToVendor]: "info"
+  [POStatus.SentToVendor]: "info",
 };
 
 export const getTableColumns = (): MRT_ColumnDef<PurchaseOrder>[] => {
@@ -47,7 +47,7 @@ export const getTableColumns = (): MRT_ColumnDef<PurchaseOrder>[] => {
     } as MRT_ColumnDef<PurchaseOrder>,
     {
       accessorKey: "vendor",
-      header: "Vendor"
+      header: "Vendor",
     } as MRT_ColumnDef<PurchaseOrder>,
     {
       accessorKey: "status",
@@ -58,34 +58,28 @@ export const getTableColumns = (): MRT_ColumnDef<PurchaseOrder>[] => {
           label={poStatusToHeaderMap[row.original.status]}
           color={poStatusToColor[row.original.status] as any}
         />
-      )
+      ),
     } as MRT_ColumnDef<PurchaseOrder>,
     {
       accessorKey: "dateExpected",
       header: "Expected Date",
       Cell: ({ renderedCellValue, row }) => (
-        <span>
-          {toReadableDateTime(row.original.dateExpected)}
-        </span>
-      )
+        <span>{toReadableDateTime(row.original.dateExpected)}</span>
+      ),
     } as MRT_ColumnDef<PurchaseOrder>,
     {
       accessorKey: "createdAt",
       header: "Created on",
       Cell: ({ renderedCellValue, row }) => (
-        <span>
-          {toReadableDateTime(row.original.createdAt)}
-        </span>
-      )
+        <span>{toReadableDateTime(row.original.createdAt)}</span>
+      ),
     } as MRT_ColumnDef<PurchaseOrder>,
     {
       accessorKey: "updatedAt",
       header: "Last Modified",
       Cell: ({ renderedCellValue, row }) => (
-        <span>
-          {toReadableDateTime(row.original.updatedAt)}
-        </span>
-      )
+        <span>{toReadableDateTime(row.original.updatedAt)}</span>
+      ),
     } as MRT_ColumnDef<PurchaseOrder>,
     {
       accessorKey: "orderNotes",
@@ -137,23 +131,41 @@ export type ColumnInfo = {
   isFloatField?: boolean;
 };
 
-export const columnInfo = new Map<string | number | symbol | undefined, ColumnInfo>([
+export const columnInfo = new Map<
+  string | number | symbol | undefined,
+  ColumnInfo
+>([
   ["id", { excludeOnCreate: true } as ColumnInfo],
   ["updatedAt", { excludeOnCreate: true } as ColumnInfo],
   ["createdAt", { excludeOnCreate: true } as ColumnInfo],
   ["vendor", { isRequired: true, isEditable: true } as ColumnInfo],
-  ["status", {
-    selectFields: Object.keys(poStatusToHeaderMap).map((key: string) => {
-      return { label: poStatusToHeaderMap[key], value: key }
-    })
-  } as ColumnInfo],
+  [
+    "status",
+    {
+      selectFields: Object.keys(poStatusToHeaderMap).map((key: string) => {
+        return { label: poStatusToHeaderMap[key], value: key };
+      }),
+    } as ColumnInfo,
+  ],
   ["orderNumber", { isRequired: true } as ColumnInfo],
   ["orderNotes", { isEditable: true, hideInTable: true } as ColumnInfo],
-  ["taxRate", { isFloatField: true, isEditable: true, hideInTable: true } as ColumnInfo],
-  ["shipping", { isFloatField: true, isEditable: true, hideInTable: true } as ColumnInfo],
+  [
+    "taxRate",
+    { isFloatField: true, isEditable: true, hideInTable: true } as ColumnInfo,
+  ],
+  [
+    "shipping",
+    { isFloatField: true, isEditable: true, hideInTable: true } as ColumnInfo,
+  ],
   ["shippingAddress", { isEditable: true, hideInTable: true } as ColumnInfo],
-  ["fees", { isFloatField: true, isEditable: true, hideInTable: true } as ColumnInfo],
-  ["discount", { isFloatField: true, isEditable: true, hideInTable: true } as ColumnInfo],
+  [
+    "fees",
+    { isFloatField: true, isEditable: true, hideInTable: true } as ColumnInfo,
+  ],
+  [
+    "discount",
+    { isFloatField: true, isEditable: true, hideInTable: true } as ColumnInfo,
+  ],
   ["dateExpected", { isDatetimeField: true, isEditable: true } as ColumnInfo],
 ]);
 

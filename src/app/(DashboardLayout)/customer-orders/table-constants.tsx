@@ -23,15 +23,15 @@ export const initialCustomerOrderFormState: any = {
   customerEmail: "",
   customerPhoneNumber: "",
   taxRate: 0,
-  discount: 0
+  discount: 0,
 };
 
 const coStatusToColor = {
   [CustomerOrderStatus.NEW]: "warning",
   [CustomerOrderStatus.BLOCKED]: "error",
   [CustomerOrderStatus.COMPLETED]: "success",
-  [CustomerOrderStatus.IN_PROGRESS]: "info"
-}
+  [CustomerOrderStatus.IN_PROGRESS]: "info",
+};
 
 export const getTableColumns = (): MRT_ColumnDef<CustomerOrder>[] => {
   return [
@@ -48,10 +48,8 @@ export const getTableColumns = (): MRT_ColumnDef<CustomerOrder>[] => {
       accessorKey: "dateNeededBy",
       header: "Date Needed",
       Cell: ({ renderedCellValue, row }) => (
-        <span>
-          {toReadableDateTime(row.original.dateNeededBy)}
-        </span>
-      )
+        <span>{toReadableDateTime(row.original.dateNeededBy)}</span>
+      ),
     } as MRT_ColumnDef<CustomerOrder>,
     {
       accessorKey: "orderStatus",
@@ -62,25 +60,21 @@ export const getTableColumns = (): MRT_ColumnDef<CustomerOrder>[] => {
           label={coStatusToHeaderMap[row.original.orderStatus]}
           color={coStatusToColor[row.original.orderStatus] as any}
         />
-      )
+      ),
     } as MRT_ColumnDef<CustomerOrder>,
     {
       accessorKey: "createdAt",
       header: "Created on",
       Cell: ({ renderedCellValue, row }) => (
-        <span>
-          {toReadableDateTime(row.original.createdAt)}
-        </span>
-      )
+        <span>{toReadableDateTime(row.original.createdAt)}</span>
+      ),
     } as MRT_ColumnDef<CustomerOrder>,
     {
       accessorKey: "updatedAt",
       header: "Last Modified",
       Cell: ({ renderedCellValue, row }) => (
-        <span>
-          {toReadableDateTime(row.original.updatedAt)}
-        </span>
-      )
+        <span>{toReadableDateTime(row.original.updatedAt)}</span>
+      ),
     } as MRT_ColumnDef<CustomerOrder>,
     {
       accessorKey: "orderNotes",
@@ -116,55 +110,81 @@ export const coStatusToHeaderMap = {
   [CustomerOrderStatus.COMPLETED]: "Completed",
 } as any;
 
-
-export const columnInfo = new Map<string | number | symbol | undefined, ColumnInfo>([
+export const columnInfo = new Map<
+  string | number | symbol | undefined,
+  ColumnInfo
+>([
   ["id", { excludeOnCreate: true } as ColumnInfo],
   ["updatedAt", { excludeOnCreate: true } as ColumnInfo],
   ["createdAt", { excludeOnCreate: true } as ColumnInfo],
   ["orderNumber", { isRequired: true } as ColumnInfo],
-  ["orderStatus", {
-    disabledOnCreate: true,
-    selectFields: Object.keys(coStatusToHeaderMap).map((key: string) => {
-      return { label: coStatusToHeaderMap[key], value: key }
-    })
-  } as ColumnInfo],
-  ["orderNotes", {
-    hideInTable: true,
-    isEditable: true,
-    multilineTextInfo: {
-      numRows: 4
-    }
-  } as ColumnInfo],
-  ["dateNeededBy", {
-    isRequired: true,
-    isDatetimeField: true,
-    isEditable: true
-  } as ColumnInfo],
-  ["customerName", {
-    hideInTable: true,
-    isRequired: true,
-    isEditable: true
-  } as ColumnInfo],
-  ["customerEmail", {
-    hideInTable: true,
-    placeholderText: "john@gmail.com",
-    isEditable: true,
-    isEmailField: true
-  } as ColumnInfo],
-  ["customerPhoneNumber", {
-    hideInTable: true,
-    isPhoneNumField: true,
-    placeholderText: "XXX-XXX-XXXX",
-    isEditable: true
-  } as ColumnInfo],
-  ["taxRate", {
-    isFloatField: true,
-    isEditable: true,
-    hideInTable: true
-  } as ColumnInfo],
-  ["discount", {
-    isFloatField: true,
-    isEditable: true,
-    hideInTable: true
-  } as ColumnInfo],
+  [
+    "orderStatus",
+    {
+      disabledOnCreate: true,
+      selectFields: Object.keys(coStatusToHeaderMap).map((key: string) => {
+        return { label: coStatusToHeaderMap[key], value: key };
+      }),
+    } as ColumnInfo,
+  ],
+  [
+    "orderNotes",
+    {
+      hideInTable: true,
+      isEditable: true,
+      multilineTextInfo: {
+        numRows: 4,
+      },
+    } as ColumnInfo,
+  ],
+  [
+    "dateNeededBy",
+    {
+      isRequired: true,
+      isDatetimeField: true,
+      isEditable: true,
+    } as ColumnInfo,
+  ],
+  [
+    "customerName",
+    {
+      hideInTable: true,
+      isRequired: true,
+      isEditable: true,
+    } as ColumnInfo,
+  ],
+  [
+    "customerEmail",
+    {
+      hideInTable: true,
+      placeholderText: "john@gmail.com",
+      isEditable: true,
+      isEmailField: true,
+    } as ColumnInfo,
+  ],
+  [
+    "customerPhoneNumber",
+    {
+      hideInTable: true,
+      isPhoneNumField: true,
+      placeholderText: "XXX-XXX-XXXX",
+      isEditable: true,
+    } as ColumnInfo,
+  ],
+  [
+    "taxRate",
+    {
+      isFloatField: true,
+      isEditable: true,
+      hideInTable: true,
+    } as ColumnInfo,
+  ],
+  [
+    "discount",
+    {
+      isFloatField: true,
+      isEditable: true,
+      hideInTable: true,
+    } as ColumnInfo,
+  ],
 ]);
