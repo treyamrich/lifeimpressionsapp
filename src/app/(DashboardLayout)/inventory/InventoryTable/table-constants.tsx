@@ -58,6 +58,13 @@ export const toTShirtColumnHeaderMap = {
   [TShirtFields.QtyOnHand]: "Qty."
 }
 
+export const tshirtSizeColumnFilterFn = (row: any, columnId: string, filterValue: string): boolean => {
+  let v = tshirtSizeToLabel[row.getValue(columnId)]
+    .toLowerCase();
+  let filterV = filterValue.toLowerCase();
+  return v.includes(filterV)
+}
+
 export const getTableColumns = (): MRT_ColumnDef<TShirt>[] => {
   return [
     {
@@ -93,6 +100,7 @@ export const getTableColumns = (): MRT_ColumnDef<TShirt>[] => {
       Cell: ({ renderedCellValue, row }) => (
         <> {tshirtSizeToLabel[row.original.size]}</>
       ),
+      filterFn: tshirtSizeColumnFilterFn,
     } as MRT_ColumnDef<TShirt>,
     {
       accessorKey: TShirtFields.Type,

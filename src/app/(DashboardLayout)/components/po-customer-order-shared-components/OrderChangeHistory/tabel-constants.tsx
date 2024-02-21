@@ -5,6 +5,7 @@ import { MRT_ColumnDef } from "material-react-table";
 import { toTShirtOrderColumnHeaderMap } from "../../TShirtOrderTable/table-constants";
 import {
   toTShirtColumnHeaderMap,
+  tshirtSizeColumnFilterFn,
   tshirtSizeToLabel,
 } from "@/app/(DashboardLayout)/inventory/InventoryTable/table-constants";
 
@@ -24,6 +25,7 @@ export const getTableColumns = (): MRT_ColumnDef<OrderChange>[] => {
       Cell: ({ renderedCellValue, row }) => (
         <> {tshirtSizeToLabel[row.original.tshirt.size]}</>
       ),
+      filterFn: tshirtSizeColumnFilterFn
     } as MRT_ColumnDef<OrderChange>,
     {
       accessorKey: "tshirt.color",
