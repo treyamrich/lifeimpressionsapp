@@ -16,10 +16,11 @@ enum TShirtSize {
   SixMonths
   TwelveMonths
   EighteenMonths
+  TwentyFourMonths
   TwoT
   ThreeT
   FourT
-  FiveT
+  FiveToSixT
   YXS
   YS
   YM
