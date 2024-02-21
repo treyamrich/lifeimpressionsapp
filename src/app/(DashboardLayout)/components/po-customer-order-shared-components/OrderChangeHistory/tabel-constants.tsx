@@ -23,7 +23,7 @@ export const getTableColumns = (): MRT_ColumnDef<OrderChange>[] => {
       muiTableHeadCellProps: { sx: { color: "green" } }, //custom props
       size: 50,
       Cell: ({ renderedCellValue, row }) => (
-        <> {tshirtSizeToLabel[row.original.tshirt.size]}</>
+        <span>{tshirtSizeToLabel[row.original.tshirt.size]}</span>
       ),
       filterFn: tshirtSizeColumnFilterFn
     } as MRT_ColumnDef<OrderChange>,
@@ -74,7 +74,7 @@ export const getTableColumns = (): MRT_ColumnDef<OrderChange>[] => {
         return 0;
       },
       Cell: ({ renderedCellValue, row }) => (
-        <>{toReadableDateTime(row.original.createdAt)}</>
+        <span>{toReadableDateTime(row.original.createdAt)}</span>
       ),
     } as MRT_ColumnDef<OrderChange>,
   ];

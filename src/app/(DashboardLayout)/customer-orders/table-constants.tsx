@@ -48,9 +48,9 @@ export const getTableColumns = (): MRT_ColumnDef<CustomerOrder>[] => {
       accessorKey: "dateNeededBy",
       header: "Date Needed",
       Cell: ({ renderedCellValue, row }) => (
-        <>
+        <span>
           {toReadableDateTime(row.original.dateNeededBy)}
-        </>
+        </span>
       )
     } as MRT_ColumnDef<CustomerOrder>,
     {
@@ -68,18 +68,18 @@ export const getTableColumns = (): MRT_ColumnDef<CustomerOrder>[] => {
       accessorKey: "createdAt",
       header: "Created on",
       Cell: ({ renderedCellValue, row }) => (
-        <>
+        <span>
           {toReadableDateTime(row.original.createdAt)}
-        </>
+        </span>
       )
     } as MRT_ColumnDef<CustomerOrder>,
     {
       accessorKey: "updatedAt",
       header: "Last Modified",
       Cell: ({ renderedCellValue, row }) => (
-        <>
+        <span>
           {toReadableDateTime(row.original.updatedAt)}
-        </>
+        </span>
       )
     } as MRT_ColumnDef<CustomerOrder>,
     {

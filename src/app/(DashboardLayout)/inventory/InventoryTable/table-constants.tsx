@@ -98,7 +98,7 @@ export const getTableColumns = (): MRT_ColumnDef<TShirt>[] => {
       size: 50,
       isSelectField: true,
       Cell: ({ renderedCellValue, row }) => (
-        <> {tshirtSizeToLabel[row.original.size]}</>
+        <span> {tshirtSizeToLabel[row.original.size]}</span>
       ),
       filterFn: tshirtSizeColumnFilterFn,
     } as MRT_ColumnDef<TShirt>,
@@ -108,7 +108,7 @@ export const getTableColumns = (): MRT_ColumnDef<TShirt>[] => {
       size: 50,
       isSelectField: true,
       Cell: ({ renderedCellValue, row }) => (
-        <>{tshirtTypeToLabel[row.original.type]}</>
+        <span>{tshirtTypeToLabel[row.original.type]}</span>
       ),
     } as MRT_ColumnDef<TShirt>,
     {
@@ -116,7 +116,7 @@ export const getTableColumns = (): MRT_ColumnDef<TShirt>[] => {
       header: "Last Modified",
       enableEditing: false,
       Cell: ({ renderedCellValue, row }) => (
-        <>{toReadableDateTime(row.original.updatedAt)}</>
+        <span>{toReadableDateTime(row.original.updatedAt)}</span>
       ),
     } as MRT_ColumnDef<TShirt>,
   ];

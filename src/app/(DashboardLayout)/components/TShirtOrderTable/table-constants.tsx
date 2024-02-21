@@ -55,7 +55,7 @@ export const getTableColumns = (): MRT_ColumnDef<TShirtOrder>[] => {
             header: "Size",
             muiTableHeadCellProps: { sx: { color: "green" } },
             Cell: ({ renderedCellValue, row}) => (
-                <> {tshirtSizeToLabel[row.original.tshirt.size]}</>
+                <span> {tshirtSizeToLabel[row.original.tshirt.size]}</span>
               ),
               filterFn: tshirtSizeColumnFilterFn
         } as MRT_ColumnDef<TShirtOrder>,
