@@ -504,6 +504,50 @@ export type DeleteCustomerOrderInput = {
   id: string,
 };
 
+export type CreateInventoryValueCacheInput = {
+  id?: string | null,
+  lastItemValues: Array< LastItemValueInput >,
+  createdAt?: string | null,
+};
+
+export type LastItemValueInput = {
+  aggregateValue: number,
+  itemId: string,
+  earliestUnsold: string,
+};
+
+export type ModelInventoryValueCacheConditionInput = {
+  and?: Array< ModelInventoryValueCacheConditionInput | null > | null,
+  or?: Array< ModelInventoryValueCacheConditionInput | null > | null,
+  not?: ModelInventoryValueCacheConditionInput | null,
+};
+
+export type InventoryValueCache = {
+  __typename: "InventoryValueCache",
+  id: string,
+  lastItemValues:  Array<LastItemValue >,
+  createdAt: string,
+  updatedAt: string,
+};
+
+export type LastItemValue = {
+  __typename: "LastItemValue",
+  aggregateValue: number,
+  itemId: string,
+  earliestUnsold: string,
+};
+
+export type UpdateInventoryValueCacheInput = {
+  id: string,
+  lastItemValues?: Array< LastItemValueInput > | null,
+  createdAt: string,
+};
+
+export type DeleteInventoryValueCacheInput = {
+  id: string,
+  createdAt: string,
+};
+
 export type ModelTShirtFilterInput = {
   id?: ModelIDInput | null,
   styleNumber?: ModelStringInput | null,
@@ -625,6 +669,20 @@ export type ModelCustomerOrderFilterInput = {
 export type ModelCustomerOrderConnection = {
   __typename: "ModelCustomerOrderConnection",
   items:  Array<CustomerOrder | null >,
+  nextToken?: string | null,
+};
+
+export type ModelInventoryValueCacheFilterInput = {
+  id?: ModelIDInput | null,
+  createdAt?: ModelStringInput | null,
+  and?: Array< ModelInventoryValueCacheFilterInput | null > | null,
+  or?: Array< ModelInventoryValueCacheFilterInput | null > | null,
+  not?: ModelInventoryValueCacheFilterInput | null,
+};
+
+export type ModelInventoryValueCacheConnection = {
+  __typename: "ModelInventoryValueCacheConnection",
+  items:  Array<InventoryValueCache | null >,
   nextToken?: string | null,
 };
 
@@ -755,6 +813,13 @@ export type ModelSubscriptionCustomerOrderFilterInput = {
   updatedAt?: ModelSubscriptionStringInput | null,
   and?: Array< ModelSubscriptionCustomerOrderFilterInput | null > | null,
   or?: Array< ModelSubscriptionCustomerOrderFilterInput | null > | null,
+};
+
+export type ModelSubscriptionInventoryValueCacheFilterInput = {
+  id?: ModelSubscriptionIDInput | null,
+  createdAt?: ModelSubscriptionStringInput | null,
+  and?: Array< ModelSubscriptionInventoryValueCacheFilterInput | null > | null,
+  or?: Array< ModelSubscriptionInventoryValueCacheFilterInput | null > | null,
 };
 
 export type CreateTShirtMutationVariables = {
@@ -1589,6 +1654,66 @@ export type DeleteCustomerOrderMutation = {
     discount: number,
     isDeleted?: boolean | null,
     type?: string | null,
+    createdAt: string,
+    updatedAt: string,
+  } | null,
+};
+
+export type CreateInventoryValueCacheMutationVariables = {
+  input: CreateInventoryValueCacheInput,
+  condition?: ModelInventoryValueCacheConditionInput | null,
+};
+
+export type CreateInventoryValueCacheMutation = {
+  createInventoryValueCache?:  {
+    __typename: "InventoryValueCache",
+    id: string,
+    lastItemValues:  Array< {
+      __typename: "LastItemValue",
+      aggregateValue: number,
+      itemId: string,
+      earliestUnsold: string,
+    } >,
+    createdAt: string,
+    updatedAt: string,
+  } | null,
+};
+
+export type UpdateInventoryValueCacheMutationVariables = {
+  input: UpdateInventoryValueCacheInput,
+  condition?: ModelInventoryValueCacheConditionInput | null,
+};
+
+export type UpdateInventoryValueCacheMutation = {
+  updateInventoryValueCache?:  {
+    __typename: "InventoryValueCache",
+    id: string,
+    lastItemValues:  Array< {
+      __typename: "LastItemValue",
+      aggregateValue: number,
+      itemId: string,
+      earliestUnsold: string,
+    } >,
+    createdAt: string,
+    updatedAt: string,
+  } | null,
+};
+
+export type DeleteInventoryValueCacheMutationVariables = {
+  input: DeleteInventoryValueCacheInput,
+  condition?: ModelInventoryValueCacheConditionInput | null,
+};
+
+export type DeleteInventoryValueCacheMutation = {
+  deleteInventoryValueCache?:  {
+    __typename: "InventoryValueCache",
+    id: string,
+    lastItemValues:  Array< {
+      __typename: "LastItemValue",
+      aggregateValue: number,
+      itemId: string,
+      earliestUnsold: string,
+    } >,
     createdAt: string,
     updatedAt: string,
   } | null,
@@ -2454,6 +2579,54 @@ export type CustomerOrdersByCreatedAtQuery = {
   } | null,
 };
 
+export type GetInventoryValueCacheQueryVariables = {
+  id: string,
+  createdAt: string,
+};
+
+export type GetInventoryValueCacheQuery = {
+  getInventoryValueCache?:  {
+    __typename: "InventoryValueCache",
+    id: string,
+    lastItemValues:  Array< {
+      __typename: "LastItemValue",
+      aggregateValue: number,
+      itemId: string,
+      earliestUnsold: string,
+    } >,
+    createdAt: string,
+    updatedAt: string,
+  } | null,
+};
+
+export type ListInventoryValueCachesQueryVariables = {
+  id?: string | null,
+  createdAt?: ModelStringKeyConditionInput | null,
+  filter?: ModelInventoryValueCacheFilterInput | null,
+  limit?: number | null,
+  nextToken?: string | null,
+  sortDirection?: ModelSortDirection | null,
+};
+
+export type ListInventoryValueCachesQuery = {
+  listInventoryValueCaches?:  {
+    __typename: "ModelInventoryValueCacheConnection",
+    items:  Array< {
+      __typename: "InventoryValueCache",
+      id: string,
+      lastItemValues:  Array< {
+        __typename: "LastItemValue",
+        aggregateValue: number,
+        itemId: string,
+        earliestUnsold: string,
+      } >,
+      createdAt: string,
+      updatedAt: string,
+    } | null >,
+    nextToken?: string | null,
+  } | null,
+};
+
 export type OnCreateTShirtSubscriptionVariables = {
   filter?: ModelSubscriptionTShirtFilterInput | null,
 };
@@ -3271,6 +3444,63 @@ export type OnDeleteCustomerOrderSubscription = {
     discount: number,
     isDeleted?: boolean | null,
     type?: string | null,
+    createdAt: string,
+    updatedAt: string,
+  } | null,
+};
+
+export type OnCreateInventoryValueCacheSubscriptionVariables = {
+  filter?: ModelSubscriptionInventoryValueCacheFilterInput | null,
+};
+
+export type OnCreateInventoryValueCacheSubscription = {
+  onCreateInventoryValueCache?:  {
+    __typename: "InventoryValueCache",
+    id: string,
+    lastItemValues:  Array< {
+      __typename: "LastItemValue",
+      aggregateValue: number,
+      itemId: string,
+      earliestUnsold: string,
+    } >,
+    createdAt: string,
+    updatedAt: string,
+  } | null,
+};
+
+export type OnUpdateInventoryValueCacheSubscriptionVariables = {
+  filter?: ModelSubscriptionInventoryValueCacheFilterInput | null,
+};
+
+export type OnUpdateInventoryValueCacheSubscription = {
+  onUpdateInventoryValueCache?:  {
+    __typename: "InventoryValueCache",
+    id: string,
+    lastItemValues:  Array< {
+      __typename: "LastItemValue",
+      aggregateValue: number,
+      itemId: string,
+      earliestUnsold: string,
+    } >,
+    createdAt: string,
+    updatedAt: string,
+  } | null,
+};
+
+export type OnDeleteInventoryValueCacheSubscriptionVariables = {
+  filter?: ModelSubscriptionInventoryValueCacheFilterInput | null,
+};
+
+export type OnDeleteInventoryValueCacheSubscription = {
+  onDeleteInventoryValueCache?:  {
+    __typename: "InventoryValueCache",
+    id: string,
+    lastItemValues:  Array< {
+      __typename: "LastItemValue",
+      aggregateValue: number,
+      itemId: string,
+      earliestUnsold: string,
+    } >,
     createdAt: string,
     updatedAt: string,
   } | null,

@@ -6,6 +6,7 @@
 
 import * as React from "react";
 import { GridProps, SelectFieldProps, SwitchFieldProps, TextFieldProps } from "@aws-amplify/ui-react";
+import { TShirt } from "../API.ts";
 export declare type EscapeHatchProps = {
     [elementHierarchy: string]: Record<string, unknown>;
 } | null;
@@ -29,6 +30,7 @@ export declare type TShirtUpdateFormInputValues = {
     type?: string;
     quantityOnHand?: number;
     isDeleted?: boolean;
+    indexField?: string;
 };
 export declare type TShirtUpdateFormValidationValues = {
     styleNumber?: ValidationFunction<string>;
@@ -38,6 +40,7 @@ export declare type TShirtUpdateFormValidationValues = {
     type?: ValidationFunction<string>;
     quantityOnHand?: ValidationFunction<number>;
     isDeleted?: ValidationFunction<boolean>;
+    indexField?: ValidationFunction<string>;
 };
 export declare type PrimitiveOverrideProps<T> = Partial<T> & React.DOMAttributes<HTMLDivElement>;
 export declare type TShirtUpdateFormOverridesProps = {
@@ -49,12 +52,13 @@ export declare type TShirtUpdateFormOverridesProps = {
     type?: PrimitiveOverrideProps<SelectFieldProps>;
     quantityOnHand?: PrimitiveOverrideProps<TextFieldProps>;
     isDeleted?: PrimitiveOverrideProps<SwitchFieldProps>;
+    indexField?: PrimitiveOverrideProps<TextFieldProps>;
 } & EscapeHatchProps;
 export declare type TShirtUpdateFormProps = React.PropsWithChildren<{
     overrides?: TShirtUpdateFormOverridesProps | undefined | null;
 } & {
     id?: string;
-    tShirt?: any;
+    tShirt?: TShirt;
     onSubmit?: (fields: TShirtUpdateFormInputValues) => TShirtUpdateFormInputValues;
     onSuccess?: (fields: TShirtUpdateFormInputValues) => void;
     onError?: (fields: TShirtUpdateFormInputValues, errorMessage: string) => void;

@@ -884,3 +884,53 @@ export const customerOrdersByCreatedAt = /* GraphQL */ `
     }
   }
 `;
+export const getInventoryValueCache = /* GraphQL */ `
+  query GetInventoryValueCache($id: ID!, $createdAt: String!) {
+    getInventoryValueCache(id: $id, createdAt: $createdAt) {
+      id
+      lastItemValues {
+        aggregateValue
+        itemId
+        earliestUnsold
+        __typename
+      }
+      createdAt
+      updatedAt
+      __typename
+    }
+  }
+`;
+export const listInventoryValueCaches = /* GraphQL */ `
+  query ListInventoryValueCaches(
+    $id: ID
+    $createdAt: ModelStringKeyConditionInput
+    $filter: ModelInventoryValueCacheFilterInput
+    $limit: Int
+    $nextToken: String
+    $sortDirection: ModelSortDirection
+  ) {
+    listInventoryValueCaches(
+      id: $id
+      createdAt: $createdAt
+      filter: $filter
+      limit: $limit
+      nextToken: $nextToken
+      sortDirection: $sortDirection
+    ) {
+      items {
+        id
+        lastItemValues {
+          aggregateValue
+          itemId
+          earliestUnsold
+          __typename
+        }
+        createdAt
+        updatedAt
+        __typename
+      }
+      nextToken
+      __typename
+    }
+  }
+`;

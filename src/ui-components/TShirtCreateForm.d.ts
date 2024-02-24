@@ -29,6 +29,7 @@ export declare type TShirtCreateFormInputValues = {
     type?: string;
     quantityOnHand?: number;
     isDeleted?: boolean;
+    indexField?: string;
 };
 export declare type TShirtCreateFormValidationValues = {
     styleNumber?: ValidationFunction<string>;
@@ -38,6 +39,7 @@ export declare type TShirtCreateFormValidationValues = {
     type?: ValidationFunction<string>;
     quantityOnHand?: ValidationFunction<number>;
     isDeleted?: ValidationFunction<boolean>;
+    indexField?: ValidationFunction<string>;
 };
 export declare type PrimitiveOverrideProps<T> = Partial<T> & React.DOMAttributes<HTMLDivElement>;
 export declare type TShirtCreateFormOverridesProps = {
@@ -49,6 +51,7 @@ export declare type TShirtCreateFormOverridesProps = {
     type?: PrimitiveOverrideProps<SelectFieldProps>;
     quantityOnHand?: PrimitiveOverrideProps<TextFieldProps>;
     isDeleted?: PrimitiveOverrideProps<SwitchFieldProps>;
+    indexField?: PrimitiveOverrideProps<TextFieldProps>;
 } & EscapeHatchProps;
 export declare type TShirtCreateFormProps = React.PropsWithChildren<{
     overrides?: TShirtCreateFormOverridesProps | undefined | null;

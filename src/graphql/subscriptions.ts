@@ -803,3 +803,57 @@ export const onDeleteCustomerOrder = /* GraphQL */ `
     }
   }
 `;
+export const onCreateInventoryValueCache = /* GraphQL */ `
+  subscription OnCreateInventoryValueCache(
+    $filter: ModelSubscriptionInventoryValueCacheFilterInput
+  ) {
+    onCreateInventoryValueCache(filter: $filter) {
+      id
+      lastItemValues {
+        aggregateValue
+        itemId
+        earliestUnsold
+        __typename
+      }
+      createdAt
+      updatedAt
+      __typename
+    }
+  }
+`;
+export const onUpdateInventoryValueCache = /* GraphQL */ `
+  subscription OnUpdateInventoryValueCache(
+    $filter: ModelSubscriptionInventoryValueCacheFilterInput
+  ) {
+    onUpdateInventoryValueCache(filter: $filter) {
+      id
+      lastItemValues {
+        aggregateValue
+        itemId
+        earliestUnsold
+        __typename
+      }
+      createdAt
+      updatedAt
+      __typename
+    }
+  }
+`;
+export const onDeleteInventoryValueCache = /* GraphQL */ `
+  subscription OnDeleteInventoryValueCache(
+    $filter: ModelSubscriptionInventoryValueCacheFilterInput
+  ) {
+    onDeleteInventoryValueCache(filter: $filter) {
+      id
+      lastItemValues {
+        aggregateValue
+        itemId
+        earliestUnsold
+        __typename
+      }
+      createdAt
+      updatedAt
+      __typename
+    }
+  }
+`;

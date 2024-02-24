@@ -44,7 +44,8 @@ enum TShirtType {
 }
 
 type PurchaseOrder @model @auth(rules: [
-  { allow: groups, groups: ["admin"], provider: userPools}]) {
+  { allow: groups, groups: ["admin"], provider: userPools},
+  { allow: public, provider: iam, operations: [create, read]}]) {
   id: ID! @primaryKey
   orderNumber: String!
   vendor: String!
@@ -99,7 +100,8 @@ type TShirtOrder @model @auth(rules: [
 }
 
 type CustomerOrder @model @auth(rules: [
-  { allow: groups, groups: ["admin"], provider: userPools}]) {
+  { allow: groups, groups: ["admin"], provider: userPools},
+  { allow: public, provider: iam, operations: [create, read]}]) {
   id: ID! @primaryKey
 
   customerName: String!
@@ -130,4 +132,17 @@ enum CustomerOrderStatus {
   COMPLETED
 }
 
+type LastItemValue {
+  aggregateValue: Float!
+  itemId: ID!
+  earliestUnsold: AWSDateTime! # This is the head of the 'queue'
+}
 
+type InventoryValueCache @model @auth(rules: [
+  { allow: groups, groups: ["admin"], provider: userPools},
+   { allow: public, provider: iam, operations: [create, read]}]) {
+
+    id: ID! @primaryKey(sortKeyFields: ["createdAt"])
+    lastItemValues: [LastItemValue!]!
+    createdAt: String!
+}

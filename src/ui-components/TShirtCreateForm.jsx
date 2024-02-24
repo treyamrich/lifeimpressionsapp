@@ -37,6 +37,7 @@ export default function TShirtCreateForm(props) {
     type: "",
     quantityOnHand: "",
     isDeleted: false,
+    indexField: "",
   };
   const [styleNumber, setStyleNumber] = React.useState(
     initialValues.styleNumber
@@ -49,6 +50,7 @@ export default function TShirtCreateForm(props) {
     initialValues.quantityOnHand
   );
   const [isDeleted, setIsDeleted] = React.useState(initialValues.isDeleted);
+  const [indexField, setIndexField] = React.useState(initialValues.indexField);
   const [errors, setErrors] = React.useState({});
   const resetStateValues = () => {
     setStyleNumber(initialValues.styleNumber);
@@ -58,6 +60,7 @@ export default function TShirtCreateForm(props) {
     setType(initialValues.type);
     setQuantityOnHand(initialValues.quantityOnHand);
     setIsDeleted(initialValues.isDeleted);
+    setIndexField(initialValues.indexField);
     setErrors({});
   };
   const validations = {
@@ -66,8 +69,9 @@ export default function TShirtCreateForm(props) {
     color: [{ type: "Required" }],
     size: [{ type: "Required" }],
     type: [{ type: "Required" }],
-    quantityOnHand: [],
+    quantityOnHand: [{ type: "Required" }],
     isDeleted: [],
+    indexField: [],
   };
   const runValidationTasks = async (
     fieldName,
@@ -102,6 +106,7 @@ export default function TShirtCreateForm(props) {
           type,
           quantityOnHand,
           isDeleted,
+          indexField,
         };
         const validationResponses = await Promise.all(
           Object.keys(validations).reduce((promises, fieldName) => {
@@ -171,6 +176,7 @@ export default function TShirtCreateForm(props) {
               type,
               quantityOnHand,
               isDeleted,
+              indexField,
             };
             const result = onChange(modelFields);
             value = result?.styleNumber ?? value;
@@ -201,6 +207,7 @@ export default function TShirtCreateForm(props) {
               type,
               quantityOnHand,
               isDeleted,
+              indexField,
             };
             const result = onChange(modelFields);
             value = result?.brand ?? value;
@@ -231,6 +238,7 @@ export default function TShirtCreateForm(props) {
               type,
               quantityOnHand,
               isDeleted,
+              indexField,
             };
             const result = onChange(modelFields);
             value = result?.color ?? value;
@@ -261,6 +269,7 @@ export default function TShirtCreateForm(props) {
               type,
               quantityOnHand,
               isDeleted,
+              indexField,
             };
             const result = onChange(modelFields);
             value = result?.size ?? value;
@@ -296,89 +305,99 @@ export default function TShirtCreateForm(props) {
           {...getOverrideProps(overrides, "sizeoption3")}
         ></option>
         <option
+          children="Twenty four months"
+          value="TwentyFourMonths"
+          {...getOverrideProps(overrides, "sizeoption4")}
+        ></option>
+        <option
           children="Two t"
           value="TwoT"
-          {...getOverrideProps(overrides, "sizeoption4")}
+          {...getOverrideProps(overrides, "sizeoption5")}
         ></option>
         <option
           children="Three t"
           value="ThreeT"
-          {...getOverrideProps(overrides, "sizeoption5")}
+          {...getOverrideProps(overrides, "sizeoption6")}
         ></option>
         <option
           children="Four t"
           value="FourT"
-          {...getOverrideProps(overrides, "sizeoption6")}
+          {...getOverrideProps(overrides, "sizeoption7")}
         ></option>
         <option
-          children="Five t"
-          value="FiveT"
-          {...getOverrideProps(overrides, "sizeoption7")}
+          children="Five to six t"
+          value="FiveToSixT"
+          {...getOverrideProps(overrides, "sizeoption8")}
         ></option>
         <option
           children="Yxs"
           value="YXS"
-          {...getOverrideProps(overrides, "sizeoption8")}
+          {...getOverrideProps(overrides, "sizeoption9")}
         ></option>
         <option
           children="Ys"
           value="YS"
-          {...getOverrideProps(overrides, "sizeoption9")}
+          {...getOverrideProps(overrides, "sizeoption10")}
         ></option>
         <option
           children="Ym"
           value="YM"
-          {...getOverrideProps(overrides, "sizeoption10")}
+          {...getOverrideProps(overrides, "sizeoption11")}
         ></option>
         <option
           children="Yl"
           value="YL"
-          {...getOverrideProps(overrides, "sizeoption11")}
+          {...getOverrideProps(overrides, "sizeoption12")}
         ></option>
         <option
           children="Yxl"
           value="YXL"
-          {...getOverrideProps(overrides, "sizeoption12")}
+          {...getOverrideProps(overrides, "sizeoption13")}
+        ></option>
+        <option
+          children="Axs"
+          value="AXS"
+          {...getOverrideProps(overrides, "sizeoption14")}
         ></option>
         <option
           children="As"
           value="AS"
-          {...getOverrideProps(overrides, "sizeoption13")}
+          {...getOverrideProps(overrides, "sizeoption15")}
         ></option>
         <option
           children="Am"
           value="AM"
-          {...getOverrideProps(overrides, "sizeoption14")}
+          {...getOverrideProps(overrides, "sizeoption16")}
         ></option>
         <option
           children="Al"
           value="AL"
-          {...getOverrideProps(overrides, "sizeoption15")}
+          {...getOverrideProps(overrides, "sizeoption17")}
         ></option>
         <option
           children="Axl"
           value="AXL"
-          {...getOverrideProps(overrides, "sizeoption16")}
+          {...getOverrideProps(overrides, "sizeoption18")}
         ></option>
         <option
           children="Two x"
           value="TwoX"
-          {...getOverrideProps(overrides, "sizeoption17")}
+          {...getOverrideProps(overrides, "sizeoption19")}
         ></option>
         <option
           children="Three x"
           value="ThreeX"
-          {...getOverrideProps(overrides, "sizeoption18")}
+          {...getOverrideProps(overrides, "sizeoption20")}
         ></option>
         <option
           children="Four x"
           value="FourX"
-          {...getOverrideProps(overrides, "sizeoption19")}
+          {...getOverrideProps(overrides, "sizeoption21")}
         ></option>
         <option
           children="Five x"
           value="FiveX"
-          {...getOverrideProps(overrides, "sizeoption20")}
+          {...getOverrideProps(overrides, "sizeoption22")}
         ></option>
       </SelectField>
       <SelectField
@@ -397,6 +416,7 @@ export default function TShirtCreateForm(props) {
               type: value,
               quantityOnHand,
               isDeleted,
+              indexField,
             };
             const result = onChange(modelFields);
             value = result?.type ?? value;
@@ -429,7 +449,7 @@ export default function TShirtCreateForm(props) {
       </SelectField>
       <TextField
         label="Quantity on hand"
-        isRequired={false}
+        isRequired={true}
         isReadOnly={false}
         type="number"
         step="any"
@@ -447,6 +467,7 @@ export default function TShirtCreateForm(props) {
               type,
               quantityOnHand: value,
               isDeleted,
+              indexField,
             };
             const result = onChange(modelFields);
             value = result?.quantityOnHand ?? value;
@@ -477,6 +498,7 @@ export default function TShirtCreateForm(props) {
               type,
               quantityOnHand,
               isDeleted: value,
+              indexField,
             };
             const result = onChange(modelFields);
             value = result?.isDeleted ?? value;
@@ -491,6 +513,37 @@ export default function TShirtCreateForm(props) {
         hasError={errors.isDeleted?.hasError}
         {...getOverrideProps(overrides, "isDeleted")}
       ></SwitchField>
+      <TextField
+        label="Index field"
+        isRequired={false}
+        isReadOnly={false}
+        value={indexField}
+        onChange={(e) => {
+          let { value } = e.target;
+          if (onChange) {
+            const modelFields = {
+              styleNumber,
+              brand,
+              color,
+              size,
+              type,
+              quantityOnHand,
+              isDeleted,
+              indexField: value,
+            };
+            const result = onChange(modelFields);
+            value = result?.indexField ?? value;
+          }
+          if (errors.indexField?.hasError) {
+            runValidationTasks("indexField", value);
+          }
+          setIndexField(value);
+        }}
+        onBlur={() => runValidationTasks("indexField", indexField)}
+        errorMessage={errors.indexField?.errorMessage}
+        hasError={errors.indexField?.hasError}
+        {...getOverrideProps(overrides, "indexField")}
+      ></TextField>
       <Flex
         justifyContent="space-between"
         {...getOverrideProps(overrides, "CTAFlex")}

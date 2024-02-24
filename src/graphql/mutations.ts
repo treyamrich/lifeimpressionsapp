@@ -824,3 +824,60 @@ export const deleteCustomerOrder = /* GraphQL */ `
     }
   }
 `;
+export const createInventoryValueCache = /* GraphQL */ `
+  mutation CreateInventoryValueCache(
+    $input: CreateInventoryValueCacheInput!
+    $condition: ModelInventoryValueCacheConditionInput
+  ) {
+    createInventoryValueCache(input: $input, condition: $condition) {
+      id
+      lastItemValues {
+        aggregateValue
+        itemId
+        earliestUnsold
+        __typename
+      }
+      createdAt
+      updatedAt
+      __typename
+    }
+  }
+`;
+export const updateInventoryValueCache = /* GraphQL */ `
+  mutation UpdateInventoryValueCache(
+    $input: UpdateInventoryValueCacheInput!
+    $condition: ModelInventoryValueCacheConditionInput
+  ) {
+    updateInventoryValueCache(input: $input, condition: $condition) {
+      id
+      lastItemValues {
+        aggregateValue
+        itemId
+        earliestUnsold
+        __typename
+      }
+      createdAt
+      updatedAt
+      __typename
+    }
+  }
+`;
+export const deleteInventoryValueCache = /* GraphQL */ `
+  mutation DeleteInventoryValueCache(
+    $input: DeleteInventoryValueCacheInput!
+    $condition: ModelInventoryValueCacheConditionInput
+  ) {
+    deleteInventoryValueCache(input: $input, condition: $condition) {
+      id
+      lastItemValues {
+        aggregateValue
+        itemId
+        earliestUnsold
+        __typename
+      }
+      createdAt
+      updatedAt
+      __typename
+    }
+  }
+`;
