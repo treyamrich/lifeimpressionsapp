@@ -1,10 +1,6 @@
 "use client";
 
-import {
-  CreateOrderChangeInput,
-  TShirt,
-  TShirtOrder,
-} from "@/API";
+import { CreateOrderChangeInput, TShirt, TShirtOrder } from "@/API";
 import React, { useMemo, useState, useEffect } from "react";
 import { getTableColumns, TShirtOrderFields } from "./table-constants";
 import {
@@ -28,7 +24,7 @@ interface TShirtOrderTableProps {
   onRowEdit: (
     row: MRT_Row<TShirtOrder>,
     orderChange: CreateOrderChangeInput,
-    exitEditingMode: () => void,
+    exitEditingMode: () => void
   ) => void | undefined;
   onRowAdd: (
     newRowValue: TShirtOrder,
@@ -41,8 +37,8 @@ interface TShirtOrderTableProps {
 
 export enum TableMode {
   Create = "create",
-  Edit = "edit"
-};
+  Edit = "edit",
+}
 
 type EditMode = {
   show: boolean;
@@ -69,16 +65,16 @@ const TShirtOrderTable = ({
   );
   const [tshirtChoices, setTShirtChoices] = useState<TShirt[]>([]);
 
-  const handleEditRowAudit = (orderChange: CreateOrderChangeInput, resetEditFormCallback: () => void) => {
+  const handleEditRowAudit = (
+    orderChange: CreateOrderChangeInput,
+    resetEditFormCallback: () => void
+  ) => {
     const row = editMode.row;
     if (!row) return;
-    onRowEdit(
-      row, 
-      orderChange, 
-      () => {
-        setEditMode({ show: false, row: undefined });
-        resetEditFormCallback();
-      });
+    onRowEdit(row, orderChange, () => {
+      setEditMode({ show: false, row: undefined });
+      resetEditFormCallback();
+    });
   };
 
   const columns = useMemo<MRT_ColumnDef<TShirtOrder>[]>(
@@ -89,10 +85,11 @@ const TShirtOrderTable = ({
   const fetchTShirts = () => {
     const deletedFilter = { isDeleted: { ne: true } };
     rescueDBOperation(
-      () => listTShirtAPI({
-        filters: deletedFilter,
-        doCompletePagination: true
-      }),
+      () =>
+        listTShirtAPI({
+          filters: deletedFilter,
+          doCompletePagination: true,
+        }),
       DBOperation.LIST,
       (resp: ListAPIResponse<TShirt>) => setTShirtChoices(resp.result)
     );
@@ -106,7 +103,7 @@ const TShirtOrderTable = ({
   if (entityType === EntityType.CustomerOrder || mode === TableMode.Create) {
     hiddenColumns[TShirtOrderFields.AmtReceived] = false;
   }
-  
+
   return (
     <>
       <MaterialReactTable
@@ -125,13 +122,27 @@ const TShirtOrderTable = ({
         onColumnFiltersChange={setColumnFilters}
         state={{
           columnFilters,
-          columnVisibility: hiddenColumns
+          columnVisibility: hiddenColumns,
         }}
-        muiTableBodyRowProps={({ row }: { row: MRT_Row<TShirtOrder> }) => ({
+        muiTableBodyRowProps={({ row }: { row: MRT_Row<TShirtOrder> }) => {
+          const amtRecv = row.original.amountReceived ?? 0;
+          const amtOrdered = row.original.quantity;
+          let bg = undefined;
+          let inventoryQtyField = amtOrdered;
+          if (entityType === EntityType.PurchaseOrder) {
+            inventoryQtyField = amtRecv;
+            bg =
+              amtRecv >= amtOrdered && amtRecv + amtOrdered > 0
+                ? "#DDFFCE"
+                : undefined;
+          }
+          return {
             sx: {
-              opacity: row.original.quantity <= 0 ? "50%" : "100%"
-            }
-        })}
+              opacity: inventoryQtyField <= 0 ? "50%" : "100%",
+              backgroundColor: bg,
+            },
+          };
+        }}
         initialState={{
           showColumnFilters: true,
           sorting: [
@@ -144,12 +155,12 @@ const TShirtOrderTable = ({
         enableEditing
         renderRowActions={({ row, table }) => (
           <TableRowActions
-            onEdit={()=>setEditMode({ show: true, row: row })}
+            onEdit={() => setEditMode({ show: true, row: row })}
             showEditButton
           />
         )}
         renderTopToolbarCustomActions={() => (
-          <TableToolbar 
+          <TableToolbar
             showAddButton={true}
             onAdd={() => setCreateModalOpen(true)}
           />
