@@ -24,6 +24,7 @@ export const deleteOrderTransactionAPI = async (
   refreshTokenFn?: () => Promise<CognitoUser | undefined>
 ): Promise<Array<string>> => {
 
+    validateDeleteOrderInput(input)
   let command = null;
   try {
     command = new ExecuteTransactionCommand({
@@ -72,6 +73,14 @@ export const deleteOrderTransactionAPI = async (
     throw new Error(`Failed to delete ${entityType} order`);
   });
 };
+
+const validateDeleteOrderInput = (input: PurchaseOrderOrCustomerOrder) => {
+    const isOrderFromLastMonth =
+        dayjs.utc(input.createdAt) < dayjs.utc().startOf("month");
+    // Reason: Deleting orders affects the inventory value calculation
+    if(isOrderFromLastMonth)
+        throw Error("Cannot delete orders from prior months")
+}
 
 export const assembleDeleteOrderTransactionStatements = (
   input: PurchaseOrderOrCustomerOrder,

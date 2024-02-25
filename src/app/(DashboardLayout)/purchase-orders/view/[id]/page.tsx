@@ -131,6 +131,7 @@ const ViewPurchaseOrder = ({ params }: ViewPurchaseOrderProps) => {
           <ViewOrderActions
             onEdit={() => setShowEditPopup(true)}
             onDelete={() => handleDeletePurchaseOrder(false)}
+            order={po}
           />
           <Grid container rowSpacing={5} columnSpacing={5}>
             <Section header="Order Details" columnWidth={7}>
