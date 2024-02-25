@@ -2,11 +2,15 @@ node_modules/
 .next/
 .swc/
 .*.env
-
+*.env
 .vscode
 .venv
 
+*__pycache__*
+
 coverage/
+
+*_cached_output.json
 
 amplify/.config/local-aws-info.json
 amplify/team-provider-info.json
