@@ -1,4 +1,5 @@
 import {
+  Alert,
   Button,
   Dialog,
   DialogContent,
@@ -14,13 +15,20 @@ import NumberInput from "../../components/inputs/NumberInput";
 import { MRT_ColumnDef, MRT_Row } from "material-react-table";
 import { CreateOrderChangeInput, TShirt } from "@/API";
 import { SelectValue } from "../../purchase-orders/table-constants";
-import { columnInfo, editableTShirtFields } from "./table-constants";
+import { TShirtFields, columnInfo, editableTShirtFields } from "./table-constants";
 import EditReasonRadioGroup, {
   EditReasonFormState,
   getInitialEditReasonState,
   validateAndGetEditReason,
 } from "../../components/EditReasonRadioGroup/EditReasonRadioGroup";
-import { BuildInventoryChangeInput, buildInventoryChangeInput } from "../../components/po-customer-order-shared-components/OrderChangeHistory/util";
+import { buildInventoryChangeInput } from "../../components/po-customer-order-shared-components/OrderChangeHistory/util";
+import ConfirmPopup from "../../components/forms/confirm-popup/ConfirmPopup";
+
+type UpdateTShirtQtyWarningState = { show: boolean, cachedFn: () => void}
+const getInitialUpdateTShirtQtyWarningState = () => ({
+  show: false,
+  cachedFn: () => {}
+})
 
 function EditTShirtModal({
   open,
@@ -43,6 +51,11 @@ function EditTShirtModal({
   const [editReason, setEditReason] = useState<EditReasonFormState>(
     getInitialEditReasonState()
   );
+  const [updateQtyWarn, setUpdateQtyWarn] = useState<UpdateTShirtQtyWarningState>(
+    getInitialUpdateTShirtQtyWarningState());
+  const resetUpdateQtyWarn = () => setUpdateQtyWarn(getInitialUpdateTShirtQtyWarningState());
+  
+  const [noChangeError, setNoChangeError] = useState<string | undefined>(undefined);
 
   const getInitialFormState = () => {
     const formState = { id: "" } as any;
@@ -72,6 +85,8 @@ function EditTShirtModal({
     setEditReason(getInitialEditReasonState());
     setErrorMap(getInitialFormErrorMap());
     setValues(getInitialFormState());
+    resetUpdateQtyWarn()
+    setNoChangeError(undefined)
   };
 
   useEffect(() => {
@@ -104,6 +119,7 @@ function EditTShirtModal({
     allValid = !editReasonMsg ? false : allValid;
 
     if (allValid) {
+      
       const updatedTShirt: TShirt = {
         ...row!.original,
         brand: values.brand,
@@ -119,7 +135,19 @@ function EditTShirtModal({
         reason: editReasonMsg!
       })
 
-      onSubmit(row!, inventoryChange, resetForm);
+      if (inventoryChange.fieldChanges.length <= 0) {
+        setNoChangeError("No changes were made.");
+        return;
+      } else {
+        setNoChangeError(undefined);
+      }
+
+      const submitFn = () => onSubmit(row!, inventoryChange, resetForm);
+      if(inventoryChange.fieldChanges.find(x => x.fieldName === TShirtFields.QtyOnHand)) {
+        setUpdateQtyWarn({ show: true, cachedFn: submitFn})
+        return;
+      }
+      submitFn();
     }
   };
 
@@ -233,6 +261,12 @@ function EditTShirtModal({
               />
             </FormControl>
 
+            {noChangeError && (
+              <Alert variant="filled" color="error">
+                {noChangeError}
+              </Alert>
+            )}
+            
             <Grid container justifyContent={"space-between"}>
               <Grid item>
                 <Button
@@ -264,6 +298,17 @@ function EditTShirtModal({
             </Grid>
           </Stack>
         </form>
+
+        <ConfirmPopup
+          open={updateQtyWarn.show}
+          onClose={resetUpdateQtyWarn}
+          onSubmit={updateQtyWarn.cachedFn}
+          title="Warning!"
+          confirmationMsg="Updating quantity through this method is NOT recommended. Are you sure you want to edit the quantity? This will not be reflected in your transaction history."
+          submitButtonMsg="Confirm"
+          cancelButtonMsg="Cancel"
+          customSubmitBtnColor="warning"
+        />
       </DialogContent>
     </Dialog>
   );

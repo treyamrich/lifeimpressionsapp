@@ -1,6 +1,6 @@
 "use client";
 
-import { Button, CardContent, Dialog, DialogContent, DialogTitle, Grid, Typography } from "@mui/material";
+import { Button, ButtonPropsColorOverrides, CardContent, Dialog, DialogContent, DialogTitle, Grid, Typography } from "@mui/material";
 import BlankCard from "../../shared/BlankCard";
 
 interface ConfirmPopupProps {
@@ -11,9 +11,10 @@ interface ConfirmPopupProps {
     submitButtonMsg: string;
     cancelButtonMsg: string;
     title: string;
+    customSubmitBtnColor?: "primary" | "inherit" | "secondary" | "success" | "error" | "info" | "warning" | undefined;
 }
 
-const ConfirmPopup = ({ open, onClose, onSubmit, confirmationMsg, submitButtonMsg, cancelButtonMsg, title }: ConfirmPopupProps) => {
+const ConfirmPopup = ({ open, onClose, onSubmit, confirmationMsg, submitButtonMsg, cancelButtonMsg, title, customSubmitBtnColor }: ConfirmPopupProps) => {
     return (
         <Dialog open={open} maxWidth="xs">
             <DialogTitle textAlign="center">{title}</DialogTitle>
@@ -41,7 +42,7 @@ const ConfirmPopup = ({ open, onClose, onSubmit, confirmationMsg, submitButtonMs
                             </Grid>
                             <Grid item>
                                 <Button
-                                    color="primary"
+                                    color={ customSubmitBtnColor ? customSubmitBtnColor : "primary"}
                                     variant="contained"
                                     size="small"
                                     onClick={onSubmit}
