@@ -79,7 +79,7 @@ const ViewPOHeaderFields = ({ po, setPo, showEditPopup, setShowEditPopup }: View
             {getFieldWithHeader("Order #", getTextField(orderNumber), 4)}
             {getFieldWithHeader("Vendor", getTextField(vendor), 4)}
 
-            {getFieldWithHeader("Date Created", <DateTime value={createdAt} />, 4)}
+            {getFieldWithHeader("Date Placed", <DateTime value={createdAt} />, 4)}
             {getFieldWithHeader("Last Modified", <DateTime value={updatedAt} />, 4)}
             {getFieldWithHeader("Expected Date", <DateTime value={dateExpected} />, 4)}
 

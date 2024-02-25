@@ -66,7 +66,7 @@ export const assembleCreateOrderTransactionStatements = (
 ): ParameterizedStatement[] => {
   // Insertion fields for new Order
   const orderId = v4();
-  const createdAtTimestamp = toAWSDateTime(dayjs());
+  const createdAtTimestamp = input.createdAt; //toAWSDateTime(dayjs());
 
   const orderedItems = input.orderedItems as any as TShirtOrder[]; // Locally orderedItems is just an array not a model connection
   const transactionStatements: ParameterizedStatement[] = [
@@ -95,7 +95,16 @@ const validateCreateOrderInput = (
 
   if (input.discount < 0) throw Error("Invalid discount for order");
   if (input.taxRate < 0) throw Error("Invalid tax rate");
-
+  
+  const now = dayjs.utc();
+  const inputTimestamp = dayjs.utc(input.createdAt);
+  if(!validateISO8601(input.createdAt))
+    throw Error('Date order placed has an invalid date format')
+  if (inputTimestamp > now) 
+    throw Error('Date order was placed cannot be in the future.')
+  if (inputTimestamp < now.startOf('month'))
+    throw Error('Orders cannot be placed in prior months');
+  
   const isValidStr = (str: string | undefined | null) =>
     str !== undefined && str !== null;
   if (entityType === EntityType.CustomerOrder) {

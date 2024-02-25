@@ -2,7 +2,7 @@ import { CustomerOrder, CustomerOrderStatus } from "@/API";
 import { MRT_ColumnDef } from "material-react-table";
 import { ColumnInfo } from "../purchase-orders/table-constants";
 import dayjs from "dayjs";
-import { toReadableDateTime } from "@/utils/datetimeConversions";
+import { getStartOfDay, getStartOfMonth, getTodayInSetTz, toReadableDateTime } from "@/utils/datetimeConversions";
 import { Chip } from "@mui/material";
 
 export interface SelectValue {
@@ -12,10 +12,10 @@ export interface SelectValue {
 
 export const tablePrimaryKey = "id";
 
-export const initialCustomerOrderFormState: any = {
+export const getInitialCustomerOrderFormState = () => ({
   __typename: "CustomerOrder",
   orderStatus: CustomerOrderStatus.NEW,
-  dateNeededBy: dayjs(),
+  dateNeededBy: getStartOfDay(1),
   orderedItems: [],
   orderNotes: "",
   orderNumber: "",
@@ -24,7 +24,8 @@ export const initialCustomerOrderFormState: any = {
   customerPhoneNumber: "",
   taxRate: 0,
   discount: 0,
-};
+  createdAt: getTodayInSetTz()
+});
 
 const coStatusToColor = {
   [CustomerOrderStatus.NEW]: "warning",
@@ -64,7 +65,7 @@ export const getTableColumns = (): MRT_ColumnDef<CustomerOrder>[] => {
     } as MRT_ColumnDef<CustomerOrder>,
     {
       accessorKey: "createdAt",
-      header: "Created on",
+      header: "Date Placed",
       Cell: ({ renderedCellValue, row }) => (
         <span>{toReadableDateTime(row.original.createdAt)}</span>
       ),
@@ -116,7 +117,10 @@ export const columnInfo = new Map<
 >([
   ["id", { excludeOnCreate: true } as ColumnInfo],
   ["updatedAt", { excludeOnCreate: true } as ColumnInfo],
-  ["createdAt", { excludeOnCreate: true } as ColumnInfo],
+  ["createdAt", { dateTimeField: {
+    getMaxDateRestriction: () => getTodayInSetTz(),
+    getMinDateRestriction: () => getStartOfMonth(0)
+  } } as ColumnInfo],
   ["orderNumber", { isRequired: true } as ColumnInfo],
   [
     "orderStatus",
@@ -141,7 +145,9 @@ export const columnInfo = new Map<
     "dateNeededBy",
     {
       isRequired: true,
-      isDatetimeField: true,
+      dateTimeField: {
+        getMinDateRestriction: () => getStartOfDay(0)
+      },
       isEditable: true,
     } as ColumnInfo,
   ],

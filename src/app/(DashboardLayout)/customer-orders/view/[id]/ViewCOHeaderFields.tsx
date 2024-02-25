@@ -80,7 +80,7 @@ const ViewCOHeaderFields = ({ co, setCo, showEditPopup, setShowEditPopup }: View
                         {getFieldWithHeader("Order #", getTextField(orderNumber), 6)}
 
                         {getFieldWithHeader("Date Needed", <DateTime value={dateNeededBy} />, 4)}
-                        {getFieldWithHeader("Date Created", <DateTime value={createdAt} />, 4)}
+                        {getFieldWithHeader("Date Placed", <DateTime value={createdAt} />, 4)}
                         {getFieldWithHeader("Last Modified", <DateTime value={updatedAt} />, 4)}
 
                         {getFieldWithHeader("Customer Name", getTextField(customerName), 4)}

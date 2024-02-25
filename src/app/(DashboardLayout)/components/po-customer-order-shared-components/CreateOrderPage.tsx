@@ -12,7 +12,7 @@ import ConfirmPopup from "../../components/forms/confirm-popup/ConfirmPopup";
 import { useRouter } from "next/navigation";
 import { ColumnInfo, SelectValue } from "../../purchase-orders/table-constants";
 import { DateTimePicker } from "@mui/x-date-pickers";
-import { getStartOfDay, toAWSDateTime } from "@/utils/datetimeConversions";
+import { toAWSDateTime } from "@/utils/datetimeConversions";
 import { Dayjs } from "dayjs";
 import MyTelInput from "../inputs/MyTelInput";
 import { validateEmail, validatePhoneNumber } from "@/utils/field-validation";
@@ -25,13 +25,13 @@ export enum EntityType {
 
 function CreateOrderPage<T extends Record<any, any>>({
     entityType,
-    initialOrderFormState,
     getTableColumns,
     columnInfo,
-    handleCreateOrder
+    handleCreateOrder,
+    getInitialFormState
 }: {
     entityType: EntityType,
-    initialOrderFormState: any
+    getInitialFormState: () => any,
     getTableColumns: () => MRT_ColumnDef<T>[],
     columnInfo: Map<string | number | symbol | undefined, ColumnInfo>,
     handleCreateOrder: (
@@ -42,19 +42,9 @@ function CreateOrderPage<T extends Record<any, any>>({
     const { push } = useRouter();
     const getInitialOrderFormErrorMap = () =>
         new Map<string, string>(
-            Object.keys(initialOrderFormState).map((key) => [key, ""])
+            Object.keys(getInitialFormState()).map((key) => [key, ""])
         );
-    const getInitialFormState = () => {
-        const formState = {} as any;
-        Object.keys(initialOrderFormState).forEach(field => {
-            if (columnInfo.get(field)?.isDatetimeField) {
-                formState[field] = getStartOfDay(1);
-            } else {
-                formState[field] = initialOrderFormState[field];
-            }
-        });
-        return formState;
-    }
+
     // State starts here
     const [values, setValues] = useState<any>(() => getInitialFormState());
     const [errorMap, setErrorMap] = useState(() => getInitialOrderFormErrorMap());
@@ -106,7 +96,7 @@ function CreateOrderPage<T extends Record<any, any>>({
             // Convert the datetime that was input with user's timezone to UTC timezone
             const order = {} as any;
             Object.keys(values).forEach((key: string) => {
-                if (columnInfo.get(key)?.isDatetimeField) {
+                if (columnInfo.get(key)?.dateTimeField) {
                     const datetime = values[key] as Dayjs;
                     order[key] = toAWSDateTime(datetime);
                 }
@@ -132,12 +122,13 @@ function CreateOrderPage<T extends Record<any, any>>({
         []
     );
 
-    const uppercaseEntityType = entityType === EntityType.CustomerOrder ? "Customer" : "Purchase";
     const getFormField = (column: MRT_ColumnDef<T>) => {
         const errMsg = errorMap.get(column.accessorKey as string);
         const hasError = errMsg !== "" && errMsg !== undefined;
         const colInfo = columnInfo.get(column.accessorKey);
-        if (colInfo?.isDatetimeField) {
+        if (colInfo?.dateTimeField) {
+            const getMaxDate = colInfo?.dateTimeField.getMaxDateRestriction;
+            const getMinDate = colInfo?.dateTimeField.getMinDateRestriction;
             return (
                 <DateTimePicker
                     label={column.header}
@@ -147,6 +138,8 @@ function CreateOrderPage<T extends Record<any, any>>({
                         setValues({ ...values, [column.accessorKey as string]: newVal })
                     }
                     views={['year', 'month', 'day', 'hours', 'minutes']}
+                    maxDateTime={getMaxDate ? getMaxDate() : undefined}
+                    minDateTime={getMinDate ? getMinDate() : undefined}
                 />)
         }
         if (colInfo?.isPhoneNumField) {
@@ -203,6 +196,9 @@ function CreateOrderPage<T extends Record<any, any>>({
             </TextField>
         )
     }
+
+    const uppercaseEntityType = entityType === EntityType.CustomerOrder ? "Customer" : "Purchase";
+    
     return (
         <PageContainer
             title={`New ${uppercaseEntityType} Order`}

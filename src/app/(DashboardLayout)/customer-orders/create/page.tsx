@@ -5,9 +5,9 @@ import {
   DBOperation, useDBOperationContext,
 } from "@/contexts/DBErrorContext";
 import {
-  initialCustomerOrderFormState,
   getTableColumns,
-  columnInfo
+  columnInfo,
+  getInitialCustomerOrderFormState
 } from "../table-constants";
 import { CustomerOrder } from "@/API";
 import CreateOrderPage, { EntityType } from "../../components/po-customer-order-shared-components/CreateOrderPage";
@@ -64,7 +64,7 @@ const CreateCustomerOrderPage = () => {
       />
       <CreateOrderPage
         entityType={EntityType.CustomerOrder}
-        initialOrderFormState={initialCustomerOrderFormState}
+        getInitialFormState={getInitialCustomerOrderFormState}
         columnInfo={columnInfo}
         getTableColumns={getTableColumns}
         handleCreateOrder={handleCreateCustomerOrder}

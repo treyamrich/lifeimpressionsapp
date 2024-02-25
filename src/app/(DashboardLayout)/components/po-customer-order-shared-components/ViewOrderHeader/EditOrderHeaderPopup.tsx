@@ -28,7 +28,7 @@ function EditOrderHeaderPopup<T extends Record<any, any>>({ open, order, onSubmi
     const getInitialFormState = () => {
         const formState = { ...order } as any;
         Object.keys(formState).forEach((field: string) => {
-            if (columnInfo.get(field)?.isDatetimeField) {
+            if (columnInfo.get(field)?.dateTimeField) {
                 formState[field] = fromUTC(formState[field]);
             } else if (formState[field] === null) {
                 formState[field] = "";
@@ -96,7 +96,7 @@ function EditOrderHeaderPopup<T extends Record<any, any>>({ open, order, onSubmi
             // Convert the datetime that was input with user's timezone to UTC timezone
             const updatedOrder = {} as any;
             Object.keys(values).forEach((key: string) => {
-                if (columnInfo.get(key)?.isDatetimeField) {
+                if (columnInfo.get(key)?.dateTimeField) {
                     const datetime = values[key] as Dayjs;
                     updatedOrder[key] = toAWSDateTime(datetime);
                 }
@@ -116,7 +116,7 @@ function EditOrderHeaderPopup<T extends Record<any, any>>({ open, order, onSubmi
         const errMsg = errorMap.get(column.accessorKey as string);
         const hasError = errMsg !== "" && errMsg !== undefined;
         const colInfo = columnInfo.get(column.accessorKey);
-        if (colInfo?.isDatetimeField) {
+        if (colInfo?.dateTimeField) {
             return (
                 <DateTimePicker
                     key={column.accessorKey as React.Key}

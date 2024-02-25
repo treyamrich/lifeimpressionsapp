@@ -5,7 +5,7 @@ import {
   DBOperation, useDBOperationContext,
 } from "@/contexts/DBErrorContext";
 import {
-  initialPurchaseOrderFormState,
+  getInitialPurchaseOrderState,
   getTableColumns,
   columnInfo,
 } from "../table-constants";
@@ -30,7 +30,7 @@ const CreatePurchaseOrderPage = () => {
   return (
   <CreateOrderPage 
     entityType={EntityType.PurchaseOrder}
-    initialOrderFormState={initialPurchaseOrderFormState}
+    getInitialFormState={getInitialPurchaseOrderState}
     getTableColumns={getTableColumns}
     columnInfo={columnInfo}
     handleCreateOrder={handleCreatePurchaseOrder}

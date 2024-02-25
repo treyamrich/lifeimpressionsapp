@@ -1,8 +1,9 @@
 import { POStatus, PurchaseOrder } from "@/API";
-import { toReadableDateTime } from "@/utils/datetimeConversions";
+import { getStartOfMonth, getTodayInSetTz, toReadableDateTime } from "@/utils/datetimeConversions";
 import { Chip } from "@mui/material";
-import dayjs from "dayjs";
+import dayjs, { Dayjs } from "dayjs";
 import { MRT_ColumnDef } from "material-react-table";
+import { getStartOfDay } from "@/utils/datetimeConversions";
 
 export interface SelectValue {
   label: string;
@@ -11,7 +12,7 @@ export interface SelectValue {
 
 export const tablePrimaryKey = "id";
 
-export const initialPurchaseOrderFormState: any = {
+export const getInitialPurchaseOrderState = () => ({
   __typename: "PurchaseOrder",
   orderNumber: "",
   vendor: "",
@@ -25,8 +26,9 @@ export const initialPurchaseOrderFormState: any = {
   fees: 0,
   discount: 0,
   sentToVendor: false,
-  dateExpected: dayjs(),
-};
+  dateExpected: getStartOfDay(1),
+  createdAt: getTodayInSetTz()
+});
 
 const poStatusToColor = {
   [POStatus.Open]: "success",
@@ -69,7 +71,7 @@ export const getTableColumns = (): MRT_ColumnDef<PurchaseOrder>[] => {
     } as MRT_ColumnDef<PurchaseOrder>,
     {
       accessorKey: "createdAt",
-      header: "Created on",
+      header: "Date Placed",
       Cell: ({ renderedCellValue, row }) => (
         <span>{toReadableDateTime(row.original.createdAt)}</span>
       ),
@@ -120,7 +122,10 @@ export type ColumnInfo = {
   isRequired: boolean | undefined;
   selectFields: undefined | SelectValue[];
   excludeOnCreate: boolean | undefined;
-  isDatetimeField: boolean | undefined;
+  dateTimeField: {
+    getMinDateRestriction?: () => Dayjs;
+    getMaxDateRestriction?: () => Dayjs;
+  } | undefined;
   isPhoneNumField: boolean | undefined;
   isEmailField: boolean | undefined;
   hideInTable: boolean | undefined;
@@ -137,7 +142,13 @@ export const columnInfo = new Map<
 >([
   ["id", { excludeOnCreate: true } as ColumnInfo],
   ["updatedAt", { excludeOnCreate: true } as ColumnInfo],
-  ["createdAt", { excludeOnCreate: true } as ColumnInfo],
+  ["createdAt", { 
+    dateTimeField: {
+      getMaxDateRestriction: () => getTodayInSetTz(),
+      getMinDateRestriction: () => getStartOfMonth(0)
+      
+    }
+  } as ColumnInfo],
   ["vendor", { isRequired: true, isEditable: true } as ColumnInfo],
   [
     "status",
@@ -166,10 +177,10 @@ export const columnInfo = new Map<
     "discount",
     { isFloatField: true, isEditable: true, hideInTable: true } as ColumnInfo,
   ],
-  ["dateExpected", { isDatetimeField: true, isEditable: true } as ColumnInfo],
+  ["dateExpected", { 
+    dateTimeField: {
+      getMinDateRestriction: () => getStartOfDay(0)
+    }, 
+    isEditable: true 
+  } as ColumnInfo],
 ]);
-
-export const getInitialPurchaseOrderFormErrorMap = () =>
-  new Map<string, string>(
-    Object.keys(initialPurchaseOrderFormState).map((key) => [key, ""])
-  );

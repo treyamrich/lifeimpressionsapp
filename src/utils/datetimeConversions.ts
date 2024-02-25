@@ -19,6 +19,9 @@ export const getStartOfDay = (dayOffset: number) =>
 export const getEndOfDay = (dayOffset: number) =>
     dayjs().tz(configuredTimeZone).endOf('day').add(dayOffset, 'day')
 
+export const getStartOfMonth = (monthOffset: number) =>
+    dayjs().tz(configuredTimeZone).startOf('month').add(monthOffset, 'month')
+    
 export const getTodayInSetTz = () => {
     return dayjs().tz(configuredTimeZone);
 }
