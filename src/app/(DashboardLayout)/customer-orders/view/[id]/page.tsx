@@ -38,6 +38,8 @@ import { useRouter } from "next/navigation";
 import Section from "@/app/(DashboardLayout)/components/po-customer-order-shared-components/ViewOrderHeader/Section";
 import { deleteOrderTransactionAPI } from "@/dynamodb-transactions/delete-order-transaction";
 import { combineTShirtOrderQtys, groupTShirtOrders } from "@/utils/tshirtOrder";
+import MoreInfoAccordian from "@/app/(DashboardLayout)/components/MoreInfoAccordian/MoreInfoAccordian";
+import dayjs from "dayjs";
 
 type ViewCustomerOrderProps = {
   params: { id: string };
@@ -74,7 +76,9 @@ const ViewCustomerOrder = ({ params }: ViewCustomerOrderProps) => {
         }
 
         setCo(res);
-        let orderedItems= res.orderedItems ? res.orderedItems.items.filter((v) => v !== null) as TShirtOrder[] : [];
+        let orderedItems = res.orderedItems
+          ? (res.orderedItems.items.filter((v) => v !== null) as TShirtOrder[])
+          : [];
         orderedItems = groupTShirtOrders(orderedItems);
 
         setUpdatedOrderedItems(orderedItems);
@@ -343,9 +347,21 @@ const OrderedItemsTable = ({
     );
   };
 
+  const orderFromPriorMonth =
+    dayjs.utc(parentCustomerOrder.createdAt) < dayjs.utc().startOf("month");
+
   return (
     <BlankCard>
       <CardContent>
+        {orderFromPriorMonth && (
+          <MoreInfoAccordian>
+            <Typography variant="body2">
+              This customer order is from last month. When editing an item in
+              the order, you will only be able to decrease the ordered quantity
+              which increases inventory quantity.
+            </Typography>
+          </MoreInfoAccordian>
+        )}
         <TShirtOrderTable
           tableData={tableData}
           setTableData={setTableData}

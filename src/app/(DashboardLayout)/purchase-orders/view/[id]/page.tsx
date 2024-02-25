@@ -343,7 +343,9 @@ const OrderedItemsTable = ({
         {orderFromPriorMonth && (
           <MoreInfoAccordian>
             <Typography variant="body2">
-              This purchase order is from last month. When editing an item in the order, you will only be able to increase the quantity on hand.
+              This purchase order is from last month. When editing an item in
+              the order, you will only be able to increase the quantity on hand
+              which increases inventory quantity.
             </Typography>
           </MoreInfoAccordian>
         )}
