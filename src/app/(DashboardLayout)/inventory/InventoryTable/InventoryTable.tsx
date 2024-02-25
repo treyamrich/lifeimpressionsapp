@@ -1,7 +1,7 @@
 "use client";
 
 import { createTShirtAPI } from "@/graphql-helpers/create-apis";
-import { listTShirtAPI } from "@/graphql-helpers/fetch-apis";
+import { ListAPIResponse, listTShirtAPI } from "@/graphql-helpers/fetch-apis";
 import { updateTShirtAPI } from "@/graphql-helpers/update-apis";
 
 import { DBOperation, useDBOperationContext } from "@/contexts/DBErrorContext";
@@ -31,7 +31,13 @@ import {
 import { useAuthContext } from "@/contexts/AuthContext";
 import BlankCard from "../../components/shared/BlankCard";
 import { CreateOrderChangeInput, OrderChange, TShirt } from "@/API";
-import React, { useMemo, useState, useCallback, SetStateAction, useEffect } from "react";
+import React, {
+  useMemo,
+  useState,
+  useCallback,
+  SetStateAction,
+} from "react";
+import { downloadInventoryCSV, fetchAllNonDeletedTShirts } from "../util";
 
 type EditRowState = {
   showEditPopup: boolean;
@@ -189,18 +195,31 @@ const InventoryTable = ({
             )}
             renderTopToolbarCustomActions={() => (
               <TableToolbar
-                paginationProps={{
+                pagination={{
                   items: tableData,
                   setItems: setTableData,
                   fetchFunc: fetchTShirtsPaginationFn,
                   setIsLoading: setIsLoading,
                   filterDuplicates: {
-                    getHashkey: (tshirt: TShirt) => tshirt.id
-                  }
+                    getHashkey: (tshirt: TShirt) => tshirt.id,
+                  },
                 }}
-                onAdd={() => setCreateModalOpen(true)}
-                showPaginationButton={true}
-                showAddButton={true}
+                addButton={{
+                  onAdd: () => setCreateModalOpen(true),
+                }}
+                exportButton={{
+                  onExportAll: () => {
+                    fetchAllNonDeletedTShirts(
+                      rescueDBOperation,
+                      (resp: ListAPIResponse<TShirt>) => {
+                        downloadInventoryCSV(resp.result);
+                      }
+                    );
+                  },
+                  onExportResults: () => {
+                    downloadInventoryCSV(tableData);
+                  },
+                }}
               />
             )}
           />

@@ -99,15 +99,15 @@ function ViewOrdersPage<T extends Record<any, any>>({
             }}
             renderTopToolbarCustomActions={() => (
               <TableToolbar
-                paginationProps={{
+                pagination={{
                   items: tableData,
                   setItems: setTableData,
                   fetchFunc: fetchOrdersPaginationFn,
                   setIsLoading: setIsLoading
                 }}
-                onAdd={onAddRow}
-                showPaginationButton={true}
-                showAddButton={true}
+                addButton={{
+                  onAdd: onAddRow,
+                }}
               />
             )}
           />

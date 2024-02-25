@@ -9,13 +9,14 @@ import {
   type MRT_Row,
   type MRT_ColumnFiltersState,
 } from "material-react-table";
-import { ListAPIResponse, listTShirtAPI } from "@/graphql-helpers/fetch-apis";
+import { ListAPIResponse } from "@/graphql-helpers/fetch-apis";
 import CreateTShirtOrderModal from "./CreateTShirtOrder/CreateTShirtOrderModal";
 import EditRowPopup from "./EditTShirtOrder/EditTShirtOrderPopup";
-import { useDBOperationContext, DBOperation } from "@/contexts/DBErrorContext";
+import { useDBOperationContext } from "@/contexts/DBErrorContext";
 import { EntityType } from "../po-customer-order-shared-components/CreateOrderPage";
 import TableToolbar from "../Table/TableToolbar";
 import TableRowActions from "../Table/TableRowActions";
+import { fetchAllNonDeletedTShirts } from "../../inventory/util";
 
 interface TShirtOrderTableProps {
   tableData: TShirtOrder[];
@@ -82,18 +83,11 @@ const TShirtOrderTable = ({
     []
   );
 
-  const fetchTShirts = () => {
-    const deletedFilter = { isDeleted: { ne: true } };
-    rescueDBOperation(
-      () =>
-        listTShirtAPI({
-          filters: deletedFilter,
-          doCompletePagination: true,
-        }),
-      DBOperation.LIST,
+  const fetchTShirts = () =>
+    fetchAllNonDeletedTShirts(
+      rescueDBOperation,
       (resp: ListAPIResponse<TShirt>) => setTShirtChoices(resp.result)
     );
-  };
 
   useEffect(() => {
     fetchTShirts();
@@ -129,7 +123,10 @@ const TShirtOrderTable = ({
           const amtOrdered = row.original.quantity;
           let bg = undefined;
           let inventoryQtyField = amtOrdered;
-          if (entityType === EntityType.PurchaseOrder && mode === TableMode.Edit) {
+          if (
+            entityType === EntityType.PurchaseOrder &&
+            mode === TableMode.Edit
+          ) {
             inventoryQtyField = amtRecv;
             bg =
               amtRecv >= amtOrdered && amtRecv + amtOrdered > 0
@@ -161,8 +158,9 @@ const TShirtOrderTable = ({
         )}
         renderTopToolbarCustomActions={() => (
           <TableToolbar
-            showAddButton={true}
-            onAdd={() => setCreateModalOpen(true)}
+            addButton={{
+              onAdd: () => setCreateModalOpen(true),
+            }}
           />
         )}
       />

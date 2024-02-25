@@ -1,46 +1,71 @@
-import { IconButton, Stack, Tooltip } from "@mui/material";
+import { IconButton, ListItemIcon, ListItemText, MenuItem, MenuList, Stack, Tooltip, Typography } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
+import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 import LoadMorePaginationButton, { LoadMorePaginationButtonProps } from "../pagination/LoadMorePaginationButton";
+import React from "react";
+import IconMenu from "../IconMenu/IconMenu";
 
-const AddNewEntityButton = ({
+const TableToolbarButton = ({
   onClick,
   text,
+  tooltip,
+  icon
 }: {
   onClick?: () => void;
   text?: string;
+  tooltip: string;
+  icon: React.ReactNode;
 }) => (
-  <Tooltip title="Add new item">
+  <Tooltip title={tooltip}>
     <IconButton onClick={onClick} color="primary" size="small">
       {text}
-      <AddIcon />
+      {icon}
     </IconButton>
   </Tooltip>
 );
 
 function TableToolbar<T>({
-  paginationProps,
-  onAdd,
-  addButtonText,
-
-  showAddButton,
-  showPaginationButton,
+  pagination,
+  addButton,
+  exportButton
 }: {
-  paginationProps?: LoadMorePaginationButtonProps<T>;
-
-  showAddButton?: boolean;
-  showPaginationButton?: boolean;
-
-  onAdd?: () => void;
-  addButtonText?: string;
+  pagination?: LoadMorePaginationButtonProps<T>;
+  addButton?: {
+    onAdd: () => void;
+    text?: string;
+  };
+  exportButton?: {
+    onExportAll: () => void;
+    onExportResults: () => void;
+    text?: string;
+  };
 }) {
   return (
     <Stack direction={"row"} gap={1} padding={1}>
-      {showAddButton && (
-        <AddNewEntityButton text={addButtonText} onClick={onAdd} />
+      {addButton && (
+        <TableToolbarButton 
+          text={addButton.text}
+          onClick={addButton.onAdd}
+          icon={<AddIcon />}
+          tooltip="Add new item"
+        />
       )}
-      {showPaginationButton && paginationProps && (
+      {pagination && (
         <LoadMorePaginationButton
-          {...paginationProps}
+          {...pagination}
+        />
+      )}
+      {exportButton && (
+        <IconMenu
+          icon={<MoreHorizIcon/>}
+          menuActions={[{
+            text: "Export all",
+            onClick: exportButton.onExportAll
+          },
+          {
+            text: "Export loaded results",
+            onClick: exportButton.onExportResults
+          }]}
         />
       )}
     </Stack>

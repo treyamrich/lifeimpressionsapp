@@ -55,13 +55,12 @@ const OrderChangeHistory = ({
         paginationProps
           ? () => (
               <TableToolbar
-                paginationProps={{
+                pagination={{
                   items: changeHistory,
                   setItems: paginationProps.setChangeHistory,
                   fetchFunc: paginationProps.fetchChangeHistoryPaginationFn,
                   setIsLoading: paginationProps.setIsLoading,
                 }}
-                showPaginationButton={true}
               />
             )
           : undefined

@@ -87,10 +87,6 @@ export const getTableColumns = (): MRT_ColumnDef<TShirt>[] => {
       size: 50,
     } as MRT_ColumnDef<TShirt>,
     {
-      accessorKey: TShirtFields.Brand,
-      header: toTShirtColumnHeaderMap[TShirtFields.Brand],
-    } as MRT_ColumnDef<TShirt>,
-    {
       accessorKey: TShirtFields.Color,
       header: toTShirtColumnHeaderMap[TShirtFields.Color],
       size: 50,
@@ -104,6 +100,10 @@ export const getTableColumns = (): MRT_ColumnDef<TShirt>[] => {
         <span> {tshirtSizeToLabel[row.original.size]}</span>
       ),
       filterFn: tshirtSizeColumnFilterFn,
+    } as MRT_ColumnDef<TShirt>,
+    {
+      accessorKey: TShirtFields.Brand,
+      header: toTShirtColumnHeaderMap[TShirtFields.Brand],
     } as MRT_ColumnDef<TShirt>,
     {
       accessorKey: TShirtFields.Type,
