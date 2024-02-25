@@ -63,9 +63,9 @@ export const assembleUpdateOrderTransactionStatements = (
   );
 
   // If a new tshirt order is inserted, the id must be set
-  let responseNewTShirtOrder = {...updatedTShirtOrder};
+  let responseNewTShirtOrder = { ...updatedTShirtOrder };
   const getUpdateTShirtOrderStatement = () => {
-    if (tshirtOrderTableOperation === DBOperation.CREATE){
+    if (tshirtOrderTableOperation === DBOperation.CREATE) {
       responseNewTShirtOrder.id = newTShirtOrderId;
       return getInsertTShirtOrderTablePartiQL(
         entityType,
@@ -73,7 +73,7 @@ export const assembleUpdateOrderTransactionStatements = (
         createdAtTimestamp,
         updatedTShirtOrder,
         newTShirtOrderId
-      )
+      );
     }
 
     if (orderIsAfterStartOfMonth(input.parentOrder))
@@ -82,29 +82,33 @@ export const assembleUpdateOrderTransactionStatements = (
         createdAtTimestamp
       );
 
-      // Updating an item last month needs to create a separate item
-  const getDeltaOrExisting = (fieldName: string, defaultObj: any) => {
-    let fieldChange = fieldChanges.find((x) => x.fieldName === fieldName);
-    if (!fieldChange) return defaultObj[fieldName];
-    let i_0 = parseInt(fieldChange.oldValue);
-    let i_f = parseInt(fieldChange.newValue);
-    return Math.abs(i_f - i_0);
-  };
-  const justDeltasTShirtOrder: TShirtOrder = {...responseNewTShirtOrder, id: newTShirtOrderId};
+    // Updating an item last month needs to create a separate item
+    const getDeltaOrExisting = (fieldName: string, defaultObj: any) => {
+      let fieldChange = fieldChanges.find((x) => x.fieldName === fieldName);
+      if (!fieldChange) return defaultObj[fieldName];
+      let i_0 = parseInt(fieldChange.oldValue);
+      let i_f = parseInt(fieldChange.newValue);
+      return i_f - i_0
+    };
+    const justDeltasTShirtOrder: TShirtOrder = {
+      ...responseNewTShirtOrder,
+      id: newTShirtOrderId,
+    };
 
-  if (entityType === EntityType.PurchaseOrder) {
-    justDeltasTShirtOrder.quantity = 0;
-    justDeltasTShirtOrder.amountReceived = getDeltaOrExisting(
-      TShirtOrderFields.AmtReceived,
-      updatedTShirtOrder
-    );
-  } else {
-    justDeltasTShirtOrder.quantity = getDeltaOrExisting(
-      TShirtOrderFields.Qty,
-      updatedTShirtOrder
-    );
-  }
-    responseNewTShirtOrder = justDeltasTShirtOrder
+    if (entityType === EntityType.PurchaseOrder) {
+      justDeltasTShirtOrder.quantity = 0;
+      justDeltasTShirtOrder.amountReceived = getDeltaOrExisting(
+        TShirtOrderFields.AmtReceived,
+        updatedTShirtOrder
+      );
+    } else {
+      // Important to negate here
+      justDeltasTShirtOrder.quantity = getDeltaOrExisting(
+        TShirtOrderFields.Qty,
+        updatedTShirtOrder
+      );
+    }
+    responseNewTShirtOrder = justDeltasTShirtOrder;
     return getInsertTShirtOrderTablePartiQL(
       entityType,
       parentOrder.id,
@@ -151,7 +155,7 @@ export const assembleUpdateOrderTransactionStatements = (
   const response: UpdateOrderTransactionResponse = {
     orderChange: orderChange,
     orderUpdatedAtTimestamp: createdAtTimestamp,
-    newTShirtOrder: responseNewTShirtOrder
+    newTShirtOrder: responseNewTShirtOrder,
   };
 
   return { transactionStatements, response };
@@ -187,19 +191,24 @@ const validateUpdateOrderInput = (
 
   const isValid = (input: UpdateOrderTransactionInput) => {
     if (orderIsAfterStartOfMonth(parentOrder)) return true;
+    const fieldChanges = input.createOrderChangeInput.fieldChanges;
+    if (fieldChanges.length !== 1) return false;
+    if (tshirtOrderTableOperation !== DBOperation.UPDATE) return false;
 
     const isPO = input.parentOrder.__typename === "PurchaseOrder";
-    const fieldChanges = input.createOrderChangeInput.fieldChanges;
+    const fieldChange = fieldChanges[0];
     const onlyUpdatingAmtRecvField =
-      fieldChanges.length === 1 &&
-      fieldChanges[0].fieldName === TShirtOrderFields.AmtReceived;
+      fieldChange.fieldName === TShirtOrderFields.AmtReceived;
     const isOnlyAddingToExistingPOItem =
-      isPO &&
-      onlyUpdatingAmtRecvField &&
-      tshirtOrderTableOperation === DBOperation.UPDATE &&
-      input.inventoryQtyDelta > 0;
+      isPO && onlyUpdatingAmtRecvField && input.inventoryQtyDelta > 0;
 
-    return isOnlyAddingToExistingPOItem;
+    if (isOnlyAddingToExistingPOItem) return true;
+
+    // At this pt. we already know its a CustomerOrder
+    if (fieldChange.fieldName !== TShirtOrderFields.Qty) return false;
+    const delta =
+      parseInt(fieldChange.newValue) - parseInt(fieldChange.oldValue);
+    return delta < 0;
   };
 
   if (!isValid(input))

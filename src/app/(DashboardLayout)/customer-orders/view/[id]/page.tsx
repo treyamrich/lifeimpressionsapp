@@ -79,7 +79,7 @@ const ViewCustomerOrder = ({ params }: ViewCustomerOrderProps) => {
         let orderedItems = res.orderedItems
           ? (res.orderedItems.items.filter((v) => v !== null) as TShirtOrder[])
           : [];
-        orderedItems = groupTShirtOrders(orderedItems);
+        //orderedItems = groupTShirtOrders(orderedItems);
 
         setUpdatedOrderedItems(orderedItems);
       },
