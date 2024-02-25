@@ -147,7 +147,7 @@ export const getInsertTShirtOrderTablePartiQL = (
     createdAtTimestamp: string,
     tshirtOrder: TShirtOrder,
     tshirtOrderUuid: string,
-    groupId?: string
+
 ): ParameterizedStatement => {
     return {
         Statement: `
@@ -164,7 +164,7 @@ export const getInsertTShirtOrderTablePartiQL = (
                 'createdAt': ?,
                 'updatedAt': ?,
                 'isDeleted': ?,
-                'indexField': ?${groupId ? ",\n'groupId': ?\n" : ""}
+                'indexField': ?
             }
         `,
         Parameters: [
@@ -180,7 +180,6 @@ export const getInsertTShirtOrderTablePartiQL = (
             { S: createdAtTimestamp },
             { BOOL: false },
             { S: 'TShirtOrderIndexField' },
-            getStrOrNull(groupId)
         ]
     }
 }

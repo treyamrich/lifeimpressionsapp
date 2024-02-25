@@ -114,8 +114,7 @@ export const assembleUpdateOrderTransactionStatements = (
       parentOrder.id,
       createdAtTimestamp,
       justDeltasTShirtOrder,
-      newTShirtOrderId,
-      updatedTShirtOrder.id
+      newTShirtOrderId
     );
   };
 

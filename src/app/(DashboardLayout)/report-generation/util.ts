@@ -125,14 +125,6 @@ export const handleReportRequest = async (
     );
   }
 
-  if (!form.includeZeroQtyOrderItems) {
-    filteredOrders.forEach((order: Order) => {
-      order.orderedItems = order.orderedItems.filter(
-        (item: TShirtOrder) => item.quantity > 0
-      );
-    });
-  }
-
   return Promise.resolve(filteredOrders);
 };
 
@@ -211,6 +203,7 @@ export const downloadDetailedReport = (
         orderIsDeleted: order.isDeleted,
         __typename: order.__typename,
         createdAt: orderCreatedAt,
+        transactionGroupId: `${order.id}@${orderItem.tShirtOrderTshirtId}`,
 
         sortKey: orderItem.updatedAt, // ONLY USED FOR SORTING
 
@@ -241,6 +234,8 @@ export const downloadDetailedReport = (
     { columnKey: "__typename", headerName: "Order Type" },
     { columnKey: "orderIsDeleted", headerName: "Order Deleted?"},
     { columnKey: "createdAt", headerName: "Order Date Placed" },
+
+    { columnKey: "transactionGroupId", headerName: "Transaction Group ID"},
 
     { columnKey: "updatedAt", headerName: "Order Item: Last Modified" },
     { columnKey: "tshirtStyleNumber", headerName: "Style No." },

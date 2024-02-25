@@ -21,11 +21,13 @@ type StrToTShirtOrder = { [key: string]: TShirtOrder };
 export const groupTShirtOrders = (tshirtOrders: TShirtOrder[]) =>
   Object.values(
     tshirtOrders.reduce((prev, curr) => {
-      const id = curr.groupId ? curr.groupId : curr.id;
-      if (prev[id]) {
-        prev[id] = combineTShirtOrderQtys(prev[id], curr);
+      const groupKey = curr.tShirtOrderTshirtId;
+      if (prev[groupKey]) {
+        console.log('combine', prev[groupKey])
+        console.log('with new', curr)
+        prev[groupKey] = combineTShirtOrderQtys(prev[groupKey], curr);
       } else {
-        prev[id] = curr;
+        prev[groupKey] = curr;
       }
       return prev;
     }, {} as StrToTShirtOrder)

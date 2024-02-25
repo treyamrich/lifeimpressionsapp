@@ -28,7 +28,6 @@ const checkboxLabels: any = {
   includeDeletedPOs: "Deleted Purchase Orders",
   includeDeletedCOs: "Deleted Customer Orders",
   includeZeroQtyOrders: "Orders with 0 items",
-  includeZeroQtyOrderItems: "Items in orders with 0 quantity"
 };
 
 export enum ReportType {
@@ -58,7 +57,6 @@ export type FormState = {
   includeDeletedCOs: boolean;
 
   includeZeroQtyOrders: boolean;
-  includeZeroQtyOrderItems: boolean;
 
   reportType: ReportType;
 
@@ -73,7 +71,6 @@ const getInitialFormState = (): FormState => ({
   includeDeletedPOs: false,
   includeDeletedCOs: false,
   includeZeroQtyOrders: false,
-  includeZeroQtyOrderItems: false,
   reportType: ReportType.HighLevel,
   errMsg: "",
 });
@@ -90,7 +87,6 @@ const ReportGenerationForm = ({
   const updateFormField = (key: string, value: any) => {
     setFormState({ ...formState, [key]: value });
   };
-  const resetForm = () => setFormState(getInitialFormState());
 
   const handleSubmit = () => {
     if (dateStart.isAfter(dateEnd)) {
