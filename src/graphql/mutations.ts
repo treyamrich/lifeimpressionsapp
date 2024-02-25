@@ -94,6 +94,7 @@ export const createPurchaseOrder = /* GraphQL */ `
           amountReceived
           costPerUnit
           discount
+          groupId
           indexField
           createdAt
           isDeleted
@@ -187,6 +188,7 @@ export const updatePurchaseOrder = /* GraphQL */ `
           amountReceived
           costPerUnit
           discount
+          groupId
           indexField
           createdAt
           isDeleted
@@ -280,6 +282,7 @@ export const deletePurchaseOrder = /* GraphQL */ `
           amountReceived
           costPerUnit
           discount
+          groupId
           indexField
           createdAt
           isDeleted
@@ -482,6 +485,7 @@ export const createTShirtOrder = /* GraphQL */ `
       amountReceived
       costPerUnit
       discount
+      groupId
       indexField
       createdAt
       isDeleted
@@ -518,6 +522,7 @@ export const updateTShirtOrder = /* GraphQL */ `
       amountReceived
       costPerUnit
       discount
+      groupId
       indexField
       createdAt
       isDeleted
@@ -554,6 +559,7 @@ export const deleteTShirtOrder = /* GraphQL */ `
       amountReceived
       costPerUnit
       discount
+      groupId
       indexField
       createdAt
       isDeleted
@@ -596,6 +602,7 @@ export const createCustomerOrder = /* GraphQL */ `
           amountReceived
           costPerUnit
           discount
+          groupId
           indexField
           createdAt
           isDeleted
@@ -688,6 +695,7 @@ export const updateCustomerOrder = /* GraphQL */ `
           amountReceived
           costPerUnit
           discount
+          groupId
           indexField
           createdAt
           isDeleted
@@ -780,6 +788,7 @@ export const deleteCustomerOrder = /* GraphQL */ `
           amountReceived
           costPerUnit
           discount
+          groupId
           indexField
           createdAt
           isDeleted

@@ -21,9 +21,11 @@ import {
   getUpdateOrderPartiQL,
   getUpdateTShirtOrderTablePartiQL,
   getConditionalUpdateTShirtTablePartiQL,
+  PurchaseOrderOrCustomerOrder,
 } from "./partiql-helpers";
 import { DBOperation } from "@/contexts/DBErrorContext";
 import { validateTShirtOrderInput } from "./validation";
+import { TShirtOrderFields } from "@/app/(DashboardLayout)/components/TShirtOrderTable/table-constants";
 
 export type AssembleUpdateStatementsResult = {
   transactionStatements: ParameterizedStatement[];
@@ -37,7 +39,7 @@ export const assembleUpdateOrderTransactionStatements = (
 ): AssembleUpdateStatementsResult => {
   const {
     updatedTShirtOrder,
-    parentOrderId,
+    parentOrder,
     createOrderChangeInput,
     inventoryQtyDelta,
   } = input;
@@ -60,24 +62,61 @@ export const assembleUpdateOrderTransactionStatements = (
     })
   );
 
+  // If a new tshirt order is inserted, the id must be set
+  let responseNewTShirtOrder = {...updatedTShirtOrder};
   const getUpdateTShirtOrderStatement = () => {
-    if (tshirtOrderTableOperation === DBOperation.CREATE) {
+    if (tshirtOrderTableOperation === DBOperation.CREATE){
+      responseNewTShirtOrder.id = newTShirtOrderId;
       return getInsertTShirtOrderTablePartiQL(
         entityType,
-        parentOrderId,
+        parentOrder.id,
         createdAtTimestamp,
         updatedTShirtOrder,
         newTShirtOrderId
-      );
+      )
     }
-    return getUpdateTShirtOrderTablePartiQL(
-      updatedTShirtOrder,
-      createdAtTimestamp
+
+    if (orderIsAfterStartOfMonth(input.parentOrder))
+      return getUpdateTShirtOrderTablePartiQL(
+        updatedTShirtOrder,
+        createdAtTimestamp
+      );
+
+      // Updating an item last month needs to create a separate item
+  const getDeltaOrExisting = (fieldName: string, defaultObj: any) => {
+    let fieldChange = fieldChanges.find((x) => x.fieldName === fieldName);
+    if (!fieldChange) return defaultObj[fieldName];
+    let i_0 = parseInt(fieldChange.oldValue);
+    let i_f = parseInt(fieldChange.newValue);
+    return Math.abs(i_f - i_0);
+  };
+  const justDeltasTShirtOrder: TShirtOrder = {...responseNewTShirtOrder, id: newTShirtOrderId};
+
+  if (entityType === EntityType.PurchaseOrder) {
+    justDeltasTShirtOrder.quantity = 0;
+    justDeltasTShirtOrder.amountReceived = getDeltaOrExisting(
+      TShirtOrderFields.AmtReceived,
+      updatedTShirtOrder
+    );
+  } else {
+    justDeltasTShirtOrder.quantity = getDeltaOrExisting(
+      TShirtOrderFields.Qty,
+      updatedTShirtOrder
+    );
+  }
+    responseNewTShirtOrder = justDeltasTShirtOrder
+    return getInsertTShirtOrderTablePartiQL(
+      entityType,
+      parentOrder.id,
+      createdAtTimestamp,
+      justDeltasTShirtOrder,
+      newTShirtOrderId,
+      updatedTShirtOrder.id
     );
   };
 
   const transactionStatements: ParameterizedStatement[] = [
-    getUpdateOrderPartiQL(entityType, parentOrderId, createdAtTimestamp),
+    getUpdateOrderPartiQL(entityType, parentOrder.id, createdAtTimestamp),
     getConditionalUpdateTShirtTablePartiQL(
       maybeNegatedInventoryQtyDelta,
       allowNegativeInventory,
@@ -92,7 +131,7 @@ export const assembleUpdateOrderTransactionStatements = (
       createOrderChangeInput.reason,
       fieldChanges,
       parentOrderIdFieldName,
-      parentOrderId,
+      parentOrder.id
     ),
   ];
 
@@ -102,7 +141,7 @@ export const assembleUpdateOrderTransactionStatements = (
     id: orderChangeUuid,
     createdAt: createdAtTimestamp,
     updatedAt: createdAtTimestamp,
-    [parentOrderIdFieldName]: parentOrderId,
+    [parentOrderIdFieldName]: parentOrder.id,
     orderChangeTshirtId: updatedTShirtOrder.tshirt.id,
     tshirt: updatedTShirtOrder.tshirt,
     reason: createOrderChangeInput.reason,
@@ -112,10 +151,7 @@ export const assembleUpdateOrderTransactionStatements = (
   const response: UpdateOrderTransactionResponse = {
     orderChange: orderChange,
     orderUpdatedAtTimestamp: createdAtTimestamp,
-    newTShirtOrderId:
-      tshirtOrderTableOperation === DBOperation.CREATE
-        ? newTShirtOrderId
-        : undefined,
+    newTShirtOrder: responseNewTShirtOrder
   };
 
   return { transactionStatements, response };
@@ -132,6 +168,10 @@ const validateOrderChangeInput = (
     throw Error("No thirt id provided");
 };
 
+const orderIsAfterStartOfMonth = (
+  order: PurchaseOrderOrCustomerOrder
+): boolean => dayjs.utc(order.createdAt) >= dayjs.utc().startOf("month");
+
 const validateUpdateOrderInput = (
   input: UpdateOrderTransactionInput,
   tshirtOrderTableOperation: DBOperation
@@ -141,23 +181,46 @@ const validateUpdateOrderInput = (
     tshirtOrderTableOperation !== DBOperation.UPDATE
   )
     throw Error("Invalid operation " + tshirtOrderTableOperation);
-  const { updatedTShirtOrder, parentOrderId, createOrderChangeInput } = input;
-  if (parentOrderId === undefined || parentOrderId === "")
+  const { updatedTShirtOrder, parentOrder, createOrderChangeInput } = input;
+  if (parentOrder.id === undefined || parentOrder.id === "")
     throw Error("Order id does not exist");
+
+  const isValid = (input: UpdateOrderTransactionInput) => {
+    if (orderIsAfterStartOfMonth(parentOrder)) return true;
+
+    const isPO = input.parentOrder.__typename === "PurchaseOrder";
+    const fieldChanges = input.createOrderChangeInput.fieldChanges;
+    const onlyUpdatingAmtRecvField =
+      fieldChanges.length === 1 &&
+      fieldChanges[0].fieldName === TShirtOrderFields.AmtReceived;
+    const isOnlyAddingToExistingPOItem =
+      isPO &&
+      onlyUpdatingAmtRecvField &&
+      tshirtOrderTableOperation === DBOperation.UPDATE &&
+      input.inventoryQtyDelta > 0;
+
+    return isOnlyAddingToExistingPOItem;
+  };
+
+  if (!isValid(input))
+    throw Error(
+      "Orders from prior months cannot be updated except when receiving outstanding purchase order items."
+    );
+
   validateOrderChangeInput(createOrderChangeInput);
   validateTShirtOrderInput(updatedTShirtOrder, tshirtOrderTableOperation);
 };
 
 export type UpdateOrderTransactionInput = {
   updatedTShirtOrder: TShirtOrder;
-  parentOrderId: string;
+  parentOrder: PurchaseOrderOrCustomerOrder;
   inventoryQtyDelta: number;
   createOrderChangeInput: CreateOrderChangeInput;
 };
 
 export type UpdateOrderTransactionResponse = {
   orderChange: OrderChange;
-  newTShirtOrderId?: string;
+  newTShirtOrder: TShirtOrder;
   orderUpdatedAtTimestamp: string;
 } | null;
 

@@ -5,7 +5,6 @@ import {
   PurchaseOrder,
   OrderChange,
   TShirtOrder,
-  UpdatePurchaseOrderInput,
 } from "@/API";
 import PageContainer from "@/app/(DashboardLayout)/components/container/PageContainer";
 import BlankCard from "@/app/(DashboardLayout)/components/shared/BlankCard";
@@ -39,6 +38,7 @@ import ViewOrderActions from "@/app/(DashboardLayout)/components/po-customer-ord
 import { useRouter } from "next/navigation";
 import Section from "@/app/(DashboardLayout)/components/po-customer-order-shared-components/ViewOrderHeader/Section";
 import { deleteOrderTransactionAPI } from "@/dynamodb-transactions/delete-order-transaction";
+import { combineTShirtOrderQtys, groupTShirtOrders } from "@/utils/tshirtOrder";
 
 type ViewPurchaseOrderProps = {
   params: { id: string };
@@ -73,10 +73,9 @@ const ViewPurchaseOrder = ({ params }: ViewPurchaseOrderProps) => {
           setEditHistory(history);
         }
         setPo(res);
-        const orderedItems = res.orderedItems ? res.orderedItems.items : [];
-        setUpdatedOrderedItems(
-          orderedItems.filter((v) => v !== null) as TShirtOrder[]
-        );
+        let orderedItems = res.orderedItems ? res.orderedItems.items.filter((v) => v !== null) as TShirtOrder[] : [];
+        orderedItems = groupTShirtOrders(orderedItems)
+        setUpdatedOrderedItems(orderedItems);
       },
       "Order does not exist."
     );
@@ -222,7 +221,7 @@ const OrderedItemsTable = ({
       newTShirtOrder.amountReceived - oldTShirtOrder.amountReceived!;
     const updateOrderInput: UpdateOrderTransactionInput = {
       updatedTShirtOrder: newTShirtOrder,
-      parentOrderId: parentPurchaseOrder.id,
+      parentOrder: parentPurchaseOrder,
       inventoryQtyDelta: inventoryQtyDelta,
       createOrderChangeInput: createOrderChangeInput,
     };
@@ -260,9 +259,17 @@ const OrderedItemsTable = ({
           return;
         }
 
-        // Update local TShirtOrderTable
-        tableData[row.index] = newTShirtOrder;
+        // If a new tshirt order was created combine with existing
+        if (resp.newTShirtOrder.id !== tableData[row.index].id) {
+          tableData[row.index] = combineTShirtOrderQtys(
+            tableData[row.index],
+            resp.newTShirtOrder
+          );
+        } else {
+          tableData[row.index] = resp.newTShirtOrder;
+        }
         setTableData([...tableData]);
+
 
         // Update local change history table
         setChangeHistory([resp.orderChange, ...changeHistory]);
@@ -288,7 +295,7 @@ const OrderedItemsTable = ({
     const inventoryQtyDelta = 0; // Inventory qty shouldn't change
     const updateOrderInput: UpdateOrderTransactionInput = {
       updatedTShirtOrder: newTShirtOrder,
-      parentOrderId: parentPurchaseOrder.id,
+      parentOrder: parentPurchaseOrder,
       inventoryQtyDelta: inventoryQtyDelta,
       createOrderChangeInput: createOrderChangeInput,
     };
@@ -314,8 +321,7 @@ const OrderedItemsTable = ({
           updatedAt: resp.orderUpdatedAtTimestamp,
         });
 
-        newTShirtOrder.id = resp.newTShirtOrderId!;
-        setTableData([...tableData, newTShirtOrder]);
+        setTableData([...tableData, resp.newTShirtOrder]);
 
         closeFormCallback();
         setNegativeInventoryWarning({

@@ -5,7 +5,6 @@ import {
   CustomerOrder,
   OrderChange,
   TShirtOrder,
-  UpdateCustomerOrderInput,
 } from "@/API";
 import PageContainer from "@/app/(DashboardLayout)/components/container/PageContainer";
 import BlankCard from "@/app/(DashboardLayout)/components/shared/BlankCard";
@@ -35,10 +34,10 @@ import NegativeInventoryConfirmPopup, {
 import OrderChangeHistory from "@/app/(DashboardLayout)/components/po-customer-order-shared-components/OrderChangeHistory/OrderChangeHistory";
 import OrderTotalCard from "@/app/(DashboardLayout)/components/po-customer-order-shared-components/OrderTotalCard";
 import ViewOrderActions from "@/app/(DashboardLayout)/components/po-customer-order-shared-components/ViewOrderHeader/ViewOrderActions";
-import { updateCustomerOrderAPI } from "@/graphql-helpers/update-apis";
 import { useRouter } from "next/navigation";
 import Section from "@/app/(DashboardLayout)/components/po-customer-order-shared-components/ViewOrderHeader/Section";
 import { deleteOrderTransactionAPI } from "@/dynamodb-transactions/delete-order-transaction";
+import { combineTShirtOrderQtys, groupTShirtOrders } from "@/utils/tshirtOrder";
 
 type ViewCustomerOrderProps = {
   params: { id: string };
@@ -75,10 +74,10 @@ const ViewCustomerOrder = ({ params }: ViewCustomerOrderProps) => {
         }
 
         setCo(res);
-        const orderedItems = res.orderedItems ? res.orderedItems.items : [];
-        setUpdatedOrderedItems(
-          orderedItems.filter((v) => v !== null) as TShirtOrder[]
-        );
+        let orderedItems= res.orderedItems ? res.orderedItems.items.filter((v) => v !== null) as TShirtOrder[] : [];
+        orderedItems = groupTShirtOrders(orderedItems);
+
+        setUpdatedOrderedItems(orderedItems);
       },
       "Order does not exist."
     );
@@ -162,7 +161,6 @@ const ViewCustomerOrder = ({ params }: ViewCustomerOrderProps) => {
             </Section>
           </Grid>
 
-
           <NegativeInventoryConfirmPopup
             open={negativeInventoryWarning.show}
             onClose={() =>
@@ -189,7 +187,9 @@ type OrderedItemsTableProps = {
   setCustomerOrder: React.Dispatch<React.SetStateAction<CustomerOrder>>;
   changeHistory: OrderChange[];
   setChangeHistory: React.Dispatch<React.SetStateAction<OrderChange[]>>;
-  setNegativeInventoryWarning: React.Dispatch<React.SetStateAction<NegativeInventoryWarningState>>;
+  setNegativeInventoryWarning: React.Dispatch<
+    React.SetStateAction<NegativeInventoryWarningState>
+  >;
 };
 
 const OrderedItemsTable = ({
@@ -199,7 +199,7 @@ const OrderedItemsTable = ({
   setCustomerOrder,
   changeHistory,
   setChangeHistory,
-  setNegativeInventoryWarning
+  setNegativeInventoryWarning,
 }: OrderedItemsTableProps) => {
   const { rescueDBOperation } = useDBOperationContext();
   const { user, refreshSession } = useAuthContext();
@@ -219,7 +219,7 @@ const OrderedItemsTable = ({
     const inventoryQtyDelta = newTShirtOrder.quantity - oldTShirtOrder.quantity;
     const updateOrderInput: UpdateOrderTransactionInput = {
       updatedTShirtOrder: newTShirtOrder,
-      parentOrderId: parentCustomerOrder.id,
+      parentOrder: parentCustomerOrder,
       inventoryQtyDelta: inventoryQtyDelta,
       createOrderChangeInput: createOrderChangeInput,
     };
@@ -250,13 +250,22 @@ const OrderedItemsTable = ({
                 exitEditingMode,
                 true
               ),
-            failedTShirts: [`Style#: ${oldTShirtOrder.tshirt.styleNumber} | Size: ${oldTShirtOrder.tshirt.size} | Color: ${oldTShirtOrder.tshirt.color}`],
+            failedTShirts: [
+              `Style#: ${oldTShirtOrder.tshirt.styleNumber} | Size: ${oldTShirtOrder.tshirt.size} | Color: ${oldTShirtOrder.tshirt.color}`,
+            ],
           });
           return;
         }
 
-        // Update local TShirtOrderTable
-        tableData[row.index] = newTShirtOrder;
+        // If a new tshirt order was created combine with existing
+        if (resp.newTShirtOrder.id !== tableData[row.index].id) {
+          tableData[row.index] = combineTShirtOrderQtys(
+            tableData[row.index],
+            resp.newTShirtOrder
+          );
+        } else {
+          tableData[row.index] = resp.newTShirtOrder;
+        }
         setTableData([...tableData]);
 
         // Update local change history table
@@ -284,7 +293,7 @@ const OrderedItemsTable = ({
     const inventoryQtyDelta = newTShirtOrder.quantity;
     const updateOrderInput: UpdateOrderTransactionInput = {
       updatedTShirtOrder: newTShirtOrder,
-      parentOrderId: parentCustomerOrder.id,
+      parentOrder: parentCustomerOrder,
       inventoryQtyDelta: inventoryQtyDelta,
       createOrderChangeInput: createOrderChangeInput,
     };
@@ -313,17 +322,19 @@ const OrderedItemsTable = ({
                 closeFormCallback,
                 true
               ),
-            failedTShirts: [`Style#: ${newTShirtOrder.tshirt.styleNumber} | Size: ${newTShirtOrder.tshirt.size} | Color: ${newTShirtOrder.tshirt.color}`],
+            failedTShirts: [
+              `Style#: ${newTShirtOrder.tshirt.styleNumber} | Size: ${newTShirtOrder.tshirt.size} | Color: ${newTShirtOrder.tshirt.color}`,
+            ],
           });
           return;
         }
-        newTShirtOrder.id = resp.newTShirtOrderId!;
+
         setChangeHistory([resp.orderChange, ...changeHistory]);
         setCustomerOrder({
           ...parentCustomerOrder,
           updatedAt: resp.orderUpdatedAtTimestamp,
         });
-        setTableData([...tableData, newTShirtOrder]);
+        setTableData([...tableData, resp.newTShirtOrder]);
         closeFormCallback();
         setNegativeInventoryWarning({
           ...initialNegativeInventoryWarningState,

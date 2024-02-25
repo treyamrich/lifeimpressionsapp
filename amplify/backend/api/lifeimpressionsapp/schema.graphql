@@ -104,6 +104,9 @@ type TShirtOrder @model @auth(rules: [
   amountReceived: Int @default(value: "0") # This is only used for PurchaseOrder
   costPerUnit: Float!
   discount: Float!
+
+  groupId: ID # Used to group TShirtOrders. Adding all 'quantity' and 'amountReceived' in a group yields the full picture.
+
   indexField: String @default(value: "TShirtOrderIndexField") @index(name: "tshirtOrderByCreatedAt", queryField: "tshirtOrderByCreatedAt", sortKeyFields: ["createdAt"])
   createdAt: String!
   isDeleted: Boolean @default(value: "false")
