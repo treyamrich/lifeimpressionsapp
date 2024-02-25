@@ -116,8 +116,10 @@ export const getPurchaseOrder = /* GraphQL */ `
           amountReceived
           costPerUnit
           discount
-          id
+          indexField
           createdAt
+          isDeleted
+          id
           updatedAt
           purchaseOrderOrderedItemsId
           customerOrderOrderedItemsId
@@ -217,8 +219,10 @@ export const listPurchaseOrders = /* GraphQL */ `
             amountReceived
             costPerUnit
             discount
-            id
+            indexField
             createdAt
+            isDeleted
+            id
             updatedAt
             purchaseOrderOrderedItemsId
             customerOrderOrderedItemsId
@@ -323,8 +327,10 @@ export const purchaseOrdersByCreatedAt = /* GraphQL */ `
             amountReceived
             costPerUnit
             discount
-            id
+            indexField
             createdAt
+            isDeleted
+            id
             updatedAt
             purchaseOrderOrderedItemsId
             customerOrderOrderedItemsId
@@ -540,8 +546,10 @@ export const getTShirtOrder = /* GraphQL */ `
       amountReceived
       costPerUnit
       discount
-      id
+      indexField
       createdAt
+      isDeleted
+      id
       updatedAt
       purchaseOrderOrderedItemsId
       customerOrderOrderedItemsId
@@ -576,8 +584,61 @@ export const listTShirtOrders = /* GraphQL */ `
         amountReceived
         costPerUnit
         discount
-        id
+        indexField
         createdAt
+        isDeleted
+        id
+        updatedAt
+        purchaseOrderOrderedItemsId
+        customerOrderOrderedItemsId
+        tShirtOrderTshirtId
+        __typename
+      }
+      nextToken
+      __typename
+    }
+  }
+`;
+export const tshirtOrderByCreatedAt = /* GraphQL */ `
+  query TshirtOrderByCreatedAt(
+    $indexField: String!
+    $createdAt: ModelStringKeyConditionInput
+    $sortDirection: ModelSortDirection
+    $filter: ModelTShirtOrderFilterInput
+    $limit: Int
+    $nextToken: String
+  ) {
+    tshirtOrderByCreatedAt(
+      indexField: $indexField
+      createdAt: $createdAt
+      sortDirection: $sortDirection
+      filter: $filter
+      limit: $limit
+      nextToken: $nextToken
+    ) {
+      items {
+        tshirt {
+          id
+          styleNumber
+          brand
+          color
+          size
+          type
+          quantityOnHand
+          isDeleted
+          indexField
+          createdAt
+          updatedAt
+          __typename
+        }
+        quantity
+        amountReceived
+        costPerUnit
+        discount
+        indexField
+        createdAt
+        isDeleted
+        id
         updatedAt
         purchaseOrderOrderedItemsId
         customerOrderOrderedItemsId
@@ -616,8 +677,10 @@ export const getCustomerOrder = /* GraphQL */ `
           amountReceived
           costPerUnit
           discount
-          id
+          indexField
           createdAt
+          isDeleted
+          id
           updatedAt
           purchaseOrderOrderedItemsId
           customerOrderOrderedItemsId
@@ -716,8 +779,10 @@ export const listCustomerOrders = /* GraphQL */ `
             amountReceived
             costPerUnit
             discount
-            id
+            indexField
             createdAt
+            isDeleted
+            id
             updatedAt
             purchaseOrderOrderedItemsId
             customerOrderOrderedItemsId
@@ -821,8 +886,10 @@ export const customerOrdersByCreatedAt = /* GraphQL */ `
             amountReceived
             costPerUnit
             discount
-            id
+            indexField
             createdAt
+            isDeleted
+            id
             updatedAt
             purchaseOrderOrderedItemsId
             customerOrderOrderedItemsId

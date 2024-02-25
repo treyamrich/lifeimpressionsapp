@@ -104,6 +104,9 @@ type TShirtOrder @model @auth(rules: [
   amountReceived: Int @default(value: "0") # This is only used for PurchaseOrder
   costPerUnit: Float!
   discount: Float!
+  indexField: String @default(value: "TShirtOrderIndexField") @index(name: "tshirtOrderByCreatedAt", queryField: "tshirtOrderByCreatedAt", sortKeyFields: ["createdAt"])
+  createdAt: String!
+  isDeleted: Boolean @default(value: "false")
 }
 
 type CustomerOrder @model @auth(rules: [

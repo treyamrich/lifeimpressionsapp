@@ -96,6 +96,25 @@ export const getConditionalUpdateTShirtTablePartiQL = (
     ]
 })
 
+export const getDeleteTShirtOrderPartiQL = (
+    tshirtOrder: TShirtOrder,
+    updatedAtTimestamp: string
+): ParameterizedStatement => {
+    return {
+        Statement: `
+            UPDATE "${tshirtOrderTable.tableName}"
+            SET isDeleted = ?
+            SET updatedAt = ?
+            WHERE ${tshirtOrderTable.pkFieldName} = ?
+        `,
+        Parameters: [
+            { BOOL: true },
+            { S: updatedAtTimestamp },
+            { S: tshirtOrder.id },
+        ]
+    }
+}
+
 export const getUpdateTShirtOrderTablePartiQL = (
     tshirtOrder: TShirtOrder,
     createdAtTimestamp: string,
@@ -142,7 +161,9 @@ export const getInsertTShirtOrderTablePartiQL = (
                 '${entityType}OrderOrderedItemsId': ?,
                 'tShirtOrderTshirtId': ?,
                 'createdAt': ?,
-                'updatedAt': ?
+                'updatedAt': ?,
+                'isDeleted': ?,
+                'indexField': ?
             }
         `,
         Parameters: [
@@ -156,6 +177,8 @@ export const getInsertTShirtOrderTablePartiQL = (
             { S: tshirtOrder.tshirt.id },
             { S: createdAtTimestamp },
             { S: createdAtTimestamp },
+            { BOOL: false },
+            { S: 'TShirtOrderIndexField' }
         ]
     }
 }
@@ -256,17 +279,19 @@ export const getInsertOrderPartiQL = (
 export const getUpdateOrderPartiQL = (
     entityType: EntityType,
     orderId: string,
-    updatedAtTimestamp: string
+    updatedAtTimestamp: string,
+    isDeleted?: boolean
 ): ParameterizedStatement => {
     return {
         Statement: `
             UPDATE "${entityType === EntityType.PurchaseOrder ? purchaseOrderTable : customerOrderTable}"
-            SET updatedAt = ?
+            SET updatedAt = ? ${isDeleted ? "\nSET isDeleted = ?\n" : ""}
             WHERE id = ?
         `,
         Parameters: [
             { S: updatedAtTimestamp },
+            isDeleted ? { BOOL: true } : null,
             { S: orderId }
-        ]
+        ].filter(item => item !== null) as AttributeValue[]
     }
 }

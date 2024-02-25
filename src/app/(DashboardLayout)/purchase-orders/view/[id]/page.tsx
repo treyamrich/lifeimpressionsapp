@@ -36,9 +36,9 @@ import {
 import OrderChangeHistory from "@/app/(DashboardLayout)/components/po-customer-order-shared-components/OrderChangeHistory/OrderChangeHistory";
 import OrderTotalCard from "@/app/(DashboardLayout)/components/po-customer-order-shared-components/OrderTotalCard";
 import ViewOrderActions from "@/app/(DashboardLayout)/components/po-customer-order-shared-components/ViewOrderHeader/ViewOrderActions";
-import { updatePurchaseOrderAPI } from "@/graphql-helpers/update-apis";
 import { useRouter } from "next/navigation";
 import Section from "@/app/(DashboardLayout)/components/po-customer-order-shared-components/ViewOrderHeader/Section";
+import { deleteOrderTransactionAPI } from "@/dynamodb-transactions/delete-order-transaction";
 
 type ViewPurchaseOrderProps = {
   params: { id: string };
@@ -56,6 +56,11 @@ const ViewPurchaseOrder = ({ params }: ViewPurchaseOrderProps) => {
       return po.orderedItems ? (po.orderedItems.items as TShirtOrder[]) : [];
     }
   );
+  const [negativeInventoryWarning, setNegativeInventoryWarning] =
+    useState<NegativeInventoryWarningState>({
+      ...initialNegativeInventoryWarningState,
+    });
+  const { user, refreshSession } = useAuthContext();
 
   const fetchPurchaseOrder = () => {
     rescueDBOperation(
@@ -77,18 +82,30 @@ const ViewPurchaseOrder = ({ params }: ViewPurchaseOrderProps) => {
     );
   };
 
-  const handleDeletePurchaseOrder = () => {
+  const handleDeletePurchaseOrder = (allowNegativeInventory: boolean) => {
     if (!confirm(`Are you sure you want to delete this purchase order?`)) {
       return;
     }
-    const deletedPurchaseOrder: UpdatePurchaseOrderInput = {
-      id: po.id,
-      isDeleted: true,
-    };
     rescueDBOperation(
-      () => updatePurchaseOrderAPI(deletedPurchaseOrder),
+      () =>
+        deleteOrderTransactionAPI(
+          po,
+          updatedOrderedItems,
+          EntityType.PurchaseOrder,
+          user,
+          allowNegativeInventory,
+          refreshSession
+        ),
       DBOperation.DELETE,
-      () => {
+      (resp: string[]) => {
+        if (resp.length > 0) {
+          setNegativeInventoryWarning({
+            show: true,
+            cachedFunctionCall: () => handleDeletePurchaseOrder(true),
+            failedTShirts: resp,
+          });
+          return;
+        }
         push("/purchase-orders/");
       }
     );
@@ -113,7 +130,7 @@ const ViewPurchaseOrder = ({ params }: ViewPurchaseOrderProps) => {
         <>
           <ViewOrderActions
             onEdit={() => setShowEditPopup(true)}
-            onDelete={handleDeletePurchaseOrder}
+            onDelete={() => handleDeletePurchaseOrder(false)}
           />
           <Grid container rowSpacing={5} columnSpacing={5}>
             <Section header="Order Details" columnWidth={7}>
@@ -137,6 +154,7 @@ const ViewPurchaseOrder = ({ params }: ViewPurchaseOrderProps) => {
                 setPurchaseOrder={setPo}
                 changeHistory={editHistory}
                 setChangeHistory={setEditHistory}
+                setNegativeInventoryWarning={setNegativeInventoryWarning}
               />
             </Section>
 
@@ -144,6 +162,18 @@ const ViewPurchaseOrder = ({ params }: ViewPurchaseOrderProps) => {
               <ChangeHistoryTable changeHistory={editHistory} />
             </Section>
           </Grid>
+
+          <NegativeInventoryConfirmPopup
+            open={negativeInventoryWarning.show}
+            onClose={() =>
+              setNegativeInventoryWarning({
+                ...negativeInventoryWarning,
+                show: false,
+              })
+            }
+            onSubmit={negativeInventoryWarning.cachedFunctionCall}
+            failedTShirts={negativeInventoryWarning.failedTShirts}
+          />
         </>
       </DashboardCard>
     </PageContainer>
@@ -159,6 +189,9 @@ type OrderedItemsTableProps = {
   setPurchaseOrder: React.Dispatch<React.SetStateAction<PurchaseOrder>>;
   changeHistory: OrderChange[];
   setChangeHistory: React.Dispatch<React.SetStateAction<OrderChange[]>>;
+  setNegativeInventoryWarning: React.Dispatch<
+    React.SetStateAction<NegativeInventoryWarningState>
+  >;
 };
 const OrderedItemsTable = ({
   tableData,
@@ -167,13 +200,10 @@ const OrderedItemsTable = ({
   setPurchaseOrder,
   changeHistory,
   setChangeHistory,
+  setNegativeInventoryWarning,
 }: OrderedItemsTableProps) => {
   const { user, refreshSession } = useAuthContext();
   const { rescueDBOperation } = useDBOperationContext();
-  const [negativeInventoryWarning, setNegativeInventoryWarning] =
-    useState<NegativeInventoryWarningState>({
-      ...initialNegativeInventoryWarningState,
-    });
 
   const handleAfterRowEdit = (
     row: MRT_Row<TShirtOrder>,
@@ -222,7 +252,9 @@ const OrderedItemsTable = ({
                 exitEditingMode,
                 true
               ),
-            failedTShirtErrMsg: `Style#: ${oldTShirtOrder.tshirt.styleNumber} | Size: ${oldTShirtOrder.tshirt.size} | Color: ${oldTShirtOrder.tshirt.color}`,
+            failedTShirts: [
+              `Style#: ${oldTShirtOrder.tshirt.styleNumber} | Size: ${oldTShirtOrder.tshirt.size} | Color: ${oldTShirtOrder.tshirt.color}`,
+            ],
           });
           return;
         }
@@ -295,17 +327,6 @@ const OrderedItemsTable = ({
   return (
     <BlankCard>
       <CardContent>
-        <NegativeInventoryConfirmPopup
-          open={negativeInventoryWarning.show}
-          onClose={() =>
-            setNegativeInventoryWarning({
-              ...negativeInventoryWarning,
-              show: false,
-            })
-          }
-          onSubmit={negativeInventoryWarning.cachedFunctionCall}
-          failedTShirts={[negativeInventoryWarning.failedTShirtErrMsg]}
-        />
         <TShirtOrderTable
           tableData={tableData}
           setTableData={setTableData}

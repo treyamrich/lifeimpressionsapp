@@ -34,11 +34,6 @@ ACCESS_KEY_SECRET = os.environ['AWS_SECRET_ACCESS_KEY']
 REGION = os.environ['REGION']
 target_service = 'appsync'
 
-class Query:
-    def __init__(self, name: str, query: str):
-        self.name = name
-        self.query = query
-
 class GraphQLClient:
     
     def __init__(self):
@@ -67,72 +62,29 @@ class GraphQLClient:
         self.session = session
 
 
-
-    def _query(self, q: Query, v: dict):
+    def query(self, q: str, v: dict):
         response = self.session.request(
             url=GRAPHQL_ENDPOINT,
             method='POST',
             headers=self.headers,
-            json={'query': q.query, 'variables': v}
+            json={'query': q, 'variables': v}
         )
-
-        filename = f'{q.name}_cached_output.json'
-        if os.path.exists(filename):
-            res = ""
-            with open(filename, 'r') as f:
-                res = f.read()
-            return json.loads(res)
-        else:
-            with open(filename, 'w') as f:
-                f.write(json.dumps(response.json(), indent=3))
-
-        return response.json()
+        return response
     
-    def list_query(self, q: Query, v: dict) -> list:
-        data = self._query(q, v)
-        return data['data'][q.name]['items']
-
-class OrderItem:
-    def __init__(self, quantity: int, amountReceived: int, costPerUnit: float, id: str, 
-                 createdAt: str, updatedAt: str,
-                 purchaseOrderOrderedItemsId: str,
-                 customerOrderOrderedItemsId: str,
-                 tShirtOrderTshirtId: str,
-                 **kwargs):
-        self.quantity = quantity
-        self.amountReceived = amountReceived
-        self.costPerUnit = costPerUnit
-        self.id = id
-        self.createdAt = createdAt
-        self.updatedAt = updatedAt
-        self.purchaseOrderOrderedItemsId = purchaseOrderOrderedItemsId
-        self.customerOrderOrderedItemsId = customerOrderOrderedItemsId
-        self.tShirtOrderTshirtId = tShirtOrderTshirtId
-
-class Order:
-    def __init__(self, id: str, orderedItems: list, createdAt: str, updatedAt: str, **kwargs):
-        self.id = id
-        self.orderedItems = [OrderItem(**x) for x in orderedItems['items']]
-        self.createdAt = createdAt
-        self.updatedAt = updatedAt
-        self.typename = kwargs['__typename']
-
 class Main:
 
     def __init__(self):
         client = GraphQLClient()
 
-        resp = client.list_query(
+        resp = client.query(
             Main.purchaseOrdersByCreatedAt, 
             { 
                 'type': 'PurchaseOrder'
             }
         )
-        POs = [Order(**x) for x in resp]
-        print(POs[0].typename)
+        print(resp.text)
         
-
-    purchaseOrdersByCreatedAt = Query('purchaseOrdersByCreatedAt', """
+    purchaseOrdersByCreatedAt = """
     query PurchaseOrdersByCreatedAt(
         $type: String!
         $createdAt: ModelStringKeyConditionInput
@@ -142,42 +94,104 @@ class Main:
         $nextToken: String
     ) {
         purchaseOrdersByCreatedAt(
-            type: $type
-            createdAt: $createdAt
-            sortDirection: $sortDirection
-            filter: $filter
-            limit: $limit
-            nextToken: $nextToken
+        type: $type
+        createdAt: $createdAt
+        sortDirection: $sortDirection
+        filter: $filter
+        limit: $limit
+        nextToken: $nextToken
         ) {
+        items {
+            id
+            orderNumber
+            vendor
+            orderedItems {
             items {
+                tshirt {
                 id
-                orderedItems {
-                    items {
-                        quantity
-                        amountReceived
-                        costPerUnit
-                        id
-                        createdAt
-                        updatedAt
-                        purchaseOrderOrderedItemsId
-                        customerOrderOrderedItemsId
-                        tShirtOrderTshirtId
-                        __typename
-                    }
-                    nextToken
-                    __typename
-                }
+                styleNumber
+                brand
+                color
+                size
+                type
+                quantityOnHand
+                isDeleted
+                indexField
                 createdAt
                 updatedAt
+                __typename
+                }
+                quantity
+                amountReceived
+                costPerUnit
+                discount
+                id
+                createdAt
+                updatedAt
+                purchaseOrderOrderedItemsId
+                customerOrderOrderedItemsId
+                tShirtOrderTshirtId
                 __typename
             }
             nextToken
             __typename
+            }
+            orderNotes
+            status
+            changeHistory {
+            items {
+                tshirt {
+                id
+                styleNumber
+                brand
+                color
+                size
+                type
+                quantityOnHand
+                isDeleted
+                indexField
+                createdAt
+                updatedAt
+                __typename
+                }
+                reason
+                fieldChanges {
+                oldValue
+                newValue
+                fieldName
+                __typename
+                }
+                createdAt
+                indexField
+                id
+                updatedAt
+                purchaseOrderChangeHistoryId
+                customerOrderChangeHistoryId
+                orderChangeTshirtId
+                __typename
+            }
+            nextToken
+            __typename
+            }
+            taxRate
+            shipping
+            shippingAddress
+            fees
+            discount
+            dateExpected
+            isDeleted
+            type
+            createdAt
+            updatedAt
+            __typename
+        }
+        nextToken
+        __typename
         }
     }
-    """)
+    """
 
-    customerOrdersByCreatedAt = Query('customerOrdersByCreatedAt', """
+    customerOrdersByCreatedAt = """
     query CustomerOrdersByCreatedAt(
         $type: String!
         $createdAt: ModelStringKeyConditionInput
@@ -200,20 +214,74 @@ class Main:
             customerEmail
             customerPhoneNumber
             orderedItems {
-                items {
-                    quantity
-                    amountReceived
-                    costPerUnit
-                    id
-                    createdAt
-                    updatedAt
-                    purchaseOrderOrderedItemsId
-                    customerOrderOrderedItemsId
-                    tShirtOrderTshirtId
-                    __typename
-                }
-                nextToken
+            items {
+                tshirt {
+                id
+                styleNumber
+                brand
+                color
+                size
+                type
+                quantityOnHand
+                isDeleted
+                indexField
+                createdAt
+                updatedAt
                 __typename
+                }
+                quantity
+                amountReceived
+                costPerUnit
+                discount
+                id
+                createdAt
+                updatedAt
+                purchaseOrderOrderedItemsId
+                customerOrderOrderedItemsId
+                tShirtOrderTshirtId
+                __typename
+            }
+            nextToken
+            __typename
+            }
+            orderNumber
+            orderStatus
+            orderNotes
+            dateNeededBy
+            changeHistory {
+            items {
+                tshirt {
+                id
+                styleNumber
+                brand
+                color
+                size
+                type
+                quantityOnHand
+                isDeleted
+                indexField
+                createdAt
+                updatedAt
+                __typename
+                }
+                reason
+                fieldChanges {
+                oldValue
+                newValue
+                fieldName
+                __typename
+                }
+                createdAt
+                indexField
+                id
+                updatedAt
+                purchaseOrderChangeHistoryId
+                customerOrderChangeHistoryId
+                orderChangeTshirtId
+                __typename
+            }
+            nextToken
+            __typename
             }
             taxRate
             discount
@@ -227,5 +295,5 @@ class Main:
         __typename
         }
     }
-    """)
+    """
 Main()
