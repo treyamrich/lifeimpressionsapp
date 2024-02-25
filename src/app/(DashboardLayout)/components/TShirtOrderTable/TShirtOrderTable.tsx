@@ -129,7 +129,7 @@ const TShirtOrderTable = ({
           const amtOrdered = row.original.quantity;
           let bg = undefined;
           let inventoryQtyField = amtOrdered;
-          if (entityType === EntityType.PurchaseOrder) {
+          if (entityType === EntityType.PurchaseOrder && mode === TableMode.Edit) {
             inventoryQtyField = amtRecv;
             bg =
               amtRecv >= amtOrdered && amtRecv + amtOrdered > 0
