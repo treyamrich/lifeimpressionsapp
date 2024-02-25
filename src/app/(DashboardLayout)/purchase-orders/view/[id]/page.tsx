@@ -337,15 +337,22 @@ const OrderedItemsTable = ({
   const orderFromPriorMonth =
     dayjs.utc(parentPurchaseOrder.createdAt) < dayjs.utc().startOf("month");
 
+  const underlineBoldStyle = {
+    fontWeight: "bold",
+    textDecoration: "underline",
+  };
   return (
     <BlankCard>
       <CardContent>
         {orderFromPriorMonth && (
-          <MoreInfoAccordian>
+          <MoreInfoAccordian variant="warn">
             <Typography variant="body2">
               This purchase order is from last month. When editing an item in
-              the order, you will only be able to increase the quantity on hand
-              which increases inventory quantity.
+              the order, you will only be able to{" "}
+              <span style={underlineBoldStyle}>
+                increase the quantity on hand
+              </span>
+              {" "} which increases inventory quantity.
             </Typography>
           </MoreInfoAccordian>
         )}

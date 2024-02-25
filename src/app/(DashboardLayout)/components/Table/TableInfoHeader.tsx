@@ -9,7 +9,7 @@ const underlineBoldStyle = { fontWeight: "bold", textDecoration: "underline" };
 
 const TableInfoHeader = ({ subheaderText }: { subheaderText: string }) => {
   return (
-    <MoreInfoAccordian>
+    <MoreInfoAccordian variant="info">
       <List style={{ paddingTop: 0 }}>
         <ListItem style={{ paddingTop: 0, paddingBottom: 0 }} key="item-0">
           <ListItemText primary="By default, the first 100 records will be loaded into the table." />
