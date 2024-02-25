@@ -142,7 +142,7 @@ const InventoryTable = ({
   return (
     <BlankCard>
       <CardContent>
-        <Stack rowGap={2}>
+        <Stack>
           <TableInfoHeader subheaderText="This table loads records with the lowest quantity first." />
           <MaterialReactTable
             displayColumnDefOptions={{

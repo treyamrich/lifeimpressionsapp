@@ -64,7 +64,7 @@ function ViewOrdersPage<T extends Record<any, any>>({
       description={`this is ${pageTitle} page`}
     >
       <DashboardCard title={`${pageTitle}`}>
-        <Stack rowGap={2}>
+        <Stack>
           <TableInfoHeader subheaderText="This table loads records created most recently first."/>
           <MaterialReactTable
             displayColumnDefOptions={{
