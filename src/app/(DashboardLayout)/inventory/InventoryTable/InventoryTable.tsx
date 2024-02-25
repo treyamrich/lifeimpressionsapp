@@ -139,25 +139,6 @@ const InventoryTable = ({
     return listTShirtAPI({ filters: deletedFilter, nextToken: nextToken });
   };
 
-  const [duplicateTShirtSet, setDuplicateTShirtSet] = useState<Set<string>>(() => new Set());
-
-  useEffect(() => {
-    // Initialize the set once when the component mounts
-    setDuplicateTShirtSet(new Set());
-  }, []);
-  
-  // const paginationFilterDuplicates = (nextPageResult: TShirt[]): TShirt[] => {
-  //   const filteredResults: TShirt[] = [];
-  //   nextPageResult.forEach(a => {
-  //     if (!duplicateTShirtSet.has(a.id)) {
-  //       duplicateTShirtSet.add(a.id);
-  //       filteredResults.push(a);
-  //     }
-  //   });
-  //   console.log(duplicateTShirtSet);
-  //   return filteredResults;
-  // }
-
   return (
     <BlankCard>
       <CardContent>
