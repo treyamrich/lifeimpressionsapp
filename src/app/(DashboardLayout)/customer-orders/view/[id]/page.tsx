@@ -84,10 +84,11 @@ const ViewCustomerOrder = ({ params }: ViewCustomerOrderProps) => {
     );
   };
 
-  const handleDeleteCustomerOrder = (allowNegativeInventory: boolean) => {
+  const handleDeleteCustomerOrder = () => {
     if (!confirm(`Are you sure you want to delete this customer order?`)) {
       return;
     }
+    const allowNegativeInventory = true; // This will add to item qty's
     rescueDBOperation(
       () =>
         deleteOrderTransactionAPI(
@@ -101,11 +102,6 @@ const ViewCustomerOrder = ({ params }: ViewCustomerOrderProps) => {
       DBOperation.DELETE,
       (resp: string[]) => {
         if (resp.length > 0) {
-          setNegativeInventoryWarning({
-            show: true,
-            cachedFunctionCall: () => handleDeleteCustomerOrder(true),
-            failedTShirts: resp,
-          });
           return;
         }
         push("/customer-orders/");
@@ -132,7 +128,7 @@ const ViewCustomerOrder = ({ params }: ViewCustomerOrderProps) => {
         <>
           <ViewOrderActions
             onEdit={() => setShowEditPopup(true)}
-            onDelete={() => handleDeleteCustomerOrder(false)}
+            onDelete={() => handleDeleteCustomerOrder()}
           />
           <Grid container rowSpacing={5} columnSpacing={5}>
             <Section header="Order Details" columnWidth={7}>
