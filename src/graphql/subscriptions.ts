@@ -85,10 +85,10 @@ export const onCreatePurchaseOrder = /* GraphQL */ `
           costPerUnit
           discount
           indexField
-          createdAt
+          updatedAt
           isDeleted
           id
-          updatedAt
+          createdAt
           purchaseOrderOrderedItemsId
           customerOrderOrderedItemsId
           tShirtOrderTshirtId
@@ -177,10 +177,10 @@ export const onUpdatePurchaseOrder = /* GraphQL */ `
           costPerUnit
           discount
           indexField
-          createdAt
+          updatedAt
           isDeleted
           id
-          updatedAt
+          createdAt
           purchaseOrderOrderedItemsId
           customerOrderOrderedItemsId
           tShirtOrderTshirtId
@@ -269,10 +269,10 @@ export const onDeletePurchaseOrder = /* GraphQL */ `
           costPerUnit
           discount
           indexField
-          createdAt
+          updatedAt
           isDeleted
           id
-          updatedAt
+          createdAt
           purchaseOrderOrderedItemsId
           customerOrderOrderedItemsId
           tShirtOrderTshirtId
@@ -467,10 +467,10 @@ export const onCreateTShirtOrder = /* GraphQL */ `
       costPerUnit
       discount
       indexField
-      createdAt
+      updatedAt
       isDeleted
       id
-      updatedAt
+      createdAt
       purchaseOrderOrderedItemsId
       customerOrderOrderedItemsId
       tShirtOrderTshirtId
@@ -502,10 +502,10 @@ export const onUpdateTShirtOrder = /* GraphQL */ `
       costPerUnit
       discount
       indexField
-      createdAt
+      updatedAt
       isDeleted
       id
-      updatedAt
+      createdAt
       purchaseOrderOrderedItemsId
       customerOrderOrderedItemsId
       tShirtOrderTshirtId
@@ -537,10 +537,10 @@ export const onDeleteTShirtOrder = /* GraphQL */ `
       costPerUnit
       discount
       indexField
-      createdAt
+      updatedAt
       isDeleted
       id
-      updatedAt
+      createdAt
       purchaseOrderOrderedItemsId
       customerOrderOrderedItemsId
       tShirtOrderTshirtId
@@ -578,10 +578,10 @@ export const onCreateCustomerOrder = /* GraphQL */ `
           costPerUnit
           discount
           indexField
-          createdAt
+          updatedAt
           isDeleted
           id
-          updatedAt
+          createdAt
           purchaseOrderOrderedItemsId
           customerOrderOrderedItemsId
           tShirtOrderTshirtId
@@ -669,10 +669,10 @@ export const onUpdateCustomerOrder = /* GraphQL */ `
           costPerUnit
           discount
           indexField
-          createdAt
+          updatedAt
           isDeleted
           id
-          updatedAt
+          createdAt
           purchaseOrderOrderedItemsId
           customerOrderOrderedItemsId
           tShirtOrderTshirtId
@@ -760,10 +760,10 @@ export const onDeleteCustomerOrder = /* GraphQL */ `
           costPerUnit
           discount
           indexField
-          createdAt
+          updatedAt
           isDeleted
           id
-          updatedAt
+          createdAt
           purchaseOrderOrderedItemsId
           customerOrderOrderedItemsId
           tShirtOrderTshirtId

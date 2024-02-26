@@ -12,8 +12,11 @@ export const getInsertOrderChangePartiQL = (
     createdAtTimestamp: string,
     reason: string,
     fieldChanges: FieldChange[],
-    parentOrderIdFieldName?: string,
-    orderId?: string | null,
+    optionalParams?: {
+        parentOrderIdFieldName?: string;
+        orderId?: string | null;
+        indexPartitionKey?: string;
+    }
 ): ParameterizedStatement => {
     const attributeValues = fieldChanges.map(fieldChange => {
         let mapAttributeVal: any = {};
@@ -22,30 +25,31 @@ export const getInsertOrderChangePartiQL = (
         });
         return { M: mapAttributeVal } as unknown as AttributeValue;
     });
+
     return {
         Statement: `
                 INSERT INTO "${orderChangeTable.tableName}"
                 value {
                     'id': ?,
                     '__typename': ?,
-                    'indexField': ?,
                     'fieldChanges': ?,
                     'reason': ?,
                     'orderChangeTshirtId': ?,
                     'createdAt': ?,
                     'updatedAt': ?
-                    ${parentOrderIdFieldName ? `,\n'${parentOrderIdFieldName}': ?` : ""}
+                    ${optionalParams?.parentOrderIdFieldName ? `,\n'${optionalParams.parentOrderIdFieldName}': ?` : ""}
+                    ${optionalParams?.indexPartitionKey ? `,\n'indexField': ?` : ""}
                 }`,
         Parameters: [
             { S: orderChangeUuid },
             { S: "OrderChange" },
-            { S: "OrderChangeIndexField" },
             { L: attributeValues },
             { S: reason },
             { S: tshirtId },
             { S: createdAtTimestamp },
             { S: createdAtTimestamp },
-            getStrOrNull(orderId)
+            ...(optionalParams?.orderId ? [getStrOrNull(optionalParams.orderId)] : []),
+            ...(optionalParams?.indexPartitionKey ? [getStrOrNull(optionalParams.indexPartitionKey)] : [])
         ]
     }
 }
@@ -179,7 +183,7 @@ export const getInsertTShirtOrderTablePartiQL = (
             { S: createdAtTimestamp },
             { S: createdAtTimestamp },
             { BOOL: false },
-            { S: 'TShirtOrderIndexField' },
+            { S: tshirtOrder.tshirt.id },
         ]
     }
 }

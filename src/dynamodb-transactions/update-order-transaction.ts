@@ -132,8 +132,10 @@ export const assembleUpdateOrderTransactionStatements = (
       createdAtTimestamp,
       createOrderChangeInput.reason,
       fieldChanges,
-      parentOrderIdFieldName,
-      parentOrder.id
+      { 
+        parentOrderIdFieldName,
+        orderId: parentOrder.id
+      }
     ),
   ];
 

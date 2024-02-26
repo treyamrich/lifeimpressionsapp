@@ -92,7 +92,7 @@ type OrderChange @model @auth(rules: [
   reason: String!
   fieldChanges: [FieldChange!]!
   createdAt: String!
-  indexField: String @default(value: "OrderChangeIndexField") @index(name: "orderChangesByCreatedAt", queryField: "orderChangesByCreatedAt", sortKeyFields: ["createdAt"])
+  indexField: String @index(name: "orderChangesByCreatedAt", queryField: "orderChangesByCreatedAt", sortKeyFields: ["createdAt"])
 }
 
 type TShirtOrder @model @auth(rules: [
@@ -105,8 +105,8 @@ type TShirtOrder @model @auth(rules: [
   costPerUnit: Float!
   discount: Float!
 
-  indexField: String @default(value: "TShirtOrderIndexField") @index(name: "tshirtOrderByCreatedAt", queryField: "tshirtOrderByCreatedAt", sortKeyFields: ["createdAt"])
-  createdAt: String!
+  indexField: String @index(name: "tshirtOrderByUpdatedAt", queryField: "tshirtOrderByUpdatedAt", sortKeyFields: ["updatedAt"])
+  updatedAt: String!
   isDeleted: Boolean @default(value: "false")
 }
 

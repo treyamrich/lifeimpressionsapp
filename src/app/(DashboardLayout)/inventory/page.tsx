@@ -15,11 +15,7 @@ const InventoryPage = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const fetchChangeHistoryPaginationFn = (nextToken: string | null | undefined) => {
-    const filter: ModelOrderChangeFilterInput = { 
-      purchaseOrderChangeHistoryId: { attributeExists: false },
-      customerOrderChangeHistoryId: { attributeExists: false },
-    };
-    return listOrderChangeHistoryAPI({ filters: filter, nextToken: nextToken });
+    return listOrderChangeHistoryAPI({ nextToken: nextToken, indexPartitionKey: 'InventoryChange' });
   }
 
   return (

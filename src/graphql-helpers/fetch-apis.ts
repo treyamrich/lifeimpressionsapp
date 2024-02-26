@@ -1,5 +1,4 @@
 import {
-  ListTShirtsQuery,
   TShirt,
   ModelTShirtFilterInput,
   ModelPurchaseOrderFilterInput,
@@ -15,7 +14,6 @@ import {
   PurchaseOrdersByCreatedAtQuery,
   ModelStringKeyConditionInput,
   TshirtsByQtyQuery,
-  ListOrderChangesQuery,
   OrderChange,
   ModelOrderChangeFilterInput,
   OrderChangesByCreatedAtQuery,
@@ -26,7 +24,6 @@ import {
   customerOrdersByCreatedAt,
   getCustomerOrder,
   getPurchaseOrder,
-  listOrderChanges,
   orderChangesByCreatedAt,
   purchaseOrdersByCreatedAt,
   tshirtsByQty,
@@ -40,6 +37,7 @@ export interface ListAPIInput<T> {
   sortDirection?: ModelSortDirection;
   createdAt?: ModelStringKeyConditionInput;
   nextToken?: string | null;
+  indexPartitionKey?: string;
 }
 
 export type ListAPIResponse<T> = {
@@ -204,7 +202,7 @@ export const listOrderChangeHistoryAPI = async (
     variables: {
       createdAt: input.createdAt,
       filter: input.filters,
-      indexField: "OrderChangeIndexField", // Required to access 2nd index
+      indexField: input.indexPartitionKey, // Required to access 2nd index
       sortDirection: input.sortDirection,
       nextToken: input.nextToken,
       limit: PAGINATION_LIMIT,

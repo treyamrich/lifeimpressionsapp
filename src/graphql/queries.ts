@@ -117,10 +117,10 @@ export const getPurchaseOrder = /* GraphQL */ `
           costPerUnit
           discount
           indexField
-          createdAt
+          updatedAt
           isDeleted
           id
-          updatedAt
+          createdAt
           purchaseOrderOrderedItemsId
           customerOrderOrderedItemsId
           tShirtOrderTshirtId
@@ -220,10 +220,10 @@ export const listPurchaseOrders = /* GraphQL */ `
             costPerUnit
             discount
             indexField
-            createdAt
+            updatedAt
             isDeleted
             id
-            updatedAt
+            createdAt
             purchaseOrderOrderedItemsId
             customerOrderOrderedItemsId
             tShirtOrderTshirtId
@@ -328,10 +328,10 @@ export const purchaseOrdersByCreatedAt = /* GraphQL */ `
             costPerUnit
             discount
             indexField
-            createdAt
+            updatedAt
             isDeleted
             id
-            updatedAt
+            createdAt
             purchaseOrderOrderedItemsId
             customerOrderOrderedItemsId
             tShirtOrderTshirtId
@@ -547,10 +547,10 @@ export const getTShirtOrder = /* GraphQL */ `
       costPerUnit
       discount
       indexField
-      createdAt
+      updatedAt
       isDeleted
       id
-      updatedAt
+      createdAt
       purchaseOrderOrderedItemsId
       customerOrderOrderedItemsId
       tShirtOrderTshirtId
@@ -585,10 +585,10 @@ export const listTShirtOrders = /* GraphQL */ `
         costPerUnit
         discount
         indexField
-        createdAt
+        updatedAt
         isDeleted
         id
-        updatedAt
+        createdAt
         purchaseOrderOrderedItemsId
         customerOrderOrderedItemsId
         tShirtOrderTshirtId
@@ -599,18 +599,18 @@ export const listTShirtOrders = /* GraphQL */ `
     }
   }
 `;
-export const tshirtOrderByCreatedAt = /* GraphQL */ `
-  query TshirtOrderByCreatedAt(
+export const tshirtOrderByUpdatedAt = /* GraphQL */ `
+  query TshirtOrderByUpdatedAt(
     $indexField: String!
-    $createdAt: ModelStringKeyConditionInput
+    $updatedAt: ModelStringKeyConditionInput
     $sortDirection: ModelSortDirection
     $filter: ModelTShirtOrderFilterInput
     $limit: Int
     $nextToken: String
   ) {
-    tshirtOrderByCreatedAt(
+    tshirtOrderByUpdatedAt(
       indexField: $indexField
-      createdAt: $createdAt
+      updatedAt: $updatedAt
       sortDirection: $sortDirection
       filter: $filter
       limit: $limit
@@ -636,10 +636,10 @@ export const tshirtOrderByCreatedAt = /* GraphQL */ `
         costPerUnit
         discount
         indexField
-        createdAt
+        updatedAt
         isDeleted
         id
-        updatedAt
+        createdAt
         purchaseOrderOrderedItemsId
         customerOrderOrderedItemsId
         tShirtOrderTshirtId
@@ -678,10 +678,10 @@ export const getCustomerOrder = /* GraphQL */ `
           costPerUnit
           discount
           indexField
-          createdAt
+          updatedAt
           isDeleted
           id
-          updatedAt
+          createdAt
           purchaseOrderOrderedItemsId
           customerOrderOrderedItemsId
           tShirtOrderTshirtId
@@ -780,10 +780,10 @@ export const listCustomerOrders = /* GraphQL */ `
             costPerUnit
             discount
             indexField
-            createdAt
+            updatedAt
             isDeleted
             id
-            updatedAt
+            createdAt
             purchaseOrderOrderedItemsId
             customerOrderOrderedItemsId
             tShirtOrderTshirtId
@@ -887,10 +887,10 @@ export const customerOrdersByCreatedAt = /* GraphQL */ `
             costPerUnit
             discount
             indexField
-            createdAt
+            updatedAt
             isDeleted
             id
-            updatedAt
+            createdAt
             purchaseOrderOrderedItemsId
             customerOrderOrderedItemsId
             tShirtOrderTshirtId

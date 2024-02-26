@@ -97,7 +97,8 @@ export const assembleUpdateOrderTransactionStatements = (
       updatedTShirt.id,
       createdAtTimestamp,
       createInventoryChangeInput.reason,
-      fieldChanges
+      fieldChanges,
+      { indexPartitionKey: 'InventoryChange' }
     ),
   ];
 
