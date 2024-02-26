@@ -102,7 +102,6 @@ export const assembleUpdateOrderTransactionStatements = (
         updatedTShirtOrder
       );
     } else {
-      // Important to negate here
       justDeltasTShirtOrder.quantity = getDeltaOrExisting(
         TShirtOrderFields.Qty,
         updatedTShirtOrder
