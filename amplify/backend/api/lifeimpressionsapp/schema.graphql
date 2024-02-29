@@ -148,6 +148,8 @@ type LastItemValue {
   aggregateValue: Float!
   itemId: ID!
   earliestUnsold: AWSDateTime! # This is the head of the 'queue'
+  numUnsold: Int!
+  inventoryQty: Int!
 }
 
 type InventoryValueCache @model @auth(rules: [
