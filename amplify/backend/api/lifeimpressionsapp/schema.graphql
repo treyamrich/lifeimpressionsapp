@@ -1,7 +1,6 @@
 type TShirt @model @auth(rules: [
   { allow: groups, groups: ["admin"], provider: userPools},
-  { allow: public, provider: iam, operations: [read]},
-  { allow: public, provider: apiKey, operations: [read]}]) {
+  { allow: public, provider: iam, operations: [read]}]) {
   id: ID! @primaryKey
   styleNumber: String!
   brand: String!
@@ -47,8 +46,7 @@ enum TShirtType {
 
 type PurchaseOrder @model @auth(rules: [
   { allow: groups, groups: ["admin"], provider: userPools},
-  { allow: public, provider: iam, operations: [create, read]},
-  { allow: public, provider: apiKey, operations: [create, read]}]) {
+  { allow: public, provider: iam, operations: [create, read]}]) {
   id: ID! @primaryKey
   orderNumber: String!
   vendor: String!
@@ -86,8 +84,7 @@ type FieldChange {
 # potentially can rename this to EntityAudit
 type OrderChange @model @auth(rules: [
   { allow: groups, groups: ["admin"], provider: userPools},
-  { allow: public, provider: iam, operations: [read]},
-  { allow: public, provider: apiKey, operations: [read]}]) {
+  { allow: public, provider: iam, operations: [read]}]) {
   tshirt: TShirt! @hasOne
   reason: String!
   fieldChanges: [FieldChange!]!
@@ -97,8 +94,7 @@ type OrderChange @model @auth(rules: [
 
 type TShirtOrder @model @auth(rules: [
   { allow: groups, groups: ["admin"], provider: userPools},
-  { allow: public, provider: iam, operations: [read]},
-  { allow: public, provider: apiKey, operations: [read]}]) {
+  { allow: public, provider: iam, operations: [read]}]) {
   tshirt: TShirt! @hasOne
   quantity: Int!
   amountReceived: Int @default(value: "0") # This is only used for PurchaseOrder
@@ -112,8 +108,7 @@ type TShirtOrder @model @auth(rules: [
 
 type CustomerOrder @model @auth(rules: [
   { allow: groups, groups: ["admin"], provider: userPools},
-  { allow: public, provider: iam, operations: [create, read]},
-  { allow: public, provider: apiKey, operations: [create, read]}]) {
+  { allow: public, provider: iam, operations: [create, read]}]) {
   id: ID! @primaryKey
 
   customerName: String!
@@ -148,12 +143,13 @@ type LastItemValue {
   aggregateValue: Float!
   itemId: ID!
   earliestUnsold: AWSDateTime! # This is the head of the 'queue'
+  numUnsold: Int!
+  inventoryQty: Int!
 }
 
 type InventoryValueCache @model @auth(rules: [
   { allow: groups, groups: ["admin"], provider: userPools},
-   { allow: public, provider: iam, operations: [create, read]},
-   { allow: public, provider: apiKey, operations: [create, read]}]) {
+   { allow: public, provider: iam, operations: [create, read]}]) {
 
     id: ID! @primaryKey(sortKeyFields: ["createdAt"])
     lastItemValues: [LastItemValue!]!

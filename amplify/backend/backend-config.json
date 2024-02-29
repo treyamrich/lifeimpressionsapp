@@ -14,14 +14,6 @@
         "authConfig": {
           "additionalAuthenticationProviders": [
             {
-              "apiKeyConfig": {
-                "apiKeyExpirationDate": "2024-03-25T21:29:27.347Z",
-                "apiKeyExpirationDays": 30,
-                "description": "test"
-              },
-              "authenticationType": "API_KEY"
-            },
-            {
               "authenticationType": "AWS_IAM"
             }
           ],
@@ -82,39 +74,5 @@
       "service": "Cognito-UserPool-Groups"
     }
   },
-  "function": {
-    "LihMonthlyInventoryValue": {
-      "build": true,
-      "dependsOn": [
-        {
-          "attributes": [
-            "GraphQLAPIIdOutput",
-            "GraphQLAPIEndpointOutput"
-          ],
-          "category": "api",
-          "resourceName": "lifeimpressionsapp"
-        }
-      ],
-      "providerPlugin": "awscloudformation",
-      "service": "Lambda"
-    }
-  },
-  "parameters": {
-    "AMPLIFY_function_LihMonthlyInventoryValue_deploymentBucketName": {
-      "usedBy": [
-        {
-          "category": "function",
-          "resourceName": "LihMonthlyInventoryValue"
-        }
-      ]
-    },
-    "AMPLIFY_function_LihMonthlyInventoryValue_s3Key": {
-      "usedBy": [
-        {
-          "category": "function",
-          "resourceName": "LihMonthlyInventoryValue"
-        }
-      ]
-    }
-  }
+  "function": {}
 }

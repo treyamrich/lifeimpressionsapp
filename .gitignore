@@ -15,6 +15,9 @@ coverage/
 amplify/.config/local-aws-info.json
 amplify/team-provider-info.json
 
+
+migration/*.json
+
 #amplify-do-not-edit-begin
 amplify/\#current-cloud-backend
 amplify/.config/local-*
@@ -36,5 +39,3 @@ amplifytools.xcconfig
 .secret-*
 **.sample
 #amplify-do-not-edit-end
-
-migration/*.json
