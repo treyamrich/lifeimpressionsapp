@@ -23,8 +23,6 @@ export const groupTShirtOrders = (tshirtOrders: TShirtOrder[]) =>
     tshirtOrders.reduce((prev, curr) => {
       const groupKey = curr.tShirtOrderTshirtId;
       if (prev[groupKey]) {
-        console.log('combine', prev[groupKey])
-        console.log('with new', curr)
         prev[groupKey] = combineTShirtOrderQtys(prev[groupKey], curr);
       } else {
         prev[groupKey] = curr;

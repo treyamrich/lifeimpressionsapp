@@ -88,7 +88,7 @@ export const assembleUpdateOrderTransactionStatements = (
       if (!fieldChange) return defaultObj[fieldName];
       let i_0 = parseInt(fieldChange.oldValue);
       let i_f = parseInt(fieldChange.newValue);
-      return i_f - i_0
+      return i_f - i_0;
     };
     const justDeltasTShirtOrder: TShirtOrder = {
       ...responseNewTShirtOrder,
@@ -132,9 +132,9 @@ export const assembleUpdateOrderTransactionStatements = (
       createdAtTimestamp,
       createOrderChangeInput.reason,
       fieldChanges,
-      { 
+      {
         parentOrderIdFieldName,
-        orderId: parentOrder.id
+        orderId: parentOrder.id,
       }
     ),
   ];
@@ -213,7 +213,7 @@ const validateUpdateOrderInput = (
 
   if (!isValid(input))
     throw Error(
-      "Orders from prior months cannot be updated except when receiving outstanding purchase order items."
+      "Orders from prior months cannot be updated except when... 1) Receiving outstanding purchase order items. 2) Returning customer bought items to inventory"
     );
 
   validateOrderChangeInput(createOrderChangeInput);
