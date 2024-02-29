@@ -1,5 +1,6 @@
 import { TShirt, TShirtOrder, TShirtSize, TShirtType } from "@/API";
 import { UpdateOrderTransactionInput } from "@/dynamodb-transactions/update-order-transaction";
+import { co, po } from "./create-order-fixtures";
 
 export const updatedTShirt: TShirt = {
     __typename: "TShirt",
@@ -36,7 +37,7 @@ export const updateOrderInput: UpdateOrderTransactionInput = {
     },
     inventoryQtyDelta: 2,
     updatedTShirtOrder: updatedTShirtOrder,
-    parentOrderId: "123"
+    parentOrder: co
 }
 
 export const negativeUpdateOrderInput: UpdateOrderTransactionInput = {
@@ -47,5 +48,5 @@ export const negativeUpdateOrderInput: UpdateOrderTransactionInput = {
     },
     inventoryQtyDelta: -2,
     updatedTShirtOrder: updatedTShirtOrder,
-    parentOrderId: "123"
+    parentOrder: po
 }
