@@ -853,6 +853,8 @@ export const createInventoryValueCache = /* GraphQL */ `
         aggregateValue
         itemId
         earliestUnsold
+        numUnsold
+        inventoryQty
         __typename
       }
       createdAt
@@ -872,6 +874,8 @@ export const updateInventoryValueCache = /* GraphQL */ `
         aggregateValue
         itemId
         earliestUnsold
+        numUnsold
+        inventoryQty
         __typename
       }
       createdAt
@@ -891,6 +895,8 @@ export const deleteInventoryValueCache = /* GraphQL */ `
         aggregateValue
         itemId
         earliestUnsold
+        numUnsold
+        inventoryQty
         __typename
       }
       createdAt
