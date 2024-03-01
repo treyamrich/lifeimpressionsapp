@@ -31,7 +31,7 @@ import {
 } from "@/utils/field-validation";
 import { validateTShirtOrderInput } from "./validation";
 import { DBOperation } from "@/contexts/DBErrorContext";
-import { tshirtSizeToLabel } from "@/app/(DashboardLayout)/inventory/InventoryTable/table-constants";
+import { failedUpdateTShirtStr } from "@/utils/tshirtOrder";
 
 export type PreparedStatements = {
   statements: ParameterizedStatement[];
@@ -217,7 +217,7 @@ export const createOrderTransactionAPI = async (
         (cancellationObj: any, index: number) => {
           if (cancellationObj.Code === "ConditionalCheckFailed") {
             const tshirt = transactionStatements.statementIdxToTShirt[index];
-            return `(Style#: ${tshirt.styleNumber}, Size: ${tshirtSizeToLabel[tshirt.size]}, Color: ${tshirt.color})`;
+            return failedUpdateTShirtStr(tshirt);
           }
           return null;
         }

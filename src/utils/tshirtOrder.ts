@@ -1,4 +1,5 @@
-import { TShirtOrder } from "@/API";
+import { TShirt, TShirtOrder } from "@/API";
+import { tshirtSizeToLabel } from "@/app/(DashboardLayout)/inventory/InventoryTable/table-constants";
 import dayjs from "dayjs";
 
 export const combineTShirtOrderQtys = (
@@ -30,3 +31,6 @@ export const groupTShirtOrders = (tshirtOrders: TShirtOrder[]) =>
       return prev;
     }, {} as StrToTShirtOrder)
   );
+
+export const failedUpdateTShirtStr = (tshirt: TShirt) => 
+`(Style No.: ${tshirt.styleNumber}, Size: ${tshirtSizeToLabel[tshirt.size]}, Color: ${tshirt.color})`;
