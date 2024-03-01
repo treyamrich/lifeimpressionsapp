@@ -19,7 +19,7 @@ import {
 } from "@/utils/datetimeConversions";
 import dayjs from "dayjs";
 import { PreparedStatements } from "./create-order-transaction";
-import { tshirtSizeToLabel } from "@/app/(DashboardLayout)/inventory/InventoryTable/table-constants";
+import { failedUpdateTShirtStr } from "@/utils/tshirtOrder";
 
 export const deleteOrderTransactionAPI = async (
   input: PurchaseOrderOrCustomerOrder,
@@ -69,7 +69,7 @@ export const deleteOrderTransactionAPI = async (
         .map((cancellationObj: any, index: number) => {
           if (cancellationObj.Code === "ConditionalCheckFailed") {
             const tshirt = transactionStatements.statementIdxToTShirt[index];
-            return `(Style#: ${tshirt.styleNumber}, Size: ${tshirtSizeToLabel[tshirt.size]}, Color: ${tshirt.color})`;
+            return failedUpdateTShirtStr(tshirt);
           }
           return null;
         })

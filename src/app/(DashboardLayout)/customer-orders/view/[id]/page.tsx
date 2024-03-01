@@ -37,7 +37,7 @@ import ViewOrderActions from "@/app/(DashboardLayout)/components/po-customer-ord
 import { useRouter } from "next/navigation";
 import Section from "@/app/(DashboardLayout)/components/po-customer-order-shared-components/ViewOrderHeader/Section";
 import { deleteOrderTransactionAPI } from "@/dynamodb-transactions/delete-order-transaction";
-import { combineTShirtOrderQtys, groupTShirtOrders } from "@/utils/tshirtOrder";
+import { combineTShirtOrderQtys, failedUpdateTShirtStr, groupTShirtOrders } from "@/utils/tshirtOrder";
 import MoreInfoAccordian from "@/app/(DashboardLayout)/components/MoreInfoAccordian/MoreInfoAccordian";
 import { fromUTC, getStartOfMonth } from "@/utils/datetimeConversions";
 
@@ -254,9 +254,7 @@ const OrderedItemsTable = ({
                 exitEditingMode,
                 true
               ),
-            failedTShirts: [
-              `Style#: ${oldTShirtOrder.tshirt.styleNumber} | Size: ${oldTShirtOrder.tshirt.size} | Color: ${oldTShirtOrder.tshirt.color}`,
-            ],
+            failedTShirts: [failedUpdateTShirtStr(oldTShirtOrder.tshirt)],
           });
           return;
         }
@@ -326,9 +324,7 @@ const OrderedItemsTable = ({
                 closeFormCallback,
                 true
               ),
-            failedTShirts: [
-              `Style#: ${newTShirtOrder.tshirt.styleNumber} | Size: ${newTShirtOrder.tshirt.size} | Color: ${newTShirtOrder.tshirt.color}`,
-            ],
+            failedTShirts: [failedUpdateTShirtStr(newTShirtOrder.tshirt)],
           });
           return;
         }
