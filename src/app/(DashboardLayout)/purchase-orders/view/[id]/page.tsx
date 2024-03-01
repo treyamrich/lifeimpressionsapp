@@ -39,8 +39,8 @@ import { useRouter } from "next/navigation";
 import Section from "@/app/(DashboardLayout)/components/po-customer-order-shared-components/ViewOrderHeader/Section";
 import { deleteOrderTransactionAPI } from "@/dynamodb-transactions/delete-order-transaction";
 import { combineTShirtOrderQtys, groupTShirtOrders } from "@/utils/tshirtOrder";
-import dayjs from "dayjs";
 import MoreInfoAccordian from "@/app/(DashboardLayout)/components/MoreInfoAccordian/MoreInfoAccordian";
+import { fromUTC, getStartOfMonth } from "@/utils/datetimeConversions";
 
 type ViewPurchaseOrderProps = {
   params: { id: string };
@@ -335,7 +335,7 @@ const OrderedItemsTable = ({
   };
 
   const orderFromPriorMonth =
-    dayjs.utc(parentPurchaseOrder.createdAt) < dayjs.utc().startOf("month");
+    fromUTC(parentPurchaseOrder.createdAt) < getStartOfMonth(0);
 
   const underlineBoldStyle = {
     fontWeight: "bold",

@@ -11,9 +11,15 @@ import {
   ExecuteTransactionCommand,
   ParameterizedStatement,
 } from "@aws-sdk/client-dynamodb";
-import { TShirtOrder } from "@/API";
-import { toAWSDateTime } from "@/utils/datetimeConversions";
+import { TShirt, TShirtOrder } from "@/API";
+import {
+  fromUTC,
+  getStartOfMonth,
+  toAWSDateTime,
+} from "@/utils/datetimeConversions";
 import dayjs from "dayjs";
+import { PreparedStatements } from "./create-order-transaction";
+import { tshirtSizeToLabel } from "@/app/(DashboardLayout)/inventory/InventoryTable/table-constants";
 
 export const deleteOrderTransactionAPI = async (
   input: PurchaseOrderOrCustomerOrder,
@@ -23,17 +29,18 @@ export const deleteOrderTransactionAPI = async (
   allowNegativeInventory: boolean,
   refreshTokenFn?: () => Promise<CognitoUser | undefined>
 ): Promise<Array<string>> => {
-
-    validateDeleteOrderInput(input)
+  validateDeleteOrderInput(input);
   let command = null;
+  let transactionStatements: PreparedStatements;
   try {
+    transactionStatements = assembleDeleteOrderTransactionStatements(
+      input,
+      orderedItems,
+      entityType,
+      allowNegativeInventory
+    );
     command = new ExecuteTransactionCommand({
-      TransactStatements: assembleDeleteOrderTransactionStatements(
-        input,
-        orderedItems,
-        entityType,
-        allowNegativeInventory
-      ),
+      TransactStatements: transactionStatements.statements
     });
   } catch (e) {
     console.log(e);
@@ -58,11 +65,11 @@ export const deleteOrderTransactionAPI = async (
     }
 
     if (!allowNegativeInventory && e.CancellationReasons) {
-      const negativeInventoryShirts = e.CancellationReasons.slice(1)
+      const negativeInventoryShirts = e.CancellationReasons
         .map((cancellationObj: any, index: number) => {
           if (cancellationObj.Code === "ConditionalCheckFailed") {
-            const tshirt = orderedItems[index].tshirt;
-            return `Style#: ${tshirt.styleNumber} | Size: ${tshirt.size} | Color: ${tshirt.color}`;
+            const tshirt = transactionStatements.statementIdxToTShirt[index];
+            return `(Style#: ${tshirt.styleNumber}, Size: ${tshirtSizeToLabel[tshirt.size]}, Color: ${tshirt.color})`;
           }
           return null;
         })
@@ -75,55 +82,63 @@ export const deleteOrderTransactionAPI = async (
 };
 
 const validateDeleteOrderInput = (input: PurchaseOrderOrCustomerOrder) => {
-    const isOrderFromLastMonth =
-        dayjs.utc(input.createdAt) < dayjs.utc().startOf("month");
-    // Reason: Deleting orders affects the inventory value calculation
-    if(isOrderFromLastMonth)
-        throw Error("Cannot delete orders from prior months")
-}
+  const isOrderFromLastMonth = fromUTC(input.createdAt) < getStartOfMonth(0);
+  // Reason: Deleting orders affects the inventory value calculation
+  if (isOrderFromLastMonth)
+    throw Error("Cannot delete orders from prior months");
+};
 
 export const assembleDeleteOrderTransactionStatements = (
   input: PurchaseOrderOrCustomerOrder,
   orderedItems: TShirtOrder[],
   entityType: EntityType,
   allowNegativeInventory: boolean
-): ParameterizedStatement[] => {
+): PreparedStatements => {
   const updatedAtTimestamp = toAWSDateTime(dayjs());
   const isDeleted = true;
+  const tshirtOrderStatements = getDeleteTShirtOrdersStatements(
+    orderedItems,
+    entityType,
+    updatedAtTimestamp,
+    allowNegativeInventory,
+    1 // b/c update order statement is idx 0
+  );
   const transactionStatements: ParameterizedStatement[] = [
     getUpdateOrderPartiQL(entityType, input.id, updatedAtTimestamp, isDeleted),
-    ...getDeleteTShirtOrdersStatements(
-      orderedItems,
-      entityType,
-      updatedAtTimestamp,
-      allowNegativeInventory
-    ),
+    ...tshirtOrderStatements.statements,
   ];
-  return transactionStatements;
+  return {
+    statements: transactionStatements,
+    statementIdxToTShirt: tshirtOrderStatements.statementIdxToTShirt,
+  };
 };
 
 const getDeleteTShirtOrdersStatements = (
   orderedItems: TShirtOrder[],
   entityType: EntityType,
   updatedAt: string,
-  allowNegativeInventory: boolean
-): ParameterizedStatement[] => {
+  allowNegativeInventory: boolean,
+  startingStatementIndex: number
+): PreparedStatements => {
+  let statementIdx = startingStatementIndex;
+  const idxToTShirt: { [x: number]: TShirt } = {};
   const res: ParameterizedStatement[] = [];
   orderedItems.forEach((tshirtOrder: TShirtOrder) => {
     const amtReceived = tshirtOrder.amountReceived ?? 0;
-    const tshirtQtyChange =
-      entityType === EntityType.CustomerOrder
-        ? tshirtOrder.quantity
-        : -amtReceived;
-    res.push(
-      getConditionalUpdateTShirtTablePartiQL(
-        tshirtQtyChange,
-        allowNegativeInventory,
-        updatedAt,
-        tshirtOrder.tshirt.id
-      )
-    );
+    // Deleting POs potentially reduces inventory
+    if(entityType === EntityType.PurchaseOrder && amtReceived > 0) {
+      res.push(
+        getConditionalUpdateTShirtTablePartiQL(
+          -amtReceived,
+          allowNegativeInventory,
+          updatedAt,
+          tshirtOrder.tshirt.id
+        )
+      );
+      idxToTShirt[statementIdx++] = tshirtOrder.tshirt;
+    }
     res.push(getDeleteTShirtOrderPartiQL(tshirtOrder, updatedAt));
+    statementIdx++;
   });
-  return res;
+  return { statements: res, statementIdxToTShirt: idxToTShirt };
 };

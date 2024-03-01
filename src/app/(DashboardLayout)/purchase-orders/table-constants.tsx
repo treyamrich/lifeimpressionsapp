@@ -1,7 +1,7 @@
 import { POStatus, PurchaseOrder } from "@/API";
 import { getStartOfMonth, getTodayInSetTz, toReadableDateTime } from "@/utils/datetimeConversions";
 import { Chip } from "@mui/material";
-import dayjs, { Dayjs } from "dayjs";
+import { Dayjs } from "dayjs";
 import { MRT_ColumnDef } from "material-react-table";
 import { getStartOfDay } from "@/utils/datetimeConversions";
 
