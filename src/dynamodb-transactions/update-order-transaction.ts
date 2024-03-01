@@ -5,7 +5,7 @@ import {
 import { createDynamoDBObj } from "./dynamodb";
 import { EntityType } from "../app/(DashboardLayout)/components/po-customer-order-shared-components/CreateOrderPage";
 import { CognitoUser } from "@aws-amplify/auth";
-import { toAWSDateTime } from "@/utils/datetimeConversions";
+import { fromUTC, getStartOfMonth, toAWSDateTime } from "@/utils/datetimeConversions";
 import dayjs from "dayjs";
 import { v4 } from "uuid";
 import {
@@ -174,7 +174,7 @@ const validateOrderChangeInput = (
 
 const orderIsAfterStartOfMonth = (
   order: PurchaseOrderOrCustomerOrder
-): boolean => dayjs.utc(order.createdAt) >= dayjs.utc().startOf("month");
+): boolean => fromUTC(order.createdAt) >= getStartOfMonth(0)
 
 const validateUpdateOrderInput = (
   input: UpdateOrderTransactionInput,

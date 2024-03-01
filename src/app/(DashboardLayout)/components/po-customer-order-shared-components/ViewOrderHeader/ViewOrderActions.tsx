@@ -1,6 +1,6 @@
 import { CustomerOrder, PurchaseOrder } from "@/API";
+import { fromUTC, getStartOfMonth } from "@/utils/datetimeConversions";
 import { Box, Button, Grid } from "@mui/material";
-import dayjs from "dayjs";
 
 const ViewOrderActions = ({
   onEdit,
@@ -43,7 +43,7 @@ const ViewOrderActions = ({
   );
 
   const isOrderFromLastMonth =
-    dayjs.utc(order.createdAt) < dayjs.utc().startOf("month");
+    fromUTC(order.createdAt) < getStartOfMonth(0)
 
   return (
     <Grid container style={{ marginBottom: "15px" }} justifyContent="flex-end">
