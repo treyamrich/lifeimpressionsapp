@@ -10,7 +10,7 @@ node_modules/
 
 coverage/
 
-*_cached_output.json
+*_test.json
 
 amplify/.config/local-aws-info.json
 amplify/team-provider-info.json

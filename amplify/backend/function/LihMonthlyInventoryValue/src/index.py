@@ -1,54 +1,158 @@
+import os
 import json
+from datetime import datetime, timedelta, timezone
 import requests
+from dataclasses import dataclass
 from requests_aws4auth import AWS4Auth
 from boto3 import Session as AWSSession
-import os
 
 def handler(event, context):
-  print('received event:')
-  print(event)
-  
-  return {
-      'statusCode': 200,
-      'headers': {
-          'Access-Control-Allow-Headers': '*',
-          'Access-Control-Allow-Origin': '*',
-          'Access-Control-Allow-Methods': 'OPTIONS,POST,GET'
-      },
-      'body': json.dumps('Hello from your new Amplify Python lambda!')
-  }
+    print("received event:")
+    print(event)
+
+    return {
+        "statusCode": 200,
+        "headers": {
+            "Access-Control-Allow-Headers": "*",
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Methods": "OPTIONS,POST,GET",
+        },
+        "body": json.dumps("Hello from your new Amplify Python lambda!"),
+    }
+
 
 def load_env_vars(file_path):
-    with open(file_path, 'r') as f:
+    with open(file_path, "r") as f:
         for line in f:
             line = line.strip()
-            if line and not line.startswith('#'):  # Ignore empty lines and comments
-                key, value = line.split('=', 1)  # Split on the first occurrence of '='
+            if line and not line.startswith("#"):  # Ignore empty lines and comments
+                key, value = line.split("=", 1)  # Split on the first occurrence of '='
                 os.environ[key.strip()] = value.strip()
 
-load_env_vars('..\.env')
 
-GRAPHQL_ENDPOINT =  os.environ['API_LIFEIMPRESSIONSAPP_GRAPHQLAPIENDPOINTOUTPUT']
-ACCESS_KEY = os.environ['AWS_ACCESS_KEY_ID']
-ACCESS_KEY_SECRET = os.environ['AWS_SECRET_ACCESS_KEY']
-REGION = os.environ['REGION']
-target_service = 'appsync'
+load_env_vars("..\.env")
+
+GRAPHQL_ENDPOINT = os.environ["API_LIFEIMPRESSIONSAPP_GRAPHQLAPIENDPOINTOUTPUT"]
+ACCESS_KEY = os.environ["AWS_ACCESS_KEY_ID"]
+ACCESS_KEY_SECRET = os.environ["AWS_SECRET_ACCESS_KEY"]
+REGION = os.environ["REGION"]
+target_service = "appsync"
+
+class MyDateTime:
+    
+    @staticmethod
+    def parse_UTC(dt: str, hour_offset: int = 0) -> datetime:
+        naive_datetime = datetime.strptime(dt, '%Y-%m-%dT%H:%M:%SZ')
+        informed_datetime = naive_datetime.replace(tzinfo=timezone.utc)
+        return MyDateTime.to_tz(informed_datetime, hour_offset)
+
+    @staticmethod
+    def to_tz(utc_time: datetime, hour_offset: int):
+        tz = timezone(timedelta(hours=hour_offset))
+        return utc_time.astimezone(tz)
+
+    @staticmethod
+    def to_ISO8601(tz_time: datetime) -> str:
+        utc_time = tz_time.astimezone(timezone.utc)
+        return utc_time.strftime('%Y-%m-%dT%H:%M:%SZ')
+    
+    @staticmethod
+    def to_month_start(dt: datetime):
+        return dt.replace(day=1, hour=0, minute=0, second=0)
+    
+@dataclass
+class InventoryItem:
+    id: str
+    styleNumber: str
+    color: str
+    size: str
+    quantityOnHand: int
+
+
+@dataclass
+class OrderItem:
+    quantity: int
+    amountReceived: int
+    costPerUnit: float
+    id: str
+    createdAt: str
+    updatedAt: str
+    purchaseOrderOrderedItemsId: str
+    customerOrderOrderedItemsId: str
+    tShirtOrderTshirtId: str
+    
+    def is_customer_order(self):
+        return self.customerOrderOrderedItemsId != None
+    def is_purchase_order(self):
+        return self.purchaseOrderOrderedItemsId != None
+    def get_qty(self):
+        return self.quantity if self.is_customer_order() else self.amountReceived
+    def set_qty(self, new_qty: int):
+        if self.is_customer_order():
+            self.quantity = new_qty
+        else:
+            self.amountReceived = new_qty
+
+@dataclass
+class Query:
+    name: str
+    query: str
+
+
+@dataclass
+class EarliestUnsoldItem:
+    datetime: str
+    remaining_qty: int
+
+@dataclass
+class InventoryItemValue:
+    item_id: str
+    aggregate_val: float
+    num_unsold: int
+    inventory_qty: int
+    earliest_unsold_item: EarliestUnsoldItem
+
+
+class InventoryValueCache:
+
+    def __init__(self):
+        self.data = {}
+
+    def __setitem__(self, value: InventoryItemValue):
+        self.data[value.item_id] = value
+
+    def __getitem__(self, key) -> InventoryItemValue:
+        return self.data.get(
+            key,
+            InventoryItemValue(
+                item_id=key,
+                earliest_unsold_item=None,
+                aggregate_val=0.0,
+                num_unsold=0,
+                inventory_qty=0,
+            ),
+        )
+
+
+class GraphQLException(Exception):
+    def __init__(self, message=""):
+        self.message = message
+        super().__init__(self.message)
+
 
 class GraphQLClient:
-    
+
     def __init__(self):
+        self.headers = {
+            "Accept": "application/json",
+            "Content-Type": "application/json",
+            "x-api-key": os.environ["API_KEY"],  # REMOVE AFTER
+        }
         # aws = AWSSession(aws_access_key_id=ACCESS_KEY,
         #     aws_secret_access_key=ACCESS_KEY_SECRET,
         #     region_name=REGION
         # )
         # credentials = aws.get_credentials().get_frozen_credentials()
-
-        self.headers = {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json',
-            'x-api-key': os.environ['API_KEY']
-        }
-        
         # auth = AWS4Auth(
         #     credentials.access_key,
         #     credentials.secret_key,
@@ -56,244 +160,234 @@ class GraphQLClient:
         #     target_service,
         #     session_token=credentials.token,
         # )
-
         session = requests.Session()
         # session.auth = auth
         self.session = session
 
-
-    def query(self, q: str, v: dict):
+    def _make_request(self, q: Query, variables: dict):
         response = self.session.request(
             url=GRAPHQL_ENDPOINT,
-            method='POST',
+            method="POST",
             headers=self.headers,
-            json={'query': q, 'variables': v}
+            json={"query": q.query, "variables": variables},
         )
-        return response
-    
+        data = response.json()
+        errors = data.get("errors", [])
+        if len(errors) > 0:
+            print(f"Error executing query '{q.name}'")
+            print(json.dumps(errors, indent=3))
+            raise GraphQLException
+        return data
+
+
+class PaginationIterator:
+    def __init__(self, client: GraphQLClient, q: Query, variables: dict):
+        self._client = client
+        self._q = q
+        self._page = []
+        self._next_token = None
+        self._idx = 0
+
+        filters = variables.get("filter", {})  # Force filter out deleted items
+        self._variables = {
+            **variables,
+            "filter": {**filters, "isDeleted": {"ne": True}},
+        }
+
+    def __iter__(self):
+        self._get_next_page()
+        return self
+
+    def __next__(self):
+        at_end_of_page = self._idx == len(self._page)
+        at_last_page = self._next_token == None
+
+        if at_end_of_page and at_last_page:
+            raise StopIteration
+
+        if at_end_of_page:
+            self._get_next_page()
+
+        item = self._page[self._idx]
+        self._idx += 1
+        return item
+
+    def _get_next_page(self):
+        response = self._client._make_request(self._q, self._variables)
+        query_result = response["data"][self._q.name]
+        self._page, self._next_token = query_result["items"], query_result["nextToken"]
+        self._idx = 0
+        self._variables["nextToken"] = self._next_token
+
+
 class Main:
+    QUERY_PAGE_LIMIT = 100
+    SORT_DIRECTION = "ASC"
 
-    def __init__(self):
-        client = GraphQLClient()
+    def __init__(self, client: GraphQLClient = GraphQLClient()):
+        self.client = client
 
-        resp = client.query(
-            Main.purchaseOrdersByCreatedAt, 
-            { 
-                'type': 'PurchaseOrder'
-            }
+    def run(self):
+        total_inventory_value = 0.0
+        curr_cache = self._get_current_cache()
+        new_cache = InventoryValueCache()
+        unsold_count_map = {}
+
+        inventory = self._list_full_inventory()
+        for item in inventory:
+            new_item_val = self._get_unsold_items_value(curr_cache[item.id])
+            total_inventory_value += new_item_val.aggregate_val
+            unsold_count_map[item.id] = new_item_val.num_unsold
+            new_cache[item.id] = new_item_val
+            break
+        Main._validate_unsold_counts(inventory, unsold_count_map)
+        Main._write_new_cache(new_cache)
+
+    def _list_full_inventory(self) -> list[InventoryItem]:
+        it = PaginationIterator(
+            self.client, Main.listTshirts, {"limit": Main.QUERY_PAGE_LIMIT}
         )
-        print(resp.text)
-        
-    purchaseOrdersByCreatedAt = """
-    query PurchaseOrdersByCreatedAt(
-        $type: String!
-        $createdAt: ModelStringKeyConditionInput
-        $sortDirection: ModelSortDirection
-        $filter: ModelPurchaseOrderFilterInput
-        $limit: Int
-        $nextToken: String
-    ) {
-        purchaseOrdersByCreatedAt(
-        type: $type
-        createdAt: $createdAt
-        sortDirection: $sortDirection
-        filter: $filter
-        limit: $limit
-        nextToken: $nextToken
-        ) {
-        items {
-            id
-            orderNumber
-            vendor
-            orderedItems {
-            items {
-                tshirt {
-                id
-                styleNumber
-                brand
-                color
-                size
-                type
-                quantityOnHand
-                isDeleted
-                indexField
-                createdAt
-                updatedAt
-                __typename
-                }
-                quantity
-                amountReceived
-                costPerUnit
-                discount
-                id
-                createdAt
-                updatedAt
-                purchaseOrderOrderedItemsId
-                customerOrderOrderedItemsId
-                tShirtOrderTshirtId
-                __typename
-            }
-            nextToken
-            __typename
-            }
-            orderNotes
-            status
-            changeHistory {
-            items {
-                tshirt {
-                id
-                styleNumber
-                brand
-                color
-                size
-                type
-                quantityOnHand
-                isDeleted
-                indexField
-                createdAt
-                updatedAt
-                __typename
-                }
-                reason
-                fieldChanges {
-                oldValue
-                newValue
-                fieldName
-                __typename
-                }
-                createdAt
-                indexField
-                id
-                updatedAt
-                purchaseOrderChangeHistoryId
-                customerOrderChangeHistoryId
-                orderChangeTshirtId
-                __typename
-            }
-            nextToken
-            __typename
-            }
-            taxRate
-            shipping
-            shippingAddress
-            fees
-            discount
-            dateExpected
-            isDeleted
-            type
-            createdAt
-            updatedAt
-            __typename
-        }
-        nextToken
-        __typename
-        }
-    }
-    """
+        return [InventoryItem(**x) for x in it]
 
-    customerOrdersByCreatedAt = """
-    query CustomerOrdersByCreatedAt(
-        $type: String!
-        $createdAt: ModelStringKeyConditionInput
-        $sortDirection: ModelSortDirection
-        $filter: ModelCustomerOrderFilterInput
-        $limit: Int
-        $nextToken: String
+    def _get_unsold_items_value(
+        self, inventory_item: InventoryItemValue
+    ) -> InventoryItemValue:
+        # Returns the value and the earliest unsold item
+        unsold_items = self._get_unsold_items(inventory_item)
+        total_item_value = sum(map(lambda x: x.get_qty() * x.costPerUnit, unsold_items))
+        num_unsold = 0
+        return InventoryItemValue(
+                earliest_unsold_item=unsold_items[0].updatedAt, #WHAT IF ALL WERE SOLD?
+                aggregate_val=total_item_value,
+                item_id=inventory_item.item_id,
+                num_unsold=num_unsold,
+                inventory_qty=0,
+            )
+
+    def _get_unsold_items(self, inventory_item: InventoryItemValue):
+        it = PaginationIterator(
+            self.client,
+            Main.tshirtOrderByUpdatedAt,
+            {
+                "indexField": inventory_item.item_id,
+                "sortDirection": Main.SORT_DIRECTION,
+                "limit": Main.QUERY_PAGE_LIMIT,
+                # "updatedAt": { ge: inventory_item.earliest_unsold, le: current_month }
+            },
+        )
+
+        def convert_and_flip_qty(item_dict):
+            order_item = OrderItem(**item_dict)
+            # Returns become positive; customer orders become negative
+            if order_item.is_customer_order():
+                order_item.set_qty(-order_item.get_qty())
+            return order_item
+        
+        is_same_sign = lambda a, b: a > 0 and b > 0 or a < 0 and b < 0
+        
+        q: list[OrderItem] = []
+        for order_item_dict in it:
+            curr = convert_and_flip_qty(order_item_dict)
+            # STOP IF PAST DATE
+
+            if not q or is_same_sign(curr.get_qty(), q[0].get_qty()):
+                q.append(curr)
+                continue
+
+            head = q[0]
+            while q and curr.get_qty() != 0:
+                remainder = curr.get_qty() + head.get_qty()
+
+                if remainder == 0:
+                    q.pop()
+                    curr.set_qty(0)
+                elif is_same_sign(curr.get_qty(), remainder):
+                    curr.set_qty(remainder)
+                    q.pop()
+                else:
+                    head.set_qty(remainder)
+                    curr.set_qty(0)
+
+            if curr.get_qty() != 0:
+                q.append(curr)
+        return q
+    
+    def _validate_unsold_counts(
+        inventory: list[InventoryItem], unsold_counts: dict[int]
+    ):
+        pass
+
+    def _get_current_cache(self) -> InventoryValueCache:
+        return InventoryValueCache()
+
+    def _write_new_cache(self, new_cache: InventoryValueCache):
+        pass
+
+    listTshirts = Query(
+        name="listTShirts",
+        query="""
+query ListTShirts(
+    $id: ID
+    $filter: ModelTShirtFilterInput
+    $limit: Int
+    $nextToken: String
+    $sortDirection: ModelSortDirection
+  ) {
+    listTShirts(
+      id: $id
+      filter: $filter
+      limit: $limit
+      nextToken: $nextToken
+      sortDirection: $sortDirection
     ) {
-        customerOrdersByCreatedAt(
-        type: $type
-        createdAt: $createdAt
-        sortDirection: $sortDirection
-        filter: $filter
-        limit: $limit
-        nextToken: $nextToken
-        ) {
-        items {
-            id
-            customerName
-            customerEmail
-            customerPhoneNumber
-            orderedItems {
-            items {
-                tshirt {
-                id
-                styleNumber
-                brand
-                color
-                size
-                type
-                quantityOnHand
-                isDeleted
-                indexField
-                createdAt
-                updatedAt
-                __typename
-                }
-                quantity
-                amountReceived
-                costPerUnit
-                discount
-                id
-                createdAt
-                updatedAt
-                purchaseOrderOrderedItemsId
-                customerOrderOrderedItemsId
-                tShirtOrderTshirtId
-                __typename
-            }
-            nextToken
-            __typename
-            }
-            orderNumber
-            orderStatus
-            orderNotes
-            dateNeededBy
-            changeHistory {
-            items {
-                tshirt {
-                id
-                styleNumber
-                brand
-                color
-                size
-                type
-                quantityOnHand
-                isDeleted
-                indexField
-                createdAt
-                updatedAt
-                __typename
-                }
-                reason
-                fieldChanges {
-                oldValue
-                newValue
-                fieldName
-                __typename
-                }
-                createdAt
-                indexField
-                id
-                updatedAt
-                purchaseOrderChangeHistoryId
-                customerOrderChangeHistoryId
-                orderChangeTshirtId
-                __typename
-            }
-            nextToken
-            __typename
-            }
-            taxRate
-            discount
-            isDeleted
-            type
-            createdAt
-            updatedAt
-            __typename
-        }
-        nextToken
-        __typename
-        }
+      items {
+        id
+        styleNumber
+        color
+        size
+        quantityOnHand
+      }
+      nextToken
     }
-    """
-Main()
+  }
+""",
+    )
+
+    tshirtOrderByUpdatedAt = Query(
+        name="tshirtOrderByUpdatedAt",
+        query="""
+query TshirtOrderByUpdatedAt(
+    $indexField: String!
+    $updatedAt: ModelStringKeyConditionInput
+    $sortDirection: ModelSortDirection
+    $filter: ModelTShirtOrderFilterInput
+    $limit: Int
+    $nextToken: String
+  ) {
+    tshirtOrderByUpdatedAt(
+      indexField: $indexField
+      updatedAt: $updatedAt
+      sortDirection: $sortDirection
+      filter: $filter
+      limit: $limit
+      nextToken: $nextToken
+    ) {
+      items {
+        quantity
+        amountReceived
+        costPerUnit
+        indexField
+        updatedAt
+        id
+        createdAt
+        purchaseOrderOrderedItemsId
+        customerOrderOrderedItemsId
+        tShirtOrderTshirtId
+      }
+      nextToken
+    }
+  }""",
+    )
+
+
+# Main().run()
