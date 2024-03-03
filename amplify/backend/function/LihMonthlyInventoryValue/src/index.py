@@ -106,17 +106,20 @@ class EarliestUnsoldItem:
 
 @dataclass
 class InventoryItemValue:
-    item_id: str
-    aggregate_val: float
-    num_unsold: int
-    inventory_qty: int
-    earliest_unsold_item: EarliestUnsoldItem
+    itemId: str
+    aggregateValue: float
+    numUnsold: int
+    inventoryQty: int
+    earliestUnsold: str
 
 
 class InventoryValueCache:
 
-    def __init__(self):
-        self.data = {}
+    def __init__(self, id: str, lastItemValues: list, createdAt: str, **kwargs):
+        itemVals = map(lambda x: InventoryItemValue(**x), lastItemValues)
+        self.data = {x.id: x for x in itemVals}
+        self.id = id
+        self.createdAt = createdAt
 
     def __setitem__(self, value: InventoryItemValue):
         self.data[value.item_id] = value
@@ -125,11 +128,11 @@ class InventoryValueCache:
         return self.data.get(
             key,
             InventoryItemValue(
-                item_id=key,
-                earliest_unsold_item=None,
-                aggregate_val=0.0,
-                num_unsold=0,
-                inventory_qty=0,
+                itemId=key,
+                earliestUnsold=None,
+                aggregateValue=0.0,
+                numUnsold=0,
+                inventoryQty=0,
             ),
         )
 
@@ -257,11 +260,11 @@ class Main:
         total_item_value = sum(map(lambda x: x.get_qty() * x.costPerUnit, unsold_items))
         num_unsold = 0
         return InventoryItemValue(
-                earliest_unsold_item=unsold_items[0].updatedAt, #WHAT IF ALL WERE SOLD?
-                aggregate_val=total_item_value,
-                item_id=inventory_item.item_id,
-                num_unsold=num_unsold,
-                inventory_qty=0,
+                earliestUnsold=unsold_items[0].updatedAt, #WHAT IF ALL WERE SOLD?
+                aggregateValue=total_item_value,
+                itemId=inventory_item.itemId,
+                numUnsold=num_unsold,
+                inventoryQty=0,
             )
 
     def _get_unsold_items(self, inventory_item: InventoryItemValue):
@@ -269,10 +272,10 @@ class Main:
             self.client,
             Main.tshirtOrderByUpdatedAt,
             {
-                "indexField": inventory_item.item_id,
+                "indexField": inventory_item.itemId,
                 "sortDirection": Main.SORT_DIRECTION,
                 "limit": Main.QUERY_PAGE_LIMIT,
-                # "updatedAt": { ge: inventory_item.earliest_unsold, le: current_month }
+                # "updatedAt": { ge: inventory_item.earliestUnsold, le: current_month }
             },
         )
 
