@@ -64,15 +64,18 @@ class TestMain(unittest.TestCase):
         self.assertEqual(len(unsold), 0)
 
     def test_only_customer_order(self):
-        data = [
+        data = map(
+            lambda x: {'order_type': x[0], 'qty': x[1]},
+            [
             (OrderType.CustomerOrder, 10),
             (OrderType.CustomerOrder, -3),
             (OrderType.CustomerOrder, 5),
             (OrderType.CustomerOrder, 5),
             (OrderType.CustomerOrder, 5),
-        ]
+        ])
         unsold = self._call_get_unsold(data)
-        self.assertEqual(len(unsold), 22)
+        n = sum(map(lambda x: x.get_qty(), unsold))
+        self.assertEqual(n, -22)
         
         for item in unsold:
             self.assertTrue(item.is_customer_order())

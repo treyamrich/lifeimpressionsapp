@@ -264,7 +264,7 @@ class Main:
                 aggregateValue=total_item_value,
                 itemId=inventory_item.itemId,
                 numUnsold=num_unsold,
-                inventoryQty=0,
+                inventoryQty=0, # Populated later
             )
 
     def _get_unsold_items(self, inventory_item: InventoryItemValue):
@@ -279,18 +279,18 @@ class Main:
             },
         )
 
-        def convert_and_flip_qty(item_dict):
-            order_item = OrderItem(**item_dict)
+        def flip_qty(order_item: OrderItem):
             # Returns become positive; customer orders become negative
             if order_item.is_customer_order():
                 order_item.set_qty(-order_item.get_qty())
-            return order_item
         
         is_same_sign = lambda a, b: a > 0 and b > 0 or a < 0 and b < 0
         
         q: list[OrderItem] = []
         for order_item_dict in it:
-            curr = convert_and_flip_qty(order_item_dict)
+            curr = OrderItem(**order_item_dict)
+            flip_qty(curr)
+            
             # STOP IF PAST DATE
 
             if not q or is_same_sign(curr.get_qty(), q[0].get_qty()):
