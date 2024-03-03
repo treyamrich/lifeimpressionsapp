@@ -15,16 +15,16 @@ sys.path.pop(0)
 class TestMain(unittest.TestCase):
     
     def setUp(self):
-        self.dummy_datetime = MyDateTime.get_now_UTC()
+        self.dummy_dt = MyDateTime.get_now_UTC()
         self.mock_graphql_client = MagicMock()
-        self.main = Main(self.dummy_datetime, self.dummy_datetime, self.mock_graphql_client)
+        self.main = Main(self.dummy_dt, self.dummy_dt, self.mock_graphql_client)
         self.initial_cache_val = InventoryItemValue('some id', 0, 0, 0, 'earliest unsold')
 
 
     def _call_get_unsold_items_value(self, data: list) -> InventoryItemValue:
         self.mock_graphql_client \
             ._make_request.side_effect = mock_apis.get_predictable_mock_order_item_api(data)
-        inv_item_val = self.main._get_unsold_items_value(self.initial_cache_val, self.dummy_datetime)
+        inv_item_val = self.main._get_unsold_items_value(self.initial_cache_val, self.dummy_dt, self.dummy_dt)
         return inv_item_val
     
     def _transform_data(self, data: list):
@@ -35,7 +35,7 @@ class TestMain(unittest.TestCase):
         self.mock_graphql_client._make_request.side_effect = mock_apis.get_rand_mock_order_item_api(
             order_item.id)
         self.main._get_unsold_items_value(
-            InventoryItemValue(order_item.id, 0, 0, 0, ''), self.dummy_datetime)
+            InventoryItemValue(order_item.id, 0, 0, 0, ''), self.dummy_dt, self.dummy_dt)
         self.assertEqual(
             self.mock_graphql_client._make_request.call_count, mock_apis.num_orders_pages)
         
@@ -62,8 +62,7 @@ class TestMain(unittest.TestCase):
         self.assertEqual(expected, unsold_value)
 
     def test_empty_case(self):
-        start_of_month = MyDateTime.to_month_start(self.dummy_datetime)
-        earliest_unsold = MyDateTime.to_ISO8601(start_of_month)
+        earliest_unsold = MyDateTime.to_ISO8601(self.dummy_dt)
         expected = InventoryItemValue(
             itemId=self.initial_cache_val.itemId,
             aggregateValue=0,

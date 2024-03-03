@@ -14,16 +14,16 @@ sys.path.pop(0)
 class TestMain(unittest.TestCase):
     
     def setUp(self):
-        self.dummy_datetime = MyDateTime.get_now_UTC()
+        self.dummy_dt = MyDateTime.get_now_UTC()
         self.mock_graphql_client = MagicMock()
-        self.main = Main(self.dummy_datetime, self.dummy_datetime, self.mock_graphql_client)
+        self.main = Main(self.dummy_dt, self.dummy_dt, self.mock_graphql_client)
 
 
     def _call_get_unsold(self, data: list) -> list[OrderItem]:
         self.mock_graphql_client \
             ._make_request.side_effect = mock_apis.get_predictable_mock_order_item_api(data)
         unsold = self.main \
-            ._get_unsold_items(InventoryItemValue('some id', 0, 0, 0, 'earliest unsold'), self.dummy_datetime)
+            ._get_unsold_items(InventoryItemValue('some id', 0, 0, 0, 'earliest unsold'), self.dummy_dt, self.dummy_dt)
         return unsold
     
     def _transform_data(self, data: list):

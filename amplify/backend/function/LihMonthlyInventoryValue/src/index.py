@@ -110,46 +110,7 @@ class OrderItem:
 class Query:
     name: str
     query: str
-
-
-@dataclass
-class EarliestUnsoldItem:
-    datetime: str
-    remaining_qty: int
-
-
-@dataclass
-class InventoryItemValue:
-    itemId: str
-    aggregateValue: float
-    numUnsold: int
-    inventoryQty: int
-    earliestUnsold: str
-
-
-class InventoryValueCache:
-
-    def __init__(self, id: str, lastItemValues: list, createdAt: str, **kwargs):
-        itemVals = map(lambda x: InventoryItemValue(**x), lastItemValues)
-        self.data = {x.id: x for x in itemVals}
-        self.id = id
-        self.createdAt = createdAt
-
-    def __setitem__(self, value: InventoryItemValue):
-        self.data[value.item_id] = value
-
-    def __getitem__(self, key) -> InventoryItemValue:
-        return self.data.get(
-            key,
-            InventoryItemValue(
-                itemId=key,
-                earliestUnsold=None,
-                aggregateValue=0.0,
-                numUnsold=0,
-                inventoryQty=0,
-            ),
-        )
-
+        
 
 class GraphQLException(Exception):
     def __init__(self, message=""):
@@ -197,9 +158,48 @@ class GraphQLClient:
         return data
 
 
+@dataclass
+class InventoryItemValue:
+    itemId: str
+    aggregateValue: float
+    numUnsold: int
+    inventoryQty: int
+    earliestUnsold: str
+
+
+class InventoryValueCache:
+
+    def __init__(self, graphql_client: GraphQLClient):
+        self._data = {}
+        self._graphql_client = graphql_client
+
+    def __setitem__(self, value: InventoryItemValue):
+        self._data[value.item_id] = value
+
+    def __getitem__(self, key) -> InventoryItemValue:
+        return self._data.get(
+            key,
+            InventoryItemValue(
+                itemId=key,
+                earliestUnsold=None,
+                aggregateValue=0.0,
+                numUnsold=0,
+                inventoryQty=0,
+            ),
+        )
+    
+    def load_most_recent_cache(self, dt: datetime):
+        pass
+        # response = self._graphql_client._make_request(Query('', ''), { })
+        # itemVals = map(lambda x: InventoryItemValue(**x), response["lastItemValues"])
+        # self._data = {x.id: x for x in itemVals}
+    
+    def save_current_cache(self, created_at: datetime):
+        pass
+    
 class PaginationIterator:
-    def __init__(self, client: GraphQLClient, q: Query, variables: dict):
-        self._client = client
+    def __init__(self, graphql_client: GraphQLClient, q: Query, variables: dict):
+        self._graphql_client = graphql_client
         self._q = q
         self._page = []
         self._next_token = None
@@ -230,7 +230,7 @@ class PaginationIterator:
         return item
 
     def _get_next_page(self):
-        response = self._client._make_request(self._q, self._variables)
+        response = self._graphql_client._make_request(self._q, self._variables)
         query_result = response["data"][self._q.name]
         self._page, self._next_token = query_result["items"], query_result["nextToken"]
         self._idx = 0
@@ -239,42 +239,63 @@ class PaginationIterator:
 
 class Main:
     QUERY_PAGE_LIMIT = 100
-    SORT_DIRECTION = "ASC"
+    SORT_DIRECTION_ASC = "ASC"
 
-    def __init__(self, start_date_inclusive: datetime, end_date_exclusive: datetime, client: GraphQLClient = GraphQLClient()):
-        self.start_date_inclusive = start_date_inclusive
-        self.end_date_exclusive = end_date_exclusive
-        self.client = client
+    def __init__(self, start_inclusive: datetime, end_exclusive: datetime, graphql_client: GraphQLClient = GraphQLClient()):
+        self.graphql_client = graphql_client
 
-    def run(self):
-        total_inventory_value = 0.0
-        curr_cache = self._get_current_cache()
-        new_cache = InventoryValueCache()
-        unsold_count_map = {}
-
+    def run(self, start_inclusive: datetime, end_exclusive: datetime):
         inventory = self._list_full_inventory()
-        for item in inventory:
-            new_item_val = self._get_unsold_items_value(curr_cache[item.id])
-            total_inventory_value += new_item_val.aggregate_val
-            unsold_count_map[item.id] = new_item_val.num_unsold
-            new_cache[item.id] = new_item_val
-            break
-
+        caches = []
+        
+        while start_inclusive < end_exclusive:
+            prev_cache = caches[-1] if caches else None
+            caches.append(
+                self.calculate_inventory_balance(start_inclusive, end_exclusive, inventory, prev_cache)
+            )
+            start_inclusive = start_inclusive + 1
+            
         # ONLY validate if it's the current month, it's impossible to validate past months
         # Main._validate_unsold_counts(inventory, unsold_count_map)
-        Main._write_new_cache(new_cache)
+        # Main._write_new_cache(new_cache)
+        
+    def calculate_inventory_balance(
+        self,
+        start_inclusive: datetime,
+        end_exclusive: datetime,
+        inventory: list[InventoryItem],
+        local_cache: InventoryValueCache = None
+    ) -> InventoryValueCache:
+        curr_cache = local_cache
+        if not local_cache:
+            curr_cache = InventoryValueCache(self.graphql_client)
+            curr_cache.load_most_recent_cache(start_inclusive)
+        new_cache = InventoryValueCache(self.graphql_client)
+
+        for item in inventory:
+            new_cache[item.id] = self._get_unsold_items_value(
+                curr_cache[item.id], 
+                start_inclusive, 
+                end_exclusive
+            )
+
+        return new_cache
 
     def _list_full_inventory(self) -> list[InventoryItem]:
         it = PaginationIterator(
-            self.client, Main.listTshirts, {"limit": Main.QUERY_PAGE_LIMIT}
+            self.graphql_client, Main.listTshirts, {"limit": Main.QUERY_PAGE_LIMIT}
         )
         return [InventoryItem(**x) for x in it]
 
     def _get_unsold_items_value(
-        self, inventory_item: InventoryItemValue, end_date_exclusive: datetime
+        self, 
+        prev_inventory_item: InventoryItemValue, 
+        start_inclusive: datetime, 
+        end_exclusive: datetime
     ) -> InventoryItemValue:
         # Returns the value and the earliest unsold item
-        unsold_items = self._get_unsold_items(inventory_item, end_date_exclusive)
+        unsold_items = self._get_unsold_items(
+            prev_inventory_item, start_inclusive, end_exclusive)
 
         num_unsold, total_value = 0, 0
         for item in unsold_items:
@@ -282,29 +303,37 @@ class Main:
             total_value += max(item.get_qty() * item.costPerUnit, 0)
             num_unsold += item.get_qty()
 
-        start_of_month = MyDateTime.to_month_start(end_date_exclusive)
-        earliest_unsold = MyDateTime.to_ISO8601(start_of_month)
+        earliest_unsold = MyDateTime.to_ISO8601(end_exclusive)
         if unsold_items:
             # This may be a customer order, when num_unsold < 0. It's just where we left off.
             earliest_unsold = unsold_items[0].updatedAt
 
         return InventoryItemValue(
-            itemId=inventory_item.itemId,
+            itemId=prev_inventory_item.itemId,
             aggregateValue=total_value,
             earliestUnsold=earliest_unsold,
             numUnsold=num_unsold,
             inventoryQty=0,  # Populated later
         )
 
-    def _get_unsold_items(self, inventory_item: InventoryItemValue, end_date_exclusive: datetime):
+    def _get_unsold_items(
+        self, 
+        inventory_item: InventoryItemValue, 
+        start_inclusive: datetime, 
+        end_exclusive: datetime
+    ):
+        start = inventory_item.earliestUnsold \
+            if inventory_item.earliestUnsold else MyDateTime.to_ISO8601(start_inclusive)
+        end = MyDateTime.to_ISO8601(end_exclusive)
+        
         it = PaginationIterator(
-            self.client,
+            self.graphql_client,
             Main.tshirtOrderByUpdatedAt,
             {
                 "indexField": inventory_item.itemId,
-                "sortDirection": Main.SORT_DIRECTION,
+                "sortDirection": Main.SORT_DIRECTION_ASC,
                 "limit": Main.QUERY_PAGE_LIMIT,
-                "updatedAt": { 'ge': inventory_item.earliestUnsold, 'lt': MyDateTime.to_ISO8601(end_date_exclusive) }
+                "updatedAt": {'ge': start, 'lt': end}
             },
         )
 
@@ -341,19 +370,13 @@ class Main:
             if curr.get_qty() != 0:
                 q.append(curr)
 
-            # print(f'i={i}', f'total:{sum(map(lambda x: x.get_qty(), q))}', [(x.get_qty(), x.id, 'CO' if x.is_customer_order() else 'PO') for x in q])
         return q
 
     def _validate_unsold_counts(
         inventory: list[InventoryItem], unsold_counts: dict[int]
     ):
         pass
-
-    def _get_current_cache(self) -> InventoryValueCache:
-        return InventoryValueCache()
-
-    def _write_new_cache(self, new_cache: InventoryValueCache):
-        pass
+    
 
     listTshirts = Query(
         name="listTShirts",
