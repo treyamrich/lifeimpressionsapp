@@ -251,7 +251,7 @@ class Main:
     QUERY_PAGE_LIMIT = 100
     SORT_DIRECTION_ASC = "ASC"
 
-    def __init__(self, start_inclusive: datetime, end_exclusive: datetime, graphql_client: GraphQLClient = GraphQLClient()):
+    def __init__(self, graphql_client: GraphQLClient = GraphQLClient()):
         self.graphql_client = graphql_client
 
     def run(self, start_inclusive: datetime, end_exclusive: datetime):

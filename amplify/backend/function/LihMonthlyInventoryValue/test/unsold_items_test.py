@@ -16,7 +16,7 @@ class TestGetUnsoldItems(unittest.TestCase):
     def setUp(self):
         self.dummy_dt = MyDateTime.get_now_UTC()
         self.mock_graphql_client = MagicMock()
-        self.main = Main(self.dummy_dt, self.dummy_dt, self.mock_graphql_client)
+        self.main = Main(self.mock_graphql_client)
 
 
     def _call_get_unsold(self, data: list) -> list[OrderItem]:

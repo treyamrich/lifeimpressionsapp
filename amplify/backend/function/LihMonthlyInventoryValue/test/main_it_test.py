@@ -15,9 +15,8 @@ sys.path.pop(0)
 class TestMain(unittest.TestCase):
     
     def setUp(self):
-        self.dummy_dt = MyDateTime.get_now_UTC()
         self.mock_graphql_client = MagicMock()
-        self.main = Main(self.dummy_dt, self.dummy_dt, self.mock_graphql_client)
+        self.main = Main(self.mock_graphql_client)
     
     def _call_run(self, start: datetime, end: datetime):
         self.mock_graphql_client._make_request.side_effect = \
