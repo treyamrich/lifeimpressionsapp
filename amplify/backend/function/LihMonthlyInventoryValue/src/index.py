@@ -1,5 +1,6 @@
 import os
 import json
+from dateutil.relativedelta import relativedelta
 from datetime import datetime, timedelta, timezone
 # import requests
 from dataclasses import dataclass
@@ -67,6 +68,15 @@ class MyDateTime:
     @staticmethod
     def to_month_start(dt: datetime):
         return dt.replace(day=1, hour=0, minute=0, second=0)
+    
+    @staticmethod
+    def date_range(start_inclusive: datetime, end_exclusive: datetime):
+        start = start_inclusive
+        while start < end_exclusive:
+            rel_next_month = start + relativedelta(months=1)
+            end = min(rel_next_month, end_exclusive)
+            yield start, end
+            start = end
 
 
 @dataclass
@@ -247,18 +257,17 @@ class Main:
     def run(self, start_inclusive: datetime, end_exclusive: datetime):
         inventory = self._list_full_inventory()
         caches = []
-        
-        while start_inclusive < end_exclusive:
+                                   
+        for start, end in MyDateTime.date_range(start_inclusive, end_exclusive):
             prev_cache = caches[-1] if caches else None
             caches.append(
-                self.calculate_inventory_balance(start_inclusive, end_exclusive, inventory, prev_cache)
+                self.calculate_inventory_balance(start, end, inventory, prev_cache)
             )
-            start_inclusive = start_inclusive + 1
             
         # ONLY validate if it's the current month, it's impossible to validate past months
         # Main._validate_unsold_counts(inventory, unsold_count_map)
         # Main._write_new_cache(new_cache)
-        
+
     def calculate_inventory_balance(
         self,
         start_inclusive: datetime,

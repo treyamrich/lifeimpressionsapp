@@ -11,7 +11,7 @@ from src.index import Main, InventoryItemValue, MyDateTime, OrderItem
 sys.path.pop(0)
 
 
-class TestMain(unittest.TestCase):
+class TestGetUnsoldItems(unittest.TestCase):
     
     def setUp(self):
         self.dummy_dt = MyDateTime.get_now_UTC()
