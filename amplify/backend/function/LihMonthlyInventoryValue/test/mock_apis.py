@@ -1,3 +1,5 @@
+from enum import Enum
+from typing import Iterable
 import uuid
 import random
 import json
@@ -8,7 +10,6 @@ from dataclasses import asdict
 
 sys.path.insert(0, os.path.abspath(".."))
 from src.index import InventoryItem, OrderItem, Main
-
 sys.path.pop(0)
 
 
@@ -40,7 +41,8 @@ def gen_order_items_responses(items: list[InventoryItem], n: int = 10) -> dict:
 
             po_id, co_id = rand_order_type()
             # Simulate customer returns
-            quantity = random.randint(-5, 20) if co_id else random.randint(0, 15)
+            quantity = random.randint(-5,
+                                      20) if co_id else random.randint(0, 15)
 
             res[i] = OrderItem(
                 id=str(uuid.uuid4()),
@@ -59,9 +61,10 @@ def gen_order_items_responses(items: list[InventoryItem], n: int = 10) -> dict:
 
 class PaginationSimulator:
 
-    def __init__(self, items: list, page_count: int, query_name: str):
+    def __init__(self, items: Iterable, page_count: int, query_name: str):
         dict_items = list(map(lambda x: asdict(x), items))
-        self.pages = PaginationSimulator._partition_list(page_count, dict_items)
+        self.pages = PaginationSimulator._partition_list(
+            page_count, dict_items)
         self.i = 0
         self.query_name = query_name
 
@@ -72,14 +75,16 @@ class PaginationSimulator:
         if self.i == len(self.pages):
             raise StopIteration
         page = self.pages[self.i]
-        next_token = None if self.i == len(self.pages) - 1 else f"token_{self.i}"
+        next_token = None if self.i == len(
+            self.pages) - 1 else f"token_{self.i}"
         self.i += 1
         return {"data": {self.query_name: {"items": page, "nextToken": next_token}}}
 
     def _partition_list(n: int, arr: list):
+        if not arr: return [[]]
         n = 1 if not n or n > len(arr) else n
         step_size = len(arr) // n
-        return [arr[i : i + step_size] for i in range(0, len(arr), step_size)]
+        return [arr[i: i + step_size] for i in range(0, len(arr), step_size)]
 
 
 num_inv_items = 100
@@ -91,11 +96,48 @@ num_orders_pages = 3
 inv_items = gen_inventory_items_response(num_inv_items)
 order_items = gen_order_items_responses(inv_items, num_orders_per_item)
 
-get_mock_inventory_item_api = lambda: PaginationSimulator(
+
+def get_rand_mock_inventory_item_api(): return PaginationSimulator(
     inv_items, num_inv_pages, Main.listTshirts.name
 )
-get_mock_order_item_api = lambda item_id: PaginationSimulator(
+
+
+def get_rand_mock_order_item_api(item_id): return PaginationSimulator(
     order_items[item_id], num_orders_pages, Main.tshirtOrderByUpdatedAt.name
 )
 
-select_random_order_item = lambda: random.choice(inv_items)
+
+def select_random_order_item(): return random.choice(inv_items)
+
+class OrderType(Enum):
+    CustomerOrder = 0
+    PurchaseOrder = 1
+    
+class IncrementalOrderItemBuilder:
+    def __init__(self):
+        self.i = 0
+    def get_order_item(self, order_type: OrderType, qty: int, cost_per_unit: float = 0):
+        def get_time(x): return datetime.fromtimestamp(x).isoformat()
+        is_customer_order = order_type == OrderType.CustomerOrder
+        
+        order_item = OrderItem(
+            id=f'id-{self.i}',
+            quantity=qty if is_customer_order else 0,
+            amountReceived=0 if is_customer_order else qty,
+            costPerUnit=cost_per_unit,
+            createdAt=get_time(random.randint(0, self.i)),
+            updatedAt=get_time(self.i),
+            tShirtOrderTshirtId='some tshirt id',
+            purchaseOrderOrderedItemsId=None if is_customer_order else 'some po id',
+            customerOrderOrderedItemsId='some co id' if is_customer_order else None,
+        )
+        self.i += 1
+        return order_item
+
+def get_predictable_mock_order_item_api(partial_order_items: Iterable[dict]):
+    predicable_builder = IncrementalOrderItemBuilder()
+    return PaginationSimulator(
+        map(lambda x: predicable_builder.get_order_item(**x), partial_order_items),
+        5,
+        Main.tshirtOrderByUpdatedAt.name
+    )

@@ -1,10 +1,10 @@
 import os
 import json
 from datetime import datetime, timedelta, timezone
-import requests
+# import requests
 from dataclasses import dataclass
-from requests_aws4auth import AWS4Auth
-from boto3 import Session as AWSSession
+# from requests_aws4auth import AWS4Auth
+# from boto3 import Session as AWSSession
 
 def handler(event, context):
     print("received event:")
@@ -30,7 +30,7 @@ def load_env_vars(file_path):
                 os.environ[key.strip()] = value.strip()
 
 
-load_env_vars("..\.env")
+load_env_vars(os.path.join("..", ".env"))
 
 GRAPHQL_ENDPOINT = os.environ["API_LIFEIMPRESSIONSAPP_GRAPHQLAPIENDPOINTOUTPUT"]
 ACCESS_KEY = os.environ["AWS_ACCESS_KEY_ID"]
@@ -163,9 +163,9 @@ class GraphQLClient:
         #     target_service,
         #     session_token=credentials.token,
         # )
-        session = requests.Session()
+        # session = requests.Session()
         # session.auth = auth
-        self.session = session
+        # self.session = session
 
     def _make_request(self, q: Query, variables: dict):
         response = self.session.request(
@@ -275,7 +275,7 @@ class Main:
                 "indexField": inventory_item.itemId,
                 "sortDirection": Main.SORT_DIRECTION,
                 "limit": Main.QUERY_PAGE_LIMIT,
-                # "updatedAt": { ge: inventory_item.earliestUnsold, le: current_month }
+                # "updatedAt": { 'ge': inventory_item.earliestUnsold, 'le': current_month }
             },
         )
 
@@ -296,23 +296,25 @@ class Main:
             if not q or is_same_sign(curr.get_qty(), q[0].get_qty()):
                 q.append(curr)
                 continue
-
-            head = q[0]
+  
             while q and curr.get_qty() != 0:
+                head = q[0]
                 remainder = curr.get_qty() + head.get_qty()
 
                 if remainder == 0:
-                    q.pop()
+                    q.pop(0)
                     curr.set_qty(0)
                 elif is_same_sign(curr.get_qty(), remainder):
                     curr.set_qty(remainder)
-                    q.pop()
+                    q.pop(0)
                 else:
                     head.set_qty(remainder)
                     curr.set_qty(0)
 
             if curr.get_qty() != 0:
                 q.append(curr)
+                    
+            # print(f'i={i}', f'total:{sum(map(lambda x: x.get_qty(), q))}', [(x.get_qty(), x.id, 'CO' if x.is_customer_order() else 'PO') for x in q])
         return q
     
     def _validate_unsold_counts(
@@ -379,7 +381,6 @@ query TshirtOrderByUpdatedAt(
         quantity
         amountReceived
         costPerUnit
-        indexField
         updatedAt
         id
         createdAt
@@ -391,6 +392,5 @@ query TshirtOrderByUpdatedAt(
     }
   }""",
     )
-
 
 # Main().run()
