@@ -43,8 +43,7 @@ class TestMyDateTime(unittest.TestCase):
         tz_month_start = MyDateTime.to_month_start(tz_t)
         self.assertEqual(utc_month_start, datetime(1970, 1, 1, 0, 0, 0, 0, tzinfo=timezone.utc))
         self.assertEqual(tz_month_start, datetime(1969, 12, 1, 0, 0, 0, 0, tzinfo=self.tz))
-
-
-
+    
+    
 if __name__ == '__main__':
     unittest.main()

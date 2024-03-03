@@ -7,36 +7,30 @@ import os
 
 # Import your module
 sys.path.insert(0, os.path.abspath(".."))
-from src.index import Main, InventoryItemValue, OrderItem
+from src.index import Main, InventoryItemValue, MyDateTime, OrderItem
 sys.path.pop(0)
 
 
 class TestMain(unittest.TestCase):
     
     def setUp(self):
+        self.dummy_datetime = MyDateTime.get_now_UTC()
         self.mock_graphql_client = MagicMock()
-        self.main = Main(self.mock_graphql_client)
+        self.main = Main(self.dummy_datetime, self.dummy_datetime, self.mock_graphql_client)
 
-    # def test_get_unsold_items_value(self):
-    #     order_item = mock_apis.select_random_order_item()
-    #     self.mock_graphql_client._make_request.side_effect = mock_apis.get_rand_mock_order_item_api(
-    #         order_item.id)
-    #     self.main._get_unsold_items_value(
-    #         InventoryItemValue(order_item.id, 0, 0, 0, ''))
-    #     self.assertEqual(
-    #         self.mock_graphql_client._make_request.call_count, mock_apis.num_orders_pages)
 
     def _call_get_unsold(self, data: list) -> list[OrderItem]:
         self.mock_graphql_client \
             ._make_request.side_effect = mock_apis.get_predictable_mock_order_item_api(data)
         unsold = self.main \
-            ._get_unsold_items(InventoryItemValue('some id', 0, 0, 0, 'earliest unsold'))
+            ._get_unsold_items(InventoryItemValue('some id', 0, 0, 0, 'earliest unsold'), self.dummy_datetime)
         return unsold
     
+    def _transform_data(self, data: list):
+        return map(lambda x: {'order_type': x[0], 'qty': x[1]}, data)
+    
     def test_general_case(self):
-        data = map(
-            lambda x: {'order_type': x[0], 'qty': x[1]},
-            [
+        data = self._transform_data([
                 (OrderType.CustomerOrder, 10),  # i = 0; Expect: -10
                 (OrderType.CustomerOrder, -3),  # i = 1; Expect: -7
                 (OrderType.PurchaseOrder, 5),  # i = 2; Expect: -2
@@ -64,15 +58,13 @@ class TestMain(unittest.TestCase):
         self.assertEqual(len(unsold), 0)
 
     def test_only_customer_order(self):
-        data = map(
-            lambda x: {'order_type': x[0], 'qty': x[1]},
-            [
-            (OrderType.CustomerOrder, 10),
-            (OrderType.CustomerOrder, -3),
-            (OrderType.CustomerOrder, 5),
-            (OrderType.CustomerOrder, 5),
-            (OrderType.CustomerOrder, 5),
-        ])
+        data = self._transform_data([
+                (OrderType.CustomerOrder, 10),
+                (OrderType.CustomerOrder, -3),
+                (OrderType.CustomerOrder, 5),
+                (OrderType.CustomerOrder, 5),
+                (OrderType.CustomerOrder, 5),
+            ])
         unsold = self._call_get_unsold(data)
         n = sum(map(lambda x: x.get_qty(), unsold))
         self.assertEqual(n, -22)

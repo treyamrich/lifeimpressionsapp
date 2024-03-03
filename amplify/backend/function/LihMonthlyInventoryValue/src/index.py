@@ -6,6 +6,7 @@ from dataclasses import dataclass
 # from requests_aws4auth import AWS4Auth
 # from boto3 import Session as AWSSession
 
+
 def handler(event, context):
     print("received event:")
     print(event)
@@ -25,8 +26,10 @@ def load_env_vars(file_path):
     with open(file_path, "r") as f:
         for line in f:
             line = line.strip()
-            if line and not line.startswith("#"):  # Ignore empty lines and comments
-                key, value = line.split("=", 1)  # Split on the first occurrence of '='
+            # Ignore empty lines and comments
+            if line and not line.startswith("#"):
+                # Split on the first occurrence of '='
+                key, value = line.split("=", 1)
                 os.environ[key.strip()] = value.strip()
 
 
@@ -38,13 +41,18 @@ ACCESS_KEY_SECRET = os.environ["AWS_SECRET_ACCESS_KEY"]
 REGION = os.environ["REGION"]
 target_service = "appsync"
 
+
 class MyDateTime:
-    
+
     @staticmethod
     def parse_UTC(dt: str, hour_offset: int = 0) -> datetime:
         naive_datetime = datetime.strptime(dt, '%Y-%m-%dT%H:%M:%SZ')
         informed_datetime = naive_datetime.replace(tzinfo=timezone.utc)
         return MyDateTime.to_tz(informed_datetime, hour_offset)
+
+    @staticmethod
+    def get_now_UTC() -> datetime:
+        return datetime.utcnow().replace(tzinfo=timezone.utc)
 
     @staticmethod
     def to_tz(utc_time: datetime, hour_offset: int):
@@ -55,11 +63,12 @@ class MyDateTime:
     def to_ISO8601(tz_time: datetime) -> str:
         utc_time = tz_time.astimezone(timezone.utc)
         return utc_time.strftime('%Y-%m-%dT%H:%M:%SZ')
-    
+
     @staticmethod
     def to_month_start(dt: datetime):
         return dt.replace(day=1, hour=0, minute=0, second=0)
-    
+
+
 @dataclass
 class InventoryItem:
     id: str
@@ -80,18 +89,22 @@ class OrderItem:
     purchaseOrderOrderedItemsId: str
     customerOrderOrderedItemsId: str
     tShirtOrderTshirtId: str
-    
+
     def is_customer_order(self):
         return self.customerOrderOrderedItemsId != None
+
     def is_purchase_order(self):
         return self.purchaseOrderOrderedItemsId != None
+
     def get_qty(self):
         return self.quantity if self.is_customer_order() else self.amountReceived
+
     def set_qty(self, new_qty: int):
         if self.is_customer_order():
             self.quantity = new_qty
         else:
             self.amountReceived = new_qty
+
 
 @dataclass
 class Query:
@@ -103,6 +116,7 @@ class Query:
 class EarliestUnsoldItem:
     datetime: str
     remaining_qty: int
+
 
 @dataclass
 class InventoryItemValue:
@@ -227,7 +241,9 @@ class Main:
     QUERY_PAGE_LIMIT = 100
     SORT_DIRECTION = "ASC"
 
-    def __init__(self, client: GraphQLClient = GraphQLClient()):
+    def __init__(self, start_date_inclusive: datetime, end_date_exclusive: datetime, client: GraphQLClient = GraphQLClient()):
+        self.start_date_inclusive = start_date_inclusive
+        self.end_date_exclusive = end_date_exclusive
         self.client = client
 
     def run(self):
@@ -243,7 +259,9 @@ class Main:
             unsold_count_map[item.id] = new_item_val.num_unsold
             new_cache[item.id] = new_item_val
             break
-        Main._validate_unsold_counts(inventory, unsold_count_map)
+
+        # ONLY validate if it's the current month, it's impossible to validate past months
+        # Main._validate_unsold_counts(inventory, unsold_count_map)
         Main._write_new_cache(new_cache)
 
     def _list_full_inventory(self) -> list[InventoryItem]:
@@ -253,21 +271,32 @@ class Main:
         return [InventoryItem(**x) for x in it]
 
     def _get_unsold_items_value(
-        self, inventory_item: InventoryItemValue
+        self, inventory_item: InventoryItemValue, end_date_exclusive: datetime
     ) -> InventoryItemValue:
         # Returns the value and the earliest unsold item
-        unsold_items = self._get_unsold_items(inventory_item)
-        total_item_value = sum(map(lambda x: x.get_qty() * x.costPerUnit, unsold_items))
-        num_unsold = 0
-        return InventoryItemValue(
-                earliestUnsold=unsold_items[0].updatedAt, #WHAT IF ALL WERE SOLD?
-                aggregateValue=total_item_value,
-                itemId=inventory_item.itemId,
-                numUnsold=num_unsold,
-                inventoryQty=0, # Populated later
-            )
+        unsold_items = self._get_unsold_items(inventory_item, end_date_exclusive)
 
-    def _get_unsold_items(self, inventory_item: InventoryItemValue):
+        num_unsold, total_value = 0, 0
+        for item in unsold_items:
+            # Only adding POs b/c CO cost/unit is the sale value
+            total_value += max(item.get_qty() * item.costPerUnit, 0)
+            num_unsold += item.get_qty()
+
+        start_of_month = MyDateTime.to_month_start(end_date_exclusive)
+        earliest_unsold = MyDateTime.to_ISO8601(start_of_month)
+        if unsold_items:
+            # This may be a customer order, when num_unsold < 0. It's just where we left off.
+            earliest_unsold = unsold_items[0].updatedAt
+
+        return InventoryItemValue(
+            itemId=inventory_item.itemId,
+            aggregateValue=total_value,
+            earliestUnsold=earliest_unsold,
+            numUnsold=num_unsold,
+            inventoryQty=0,  # Populated later
+        )
+
+    def _get_unsold_items(self, inventory_item: InventoryItemValue, end_date_exclusive: datetime):
         it = PaginationIterator(
             self.client,
             Main.tshirtOrderByUpdatedAt,
@@ -275,7 +304,7 @@ class Main:
                 "indexField": inventory_item.itemId,
                 "sortDirection": Main.SORT_DIRECTION,
                 "limit": Main.QUERY_PAGE_LIMIT,
-                # "updatedAt": { 'ge': inventory_item.earliestUnsold, 'le': current_month }
+                "updatedAt": { 'ge': inventory_item.earliestUnsold, 'lt': MyDateTime.to_ISO8601(end_date_exclusive) }
             },
         )
 
@@ -283,20 +312,18 @@ class Main:
             # Returns become positive; customer orders become negative
             if order_item.is_customer_order():
                 order_item.set_qty(-order_item.get_qty())
-        
-        is_same_sign = lambda a, b: a > 0 and b > 0 or a < 0 and b < 0
-        
+
+        def is_same_sign(a, b): return a > 0 and b > 0 or a < 0 and b < 0
+
         q: list[OrderItem] = []
         for order_item_dict in it:
             curr = OrderItem(**order_item_dict)
             flip_qty(curr)
-            
-            # STOP IF PAST DATE
 
             if not q or is_same_sign(curr.get_qty(), q[0].get_qty()):
                 q.append(curr)
                 continue
-  
+
             while q and curr.get_qty() != 0:
                 head = q[0]
                 remainder = curr.get_qty() + head.get_qty()
@@ -313,10 +340,10 @@ class Main:
 
             if curr.get_qty() != 0:
                 q.append(curr)
-                    
+
             # print(f'i={i}', f'total:{sum(map(lambda x: x.get_qty(), q))}', [(x.get_qty(), x.id, 'CO' if x.is_customer_order() else 'PO') for x in q])
         return q
-    
+
     def _validate_unsold_counts(
         inventory: list[InventoryItem], unsold_counts: dict[int]
     ):
