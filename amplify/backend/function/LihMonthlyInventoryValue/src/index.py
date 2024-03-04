@@ -167,6 +167,46 @@ class GraphQLClient:
             raise GraphQLException
         return data
 
+    
+class PaginationIterator:
+    def __init__(self, graphql_client: GraphQLClient, q: Query, variables: dict):
+        self._graphql_client = graphql_client
+        self._q = q
+        self._page = []
+        self._next_token = None
+        self._idx = 0
+
+        filters = variables.get("filter", {})  # Force filter out deleted items
+        self._variables = {
+            **variables,
+            "filter": {**filters, "isDeleted": {"ne": True}},
+        }
+
+    def __iter__(self):
+        self._get_next_page()
+        return self
+
+    def __next__(self):
+        at_end_of_page = self._idx == len(self._page)
+        at_last_page = self._next_token == None
+
+        if at_end_of_page and at_last_page:
+            raise StopIteration
+
+        if at_end_of_page:
+            self._get_next_page()
+
+        item = self._page[self._idx]
+        self._idx += 1
+        return item
+
+    def _get_next_page(self):
+        response = self._graphql_client._make_request(self._q, self._variables)
+        query_result = response["data"][self._q.name]
+        self._page, self._next_token = query_result["items"], query_result["nextToken"]
+        self._idx = 0
+        self._variables["nextToken"] = self._next_token
+
 
 @dataclass
 class InventoryItemValue:
@@ -207,44 +247,40 @@ class InventoryValueCache:
     def save_current_cache(self, created_at: datetime):
         pass
     
-class PaginationIterator:
-    def __init__(self, graphql_client: GraphQLClient, q: Query, variables: dict):
-        self._graphql_client = graphql_client
-        self._q = q
-        self._page = []
-        self._next_token = None
-        self._idx = 0
-
-        filters = variables.get("filter", {})  # Force filter out deleted items
-        self._variables = {
-            **variables,
-            "filter": {**filters, "isDeleted": {"ne": True}},
+    listInventoryValueCaches = Query('listInventoryValueCaches',
+    """
+    query ListInventoryValueCaches(
+        $id: ID
+        $createdAt: ModelStringKeyConditionInput
+        $filter: ModelInventoryValueCacheFilterInput
+        $limit: Int
+        $nextToken: String
+        $sortDirection: ModelSortDirection
+    ) {
+        listInventoryValueCaches(
+            id: $id
+            createdAt: $createdAt
+            filter: $filter
+            limit: $limit
+            nextToken: $nextToken
+            sortDirection: $sortDirection
+        ) {
+            items {
+                id
+                lastItemValues {
+                    aggregateValue
+                    itemId
+                    earliestUnsold
+                    numUnsold
+                    inventoryQty
+                }
+                createdAt
+                updatedAt
+            }
+            nextToken
         }
-
-    def __iter__(self):
-        self._get_next_page()
-        return self
-
-    def __next__(self):
-        at_end_of_page = self._idx == len(self._page)
-        at_last_page = self._next_token == None
-
-        if at_end_of_page and at_last_page:
-            raise StopIteration
-
-        if at_end_of_page:
-            self._get_next_page()
-
-        item = self._page[self._idx]
-        self._idx += 1
-        return item
-
-    def _get_next_page(self):
-        response = self._graphql_client._make_request(self._q, self._variables)
-        query_result = response["data"][self._q.name]
-        self._page, self._next_token = query_result["items"], query_result["nextToken"]
-        self._idx = 0
-        self._variables["nextToken"] = self._next_token
+    }
+    """)
 
 
 class Main:
@@ -306,7 +342,7 @@ class Main:
         unsold_items = self._get_unsold_items(
             prev_inventory_item, start_inclusive, end_exclusive)
 
-        num_unsold, total_value = 0, 0
+        num_unsold, total_value = 0, prev_inventory_item.aggregateValue
         for item in unsold_items:
             # Only adding POs b/c CO cost/unit is the sale value
             total_value += max(item.get_qty() * item.costPerUnit, 0)
