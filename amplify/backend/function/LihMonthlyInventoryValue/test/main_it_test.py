@@ -16,11 +16,12 @@ class TestMain(unittest.TestCase):
     
     def setUp(self):
         self.mock_graphql_client = MagicMock()
-        self.main = Main(self.mock_graphql_client)
+        self.main = Main(self.mock_graphql_client, MagicMock())
     
     def _call_run(self, start: datetime, end: datetime):
         self.mock_graphql_client.make_request.side_effect = \
-            mock_apis.get_rand_mock_inventory_item_api()
+            [x for x in mock_apis.get_rand_mock_inventory_item_api()] + \
+            [{}] # Call to load cache
         self.main.calculate_inventory_balance = MagicMock()
         self.main.run(start, end)
 

@@ -3,9 +3,10 @@ import json
 from dateutil.relativedelta import relativedelta
 from datetime import datetime, timedelta, timezone
 import requests
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 # from requests_aws4auth import AWS4Auth
-# from boto3 import Session as AWSSession
+import boto3
+import logging
 
 
 def handler(event, context):
@@ -167,7 +168,87 @@ class GraphQLClient:
             raise GraphQLException
         return resp['data'][q.name]
 
+class DynamoDBClient:
     
+    def __init__(self):
+        self.client = boto3.client(
+            'dynamodb',
+            aws_access_key_id=os.environ['AWS_ACCESS_KEY_ID'],
+            aws_secret_access_key=os.environ['AWS_SECRET_ACCESS_KEY'],
+            region_name='us-west-2'
+        )
+        
+    @staticmethod
+    def _to_attribute_val(x: dict):
+        return DynamoDBClient._rec_to_attribute_val(x)['M']
+    
+    @staticmethod
+    def _rec_to_attribute_val(x):
+        if x == None:
+            return None
+        elif type(x) == dict:
+            res = {}
+            for k, v in x.items():
+                attr_val = DynamoDBClient._rec_to_attribute_val(v)
+                if not attr_val: continue
+                res[k] = attr_val
+            return {'M': res}
+        elif type(x) == list:
+            res = []
+            for i in x:
+                attr_val = DynamoDBClient._rec_to_attribute_val(i)
+                if not attr_val: continue
+                res.append(attr_val)
+            return {'L': res}
+        elif type(x) == int or type(x) == float:
+            return {'N': str(x)}
+        elif type(x) == str:
+            return {'S': str(x)}
+        elif type(x) == bool:
+            return {'BOOL': x}
+        raise Exception('New type with no conversion to DynamoDB AttributeValue')
+        
+    def put_item(self, table_name: str, item: dict):
+        self.client.put_item(
+            TableName=table_name,
+            Item=DynamoDBClient._to_attribute_val(item)
+        )
+    
+    def batch_write_item(self, table_name: str, items: list[dict]) -> list:
+        
+        def partition_arr(items: list, size=25):
+            res = []
+            i = 0
+            while len(items[i: i + size]):
+                res.append(items[i: i + size])
+                i += size
+            return res
+        
+        def write_batches(request_item_batches: list):
+            unprocessed_list = []
+            try:
+                for request_item_batch in request_item_batches:
+                    response = self.client.batch_write_item(RequestItems=request_item_batch)
+                    unprocessed_items = response['UnprocessedItems']
+                    if len(unprocessed_items):
+                        unprocessed_list.append(unprocessed_items)
+            except Exception as e:
+                print(e)
+            return unprocessed_list
+        
+        to_put_req_item = lambda x: {'PutRequest': { 'Item': DynamoDBClient._to_attribute_val(x) }}
+        get_batch_req_items = lambda batch: { table_name: [to_put_req_item(x) for x in batch] }
+        batches = [get_batch_req_items(partition) for partition in partition_arr(items)]
+        max_attempts = 5
+        
+        for i in range(max_attempts):
+            unprocessed_list = write_batches(batches)
+            if not len(unprocessed_list): return
+            
+            print(f'Unproccessed items: attempt {i+1}/{max_attempts}')
+            batches = unprocessed_list
+            
+        
 class PaginationIterator:
     def __init__(self, graphql_client: GraphQLClient, q: Query, variables: dict):
         self._graphql_client = graphql_client
@@ -218,10 +299,12 @@ class InventoryItemValue:
 
 class InventoryValueCache:
 
-    def __init__(self, graphql_client: GraphQLClient, created_date: datetime):
+    def __init__(self, graphql_client: GraphQLClient, dynamodb_client: DynamoDBClient, created_date: datetime, table_name: str):
         self._data = {}
+        self._dynamodb_client = dynamodb_client
         self._graphql_client = graphql_client
-        self.created_date = created_date
+        self._created_date = created_date
+        self._table_name = table_name
 
     def __setitem__(self, value: InventoryItemValue):
         self._data[value.item_id] = value
@@ -238,18 +321,41 @@ class InventoryValueCache:
             ),
         )
     
+    def _to_write_db_input(self) -> dict:
+        return {
+            'createdAt': MyDateTime.to_ISO8601(self._created_date, is_only_date=True),
+            'lastItemValues': list(map(lambda x: asdict(x), self._data.values()))
+        }
+                    
     def read_db(self):
         resp = self._graphql_client.make_request(
             InventoryValueCache.getInventoryValueCache, 
-            { 'createdAt': MyDateTime.to_ISO8601(self.created_date, is_only_date=True) }
+            { 'createdAt': MyDateTime.to_ISO8601(self._created_date, is_only_date=True) }
         )
         lastItemVals = resp['lastItemValues'] if resp else []
         itemVals = map(lambda x: InventoryItemValue(**x), lastItemVals)
         self._data = {x.itemId: x for x in itemVals}
     
     def write_db(self):
-        pass
-    
+        try:
+            self._dynamodb_client.put_item(
+                self._table_name,
+                self._to_write_db_input()
+            )
+        except Exception as e:
+            print(f'Failed to write cache to db key createdAt = {self._created_date}')
+            print(e)
+            
+    @staticmethod
+    def batch_write_db(client: DynamoDBClient, caches: list, table_name: str):
+        items = [c._to_write_db_input() for c in caches]
+        unprocessed_list = client.batch_write_item(table_name, items)
+        if len(unprocessed_list):
+            print('Unprocessed items:')
+            for x in unprocessed_list:
+                print(x)
+        
+        
     getInventoryValueCache = Query('getInventoryValueCache',
     """
     query GetInventoryValueCache($createdAt: AWSDate!) {
@@ -270,15 +376,16 @@ class InventoryValueCache:
 class Main:
     QUERY_PAGE_LIMIT = 100
     SORT_DIRECTION_ASC = "ASC"
-
-    def __init__(self, graphql_client: GraphQLClient = GraphQLClient()):
+    TABLE_NAME = ''
+    def __init__(self, graphql_client: GraphQLClient = GraphQLClient(), dynamodb_client: DynamoDBClient = DynamoDBClient()):
         self.graphql_client = graphql_client
+        self.dynamodb_client = dynamodb_client
 
     def run(self, start_inclusive: datetime, end_exclusive: datetime):
         inventory = self._list_full_inventory()
         caches: list[InventoryValueCache] = []
         prev_month = start_inclusive - relativedelta(months=1)
-        cache_last_month = InventoryValueCache(self.graphql_client, prev_month)
+        cache_last_month = InventoryValueCache(self.graphql_client, self.dynamodb_client, prev_month, Main.TABLE_NAME)
         cache_last_month.read_db()
           
         for start, end in MyDateTime.date_range(start_inclusive, end_exclusive):
@@ -286,9 +393,17 @@ class Main:
             caches.append(
                 self.calculate_inventory_balance(start, end, inventory, prev_cache)
             )
-            
-        for c in caches:
-            c.write_db()
+        
+        if len(caches) == 1:
+            caches[0].write_db()
+            return
+        
+        InventoryValueCache.batch_write_db(
+            self.dynamodb_client,
+            caches,
+            Main.TABLE_NAME
+        )
+        
 
     def calculate_inventory_balance(
         self,
@@ -298,7 +413,7 @@ class Main:
         prev_cache: InventoryValueCache
     ) -> InventoryValueCache:
         
-        new_cache = InventoryValueCache(self.graphql_client, start_inclusive)
+        new_cache = InventoryValueCache(self.graphql_client, self.dynamodb_client, start_inclusive, Main.TABLE_NAME)
         for item in inventory:
             v = self._get_unsold_items_value(
                 prev_cache[item.id], 

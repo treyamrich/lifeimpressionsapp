@@ -13,7 +13,7 @@ sys.path.pop(0)
 class TestMain(unittest.TestCase):
     def setUp(self):
         self.mock_graphql_client = MagicMock()
-        self.main = Main(self.mock_graphql_client)
+        self.main = Main(self.mock_graphql_client, MagicMock())
 
     def test_list_full_inventory(self):
         self.mock_graphql_client.make_request.side_effect = mock_apis.get_rand_mock_inventory_item_api()

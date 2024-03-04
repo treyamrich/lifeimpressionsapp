@@ -11,12 +11,18 @@ from src.index import InventoryValueCache, Main
 sys.path.pop(0)
 
 
-class TestGetUnsoldItems(unittest.TestCase):
+class TestInventoryValueCache(unittest.TestCase):
     
     def setUp(self):
         self.mock_graphql_client = MagicMock()
-        self.cache = InventoryValueCache(self.mock_graphql_client, datetime(1970, 1, 1, tzinfo=timezone.utc))
-        self.main = Main(self.mock_graphql_client)
+        self.mock_dynamodb_client = MagicMock()
+        self.cache = InventoryValueCache(
+            self.mock_graphql_client, 
+            self.mock_dynamodb_client,
+            datetime(1970, 1, 1, tzinfo=timezone.utc),
+            ''
+        )
+        self.main = Main(self.mock_graphql_client, MagicMock())
 
     def _build_cache_item(self, itemId):
         return {
