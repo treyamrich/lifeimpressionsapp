@@ -2,7 +2,7 @@ import os
 import json
 from dateutil.relativedelta import relativedelta
 from datetime import datetime, timedelta, timezone
-# import requests
+import requests
 from dataclasses import dataclass
 # from requests_aws4auth import AWS4Auth
 # from boto3 import Session as AWSSession
@@ -61,8 +61,9 @@ class MyDateTime:
         return utc_time.astimezone(tz)
 
     @staticmethod
-    def to_ISO8601(tz_time: datetime) -> str:
+    def to_ISO8601(tz_time: datetime, is_only_date: bool = False) -> str:
         utc_time = tz_time.astimezone(timezone.utc)
+        if is_only_date: return utc_time.strftime('%Y-%m-%d')
         return utc_time.strftime('%Y-%m-%dT%H:%M:%SZ')
 
     @staticmethod
@@ -148,24 +149,23 @@ class GraphQLClient:
         #     target_service,
         #     session_token=credentials.token,
         # )
-        # session = requests.Session()
-        # session.auth = auth
-        # self.session = session
+        self.session = requests.Session()
+        # self.session.auth = auth
 
-    def _make_request(self, q: Query, variables: dict):
+    def make_request(self, q: Query, variables: dict):
         response = self.session.request(
             url=GRAPHQL_ENDPOINT,
             method="POST",
             headers=self.headers,
             json={"query": q.query, "variables": variables},
         )
-        data = response.json()
-        errors = data.get("errors", [])
+        resp = response.json()
+        errors = resp.get("errors", [])
         if len(errors) > 0:
             print(f"Error executing query '{q.name}'")
             print(json.dumps(errors, indent=3))
             raise GraphQLException
-        return data
+        return resp['data'][q.name]
 
     
 class PaginationIterator:
@@ -201,9 +201,8 @@ class PaginationIterator:
         return item
 
     def _get_next_page(self):
-        response = self._graphql_client._make_request(self._q, self._variables)
-        query_result = response["data"][self._q.name]
-        self._page, self._next_token = query_result["items"], query_result["nextToken"]
+        resp = self._graphql_client.make_request(self._q, self._variables)
+        self._page, self._next_token = resp["items"], resp["nextToken"]
         self._idx = 0
         self._variables["nextToken"] = self._next_token
 
@@ -219,9 +218,10 @@ class InventoryItemValue:
 
 class InventoryValueCache:
 
-    def __init__(self, graphql_client: GraphQLClient):
+    def __init__(self, graphql_client: GraphQLClient, created_date: datetime):
         self._data = {}
         self._graphql_client = graphql_client
+        self.created_date = created_date
 
     def __setitem__(self, value: InventoryItemValue):
         self._data[value.item_id] = value
@@ -238,46 +238,30 @@ class InventoryValueCache:
             ),
         )
     
-    def load_most_recent_cache(self, dt: datetime):
-        pass
-        # response = self._graphql_client._make_request(Query('', ''), { })
-        # itemVals = map(lambda x: InventoryItemValue(**x), response["lastItemValues"])
-        # self._data = {x.id: x for x in itemVals}
+    def read_db(self):
+        resp = self._graphql_client.make_request(
+            InventoryValueCache.getInventoryValueCache, 
+            { 'createdAt': MyDateTime.to_ISO8601(self.created_date, is_only_date=True) }
+        )
+        lastItemVals = resp['lastItemValues'] if resp else []
+        itemVals = map(lambda x: InventoryItemValue(**x), lastItemVals)
+        self._data = {x.itemId: x for x in itemVals}
     
-    def save_current_cache(self, created_at: datetime):
+    def write_db(self):
         pass
     
-    listInventoryValueCaches = Query('listInventoryValueCaches',
+    getInventoryValueCache = Query('getInventoryValueCache',
     """
-    query ListInventoryValueCaches(
-        $id: ID
-        $createdAt: ModelStringKeyConditionInput
-        $filter: ModelInventoryValueCacheFilterInput
-        $limit: Int
-        $nextToken: String
-        $sortDirection: ModelSortDirection
-    ) {
-        listInventoryValueCaches(
-            id: $id
-            createdAt: $createdAt
-            filter: $filter
-            limit: $limit
-            nextToken: $nextToken
-            sortDirection: $sortDirection
-        ) {
-            items {
-                id
-                lastItemValues {
-                    aggregateValue
-                    itemId
-                    earliestUnsold
-                    numUnsold
-                    inventoryQty
-                }
-                createdAt
-                updatedAt
+    query GetInventoryValueCache($createdAt: AWSDate!) {
+        getInventoryValueCache(createdAt: $createdAt) {
+            lastItemValues {
+                aggregateValue
+                itemId
+                earliestUnsold
+                numUnsold
+                inventoryQty
             }
-            nextToken
+        createdAt
         }
     }
     """)
@@ -292,37 +276,37 @@ class Main:
 
     def run(self, start_inclusive: datetime, end_exclusive: datetime):
         inventory = self._list_full_inventory()
-        caches = []
-                                   
+        caches: list[InventoryValueCache] = []
+        prev_month = start_inclusive - relativedelta(months=1)
+        cache_last_month = InventoryValueCache(self.graphql_client, prev_month)
+        cache_last_month.read_db()
+          
         for start, end in MyDateTime.date_range(start_inclusive, end_exclusive):
-            prev_cache = caches[-1] if caches else None
+            prev_cache = caches[-1] if caches else cache_last_month
             caches.append(
                 self.calculate_inventory_balance(start, end, inventory, prev_cache)
             )
             
-        # ONLY validate if it's the current month, it's impossible to validate past months
-        # Main._validate_unsold_counts(inventory, unsold_count_map)
-        # Main._write_new_cache(new_cache)
+        for c in caches:
+            c.write_db()
 
     def calculate_inventory_balance(
         self,
         start_inclusive: datetime,
         end_exclusive: datetime,
         inventory: list[InventoryItem],
-        local_cache: InventoryValueCache = None
+        prev_cache: InventoryValueCache
     ) -> InventoryValueCache:
-        curr_cache = local_cache
-        if not local_cache:
-            curr_cache = InventoryValueCache(self.graphql_client)
-            curr_cache.load_most_recent_cache(start_inclusive)
-        new_cache = InventoryValueCache(self.graphql_client)
-
+        
+        new_cache = InventoryValueCache(self.graphql_client, start_inclusive)
         for item in inventory:
-            new_cache[item.id] = self._get_unsold_items_value(
-                curr_cache[item.id], 
+            v = self._get_unsold_items_value(
+                prev_cache[item.id], 
                 start_inclusive, 
                 end_exclusive
             )
+            v.inventoryQty = item.quantityOnHand
+            new_cache[item.id] = v
 
         return new_cache
 
@@ -417,12 +401,6 @@ class Main:
 
         return q
 
-    def _validate_unsold_counts(
-        inventory: list[InventoryItem], unsold_counts: dict[int]
-    ):
-        pass
-    
-
     listTshirts = Query(
         name="listTShirts",
         query="""
@@ -489,3 +467,6 @@ query TshirtOrderByUpdatedAt(
     )
 
 # Main().run()
+# client = GraphQLClient()
+# cache = InventoryValueCache(client)
+# cache.load_cache_db(datetime(1970, 1, 1, tzinfo=timezone.utc))

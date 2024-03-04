@@ -23,7 +23,7 @@ class TestUnsoldItemsValue(unittest.TestCase):
 
     def _call_get_unsold_items_value(self, data: list) -> InventoryItemValue:
         self.mock_graphql_client \
-            ._make_request.side_effect = mock_apis.get_predictable_mock_order_item_api(data)
+            .make_request.side_effect = mock_apis.get_predictable_mock_order_item_api(data)
         inv_item_val = self.main._get_unsold_items_value(self.initial_cache_val, self.dummy_dt, self.dummy_dt)
         return inv_item_val
     
@@ -32,12 +32,12 @@ class TestUnsoldItemsValue(unittest.TestCase):
 
     def test_pagination(self):
         order_item = mock_apis.select_random_order_item()
-        self.mock_graphql_client._make_request.side_effect = mock_apis.get_rand_mock_order_item_api(
+        self.mock_graphql_client.make_request.side_effect = mock_apis.get_rand_mock_order_item_api(
             order_item.id)
         self.main._get_unsold_items_value(
             InventoryItemValue(order_item.id, 0, 0, 0, ''), self.dummy_dt, self.dummy_dt)
         self.assertEqual(
-            self.mock_graphql_client._make_request.call_count, mock_apis.num_orders_pages)
+            self.mock_graphql_client.make_request.call_count, mock_apis.num_orders_pages)
         
     def test_general_case(self):
         data = self._transform_data([

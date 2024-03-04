@@ -848,7 +848,6 @@ export const createInventoryValueCache = /* GraphQL */ `
     $condition: ModelInventoryValueCacheConditionInput
   ) {
     createInventoryValueCache(input: $input, condition: $condition) {
-      id
       lastItemValues {
         aggregateValue
         itemId
@@ -869,7 +868,6 @@ export const updateInventoryValueCache = /* GraphQL */ `
     $condition: ModelInventoryValueCacheConditionInput
   ) {
     updateInventoryValueCache(input: $input, condition: $condition) {
-      id
       lastItemValues {
         aggregateValue
         itemId
@@ -890,7 +888,6 @@ export const deleteInventoryValueCache = /* GraphQL */ `
     $condition: ModelInventoryValueCacheConditionInput
   ) {
     deleteInventoryValueCache(input: $input, condition: $condition) {
-      id
       lastItemValues {
         aggregateValue
         itemId

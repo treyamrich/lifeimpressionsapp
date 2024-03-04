@@ -78,7 +78,8 @@ class PaginationSimulator:
         next_token = None if self.i == len(
             self.pages) - 1 else f"token_{self.i}"
         self.i += 1
-        return {"data": {self.query_name: {"items": page, "nextToken": next_token}}}
+        # data and query name omitted since it's extracted in GraphQLClient.make_request()
+        return {"items": page, "nextToken": next_token}
 
     def _partition_list(n: int, arr: list):
         if not arr: return [[]]

@@ -952,9 +952,8 @@ export const customerOrdersByCreatedAt = /* GraphQL */ `
   }
 `;
 export const getInventoryValueCache = /* GraphQL */ `
-  query GetInventoryValueCache($id: ID!, $createdAt: String!) {
-    getInventoryValueCache(id: $id, createdAt: $createdAt) {
-      id
+  query GetInventoryValueCache($createdAt: AWSDate!) {
+    getInventoryValueCache(createdAt: $createdAt) {
       lastItemValues {
         aggregateValue
         itemId
@@ -971,15 +970,13 @@ export const getInventoryValueCache = /* GraphQL */ `
 `;
 export const listInventoryValueCaches = /* GraphQL */ `
   query ListInventoryValueCaches(
-    $id: ID
-    $createdAt: ModelStringKeyConditionInput
+    $createdAt: AWSDate
     $filter: ModelInventoryValueCacheFilterInput
     $limit: Int
     $nextToken: String
     $sortDirection: ModelSortDirection
   ) {
     listInventoryValueCaches(
-      id: $id
       createdAt: $createdAt
       filter: $filter
       limit: $limit
@@ -987,7 +984,6 @@ export const listInventoryValueCaches = /* GraphQL */ `
       sortDirection: $sortDirection
     ) {
       items {
-        id
         lastItemValues {
           aggregateValue
           itemId

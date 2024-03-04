@@ -516,9 +516,8 @@ export type DeleteCustomerOrderInput = {
 };
 
 export type CreateInventoryValueCacheInput = {
-  id?: string | null,
   lastItemValues: Array< LastItemValueInput >,
-  createdAt?: string | null,
+  createdAt: string,
 };
 
 export type LastItemValueInput = {
@@ -537,7 +536,6 @@ export type ModelInventoryValueCacheConditionInput = {
 
 export type InventoryValueCache = {
   __typename: "InventoryValueCache",
-  id: string,
   lastItemValues:  Array<LastItemValue >,
   createdAt: string,
   updatedAt: string,
@@ -553,13 +551,11 @@ export type LastItemValue = {
 };
 
 export type UpdateInventoryValueCacheInput = {
-  id: string,
   lastItemValues?: Array< LastItemValueInput > | null,
   createdAt: string,
 };
 
 export type DeleteInventoryValueCacheInput = {
-  id: string,
   createdAt: string,
 };
 
@@ -691,7 +687,6 @@ export type ModelCustomerOrderConnection = {
 };
 
 export type ModelInventoryValueCacheFilterInput = {
-  id?: ModelIDInput | null,
   createdAt?: ModelStringInput | null,
   and?: Array< ModelInventoryValueCacheFilterInput | null > | null,
   or?: Array< ModelInventoryValueCacheFilterInput | null > | null,
@@ -837,7 +832,6 @@ export type ModelSubscriptionCustomerOrderFilterInput = {
 };
 
 export type ModelSubscriptionInventoryValueCacheFilterInput = {
-  id?: ModelSubscriptionIDInput | null,
   createdAt?: ModelSubscriptionStringInput | null,
   and?: Array< ModelSubscriptionInventoryValueCacheFilterInput | null > | null,
   or?: Array< ModelSubscriptionInventoryValueCacheFilterInput | null > | null,
@@ -1706,7 +1700,6 @@ export type CreateInventoryValueCacheMutationVariables = {
 export type CreateInventoryValueCacheMutation = {
   createInventoryValueCache?:  {
     __typename: "InventoryValueCache",
-    id: string,
     lastItemValues:  Array< {
       __typename: "LastItemValue",
       aggregateValue: number,
@@ -1728,7 +1721,6 @@ export type UpdateInventoryValueCacheMutationVariables = {
 export type UpdateInventoryValueCacheMutation = {
   updateInventoryValueCache?:  {
     __typename: "InventoryValueCache",
-    id: string,
     lastItemValues:  Array< {
       __typename: "LastItemValue",
       aggregateValue: number,
@@ -1750,7 +1742,6 @@ export type DeleteInventoryValueCacheMutationVariables = {
 export type DeleteInventoryValueCacheMutation = {
   deleteInventoryValueCache?:  {
     __typename: "InventoryValueCache",
-    id: string,
     lastItemValues:  Array< {
       __typename: "LastItemValue",
       aggregateValue: number,
@@ -2686,14 +2677,12 @@ export type CustomerOrdersByCreatedAtQuery = {
 };
 
 export type GetInventoryValueCacheQueryVariables = {
-  id: string,
   createdAt: string,
 };
 
 export type GetInventoryValueCacheQuery = {
   getInventoryValueCache?:  {
     __typename: "InventoryValueCache",
-    id: string,
     lastItemValues:  Array< {
       __typename: "LastItemValue",
       aggregateValue: number,
@@ -2708,8 +2697,7 @@ export type GetInventoryValueCacheQuery = {
 };
 
 export type ListInventoryValueCachesQueryVariables = {
-  id?: string | null,
-  createdAt?: ModelStringKeyConditionInput | null,
+  createdAt?: string | null,
   filter?: ModelInventoryValueCacheFilterInput | null,
   limit?: number | null,
   nextToken?: string | null,
@@ -2721,7 +2709,6 @@ export type ListInventoryValueCachesQuery = {
     __typename: "ModelInventoryValueCacheConnection",
     items:  Array< {
       __typename: "InventoryValueCache",
-      id: string,
       lastItemValues:  Array< {
         __typename: "LastItemValue",
         aggregateValue: number,
@@ -3584,7 +3571,6 @@ export type OnCreateInventoryValueCacheSubscriptionVariables = {
 export type OnCreateInventoryValueCacheSubscription = {
   onCreateInventoryValueCache?:  {
     __typename: "InventoryValueCache",
-    id: string,
     lastItemValues:  Array< {
       __typename: "LastItemValue",
       aggregateValue: number,
@@ -3605,7 +3591,6 @@ export type OnUpdateInventoryValueCacheSubscriptionVariables = {
 export type OnUpdateInventoryValueCacheSubscription = {
   onUpdateInventoryValueCache?:  {
     __typename: "InventoryValueCache",
-    id: string,
     lastItemValues:  Array< {
       __typename: "LastItemValue",
       aggregateValue: number,
@@ -3626,7 +3611,6 @@ export type OnDeleteInventoryValueCacheSubscriptionVariables = {
 export type OnDeleteInventoryValueCacheSubscription = {
   onDeleteInventoryValueCache?:  {
     __typename: "InventoryValueCache",
-    id: string,
     lastItemValues:  Array< {
       __typename: "LastItemValue",
       aggregateValue: number,

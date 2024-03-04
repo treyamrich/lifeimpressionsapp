@@ -826,7 +826,6 @@ export const onCreateInventoryValueCache = /* GraphQL */ `
     $filter: ModelSubscriptionInventoryValueCacheFilterInput
   ) {
     onCreateInventoryValueCache(filter: $filter) {
-      id
       lastItemValues {
         aggregateValue
         itemId
@@ -846,7 +845,6 @@ export const onUpdateInventoryValueCache = /* GraphQL */ `
     $filter: ModelSubscriptionInventoryValueCacheFilterInput
   ) {
     onUpdateInventoryValueCache(filter: $filter) {
-      id
       lastItemValues {
         aggregateValue
         itemId
@@ -866,7 +864,6 @@ export const onDeleteInventoryValueCache = /* GraphQL */ `
     $filter: ModelSubscriptionInventoryValueCacheFilterInput
   ) {
     onDeleteInventoryValueCache(filter: $filter) {
-      id
       lastItemValues {
         aggregateValue
         itemId
