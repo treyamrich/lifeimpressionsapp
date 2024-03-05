@@ -115,8 +115,8 @@ class OrderItem:
     def set_qty(self, new_qty: int):
         if self.is_customer_order():
             self.quantity = new_qty
-        else:
-            self.amountReceived = new_qty
+            return
+        self.amountReceived = new_qty
 
 
 @dataclass
