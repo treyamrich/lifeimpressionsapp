@@ -242,12 +242,15 @@ class DynamoDBClient:
         batches = [get_batch_req_items(partition) for partition in partition_arr(items)]
         max_attempts = 6
         
+        unprocessed_list = None
         for i in range(max_attempts):
             if i > 0:
                 print(f'Unproccessed items: retry attempt {i}/{max_attempts-1}')
             unprocessed_list = write_batches(batches)
             if not len(unprocessed_list): return
             batches = partition_arr(unprocessed_list)
+        
+        return unprocessed_list
             
         
 class PaginationIterator:
@@ -351,10 +354,8 @@ class InventoryValueCache:
     def batch_write_db(client: DynamoDBClient, caches: list, table_name: str):
         items = [c._to_write_db_input() for c in caches]
         unprocessed_list = client.batch_write_item(table_name, items)
-        if len(unprocessed_list):
-            print('Unprocessed items:')
-            for x in unprocessed_list:
-                print(x)
+        if unprocessed_list:
+            print('Failed batch cache write. Unprocessed items:', unprocessed_list)
         
         
     getInventoryValueCache = Query('getInventoryValueCache',

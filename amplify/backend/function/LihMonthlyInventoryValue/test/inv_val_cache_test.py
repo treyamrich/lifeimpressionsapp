@@ -46,7 +46,7 @@ class TestInventoryValueCache(unittest.TestCase):
 
         for i in range(n):
             self.assertEqual(ids[i], self.cache[ids[i]].itemId)
-
+            
 
 if __name__ == '__main__':
     unittest.main()
