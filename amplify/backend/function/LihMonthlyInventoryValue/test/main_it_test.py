@@ -117,27 +117,38 @@ class TestMain(unittest.TestCase):
     
     def test_save_multiple_caches(self):
         add_month = lambda x: self.start + relativedelta(months=x)
+        minus_month = lambda x: self.start - relativedelta(months=x)
+        get_created_iso = lambda x: MyDateTime.to_ISO8601(x, True)
         n = 5
         items = [self._build_inv_cache_item(str(i)) for i in range(n)]
         caches = [self._build_inv_val_cache(add_month(i)) for i in range(n)]
         for idx, cache in enumerate(caches):
             item = items[idx]
             cache[item.itemId] = item
+        expected_prev_cache = {
+            'createdAt': minus_month(1), # should be str but is converted below
+            'lastItemValues': [asdict(self._build_inv_cache_item('prev_cache'))]
+        }
         
-        self._set_mock_graphql_resp()
+        self._set_mock_graphql_resp(expected_prev_cache)
         self._set_mock_batch_write_resp([])
         self.main.calculate_inventory_balance = MagicMock()
         self.main.calculate_inventory_balance.side_effect = caches
         self.main.run(self.start, self.start + relativedelta(months=n))
         
-        self.maxDiff = None
+        call_list = self.main.calculate_inventory_balance.call_args_list
+        for i, call in enumerate(call_list):
+            args, _ = call
+            prev_cache = args[3]
+            expected = caches[i-1]._created_date if i > 0 else expected_prev_cache['createdAt']
+            self.assertEqual(get_created_iso(prev_cache._created_date), get_created_iso(expected))
         
         call_list = self.mock_dynamodb_client.batch_write_item.call_args_list
         args, _ = call_list[0]
         # Can't check test table name since it's tied to env vars
         self.assertEqual(args[1],
             [{ 
-             'createdAt': MyDateTime.to_ISO8601(add_month(i), True), 
+             'createdAt': get_created_iso(add_month(i)), 
              'lastItemValues': [asdict(items[i])]
             } for i in range(n)]
         )
