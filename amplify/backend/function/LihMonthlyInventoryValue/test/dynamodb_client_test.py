@@ -45,6 +45,12 @@ class TestDynamoDBClient(unittest.TestCase):
         actual = DynamoDBClient._to_attribute_val(item)
         self.assertEqual(actual, expected)
     
+    def test_put_req(self):
+        table_name = 'asdf'
+        item = DynamoDBClient._to_attribute_val({'test': 3})
+        self.dynamodb_client.put_item(table_name, item)
+        self.mock_boto3_dynamo_db_client.assert_called_once()
+        
     def test_batch_write_to_db(self):
         table_name = 'asdf'
         items = [
