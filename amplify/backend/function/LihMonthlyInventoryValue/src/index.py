@@ -170,13 +170,14 @@ class GraphQLClient:
 
 class DynamoDBClient:
     
-    def __init__(self):
+    def __init__(self, client = None):
+        
         self.client = boto3.client(
             'dynamodb',
             aws_access_key_id=os.environ['AWS_ACCESS_KEY_ID'],
             aws_secret_access_key=os.environ['AWS_SECRET_ACCESS_KEY'],
             region_name='us-west-2'
-        )
+        ) if not client else client
         
     @staticmethod
     def _to_attribute_val(x: dict):
@@ -239,14 +240,14 @@ class DynamoDBClient:
         to_put_req_item = lambda x: {'PutRequest': { 'Item': DynamoDBClient._to_attribute_val(x) }}
         get_batch_req_items = lambda batch: { table_name: [to_put_req_item(x) for x in batch] }
         batches = [get_batch_req_items(partition) for partition in partition_arr(items)]
-        max_attempts = 5
+        max_attempts = 6
         
         for i in range(max_attempts):
+            if i > 0:
+                print(f'Unproccessed items: retry attempt {i}/{max_attempts-1}')
             unprocessed_list = write_batches(batches)
             if not len(unprocessed_list): return
-            
-            print(f'Unproccessed items: attempt {i+1}/{max_attempts}')
-            batches = unprocessed_list
+            batches = partition_arr(unprocessed_list)
             
         
 class PaginationIterator:
