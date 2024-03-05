@@ -4,12 +4,12 @@ from unittest.mock import MagicMock
 import mock_apis
 import sys
 import os
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timezone
 from dateutil.relativedelta import relativedelta
 
 # Import your module
 sys.path.insert(0, os.path.abspath(".."))
-from src.index import DynamoDBClient, InventoryValueCache, Main, InventoryItemValue, MyDateTime, OrderItem
+from src.index import InventoryValueCache, Main, InventoryItemValue, MyDateTime, OrderItem
 sys.path.pop(0)
 
 

@@ -18,7 +18,8 @@ class TestUnsoldItemsValue(unittest.TestCase):
         self.dummy_dt = MyDateTime.get_now_UTC()
         self.mock_graphql_client = MagicMock()
         self.main = Main(self.mock_graphql_client, MagicMock())
-        self.initial_cache_val = InventoryItemValue('some id', 0, 0, 0, 'earliest unsold')
+        self.initial_item_value = 10
+        self.initial_cache_val = InventoryItemValue('some id', self.initial_item_value, 0, 0, 'earliest unsold')
 
 
     def _call_get_unsold_items_value(self, data: list) -> InventoryItemValue:
@@ -53,7 +54,7 @@ class TestUnsoldItemsValue(unittest.TestCase):
         n = 7
         expected = InventoryItemValue(
             itemId=self.initial_cache_val.itemId,
-            aggregateValue=remain_cost_per_unit * n,
+            aggregateValue=remain_cost_per_unit * n + self.initial_item_value,
             numUnsold=n,
             inventoryQty=0,
             earliestUnsold=datetime.fromtimestamp(earlist_unsold_index).isoformat()
@@ -65,7 +66,7 @@ class TestUnsoldItemsValue(unittest.TestCase):
         earliest_unsold = MyDateTime.to_ISO8601(self.dummy_dt)
         expected = InventoryItemValue(
             itemId=self.initial_cache_val.itemId,
-            aggregateValue=0,
+            aggregateValue=self.initial_item_value,
             numUnsold=0,
             inventoryQty=0,
             earliestUnsold=earliest_unsold
@@ -86,7 +87,7 @@ class TestUnsoldItemsValue(unittest.TestCase):
         n = -2
         expected = InventoryItemValue(
             itemId=self.initial_cache_val.itemId,
-            aggregateValue=0,
+            aggregateValue=self.initial_item_value,
             numUnsold=n,
             inventoryQty=0,
             earliestUnsold=datetime.fromtimestamp(earlist_unsold_index).isoformat()
