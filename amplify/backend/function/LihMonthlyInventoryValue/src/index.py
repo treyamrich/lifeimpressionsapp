@@ -42,6 +42,7 @@ ACCESS_KEY = os.environ["AWS_ACCESS_KEY_ID"]
 ACCESS_KEY_SECRET = os.environ["AWS_SECRET_ACCESS_KEY"]
 REGION = os.environ["REGION"]
 target_service = "appsync"
+INV_VAL_CACHE_TABLE_NAME = os.environ["INV_VAL_CACHE_TABLE_NAME"]
 
 
 class MyDateTime:
@@ -207,7 +208,7 @@ class DynamoDBClient:
             return {'S': str(x)}
         elif type(x) == bool:
             return {'BOOL': x}
-        raise Exception('New type with no conversion to DynamoDB AttributeValue')
+        raise Exception(f"New type '{type(x)}' with no conversion to DynamoDB AttributeValue")
         
     def put_item(self, table_name: str, item: dict):
         self.client.put_item(
@@ -310,8 +311,8 @@ class InventoryValueCache:
         self._created_date = created_date
         self._table_name = table_name
 
-    def __setitem__(self, value: InventoryItemValue):
-        self._data[value.item_id] = value
+    def __setitem__(self, key: str, value: InventoryItemValue):
+        self._data[key] = value
 
     def __getitem__(self, key) -> InventoryItemValue:
         return self._data.get(
@@ -354,7 +355,7 @@ class InventoryValueCache:
         items = [c._to_write_db_input() for c in caches]
         unprocessed_list = client.batch_write_item(table_name, items)
         if unprocessed_list:
-            logging.warn('Failed batch cache write. Unprocessed items:', unprocessed_list)
+            logging.warning(f'Failed batch cache write. Unprocessed items: {unprocessed_list}')
         
         
     getInventoryValueCache = Query('getInventoryValueCache',
@@ -377,7 +378,6 @@ class InventoryValueCache:
 class Main:
     QUERY_PAGE_LIMIT = 100
     SORT_DIRECTION_ASC = "ASC"
-    TABLE_NAME = ''
     def __init__(self, graphql_client: GraphQLClient = GraphQLClient(), dynamodb_client: DynamoDBClient = DynamoDBClient()):
         self.graphql_client = graphql_client
         self.dynamodb_client = dynamodb_client
@@ -386,7 +386,7 @@ class Main:
         inventory = self._list_full_inventory()
         caches: list[InventoryValueCache] = []
         prev_month = start_inclusive - relativedelta(months=1)
-        cache_last_month = InventoryValueCache(self.graphql_client, self.dynamodb_client, prev_month, Main.TABLE_NAME)
+        cache_last_month = InventoryValueCache(self.graphql_client, self.dynamodb_client, prev_month, INV_VAL_CACHE_TABLE_NAME)
         cache_last_month.read_db()
           
         for start, end in MyDateTime.date_range(start_inclusive, end_exclusive):
@@ -402,7 +402,7 @@ class Main:
         InventoryValueCache.batch_write_db(
             self.dynamodb_client,
             caches,
-            Main.TABLE_NAME
+            INV_VAL_CACHE_TABLE_NAME
         )
         
 
@@ -414,7 +414,7 @@ class Main:
         prev_cache: InventoryValueCache
     ) -> InventoryValueCache:
         
-        new_cache = InventoryValueCache(self.graphql_client, self.dynamodb_client, start_inclusive, Main.TABLE_NAME)
+        new_cache = InventoryValueCache(self.graphql_client, self.dynamodb_client, start_inclusive, INV_VAL_CACHE_TABLE_NAME)
         for item in inventory:
             v = self._get_unsold_items_value(
                 prev_cache[item.id], 

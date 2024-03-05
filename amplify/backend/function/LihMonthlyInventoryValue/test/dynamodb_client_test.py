@@ -66,7 +66,8 @@ class TestDynamoDBClient(unittest.TestCase):
         self.assertEqual(call_count, 3)
 
         call_list = self.mock_boto3_dynamo_db_client.batch_write_item.call_args_list
-        self.assertEqual(call_list[2][1]['RequestItems'][0], expected_unprocessed)
+        _, kwargs = call_list[2]
+        self.assertEqual(kwargs['RequestItems'][0], expected_unprocessed)
     
     def test_batch_write_to_db(self):
         table_name = 'asdf'
@@ -83,8 +84,8 @@ class TestDynamoDBClient(unittest.TestCase):
         self.assertEqual(call_count, 7)
         
         call_list = self.mock_boto3_dynamo_db_client.batch_write_item.call_args_list
-        for call in call_list:
-            n = len(call[1]['RequestItems'])
+        for _, kwargs in call_list:
+            n = len(kwargs['RequestItems'])
             self.assertLessEqual(n, 25, msg="Batch size was not <= 25")
 
 if __name__ == '__main__':
