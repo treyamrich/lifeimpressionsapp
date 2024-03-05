@@ -163,8 +163,8 @@ class GraphQLClient:
         resp = response.json()
         errors = resp.get("errors", [])
         if len(errors) > 0:
-            print(f"Error executing query '{q.name}'")
-            print(json.dumps(errors, indent=3))
+            logging.exception(f"Error executing query '{q.name}'", 
+                              extra=json.dumps(errors, indent=3))
             raise GraphQLException
         return resp['data'][q.name]
 
@@ -234,7 +234,7 @@ class DynamoDBClient:
                     if len(unprocessed_items):
                         unprocessed_list.append(unprocessed_items)
             except Exception as e:
-                print(e)
+                logging.exception(e)
             return unprocessed_list
         
         to_put_req_item = lambda x: {'PutRequest': { 'Item': DynamoDBClient._to_attribute_val(x) }}
@@ -245,7 +245,7 @@ class DynamoDBClient:
         unprocessed_list = None
         for i in range(max_attempts):
             if i > 0:
-                print(f'Unproccessed items: retry attempt {i}/{max_attempts-1}')
+                logging.info(f'Unproccessed items: retry attempt {i}/{max_attempts-1}')
             unprocessed_list = write_batches(batches)
             if not len(unprocessed_list): return
             batches = partition_arr(unprocessed_list)
@@ -347,15 +347,14 @@ class InventoryValueCache:
                 self._to_write_db_input()
             )
         except Exception as e:
-            print(f'Failed to write cache to db key createdAt = {self._created_date}')
-            print(e)
+            logging.exception(f'Failed to write cache to db key createdAt = {self._created_date}', extra=str(e))
             
     @staticmethod
     def batch_write_db(client: DynamoDBClient, caches: list, table_name: str):
         items = [c._to_write_db_input() for c in caches]
         unprocessed_list = client.batch_write_item(table_name, items)
         if unprocessed_list:
-            print('Failed batch cache write. Unprocessed items:', unprocessed_list)
+            logging.warn('Failed batch cache write. Unprocessed items:', unprocessed_list)
         
         
     getInventoryValueCache = Query('getInventoryValueCache',
