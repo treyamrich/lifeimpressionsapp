@@ -42,7 +42,12 @@ class TestDynamoDBClient(unittest.TestCase):
         }
         actual = DynamoDBClient._to_attribute_val(item)
         self.assertEqual(actual, expected)
-        
+    
+    def test_write_to_db(self):
+        pass
+    
+    def test_batch_write_to_db(self):
+        pass
 
 
 if __name__ == '__main__':
