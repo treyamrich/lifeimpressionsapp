@@ -48,6 +48,6 @@ class TestMyDateTime(unittest.TestCase):
         a = datetime(1969, 12, 1, 0, 0, 0, 0, tzinfo=self.tz)
         b = datetime(1969, 12, 1, 0, 0, 0, 1, tzinfo=self.tz)
         self.assertEqual(a, min(a, b))
-    
+        
 if __name__ == '__main__':
     unittest.main()

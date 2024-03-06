@@ -9,21 +9,6 @@ import boto3
 import logging
 
 
-def handler(event, context):
-    print("received event:")
-    print(event)
-
-    return {
-        "statusCode": 200,
-        "headers": {
-            "Access-Control-Allow-Headers": "*",
-            "Access-Control-Allow-Origin": "*",
-            "Access-Control-Allow-Methods": "OPTIONS,POST,GET",
-        },
-        "body": json.dumps("Hello from your new Amplify Python lambda!"),
-    }
-
-
 def load_env_vars(file_path):
     with open(file_path, "r") as f:
         for line in f:
@@ -57,6 +42,9 @@ class MyDateTime:
     def get_now_UTC() -> datetime:
         return datetime.utcnow().replace(tzinfo=timezone.utc)
 
+    def get_time_in_tz(t: datetime, hour_offset: int):
+        return t.replace(tzinfo=timezone(timedelta(hours=hour_offset)))
+        
     @staticmethod
     def to_tz(utc_time: datetime, hour_offset: int):
         tz = timezone(timedelta(hours=hour_offset))
@@ -70,7 +58,7 @@ class MyDateTime:
 
     @staticmethod
     def to_month_start(dt: datetime):
-        return dt.replace(day=1, hour=0, minute=0, second=0)
+        return dt.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
     
     @staticmethod
     def date_range(start_inclusive: datetime, end_exclusive: datetime):
@@ -383,6 +371,9 @@ class Main:
         self.dynamodb_client = dynamodb_client
 
     def run(self, start_inclusive: datetime, end_exclusive: datetime):
+        if not self._validate_start_end(start_inclusive, end_exclusive):
+            return
+        
         inventory = self._list_full_inventory()
         caches: list[InventoryValueCache] = []
         prev_month = start_inclusive - relativedelta(months=1)
@@ -404,8 +395,7 @@ class Main:
             caches,
             INV_VAL_CACHE_TABLE_NAME
         )
-        
-
+            
     def calculate_inventory_balance(
         self,
         start_inclusive: datetime,
@@ -516,6 +506,16 @@ class Main:
                 q.append(curr)
 
         return q
+    
+    def _validate_start_end(self, start_inclusive: datetime, end_exclusive) -> bool:
+        to_iso = lambda x: MyDateTime.to_ISO8601(x)
+        if start_inclusive >= end_exclusive:
+            logging.warning(
+                'Start date is greater than end date', 
+                extra={'start': to_iso(start_inclusive), 'end': to_iso(end_exclusive)}
+            )
+            return False
+        return True
 
     listTshirts = Query(
         name="listTShirts",
@@ -582,7 +582,34 @@ query TshirtOrderByUpdatedAt(
   }""",
     )
 
-# Main().run()
-# client = GraphQLClient()
-# cache = InventoryValueCache(client)
-# cache.load_cache_db(datetime(1970, 1, 1, tzinfo=timezone.utc))
+def get_start_end(context):
+    TZ_OFFSET = 10  # Pacific/Honolulu timezone
+    
+    expected_keys = ['start_inclusive', 'end_exclusive']
+    had_one_key = False
+    for k in expected_keys:
+        had_one_key = had_one_key or k in context
+            
+    if not had_one_key:
+        now = MyDateTime.get_now_UTC()
+        now_tz = MyDateTime.to_tz(now, -TZ_OFFSET)
+        end = MyDateTime.to_month_start(now_tz)
+        start = end - relativedelta(months=1)
+        return start, end
+
+    try:
+        s, e = context['start_inclusive'], context['end_exclusive']
+        start = datetime(s['year'], s['month'], 1, hour=TZ_OFFSET, tzinfo=timezone.utc)
+        end = datetime(e['year'], e['month'], 1, hour=TZ_OFFSET, tzinfo=timezone.utc)
+        return start, end
+    except Exception as e:
+        logging.exception(f'Invalid start or end date\n{e}')
+        raise ValueError('Invalid start or end date')
+
+def handler(event, context):
+    logging.info(f"received event\n{event}")
+    
+    main = Main()
+    main.run(*get_start_end(context))
+    
+    return {"statusCode": 200}

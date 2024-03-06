@@ -56,6 +56,11 @@ class TestMain(unittest.TestCase):
             earliestUnsold=self.iso_earliest_unsold
         )
 
+    # def test_validate_date_range(self):
+    #     start, end = datetime(1970, 1, 1), datetime(1969, 12, 31)
+    #     res = self.main._validate_start_end(start, end)
+    #     self.assertFalse(res)
+        
     def test_month_iteration(self):
         start, end = datetime(1970, 1, 1), datetime(1970, 4, 1)
         expected_calls = [
