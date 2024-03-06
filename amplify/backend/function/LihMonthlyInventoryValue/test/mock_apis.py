@@ -98,8 +98,8 @@ inv_items = gen_inventory_items_response(num_inv_items)
 order_items = gen_order_items_responses(inv_items, num_orders_per_item)
 
 
-def get_rand_mock_inventory_item_api(): return PaginationSimulator(
-    inv_items, num_inv_pages, Main.listTshirts.name
+def get_rand_mock_inventory_item_api(items = inv_items, num_pages = num_inv_pages): return PaginationSimulator(
+    items, num_pages, Main.listTshirts.name
 )
 
 
@@ -135,10 +135,10 @@ class IncrementalOrderItemBuilder:
         self.i += 1
         return order_item
 
-def get_predictable_mock_order_item_api(partial_order_items: Iterable[dict]):
+def get_predictable_mock_order_item_api(partial_order_items: Iterable[dict], num_pages=2):
     predicable_builder = IncrementalOrderItemBuilder()
     return PaginationSimulator(
         map(lambda x: predicable_builder.get_order_item(**x), partial_order_items),
-        5,
+        num_pages,
         Main.tshirtOrderByUpdatedAt.name
     )
