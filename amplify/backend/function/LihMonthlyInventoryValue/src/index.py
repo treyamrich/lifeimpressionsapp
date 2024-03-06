@@ -151,7 +151,6 @@ class GraphQLClient:
         )
         resp = response.json()
         errors = resp.get("errors", [])
-        print(errors)
         if len(errors) > 0:
             logging.exception(f"Error executing query '{q.name}'", 
                               extra={'error': json.dumps(errors, indent=3)})
