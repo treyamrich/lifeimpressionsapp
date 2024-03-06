@@ -142,6 +142,11 @@ enum CustomerOrderStatus {
 type LastItemValue {
   aggregateValue: Float!
   itemId: ID!
+
+  tshirtStyleNumber: String!
+  tshirtColor: String!
+  tshirtSize: TShirtSize!
+
   earliestUnsold: AWSDateTime! # This is the head of the 'queue'
 
   numUnsold: Int!
@@ -152,7 +157,7 @@ type InventoryValueCache @model @auth(rules: [
   { allow: groups, groups: ["admin"], provider: userPools},
    { allow: public, provider: iam, operations: [create, read]}]) {
 
-    id: ID! @primaryKey(sortKeyFields: ["createdAt"])
     lastItemValues: [LastItemValue!]!
-    createdAt: String!
+    createdAt: AWSDate! @primaryKey
+    # Updated at will be used to get the real created at date
 }
