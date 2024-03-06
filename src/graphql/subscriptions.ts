@@ -829,6 +829,9 @@ export const onCreateInventoryValueCache = /* GraphQL */ `
       lastItemValues {
         aggregateValue
         itemId
+        tshirtStyleNumber
+        tshirtColor
+        tshirtSize
         earliestUnsold
         numUnsold
         inventoryQty
@@ -848,6 +851,9 @@ export const onUpdateInventoryValueCache = /* GraphQL */ `
       lastItemValues {
         aggregateValue
         itemId
+        tshirtStyleNumber
+        tshirtColor
+        tshirtSize
         earliestUnsold
         numUnsold
         inventoryQty
@@ -867,6 +873,9 @@ export const onDeleteInventoryValueCache = /* GraphQL */ `
       lastItemValues {
         aggregateValue
         itemId
+        tshirtStyleNumber
+        tshirtColor
+        tshirtSize
         earliestUnsold
         numUnsold
         inventoryQty

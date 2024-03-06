@@ -957,6 +957,9 @@ export const getInventoryValueCache = /* GraphQL */ `
       lastItemValues {
         aggregateValue
         itemId
+        tshirtStyleNumber
+        tshirtColor
+        tshirtSize
         earliestUnsold
         numUnsold
         inventoryQty
@@ -987,6 +990,9 @@ export const listInventoryValueCaches = /* GraphQL */ `
         lastItemValues {
           aggregateValue
           itemId
+          tshirtStyleNumber
+          tshirtColor
+          tshirtSize
           earliestUnsold
           numUnsold
           inventoryQty

@@ -100,19 +100,27 @@
     }
   },
   "parameters": {
-    "AMPLIFY_function_LihMonthlyInventoryValue_deploymentBucketName": {
+    "AMPLIFY_function_LihMonthlyInventoryValueProd_deploymentBucketName": {
       "usedBy": [
         {
           "category": "function",
-          "resourceName": "LihMonthlyInventoryValue"
+          "resourceName": "LihMonthlyInventoryValueProd"
         }
       ]
     },
-    "AMPLIFY_function_LihMonthlyInventoryValue_s3Key": {
+    "AMPLIFY_function_LihMonthlyInventoryValueProd_invValCacheTableName": {
       "usedBy": [
         {
           "category": "function",
-          "resourceName": "LihMonthlyInventoryValue"
+          "resourceName": "LihMonthlyInventoryValueProd"
+        }
+      ]
+    },
+    "AMPLIFY_function_LihMonthlyInventoryValueProd_s3Key": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "LihMonthlyInventoryValueProd"
         }
       ]
     }
