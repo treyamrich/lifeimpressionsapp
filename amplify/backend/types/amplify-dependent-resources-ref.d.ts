@@ -18,5 +18,14 @@ export type AmplifyDependentResourcesAttributes = {
     "userPoolGroups": {
       "adminGroupRole": "string"
     }
+  },
+  "function": {
+    "LihMonthlyInventoryValueProd": {
+      "Arn": "string",
+      "LambdaExecutionRole": "string",
+      "LambdaExecutionRoleArn": "string",
+      "Name": "string",
+      "Region": "string"
+    }
   }
 }

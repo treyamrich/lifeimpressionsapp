@@ -92,7 +92,23 @@
     }
   },
   "parameters": {
+    "AMPLIFY_function_LihMonthlyInventoryValueProd_deploymentBucketName": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "LihMonthlyInventoryValueProd"
+        }
+      ]
+    },
     "AMPLIFY_function_LihMonthlyInventoryValueProd_invValCacheTableName": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "LihMonthlyInventoryValueProd"
+        }
+      ]
+    },
+    "AMPLIFY_function_LihMonthlyInventoryValueProd_s3Key": {
       "usedBy": [
         {
           "category": "function",
