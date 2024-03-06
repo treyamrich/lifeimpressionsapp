@@ -599,13 +599,13 @@ query TshirtOrderByUpdatedAt(
   }""",
     )
 
-def get_start_end(context):
+def get_start_end(event):
     TZ_OFFSET = 10  # Pacific/Honolulu timezone
     
     expected_keys = ['start_inclusive', 'end_exclusive']
     had_one_key = False
     for k in expected_keys:
-        had_one_key = had_one_key or k in context
+        had_one_key = had_one_key or k in event
             
     if not had_one_key:
         now = MyDateTime.get_now_UTC()
@@ -615,7 +615,7 @@ def get_start_end(context):
         return start, end
 
     try:
-        s, e = context['start_inclusive'], context['end_exclusive']
+        s, e = event['start_inclusive'], event['end_exclusive']
         start = datetime(s['year'], s['month'], 1, hour=TZ_OFFSET, tzinfo=timezone.utc)
         end = datetime(e['year'], e['month'], 1, hour=TZ_OFFSET, tzinfo=timezone.utc)
         return start, end
@@ -627,6 +627,6 @@ def handler(event, context):
     logging.info(f"received event\n{event}")
     
     main = Main()
-    main.run(*get_start_end(context))
+    main.run(*get_start_end(event))
     
     return {"statusCode": 200}
