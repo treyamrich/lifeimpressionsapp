@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "api": {
+      "lifeimpressionsapp": [
+        "Query",
+        "Mutation"
+      ]
+    }
+  },
+  "lambdaLayers": [],
+  "environmentVariableList": [
+    {
+      "cloudFormationParameterName": "invValCacheTableName",
+      "environmentVariableName": "INV_VAL_CACHE_TABLE_NAME"
+    }
+  ]
+}

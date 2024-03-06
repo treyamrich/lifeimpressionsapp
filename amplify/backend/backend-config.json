@@ -74,5 +74,31 @@
       "service": "Cognito-UserPool-Groups"
     }
   },
-  "function": {}
+  "function": {
+    "LihMonthlyInventoryValueProd": {
+      "build": true,
+      "dependsOn": [
+        {
+          "attributes": [
+            "GraphQLAPIIdOutput",
+            "GraphQLAPIEndpointOutput"
+          ],
+          "category": "api",
+          "resourceName": "lifeimpressionsapp"
+        }
+      ],
+      "providerPlugin": "awscloudformation",
+      "service": "Lambda"
+    }
+  },
+  "parameters": {
+    "AMPLIFY_function_LihMonthlyInventoryValueProd_invValCacheTableName": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "LihMonthlyInventoryValueProd"
+        }
+      ]
+    }
+  }
 }
