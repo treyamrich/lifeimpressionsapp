@@ -4,11 +4,13 @@ from dateutil.relativedelta import relativedelta
 from datetime import datetime, timedelta, timezone
 import requests
 from dataclasses import asdict, dataclass
-# from requests_aws4auth import AWS4Auth
+from requests_aws4auth import AWS4Auth
 import boto3
+from boto3 import Session as AWSSession
 import logging
 
 
+# Dev stuff
 def load_env_vars(file_path):
     with open(file_path, "r") as f:
         for line in f:
@@ -19,8 +21,9 @@ def load_env_vars(file_path):
                 key, value = line.split("=", 1)
                 os.environ[key.strip()] = value.strip()
 
-
-load_env_vars(os.path.join("..", ".env"))
+path = os.path.join("..", ".env")
+if os.path.exists(path):
+    load_env_vars(path)
 
 GRAPHQL_ENDPOINT = os.environ["API_LIFEIMPRESSIONSAPP_GRAPHQLAPIENDPOINTOUTPUT"]
 ACCESS_KEY = os.environ["AWS_ACCESS_KEY_ID"]
@@ -125,22 +128,24 @@ class GraphQLClient:
         self.headers = {
             "Accept": "application/json",
             "Content-Type": "application/json",
-            "x-api-key": os.environ["API_KEY"],  # REMOVE AFTER
+            # "x-api-key": os.environ["API_KEY"],  # REMOVE AFTER
         }
-        # aws = AWSSession(aws_access_key_id=ACCESS_KEY,
-        #     aws_secret_access_key=ACCESS_KEY_SECRET,
-        #     region_name=REGION
-        # )
-        # credentials = aws.get_credentials().get_frozen_credentials()
-        # auth = AWS4Auth(
-        #     credentials.access_key,
-        #     credentials.secret_key,
-        #     aws.region_name,
-        #     target_service,
-        #     session_token=credentials.token,
-        # )
+
+        aws = AWSSession(aws_access_key_id=ACCESS_KEY,
+            aws_secret_access_key=ACCESS_KEY_SECRET,
+            region_name=REGION
+        )
+        credentials = aws.get_credentials().get_frozen_credentials()
+        auth = AWS4Auth(
+            credentials.access_key,
+            credentials.secret_key,
+            aws.region_name,
+            target_service,
+            session_token=credentials.token,
+        )
+
         self.session = requests.Session()
-        # self.session.auth = auth
+        self.session.auth = auth
 
     def make_request(self, q: Query, variables: dict):
         response = self.session.request(
