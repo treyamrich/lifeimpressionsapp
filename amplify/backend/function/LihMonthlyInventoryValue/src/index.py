@@ -151,9 +151,10 @@ class GraphQLClient:
         )
         resp = response.json()
         errors = resp.get("errors", [])
+        print(errors)
         if len(errors) > 0:
             logging.exception(f"Error executing query '{q.name}'", 
-                              extra=json.dumps(errors, indent=3))
+                              extra={'error': json.dumps(errors, indent=3)})
             raise GraphQLException
         return resp['data'][q.name]
 
@@ -336,7 +337,7 @@ class InventoryValueCache:
                 self._to_write_db_input()
             )
         except Exception as e:
-            logging.exception(f'Failed to write cache to db key createdAt = {self._created_date}', extra=str(e))
+            logging.exception(f'Failed to write cache to db key createdAt = {self._created_date}', extra={'error': str(e)})
             
     @staticmethod
     def batch_write_db(client: DynamoDBClient, caches: list, table_name: str):
@@ -459,8 +460,8 @@ class Main:
     ):
         start = inventory_item.earliestUnsold \
             if inventory_item.earliestUnsold else MyDateTime.to_ISO8601(start_inclusive)
-        end = MyDateTime.to_ISO8601(end_exclusive)
-        
+        end = MyDateTime.to_ISO8601(end_exclusive - relativedelta(seconds=1))
+
         it = PaginationIterator(
             self.graphql_client,
             Main.tshirtOrderByUpdatedAt,
@@ -468,7 +469,7 @@ class Main:
                 "indexField": inventory_item.itemId,
                 "sortDirection": Main.SORT_DIRECTION_ASC,
                 "limit": Main.QUERY_PAGE_LIMIT,
-                "updatedAt": {'ge': start, 'lt': end}
+                "updatedAt": {'between': [start, end]},
             },
         )
 
@@ -613,3 +614,5 @@ def handler(event, context):
     main.run(*get_start_end(context))
     
     return {"statusCode": 200}
+
+handler({}, {})
