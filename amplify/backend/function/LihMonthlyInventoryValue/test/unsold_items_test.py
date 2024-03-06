@@ -23,7 +23,7 @@ class TestGetUnsoldItems(unittest.TestCase):
         self.mock_graphql_client \
             .make_request.side_effect = mock_apis.get_predictable_mock_order_item_api(data)
         unsold = self.main \
-            ._get_unsold_items(InventoryItemValue('some id', 0, 0, 0, 'earliest unsold'), self.dummy_dt, self.dummy_dt)
+            ._get_unsold_items(InventoryItemValue.default('some_id'), self.dummy_dt, self.dummy_dt)
         return unsold
     
     def _transform_data(self, data: list):

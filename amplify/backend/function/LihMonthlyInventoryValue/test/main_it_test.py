@@ -48,13 +48,12 @@ class TestMain(unittest.TestCase):
         )
         
     def _build_inv_cache_item(self, item_id: str, cum_val=1, num_unsold=1):
-        return InventoryItemValue(
-            itemId=item_id, 
-            aggregateValue=cum_val, 
-            numUnsold=num_unsold, 
-            inventoryQty=0, 
-            earliestUnsold=self.iso_earliest_unsold
-        )
+        res = InventoryItemValue.default(item_id)
+        res.aggregateValue = cum_val
+        res.numUnsold = num_unsold
+        res.inventoryQty = 0
+        res.earliestUnsold = self.iso_earliest_unsold
+        return res
 
     # def test_validate_date_range(self):
     #     start, end = datetime(1970, 1, 1), datetime(1969, 12, 31)

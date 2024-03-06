@@ -30,7 +30,10 @@ class TestInventoryValueCache(unittest.TestCase):
             'itemId': itemId,
             'earliestUnsold': "",
             'numUnsold': 2,
-            'inventoryQty': 5
+            'inventoryQty': 5,
+            'tshirtStyleNumber': '',
+            'tshirtColor': '',
+            'tshirtSize': ''
         }
 
     def _set_mock_get_cache_resp(self, items: list[dict], created_at: str = '1970-01-01'):

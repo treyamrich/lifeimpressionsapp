@@ -288,6 +288,23 @@ class InventoryItemValue:
     numUnsold: int
     inventoryQty: int
     earliestUnsold: str
+    
+    tshirtStyleNumber: str
+    tshirtColor: str
+    tshirtSize: str
+    
+    @staticmethod
+    def default(key: str):
+        return InventoryItemValue(
+            itemId=key,
+            earliestUnsold=None,
+            aggregateValue=0.0,
+            numUnsold=0,
+            inventoryQty=0,
+            tshirtStyleNumber='',
+            tshirtColor='',
+            tshirtSize=''
+        )
 
 
 class InventoryValueCache:
@@ -305,13 +322,7 @@ class InventoryValueCache:
     def __getitem__(self, key) -> InventoryItemValue:
         return self._data.get(
             key,
-            InventoryItemValue(
-                itemId=key,
-                earliestUnsold=None,
-                aggregateValue=0.0,
-                numUnsold=0,
-                inventoryQty=0,
-            ),
+            InventoryItemValue.default(key),
         )
     
     def _to_write_db_input(self) -> dict:
@@ -412,6 +423,9 @@ class Main:
                 end_exclusive
             )
             v.inventoryQty = item.quantityOnHand
+            v.tshirtColor = item.color
+            v.tshirtSize = item.size
+            v.tshirtStyleNumber = item.styleNumber
             new_cache[item.id] = v
 
         return new_cache
@@ -443,13 +457,11 @@ class Main:
             # This may be a customer order, when num_unsold < 0. It's just where we left off.
             earliest_unsold = unsold_items[0].updatedAt
 
-        return InventoryItemValue(
-            itemId=prev_inventory_item.itemId,
-            aggregateValue=total_value,
-            earliestUnsold=earliest_unsold,
-            numUnsold=num_unsold,
-            inventoryQty=0,  # Populated later
-        )
+        res = InventoryItemValue.default(prev_inventory_item.itemId)
+        res.aggregateValue = total_value
+        res.earliestUnsold = earliest_unsold
+        res.numUnsold = num_unsold
+        return res
 
     def _get_unsold_items(
         self, 
@@ -613,5 +625,3 @@ def handler(event, context):
     main.run(*get_start_end(context))
     
     return {"statusCode": 200}
-
-handler({}, {})

@@ -147,6 +147,11 @@ enum CustomerOrderStatus {
 type LastItemValue {
   aggregateValue: Float!
   itemId: ID!
+
+  tshirtStyleNumber: String!
+  tshirtColor: String!
+  tshirtSize: TShirtSize!
+
   earliestUnsold: AWSDateTime! # This is the head of the 'queue'
 
   numUnsold: Int!
