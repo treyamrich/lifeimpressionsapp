@@ -6,7 +6,6 @@ import requests
 from dataclasses import asdict, dataclass
 from requests_aws4auth import AWS4Auth
 import boto3
-from boto3 import Session as AWSSession
 import logging
 
 
@@ -130,22 +129,18 @@ class GraphQLClient:
             "Content-Type": "application/json",
             # "x-api-key": os.environ["API_KEY"],  # REMOVE AFTER
         }
-
-        aws = AWSSession(aws_access_key_id=ACCESS_KEY,
-            aws_secret_access_key=ACCESS_KEY_SECRET,
-            region_name=REGION
-        )
-        credentials = aws.get_credentials().get_frozen_credentials()
-        auth = AWS4Auth(
+        
+        session = requests.Session()
+        credentials = boto3.session.Session().get_credentials()
+        session.auth = AWS4Auth(
             credentials.access_key,
             credentials.secret_key,
-            aws.region_name,
-            target_service,
-            session_token=credentials.token,
+            boto3.session.Session().region_name,
+            'appsync',
+            session_token=credentials.token
         )
 
-        self.session = requests.Session()
-        self.session.auth = auth
+        self.session = session
 
     def make_request(self, q: Query, variables: dict):
         response = self.session.request(
@@ -157,8 +152,7 @@ class GraphQLClient:
         resp = response.json()
         errors = resp.get("errors", [])
         if len(errors) > 0:
-            logging.exception(f"Error executing query '{q.name}'", 
-                              extra={'error': json.dumps(errors, indent=3)})
+            logging.exception(f"Error executing query '{q.name}'\n{json.dumps(errors, indent=3)}")
             raise GraphQLException
         return resp['data'][q.name]
 
@@ -168,8 +162,6 @@ class DynamoDBClient:
         
         self.client = boto3.client(
             'dynamodb',
-            aws_access_key_id=os.environ['AWS_ACCESS_KEY_ID'],
-            aws_secret_access_key=os.environ['AWS_SECRET_ACCESS_KEY'],
             region_name='us-west-2'
         ) if not client else client
         
