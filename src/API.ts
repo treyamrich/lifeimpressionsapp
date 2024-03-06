@@ -38,6 +38,7 @@ export enum TShirtSize {
   ThreeX = "ThreeX",
   FourX = "FourX",
   FiveX = "FiveX",
+  OS = "OS",
 }
 
 

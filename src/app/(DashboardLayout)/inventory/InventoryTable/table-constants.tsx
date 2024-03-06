@@ -32,6 +32,7 @@ export const tshirtSizeToLabel: any = {
   [TShirtSize.ThreeX]: "3X",
   [TShirtSize.FourX]: "4X",
   [TShirtSize.FiveX]: "5X",
+  [TShirtSize.OS]: "One Size"
 };
 
 export const tshirtTypeToLabel: any = {

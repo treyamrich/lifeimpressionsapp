@@ -37,6 +37,7 @@ enum TShirtSize {
   ThreeX
   FourX
   FiveX
+  OS
 }
 
 enum TShirtType {
