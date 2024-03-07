@@ -1,5 +1,7 @@
 import {
   CustomerOrder,
+  InventoryValueCache,
+  LastItemValue,
   ModelCustomerOrderFilterInput,
   ModelPurchaseOrderFilterInput,
   ModelSortDirection,
@@ -27,12 +29,10 @@ export type RequestFilters = {
 export const getOrderRequestFilters = (form: FormState) => {
   const { dateEnd, dateStart, includeDeletedCOs, includeDeletedPOs } = form;
   const excludeDeletedFilter = { isDeleted: { ne: true } };
-  const createdAtRangeFilter = {
-    between: [
-      dateStart.startOf("day").toISOString(),
-      dateEnd.endOf("day").toISOString(),
-    ],
-  };
+  const start = dateStart.startOf("day").toISOString();
+  const end = dateEnd.endOf("day").toISOString();
+  const createdAtRangeFilter = { between: [start, end] };
+
   let poFilter = undefined;
   let coFilter = undefined;
   if (!includeDeletedPOs) {
@@ -44,7 +44,7 @@ export const getOrderRequestFilters = (form: FormState) => {
   return { poFilter, coFilter, createdAtRangeFilter };
 };
 
-export const handleReportRequest = async (
+export const handleOrderReportRequest = async (
   form: FormState,
   rescueDBOperationBatch: <T>(
     batchItems: AsyncBatchItem<T>[],
@@ -253,3 +253,40 @@ export const downloadDetailedReport = (
   const csvName = `LIH-DetailedReport-${todaysDate}.csv`;
   downloadCSV(csvName, headers, enhancedOrderItems);
 };
+
+export const downloadInventoryValueCSV = (inventoryValue: InventoryValueCache) => {
+  const { createdAt, updatedAt, lastItemValues } = inventoryValue;
+
+  let rows = lastItemValues.map((itemValue: LastItemValue) => 
+    ({...itemValue, earliestUnsold: toReadableDateTime(itemValue.earliestUnsold)}));
+
+  let headers: CSVHeader[] = [
+    { columnKey: "itemId", headerName: "Item ID" },
+
+    { columnKey: "tshirtStyleNumber", headerName: "Style No." },
+    { columnKey: "tshirtColor", headerName: "Color" },
+    { columnKey: "tshirtSize", headerName: "Size" },
+
+    { columnKey: "aggregateValue", headerName: "Total Value" },
+    { columnKey: "earliestUnsold", headerName: "Earliest Unsold Item Date" },
+    { columnKey: "numUnsold", headerName: "# Unsold" },
+    { columnKey: "inventoryQty", headerName: "Inventory Qty. as of Report Generation Date"}
+  ];
+
+  const reportDate = createdAt.split('-');
+  const month = reportDate[1];
+  const year = reportDate[0];
+  const formattedDate = `${month}/${year}`;
+
+  const titleHeader = [
+    `Report for ${formattedDate}`,
+    `Report generated on ${toReadableDateTime(updatedAt)}`,
+    `Warning: Inventory Qty is shown as of the report generation date NOT report date.`,
+    "Info: '# Unsold' is expected to be equal to the inventory quantity when the report generation date was this past month",
+    "Info: 'Total Value' column will have values = 0 even if the 'No. of Unsold' was negative ie. inventory was oversold.",
+    "It's not possible to get the cost/unit of the over sold item; however, those customer orders will consume from the next arrived purchase order",
+  ].join('\n');
+
+  const csvName = `LIH-Inventory-Value-${inventoryValue.createdAt}.csv`;
+  downloadCSV(csvName, headers, rows, titleHeader);
+}

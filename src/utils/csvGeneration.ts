@@ -9,7 +9,7 @@ declare global {
     }
 }
 
-export const downloadCSV = (filename: string, headers: CSVHeader[], data: any[]): Blob => {
+export const downloadCSV = (filename: string, headers: CSVHeader[], data: any[], titleHeader?: string): Blob => {
 
     const processRow = (row: any) =>
         headers.map(header => processRowValue(row[header.columnKey])).join(',') + '\n';
@@ -23,6 +23,11 @@ export const downloadCSV = (filename: string, headers: CSVHeader[], data: any[])
     }
 
     let csvFile = '';
+
+    if(titleHeader) {
+        csvFile += `${titleHeader}\n\n`
+    }
+
     csvFile += headers.map(h => processRowValue(h.headerName)).join(',') + '\n';
     data.forEach(row => {
         csvFile += processRow(row)

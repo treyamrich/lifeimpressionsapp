@@ -17,12 +17,15 @@ import {
   OrderChange,
   ModelOrderChangeFilterInput,
   OrderChangesByCreatedAtQuery,
+  GetInventoryValueCacheQueryVariables,
+  GetInventoryValueCacheQuery,
 } from "@/API";
 import { API } from "aws-amplify";
 import { GraphQLQuery } from "@aws-amplify/api";
 import {
   customerOrdersByCreatedAt,
   getCustomerOrder,
+  getInventoryValueCache,
   getPurchaseOrder,
   orderChangesByCreatedAt,
   purchaseOrdersByCreatedAt,
@@ -237,6 +240,8 @@ export const listOrderChangeHistoryAPI = async (
   return resp;
 };
 
+
+
 export const getPurchaseOrderAPI = async ({
   id,
 }: GetPurchaseOrderQueryVariables) => {
@@ -272,3 +277,26 @@ export const getCustomerOrderAPI = async ({
     });
   return resp;
 };
+
+export const getInventoryValueAPI = async({ 
+  createdAt 
+}: GetInventoryValueCacheQueryVariables) => {
+  const resp = await API.graphql<GraphQLQuery<GetInventoryValueCacheQuery>>({
+    query: getInventoryValueCache,
+    variables: { createdAt: createdAt },
+    authMode: configuredAuthMode
+  })
+  .then(res => {
+    const data = res.data?.getInventoryValueCache;
+    if(!data) throw new Error('Inventory value report was not found.')
+    return data;
+  })
+  .catch(e => {
+    console.log(e);
+    if(e.message === 'Inventory value report was not found.') {
+      throw Error(e.message)
+    }
+    throw new Error("Failed to fetch inventory value")
+  })
+  return resp
+}
