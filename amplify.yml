@@ -3,8 +3,9 @@ backend:
   phases:
     preBuild:
       commands:
-      - rm /usr/bin/python3
-      - ln -s /usr/local/bin/python3.8 /usr/bin/python3
+      # python3.8 is installed in this folder
+      - export PATH=/usr/local/bin:$PATH
+      - pip3.8 install pipenv
     build:
       commands:
         - '# Execute Amplify CLI with the helper script'
