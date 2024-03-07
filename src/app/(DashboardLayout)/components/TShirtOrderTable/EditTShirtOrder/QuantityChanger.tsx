@@ -49,7 +49,6 @@ const QuantityChanger = ({ newQty, setNewQty, title, currentQty, allowNewQtyToBe
                             <StrictIntegerInput
                                 initialValue={newQty}
                                 onChange={newVal => setNewQty(newVal)}
-                                label={undefined}
                                 name="qty-changer-int-input"
                             />
                             </Grid>
