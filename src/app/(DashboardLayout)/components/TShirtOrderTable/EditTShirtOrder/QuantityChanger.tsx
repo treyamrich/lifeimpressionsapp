@@ -1,5 +1,6 @@
 import { Button, FormLabel, Grid, Typography } from "@mui/material";
 import { SetStateAction } from "react";
+import StrictIntegerInput from "../../inputs/StrictNumberInput";
 
 type QuantityChangerProps = {
     newQty: number;
@@ -44,7 +45,14 @@ const QuantityChanger = ({ newQty, setNewQty, title, currentQty, allowNewQtyToBe
                                     -
                                 </Button>
                             </Grid>
-                            <Grid item>{newQty}</Grid>
+                            <Grid item>
+                            <StrictIntegerInput
+                                initialValue={newQty}
+                                onChange={newVal => setNewQty(newVal)}
+                                label={undefined}
+                                name="qty-changer-int-input"
+                            />
+                            </Grid>
                             <Grid item>
                                 <Button
                                     color="success"
