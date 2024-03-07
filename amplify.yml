@@ -3,8 +3,8 @@ backend:
   phases:
     preBuild:
       commands:
-      # python3.8 is installed in this folder
-      - export PATH=/usr/local/bin:$PATH
+      - rm /usr/bin/python3
+      - ln -s /usr/local/bin/python3.8 /usr/bin/python3
       - pip3.8 install pipenv
     build:
       commands:
