@@ -17,7 +17,7 @@ import {
 import { toReadableDateTime } from "@/utils/datetimeConversions";
 import { FormState } from "./GenerateReportForm";
 import { Order } from "./page";
-import { CSVHeader, downloadCSV } from "@/utils/csvGeneration";
+import { CSVHeader, downloadCSV, processCSVCell } from "@/utils/csvGeneration";
 import { OrderTotal } from "@/utils/orderTotal";
 import dayjs from "dayjs";
 
@@ -282,10 +282,10 @@ export const downloadInventoryValueCSV = (inventoryValue: InventoryValueCache) =
     `Report for ${formattedDate}`,
     `Report generated on ${toReadableDateTime(updatedAt)}`,
     `Warning: Inventory Qty is shown as of the report generation date NOT report date.`,
-    "Info: '# Unsold' is expected to be equal to the inventory quantity when the report generation date was this past month",
-    "Info: 'Total Value' column will have values = 0 even if the 'No. of Unsold' was negative ie. inventory was oversold.",
-    "It's not possible to get the cost/unit of the over sold item; however, those customer orders will consume from the next arrived purchase order",
-  ].join('\n');
+    'Info: "# Unsold" is expected to be equal to the inventory quantity when the report generation date was this past month',
+    'Info: "Total Value" column will have values = 0 even if the "No. of Unsold" was negative ie. inventory was oversold.',
+    'It\'s not possible to get the cost/unit of the over sold item; however, those customer orders will consume from the next arrived purchase order',
+  ].map(processCSVCell).join(',\n');
 
   const csvName = `LIH-Inventory-Value-Report-${formattedDate}.csv`;
   downloadCSV(csvName, headers, rows, titleHeader);
