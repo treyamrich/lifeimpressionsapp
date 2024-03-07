@@ -9,18 +9,18 @@ declare global {
     }
 }
 
+export const processCSVCell = (value: any): string => {
+    let innerValue = value.toString();
+    let result = innerValue.replace(/"/g, '""');
+    if (result.search(/("|,|\n)/g) >= 0)
+        result = '"' + result + '"';
+    return result
+}
+
 export const downloadCSV = (filename: string, headers: CSVHeader[], data: any[], titleHeader?: string): Blob => {
 
     const processRow = (row: any) =>
-        headers.map(header => processRowValue(row[header.columnKey])).join(',') + '\n';
-
-    const processRowValue = (value: any): string => {
-        let innerValue = value.toString();
-        let result = innerValue.replace(/"/g, '""');
-        if (result.search(/("|,|\n)/g) >= 0)
-            result = '"' + result + '"';
-        return result
-    }
+        headers.map(header => processCSVCell(row[header.columnKey])).join(',') + '\n';
 
     let csvFile = '';
 
@@ -28,7 +28,7 @@ export const downloadCSV = (filename: string, headers: CSVHeader[], data: any[],
         csvFile += `${titleHeader}\n\n`
     }
 
-    csvFile += headers.map(h => processRowValue(h.headerName)).join(',') + '\n';
+    csvFile += headers.map(h => processCSVCell(h.headerName)).join(',') + '\n';
     data.forEach(row => {
         csvFile += processRow(row)
     })
