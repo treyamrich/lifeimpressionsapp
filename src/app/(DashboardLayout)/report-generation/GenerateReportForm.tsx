@@ -16,11 +16,15 @@ import {
   Stack,
   Typography,
 } from "@mui/material";
-import DownloadIcon from '@mui/icons-material/Download';
-import { DateTimePicker } from "@mui/x-date-pickers";
+import DownloadIcon from "@mui/icons-material/Download";
+import { DatePicker } from "@mui/x-date-pickers";
 import { Dayjs } from "dayjs";
 import { useState } from "react";
-import { getEndOfDay, getStartOfDay } from "@/utils/datetimeConversions";
+import {
+  getEndOfDay,
+  getStartOfDay,
+  getStartOfMonth,
+} from "@/utils/datetimeConversions";
 
 const checkboxLabels: any = {
   includePOs: "Purchase Orders",
@@ -33,6 +37,7 @@ const checkboxLabels: any = {
 export enum ReportType {
   HighLevel = "highLevel",
   Detailed = "detailed",
+  InventoryValue = "inventoryValue",
 }
 
 const radiobuttons: any = {
@@ -42,7 +47,11 @@ const radiobuttons: any = {
   },
   tshirtLevel: {
     label: "Detailed with T-Shirt info",
-    value: ReportType.Detailed, 
+    value: ReportType.Detailed,
+  },
+  inventoryValueLevel: {
+    label: "Inventory Value",
+    value: ReportType.InventoryValue,
   },
 };
 
@@ -61,6 +70,8 @@ export type FormState = {
   reportType: ReportType;
 
   errMsg: string;
+
+  yearAndMonth: Dayjs; // For inventory balance
 };
 
 const getInitialFormState = (): FormState => ({
@@ -73,6 +84,7 @@ const getInitialFormState = (): FormState => ({
   includeZeroQtyOrders: false,
   reportType: ReportType.HighLevel,
   errMsg: "",
+  yearAndMonth: getStartOfMonth(-1),
 });
 
 const ReportGenerationForm = ({
@@ -82,7 +94,7 @@ const ReportGenerationForm = ({
 }) => {
   const [formState, setFormState] = useState(getInitialFormState());
 
-  const { dateStart, dateEnd, errMsg } = formState;
+  const { dateStart, dateEnd, errMsg, yearAndMonth, reportType } = formState;
 
   const updateFormField = (key: string, value: any) => {
     setFormState({ ...formState, [key]: value });
@@ -94,23 +106,35 @@ const ReportGenerationForm = ({
       return;
     }
     onSubmit({ ...formState });
-    //resetForm();
   };
 
   const renderDateRangeInput = () => (
     <Stack direction={"row"} spacing={3}>
-      <DateTimePicker
-        label="Start of day"
-        value={dateStart}
-        onChange={(newVal: any) => updateFormField("dateStart", newVal)}
-        views={["year", "month", "day"]}
-      />
-      <DateTimePicker
-        label="End of day"
-        value={dateEnd}
-        onChange={(newVal: any) => updateFormField("dateEnd", newVal)}
-        views={["year", "month", "day"]}
-      />
+      {reportType !== ReportType.InventoryValue ? (
+        <>
+          <DatePicker
+            label="Start of day"
+            value={dateStart}
+            onChange={(newVal: any) => updateFormField("dateStart", newVal)}
+            views={["year", "month", "day"]}
+          />
+          <DatePicker
+            label="End of day"
+            value={dateEnd}
+            onChange={(newVal: any) => updateFormField("dateEnd", newVal)}
+            views={["year", "month", "day"]}
+          />
+        </>
+      ) : (
+        <DatePicker
+          label="Date"
+          value={yearAndMonth}
+          onChange={(newVal: any) => updateFormField("yearAndMonth", newVal)}
+          views={["year", "month"]}
+          openTo="month"
+          maxDate={getStartOfMonth(-1)}
+        />
+      )}
     </Stack>
   );
 
@@ -174,7 +198,7 @@ const ReportGenerationForm = ({
         onClick={handleSubmit}
         type="submit"
       >
-        <DownloadIcon/>
+        <DownloadIcon />
       </Button>
     </Box>
   );
@@ -193,7 +217,7 @@ const ReportGenerationForm = ({
             }}
           >
             {renderDateRangeInput()}
-            {renderCheckboxes()}
+            {reportType !== ReportType.InventoryValue && (renderCheckboxes())}
             {renderRadiobuttons()}
 
             {renderErrorMessages()}

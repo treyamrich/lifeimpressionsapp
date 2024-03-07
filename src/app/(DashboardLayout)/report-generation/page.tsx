@@ -3,13 +3,13 @@
 import DashboardCard from "@/app/(DashboardLayout)/components/shared/DashboardCard";
 import PageContainer from "../components/container/PageContainer";
 import GenerateReportForm, { FormState, ReportType } from "./GenerateReportForm";
-import { TShirtOrder } from "../../../API";
-import { useState } from "react";
-import { downloadDetailedReport, downloadHighLevelReport, handleReportRequest } from "./util";
+import { InventoryValueCache, TShirtOrder } from "../../../API";
+import { downloadDetailedReport, downloadHighLevelReport, downloadInventoryValueCSV, handleOrderReportRequest } from "./util";
 import dayjs from "dayjs";
-import { useDBOperationContext } from "@/contexts/DBErrorContext";
+import { DBOperation, useDBOperationContext } from "@/contexts/DBErrorContext";
 import { getTodayInSetTz, toReadableDateTime } from "@/utils/datetimeConversions";
 import { OrderTotal, calculateOrderTotal } from "@/utils/orderTotal";
+import { getInventoryValueAPI } from "@/graphql-helpers/fetch-apis";
 
 export interface Order {
   __typename: string;
@@ -24,10 +24,19 @@ export interface Order {
 }
 
 const ReportGeneration = () => {
-  const { rescueDBOperationBatch } = useDBOperationContext();
+  const { rescueDBOperationBatch, rescueDBOperation } = useDBOperationContext();
 
-  const handleGenerateSubmission = async (form: FormState) => {
-    const orders = await handleReportRequest(form, rescueDBOperationBatch);
+  const handleGenerateSubmission = (form: FormState) => {
+    if(form.reportType === ReportType.InventoryValue) {
+      handleInventoryValueReport(form);
+      return;
+    }
+    handleOrderReports(form);
+  };
+
+  const handleOrderReports = async (form: FormState) => {
+    const orders = await handleOrderReportRequest(form, rescueDBOperationBatch);
+
     // Sorting by the date the order was modified
     orders.sort((a, b) => {
       let l, r;
@@ -53,7 +62,18 @@ const ReportGeneration = () => {
             );
             downloadHighLevelReport(orders, orderIdToTotalMap, today, showDeletedOrderColumn)
     }
-  };
+  }
+
+  const handleInventoryValueReport = async (form: FormState) => {
+    const createdAt = form.yearAndMonth.format('YYYY-MM-DD');
+    rescueDBOperation(
+      () => getInventoryValueAPI({createdAt}),
+      DBOperation.GET,
+      (resp: InventoryValueCache) => {
+        downloadInventoryValueCSV(resp);
+      }
+    )
+  }
 
   return (
     <PageContainer
