@@ -1,10 +1,15 @@
 version: 1
-# backend:
-#   phases:
-#     build:
-#       commands:
-#         - '# Execute Amplify CLI with the helper script'
-#         - amplifyPush --simple
+backend:
+  phases:
+    preBuild:
+      commands:
+      - rm /usr/bin/python3
+      - ln -s /usr/local/bin/python3.8 /usr/bin/python3
+    build:
+      commands:
+        - '# Execute Amplify CLI with the helper script'
+        - amplifyPush --simple
+
 frontend:
   phases:
     preBuild:
