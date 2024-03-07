@@ -195,8 +195,10 @@ export const downloadDetailedReport = (
   let csvData: any[] = orders;
   const enhancedOrderItems = csvData.flatMap((order) => {
     const orderCreatedAt = toReadableDateTime(order.createdAt);
+    const isPO = order.__typename === 'PurchaseOrder';
     // const updatedAt = toReadableDateTime(order.updatedAt);
     return order.orderedItems.map((orderItem: TShirtOrder) => {
+      const amountReceived = isPO ? orderItem.amountReceived : 'N/A';
       return {
         orderId: order.id,
         orderNumber: order.orderNumber,
@@ -212,6 +214,7 @@ export const downloadDetailedReport = (
         tshirtColor: orderItem.tshirt.color,
         tshirtSize: orderItem.tshirt.size,
 
+        amountReceived: amountReceived,
         orderedQuantity: orderItem.quantity,
         costPerUnit: orderItem.costPerUnit,
         itemDiscounts: orderItem.discount,
@@ -242,6 +245,7 @@ export const downloadDetailedReport = (
     { columnKey: "tshirtColor", headerName: "Color" },
     { columnKey: "tshirtSize", headerName: "Size" },
     { columnKey: "orderedQuantity", headerName: "Qty" },
+    { columnKey: "amountReceived", headerName: "Amt. Received" },
     { columnKey: "costPerUnit", headerName: "Cost Per Unit ($/unit)" },
     { columnKey: "itemDiscounts", headerName: "Item Discounts" },
   ];
@@ -250,8 +254,22 @@ export const downloadDetailedReport = (
     headers = headers.filter(header => header.columnKey !== "orderIsDeleted");
   }
 
+  const titleHeader = [
+    `Report generated on ${todaysDate}`,
+    '',
+    'Info: An Order Item aka Order Transaction consists of cost/unit, qty, and item SKU',
+    '',
+    `Info: Transactions are sorted by the "Order Item: Last Modified" column"`,
+    '',
+    'Info: The column "Transaction Group ID" assumes the form <Order_ID>@<Item_ID>',
+    'The transaction group id is used to group modifications to an order which have spanned over multiple months.',
+    'For example, if a PO was placed in March but was marked as received in April.',
+    'New items were available for sale in April, but are a part of the same order.',
+    'Thus in the inventory value report, the value is calculated based on items available during the month.'
+  ].map(processCSVCell).join(',\n');
+
   const csvName = `LIH-DetailedReport-${todaysDate}.csv`;
-  downloadCSV(csvName, headers, enhancedOrderItems);
+  downloadCSV(csvName, headers, enhancedOrderItems,titleHeader);
 };
 
 export const downloadInventoryValueCSV = (inventoryValue: InventoryValueCache) => {
@@ -281,8 +299,17 @@ export const downloadInventoryValueCSV = (inventoryValue: InventoryValueCache) =
   const titleHeader = [
     `Report for ${formattedDate}`,
     `Report generated on ${toReadableDateTime(updatedAt)}`,
-    `Warning: Inventory Qty is shown as of the report generation date NOT report date.`,
+    '',
+    'Warning: the item value is calculated based on items marked as received in purchase orders',
+    'If you would like the calculation to be done based on the "Quantity Ordered" in a purchase order,',
+    'you may opt to use the "Quantity Ordered" from the earliest entry in the transaction group.',
+    'The earliest entry in a Transaction Group will have the oldest "Order Date Placed" date',
+    'For more info on Transaction Groups, read the header of the "Detailed Report".',
+    '',
+    `Warning: inventory quantity is shown as of the report generation date NOT report date.`,
+    '',
     'Info: "# Unsold" is expected to be equal to the inventory quantity when the report generation date was this past month',
+    '',
     'Info: "Total Value" column will have values = 0 even if the "No. of Unsold" was negative ie. inventory was oversold.',
     'It\'s not possible to get the cost/unit of the over sold item; however, those customer orders will consume from the next arrived purchase order',
   ].map(processCSVCell).join(',\n');
