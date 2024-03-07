@@ -325,6 +325,7 @@ class InventoryValueCache:
     def _to_write_db_input(self) -> dict:
         return {
             'createdAt': MyDateTime.to_ISO8601(self._created_date, is_only_date=True),
+            'updatedAt': MyDateTime.to_ISO8601(MyDateTime.get_now_UTC()),
             'lastItemValues': list(map(lambda x: asdict(x), self._data.values()))
         }
                     
