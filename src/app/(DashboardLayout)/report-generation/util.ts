@@ -287,6 +287,6 @@ export const downloadInventoryValueCSV = (inventoryValue: InventoryValueCache) =
     "It's not possible to get the cost/unit of the over sold item; however, those customer orders will consume from the next arrived purchase order",
   ].join('\n');
 
-  const csvName = `LIH-Inventory-Value-${inventoryValue.createdAt}.csv`;
+  const csvName = `LIH-Inventory-Value-Report-${formattedDate}.csv`;
   downloadCSV(csvName, headers, rows, titleHeader);
 }
