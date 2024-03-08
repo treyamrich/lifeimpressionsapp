@@ -838,6 +838,7 @@ export const onCreateInventoryValueCache = /* GraphQL */ `
         __typename
       }
       createdAt
+      cacheIsExpired
       updatedAt
       __typename
     }
@@ -860,6 +861,7 @@ export const onUpdateInventoryValueCache = /* GraphQL */ `
         __typename
       }
       createdAt
+      cacheIsExpired
       updatedAt
       __typename
     }
@@ -882,6 +884,7 @@ export const onDeleteInventoryValueCache = /* GraphQL */ `
         __typename
       }
       createdAt
+      cacheIsExpired
       updatedAt
       __typename
     }

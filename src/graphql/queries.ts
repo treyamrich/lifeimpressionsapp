@@ -966,6 +966,7 @@ export const getInventoryValueCache = /* GraphQL */ `
         __typename
       }
       createdAt
+      cacheIsExpired
       updatedAt
       __typename
     }
@@ -999,6 +1000,7 @@ export const listInventoryValueCaches = /* GraphQL */ `
           __typename
         }
         createdAt
+        cacheIsExpired
         updatedAt
         __typename
       }
