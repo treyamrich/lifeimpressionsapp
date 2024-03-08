@@ -27,7 +27,7 @@ class TestMain(unittest.TestCase):
         
         self.cache_expire_resp = {
             'id': 'A',
-            'earliestExpired': '2020-01-01'
+            'earliestExpiredDate': '2020-01-01'
         }
     
     def _set_mock_graphql_resp(
@@ -35,7 +35,7 @@ class TestMain(unittest.TestCase):
         get_cache_resp = {}, 
         cache_expr_resp={
             'id': 'A',
-            'earliestExpired': None
+            'earliestExpiredDate': ''
     }):
         self.mock_graphql_client.make_request.side_effect = \
             [cache_expr_resp, get_cache_resp] + [x for x in mock_apis.get_rand_mock_inventory_item_api()] + [{}]
@@ -182,7 +182,7 @@ class TestMain(unittest.TestCase):
         inv_resp = [x for x in get_rand_mock_inventory_item_api(inv_items, num_inv_pages)]
 
         # Cache expiration resp
-        cache_expir_resp = { 'earliestExpired': None}
+        cache_expir_resp = { 'earliestExpiredDate': ''}
         
         # Load initial cache
         last_month = self.start.replace(year=1969, month=12)

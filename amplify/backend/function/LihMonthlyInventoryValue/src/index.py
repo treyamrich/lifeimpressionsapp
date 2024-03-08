@@ -390,11 +390,11 @@ class CacheExpiration:
         start_inclusive: datetime, 
         end_exclusive: datetime
     ) -> tuple[datetime, datetime]:
-        earliest_exp = 'earliestExpired'
+        earliest_exp = 'earliestExpiredDate'
         resp = self._graphql_client.make_request(CacheExpiration.getCacheExpiration, { 'id': 'A'})
-        if not resp or resp[earliest_exp] == None: 
+        if not resp or resp[earliest_exp] == '': 
             return start_inclusive, end_exclusive
-        
+
         new_start_incl = datetime.strptime(resp[earliest_exp], '%Y-%m-%d') \
             .replace(tzinfo=timezone(timedelta(hours=TZ_UTC_HOUR_OFFSET)))
         new_end_excl = MyDateTime.curr_month_start_in_tz(TZ_UTC_HOUR_OFFSET)
@@ -409,34 +409,56 @@ class CacheExpiration:
     
     def write_cache_renewal(self):
         self._graphql_client.make_request(
-            CacheExpiration.updateCacheExpiration, {
-                'input': {
-                    'id': 'A',
-                    'earliestExpired': None,
-                }
-            })
+            CacheExpiration.updateCacheExpiration, 
+            CacheExpiration.initial_cache_state_input
+        )
+        
+    def create_cache_expiration(self):
+        self._graphql_client.make_request(
+            CacheExpiration.createCacheExpiration,
+            CacheExpiration.initial_cache_state_input
+        )
     
-    getCacheExpiration = Query('getCacheExpiration',
+    initial_cache_state_input = {
+        'input': {
+            'id': 'A',
+            'earliestExpiredDate': ''
+        }
+    }
+    
+    createCacheExpiration = Query('createCacheExpiration', 
     """
-    query GetCacheExpiration($id: String!) {
-        getCacheExpiration(id: $id) {
-            id
-            earliestExpired
-            updatedAt
+    mutation CreateCacheExpiration(
+        $input: CreateCacheExpirationInput!
+        $condition: ModelCacheExpirationConditionInput
+    ) {
+        createCacheExpiration(input: $input, condition: $condition) {
+            earliestExpiredDate
         }
     }
     """)
     
+    getCacheExpiration = Query('getCacheExpiration',
+    """
+        query GetCacheExpiration($id: String!) {
+            getCacheExpiration(id: $id) {
+                id
+                earliestExpiredDate
+                updatedAt
+            }
+        }
+    """)
+    
     updateCacheExpiration = Query('updateCacheExpiration',
     """
-    mutation UpdateCacheExpiration(
-        $input: UpdateCacheExpirationInput!
-        $condition: ModelCacheExpirationConditionInput
-    ) {
-        updateCacheExpiration(input: $input, condition: $condition) {
-            earliestExpired
+        mutation UpdateCacheExpiration(
+            $input: UpdateCacheExpirationInput!
+            $condition: ModelCacheExpirationConditionInput
+        ) {
+            updateCacheExpiration(input: $input, condition: $condition) {
+                earliestExpiredDate
+            }
         }
-    }
     """)
     
 

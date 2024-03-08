@@ -918,7 +918,7 @@ export const createCacheExpiration = /* GraphQL */ `
   ) {
     createCacheExpiration(input: $input, condition: $condition) {
       id
-      earliestExpired
+      earliestExpiredDate
       createdAt
       updatedAt
       __typename
@@ -932,7 +932,7 @@ export const updateCacheExpiration = /* GraphQL */ `
   ) {
     updateCacheExpiration(input: $input, condition: $condition) {
       id
-      earliestExpired
+      earliestExpiredDate
       createdAt
       updatedAt
       __typename
@@ -946,7 +946,7 @@ export const deleteCacheExpiration = /* GraphQL */ `
   ) {
     deleteCacheExpiration(input: $input, condition: $condition) {
       id
-      earliestExpired
+      earliestExpiredDate
       createdAt
       updatedAt
       __typename

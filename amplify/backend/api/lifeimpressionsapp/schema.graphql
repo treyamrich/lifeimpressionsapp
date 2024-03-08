@@ -174,5 +174,5 @@ type CacheExpiration @model @auth(rules: [
    { allow: public, provider: iam, operations: [create, read]},
    { allow: public, provider: apiKey, operations: [create, read, update]}]) {
     id: String! @primaryKey
-    earliestExpired: AWSDate
+    earliestExpiredDate: String
 }

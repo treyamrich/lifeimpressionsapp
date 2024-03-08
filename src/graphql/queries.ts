@@ -1011,7 +1011,7 @@ export const getCacheExpiration = /* GraphQL */ `
   query GetCacheExpiration($id: String!) {
     getCacheExpiration(id: $id) {
       id
-      earliestExpired
+      earliestExpiredDate
       createdAt
       updatedAt
       __typename
@@ -1035,7 +1035,7 @@ export const listCacheExpirations = /* GraphQL */ `
     ) {
       items {
         id
-        earliestExpired
+        earliestExpiredDate
         createdAt
         updatedAt
         __typename

@@ -568,11 +568,11 @@ export type DeleteInventoryValueCacheInput = {
 
 export type CreateCacheExpirationInput = {
   id?: string | null,
-  earliestExpired?: string | null,
+  earliestExpiredDate?: string | null,
 };
 
 export type ModelCacheExpirationConditionInput = {
-  earliestExpired?: ModelStringInput | null,
+  earliestExpiredDate?: ModelStringInput | null,
   and?: Array< ModelCacheExpirationConditionInput | null > | null,
   or?: Array< ModelCacheExpirationConditionInput | null > | null,
   not?: ModelCacheExpirationConditionInput | null,
@@ -581,14 +581,14 @@ export type ModelCacheExpirationConditionInput = {
 export type CacheExpiration = {
   __typename: "CacheExpiration",
   id: string,
-  earliestExpired?: string | null,
+  earliestExpiredDate?: string | null,
   createdAt: string,
   updatedAt: string,
 };
 
 export type UpdateCacheExpirationInput = {
   id: string,
-  earliestExpired?: string | null,
+  earliestExpiredDate?: string | null,
 };
 
 export type DeleteCacheExpirationInput = {
@@ -737,7 +737,7 @@ export type ModelInventoryValueCacheConnection = {
 
 export type ModelCacheExpirationFilterInput = {
   id?: ModelStringInput | null,
-  earliestExpired?: ModelStringInput | null,
+  earliestExpiredDate?: ModelStringInput | null,
   and?: Array< ModelCacheExpirationFilterInput | null > | null,
   or?: Array< ModelCacheExpirationFilterInput | null > | null,
   not?: ModelCacheExpirationFilterInput | null,
@@ -889,7 +889,7 @@ export type ModelSubscriptionInventoryValueCacheFilterInput = {
 
 export type ModelSubscriptionCacheExpirationFilterInput = {
   id?: ModelSubscriptionStringInput | null,
-  earliestExpired?: ModelSubscriptionStringInput | null,
+  earliestExpiredDate?: ModelSubscriptionStringInput | null,
   and?: Array< ModelSubscriptionCacheExpirationFilterInput | null > | null,
   or?: Array< ModelSubscriptionCacheExpirationFilterInput | null > | null,
 };
@@ -1830,7 +1830,7 @@ export type CreateCacheExpirationMutation = {
   createCacheExpiration?:  {
     __typename: "CacheExpiration",
     id: string,
-    earliestExpired?: string | null,
+    earliestExpiredDate?: string | null,
     createdAt: string,
     updatedAt: string,
   } | null,
@@ -1845,7 +1845,7 @@ export type UpdateCacheExpirationMutation = {
   updateCacheExpiration?:  {
     __typename: "CacheExpiration",
     id: string,
-    earliestExpired?: string | null,
+    earliestExpiredDate?: string | null,
     createdAt: string,
     updatedAt: string,
   } | null,
@@ -1860,7 +1860,7 @@ export type DeleteCacheExpirationMutation = {
   deleteCacheExpiration?:  {
     __typename: "CacheExpiration",
     id: string,
-    earliestExpired?: string | null,
+    earliestExpiredDate?: string | null,
     createdAt: string,
     updatedAt: string,
   } | null,
@@ -2849,7 +2849,7 @@ export type GetCacheExpirationQuery = {
   getCacheExpiration?:  {
     __typename: "CacheExpiration",
     id: string,
-    earliestExpired?: string | null,
+    earliestExpiredDate?: string | null,
     createdAt: string,
     updatedAt: string,
   } | null,
@@ -2869,7 +2869,7 @@ export type ListCacheExpirationsQuery = {
     items:  Array< {
       __typename: "CacheExpiration",
       id: string,
-      earliestExpired?: string | null,
+      earliestExpiredDate?: string | null,
       createdAt: string,
       updatedAt: string,
     } | null >,
@@ -3794,7 +3794,7 @@ export type OnCreateCacheExpirationSubscription = {
   onCreateCacheExpiration?:  {
     __typename: "CacheExpiration",
     id: string,
-    earliestExpired?: string | null,
+    earliestExpiredDate?: string | null,
     createdAt: string,
     updatedAt: string,
   } | null,
@@ -3808,7 +3808,7 @@ export type OnUpdateCacheExpirationSubscription = {
   onUpdateCacheExpiration?:  {
     __typename: "CacheExpiration",
     id: string,
-    earliestExpired?: string | null,
+    earliestExpiredDate?: string | null,
     createdAt: string,
     updatedAt: string,
   } | null,
@@ -3822,7 +3822,7 @@ export type OnDeleteCacheExpirationSubscription = {
   onDeleteCacheExpiration?:  {
     __typename: "CacheExpiration",
     id: string,
-    earliestExpired?: string | null,
+    earliestExpiredDate?: string | null,
     createdAt: string,
     updatedAt: string,
   } | null,
