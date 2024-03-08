@@ -966,7 +966,6 @@ export const getInventoryValueCache = /* GraphQL */ `
         __typename
       }
       createdAt
-      cacheIsExpired
       updatedAt
       __typename
     }
@@ -1000,7 +999,44 @@ export const listInventoryValueCaches = /* GraphQL */ `
           __typename
         }
         createdAt
-        cacheIsExpired
+        updatedAt
+        __typename
+      }
+      nextToken
+      __typename
+    }
+  }
+`;
+export const getCacheExpiration = /* GraphQL */ `
+  query GetCacheExpiration($id: String!) {
+    getCacheExpiration(id: $id) {
+      id
+      earliestExpired
+      createdAt
+      updatedAt
+      __typename
+    }
+  }
+`;
+export const listCacheExpirations = /* GraphQL */ `
+  query ListCacheExpirations(
+    $id: String
+    $filter: ModelCacheExpirationFilterInput
+    $limit: Int
+    $nextToken: String
+    $sortDirection: ModelSortDirection
+  ) {
+    listCacheExpirations(
+      id: $id
+      filter: $filter
+      limit: $limit
+      nextToken: $nextToken
+      sortDirection: $sortDirection
+    ) {
+      items {
+        id
+        earliestExpired
+        createdAt
         updatedAt
         __typename
       }
