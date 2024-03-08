@@ -311,6 +311,7 @@ class InventoryValueCache:
         self._dynamodb_client = dynamodb_client
         self._graphql_client = graphql_client
         self._created_date = created_date
+        self.is_expired = False
         self._table_name = table_name
 
     def __setitem__(self, key: str, value: InventoryItemValue):
@@ -326,7 +327,8 @@ class InventoryValueCache:
         return {
             'createdAt': MyDateTime.to_ISO8601(self._created_date, is_only_date=True),
             'updatedAt': MyDateTime.to_ISO8601(MyDateTime.get_now_UTC()),
-            'lastItemValues': list(map(lambda x: asdict(x), self._data.values()))
+            'lastItemValues': list(map(lambda x: asdict(x), self._data.values())),
+            'cacheIsExpired': False
         }
                     
     def read_db(self):
@@ -334,9 +336,13 @@ class InventoryValueCache:
             InventoryValueCache.getInventoryValueCache, 
             { 'createdAt': MyDateTime.to_ISO8601(self._created_date, is_only_date=True) }
         )
-        lastItemVals = resp['lastItemValues'] if resp else []
+        if not resp: 
+            return
+
+        lastItemVals = resp['lastItemValues']
         itemVals = map(lambda x: InventoryItemValue(**x), lastItemVals)
         self._data = {x.itemId: x for x in itemVals}
+        self.is_expired = resp['cacheIsExpired'] 
     
     def write_db(self):
         try:
@@ -367,10 +373,10 @@ class InventoryValueCache:
                 inventoryQty
             }
         createdAt
+        cacheIsExpired
         }
     }
     """)
-
 
 class Main:
     QUERY_PAGE_LIMIT = 100
@@ -383,12 +389,17 @@ class Main:
         if not self._validate_start_end(start_inclusive, end_exclusive):
             return
         
-        inventory = self._list_full_inventory()
-        caches: list[InventoryValueCache] = []
+        
+        
+        # a b X d e
+        
         prev_month = start_inclusive - relativedelta(months=1)
         cache_last_month = InventoryValueCache(self.graphql_client, self.dynamodb_client, prev_month, INV_VAL_CACHE_TABLE_NAME)
         cache_last_month.read_db()
           
+        inventory = self._list_full_inventory()
+        
+        caches: list[InventoryValueCache] = []
         for start, end in MyDateTime.date_range(start_inclusive, end_exclusive):
             prev_cache = caches[-1] if caches else cache_last_month
             caches.append(

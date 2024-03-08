@@ -28,7 +28,7 @@ class TestMain(unittest.TestCase):
     
     def _set_mock_graphql_resp(self, get_cache_resp = {}):
         self.mock_graphql_client.make_request.side_effect = \
-            [x for x in mock_apis.get_rand_mock_inventory_item_api()] + [get_cache_resp]
+            [get_cache_resp] + [x for x in mock_apis.get_rand_mock_inventory_item_api()] 
     
     def _set_mock_batch_write_resp(self, unprocessed_items: list):
         self.mock_dynamodb_client.batch_write_item.return_value = unprocessed_items
@@ -111,11 +111,15 @@ class TestMain(unittest.TestCase):
         self.mock_dynamodb_client.put_item.assert_called_once()
         call_list = self.mock_dynamodb_client.put_item.call_args_list
         args, _ = call_list[0]
+
+        self.assertTrue('updatedAt' in args[1])
+        del args[1]['updatedAt'] # This can't be tested
         self.assertEqual(args, (
             self.table_name, 
             { 
              'createdAt': MyDateTime.to_ISO8601(self.start, True), 
-             'lastItemValues': [asdict(item)]
+             'lastItemValues': [asdict(item)],
+             'cacheIsExpired': False
             }
         ))
         
@@ -132,7 +136,8 @@ class TestMain(unittest.TestCase):
             cache[item.itemId] = item
         expected_prev_cache = {
             'createdAt': minus_month(1), # should be str but is converted below
-            'lastItemValues': [asdict(self._build_inv_cache_item('prev_cache'))]
+            'lastItemValues': [asdict(self._build_inv_cache_item('prev_cache'))],
+            'cacheIsExpired': False
         }
         
         self._set_mock_graphql_resp(expected_prev_cache)
@@ -150,11 +155,17 @@ class TestMain(unittest.TestCase):
         
         call_list = self.mock_dynamodb_client.batch_write_item.call_args_list
         args, _ = call_list[0]
+        
         # Can't check test table name since it's tied to env vars
+        for put_item in args[1]:
+            self.assertTrue('updatedAt' in put_item)
+            del put_item['updatedAt'] # This can't be tested
+            
         self.assertEqual(args[1],
             [{ 
              'createdAt': get_created_iso(add_month(i)), 
-             'lastItemValues': [asdict(items[i])]
+             'lastItemValues': [asdict(items[i])],
+             'cacheIsExpired': False
             } for i in range(n)]
         )
 
@@ -174,7 +185,9 @@ class TestMain(unittest.TestCase):
             'lastItemValues': [
                 asdict(self._build_inv_cache_item(x.id, cum_val=i, num_unsold=x.quantityOnHand)) 
                 for i, x in enumerate(inv_items)
-            ]
+            ],
+            'cacheIsExpired': False,
+            'updatedAt': '1970-01-01T00:00:00Z'
         }
 
         # List Order Item
@@ -218,7 +231,7 @@ class TestMain(unittest.TestCase):
             lambda d: exhaust_mock_api_iterator(d)[0], 
             [data_1, data_2, data_3, data_4, data_5]
         ))
-        resps = inv_resp + [expected_prev_cache]
+        resps = [expected_prev_cache] + inv_resp
         resps.extend(order_items)
 
         self.mock_graphql_client.make_request.side_effect = resps

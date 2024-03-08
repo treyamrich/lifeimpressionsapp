@@ -36,9 +36,9 @@ class TestInventoryValueCache(unittest.TestCase):
             'tshirtSize': ''
         }
 
-    def _set_mock_get_cache_resp(self, items: list[dict], created_at: str = '1970-01-01'):
+    def _set_mock_get_cache_resp(self, items: list[dict], created_at: str = '1970-01-01', is_expired = False):
         self.mock_graphql_client.make_request.return_value = \
-            { 'lastItemValues': items, 'createdAt': created_at }
+            { 'lastItemValues': items, 'createdAt': created_at, 'cacheIsExpired': is_expired }
 
     def test_load(self):
         n = 10
