@@ -161,4 +161,7 @@ type InventoryValueCache @model @auth(rules: [
     lastItemValues: [LastItemValue!]!
     createdAt: AWSDate! @primaryKey
     # Updated at will be used to get the real created at date
+
+    # If a cache is expired, it needs to be recalculated.
+    cacheIsExpired: Boolean!
 }
