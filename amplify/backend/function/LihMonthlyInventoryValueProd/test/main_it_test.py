@@ -26,9 +26,9 @@ class TestMain(unittest.TestCase):
         self.iso_earliest_unsold = MyDateTime.to_ISO8601(self.earliest_unsold)
         self.table_name = 'test'
     
-    def _set_mock_graphql_resp(self, get_cache_resp = {}):
+    def _set_mock_graphql_resp(self, get_cache_resp = [{}]):
         self.mock_graphql_client.make_request.side_effect = \
-            [x for x in mock_apis.get_rand_mock_inventory_item_api()] + [get_cache_resp]
+            get_cache_resp + [x for x in mock_apis.get_rand_mock_inventory_item_api()] 
     
     def _set_mock_batch_write_resp(self, unprocessed_items: list):
         self.mock_dynamodb_client.batch_write_item.return_value = unprocessed_items
@@ -55,10 +55,6 @@ class TestMain(unittest.TestCase):
         res.earliestUnsold = self.iso_earliest_unsold
         return res
 
-    # def test_validate_date_range(self):
-    #     start, end = datetime(1970, 1, 1), datetime(1969, 12, 31)
-    #     res = self.main._validate_start_end(start, end)
-    #     self.assertFalse(res)
         
     def test_month_iteration(self):
         start, end = datetime(1970, 1, 1), datetime(1970, 4, 1)
@@ -98,6 +94,40 @@ class TestMain(unittest.TestCase):
             if args[0] == InventoryValueCache.getInventoryValueCache:
                 self.assertEqual(args[1], { 'createdAt': MyDateTime.to_ISO8601(last_month, True)})
     
+    def test_loading_expired_cache(self):
+        one_month_ago = self.start.replace(year=1969, month=12)
+        two_months_ago = one_month_ago.replace(month=11)
+        three_months_ago = one_month_ago.replace(month=10)
+        months = [one_month_ago, two_months_ago, three_months_ago]
+        
+        def build_cache_resp(expired=True):
+            return {
+                'lastItemValues': [],
+                'cacheIsExpired': expired
+            }
+        
+        cache_2 = build_cache_resp()
+        cache_1 = build_cache_resp()
+        cache_0 = build_cache_resp(False)
+        caches_resps = [cache_2, cache_1, cache_0]
+        
+        self._set_mock_graphql_resp(caches_resps)
+        res = self.main._get_new_bounds_and_initial_cache(self.start, self.end)
+        
+        calls = self.mock_graphql_client.make_request.call_args_list
+        for i, call in enumerate(calls):
+            args, _ = call
+            if args[0] == InventoryValueCache.getInventoryValueCache:
+                self.assertEqual(args[1], { 'createdAt': MyDateTime.to_ISO8601(months[i], True)})
+                if i > 2: self.fail("Too many cache's requested")
+        
+        new_bounds, initial_cache = res
+        s, e = new_bounds
+        self.assertFalse(initial_cache.is_expired)
+        self.assertEqual(s, two_months_ago)
+        self.assertEqual(e, MyDateTime.curr_month_start_in_tz(Main.TZ_UTC_HOUR_OFFSET))
+                
+    
     def test_save_one_cache(self):
         item = self._build_inv_cache_item('123')
         cache = self._build_inv_val_cache(self.start)
@@ -111,11 +141,15 @@ class TestMain(unittest.TestCase):
         self.mock_dynamodb_client.put_item.assert_called_once()
         call_list = self.mock_dynamodb_client.put_item.call_args_list
         args, _ = call_list[0]
+
+        self.assertTrue('updatedAt' in args[1])
+        del args[1]['updatedAt'] # This can't be tested
         self.assertEqual(args, (
             self.table_name, 
             { 
              'createdAt': MyDateTime.to_ISO8601(self.start, True), 
-             'lastItemValues': [asdict(item)]
+             'lastItemValues': [asdict(item)],
+             'cacheIsExpired': False
             }
         ))
         
@@ -132,10 +166,11 @@ class TestMain(unittest.TestCase):
             cache[item.itemId] = item
         expected_prev_cache = {
             'createdAt': minus_month(1), # should be str but is converted below
-            'lastItemValues': [asdict(self._build_inv_cache_item('prev_cache'))]
+            'lastItemValues': [asdict(self._build_inv_cache_item('prev_cache'))],
+            'cacheIsExpired': False
         }
         
-        self._set_mock_graphql_resp(expected_prev_cache)
+        self._set_mock_graphql_resp([expected_prev_cache])
         self._set_mock_batch_write_resp([])
         self.main.calculate_inventory_balance = MagicMock()
         self.main.calculate_inventory_balance.side_effect = caches
@@ -150,11 +185,17 @@ class TestMain(unittest.TestCase):
         
         call_list = self.mock_dynamodb_client.batch_write_item.call_args_list
         args, _ = call_list[0]
+        
         # Can't check test table name since it's tied to env vars
+        for put_item in args[1]:
+            self.assertTrue('updatedAt' in put_item)
+            del put_item['updatedAt'] # This can't be tested
+            
         self.assertEqual(args[1],
             [{ 
              'createdAt': get_created_iso(add_month(i)), 
-             'lastItemValues': [asdict(items[i])]
+             'lastItemValues': [asdict(items[i])],
+             'cacheIsExpired': False
             } for i in range(n)]
         )
 
@@ -174,7 +215,9 @@ class TestMain(unittest.TestCase):
             'lastItemValues': [
                 asdict(self._build_inv_cache_item(x.id, cum_val=i, num_unsold=x.quantityOnHand)) 
                 for i, x in enumerate(inv_items)
-            ]
+            ],
+            'cacheIsExpired': False,
+            'updatedAt': '1970-01-01T00:00:00Z'
         }
 
         # List Order Item
@@ -218,7 +261,7 @@ class TestMain(unittest.TestCase):
             lambda d: exhaust_mock_api_iterator(d)[0], 
             [data_1, data_2, data_3, data_4, data_5]
         ))
-        resps = inv_resp + [expected_prev_cache]
+        resps = [expected_prev_cache] + inv_resp
         resps.extend(order_items)
 
         self.mock_graphql_client.make_request.side_effect = resps

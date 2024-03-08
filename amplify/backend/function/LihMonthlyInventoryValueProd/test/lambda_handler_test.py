@@ -45,7 +45,6 @@ class TestLambdaHandler(unittest.TestCase):
             
     def test_get_now_start_end(self):
         get_start_end({})
-    
         
         
 if __name__ == '__main__':
