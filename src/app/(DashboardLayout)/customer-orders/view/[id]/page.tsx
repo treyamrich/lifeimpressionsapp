@@ -362,7 +362,10 @@ const OrderedItemsTable = ({
                 {" "}
                 decrease the ordered quantity
               </span>
-              {" "} which increases inventory quantity.
+              {" "} which increases inventory quantity. This invalidates previous
+              {" "} inventory value reports from the date this order was placed
+              {" "} and the most recent month's report. The next time a report is generated,
+              {" "} the old reports will also be regenerated.
             </Typography>
           </MoreInfoAccordian>
         )}
