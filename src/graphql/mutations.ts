@@ -860,7 +860,6 @@ export const createInventoryValueCache = /* GraphQL */ `
         __typename
       }
       createdAt
-      cacheIsExpired
       updatedAt
       __typename
     }
@@ -884,7 +883,6 @@ export const updateInventoryValueCache = /* GraphQL */ `
         __typename
       }
       createdAt
-      cacheIsExpired
       updatedAt
       __typename
     }
@@ -908,7 +906,48 @@ export const deleteInventoryValueCache = /* GraphQL */ `
         __typename
       }
       createdAt
-      cacheIsExpired
+      updatedAt
+      __typename
+    }
+  }
+`;
+export const createCacheExpiration = /* GraphQL */ `
+  mutation CreateCacheExpiration(
+    $input: CreateCacheExpirationInput!
+    $condition: ModelCacheExpirationConditionInput
+  ) {
+    createCacheExpiration(input: $input, condition: $condition) {
+      id
+      earliestExpiredDate
+      createdAt
+      updatedAt
+      __typename
+    }
+  }
+`;
+export const updateCacheExpiration = /* GraphQL */ `
+  mutation UpdateCacheExpiration(
+    $input: UpdateCacheExpirationInput!
+    $condition: ModelCacheExpirationConditionInput
+  ) {
+    updateCacheExpiration(input: $input, condition: $condition) {
+      id
+      earliestExpiredDate
+      createdAt
+      updatedAt
+      __typename
+    }
+  }
+`;
+export const deleteCacheExpiration = /* GraphQL */ `
+  mutation DeleteCacheExpiration(
+    $input: DeleteCacheExpirationInput!
+    $condition: ModelCacheExpirationConditionInput
+  ) {
+    deleteCacheExpiration(input: $input, condition: $condition) {
+      id
+      earliestExpiredDate
+      createdAt
       updatedAt
       __typename
     }

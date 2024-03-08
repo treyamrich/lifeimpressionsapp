@@ -838,7 +838,6 @@ export const onCreateInventoryValueCache = /* GraphQL */ `
         __typename
       }
       createdAt
-      cacheIsExpired
       updatedAt
       __typename
     }
@@ -861,7 +860,6 @@ export const onUpdateInventoryValueCache = /* GraphQL */ `
         __typename
       }
       createdAt
-      cacheIsExpired
       updatedAt
       __typename
     }
@@ -884,7 +882,45 @@ export const onDeleteInventoryValueCache = /* GraphQL */ `
         __typename
       }
       createdAt
-      cacheIsExpired
+      updatedAt
+      __typename
+    }
+  }
+`;
+export const onCreateCacheExpiration = /* GraphQL */ `
+  subscription OnCreateCacheExpiration(
+    $filter: ModelSubscriptionCacheExpirationFilterInput
+  ) {
+    onCreateCacheExpiration(filter: $filter) {
+      id
+      earliestExpiredDate
+      createdAt
+      updatedAt
+      __typename
+    }
+  }
+`;
+export const onUpdateCacheExpiration = /* GraphQL */ `
+  subscription OnUpdateCacheExpiration(
+    $filter: ModelSubscriptionCacheExpirationFilterInput
+  ) {
+    onUpdateCacheExpiration(filter: $filter) {
+      id
+      earliestExpiredDate
+      createdAt
+      updatedAt
+      __typename
+    }
+  }
+`;
+export const onDeleteCacheExpiration = /* GraphQL */ `
+  subscription OnDeleteCacheExpiration(
+    $filter: ModelSubscriptionCacheExpirationFilterInput
+  ) {
+    onDeleteCacheExpiration(filter: $filter) {
+      id
+      earliestExpiredDate
+      createdAt
       updatedAt
       __typename
     }

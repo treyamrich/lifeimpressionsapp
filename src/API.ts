@@ -519,7 +519,6 @@ export type DeleteCustomerOrderInput = {
 export type CreateInventoryValueCacheInput = {
   lastItemValues: Array< LastItemValueInput >,
   createdAt: string,
-  cacheIsExpired: boolean,
 };
 
 export type LastItemValueInput = {
@@ -534,7 +533,6 @@ export type LastItemValueInput = {
 };
 
 export type ModelInventoryValueCacheConditionInput = {
-  cacheIsExpired?: ModelBooleanInput | null,
   and?: Array< ModelInventoryValueCacheConditionInput | null > | null,
   or?: Array< ModelInventoryValueCacheConditionInput | null > | null,
   not?: ModelInventoryValueCacheConditionInput | null,
@@ -544,7 +542,6 @@ export type InventoryValueCache = {
   __typename: "InventoryValueCache",
   lastItemValues:  Array<LastItemValue >,
   createdAt: string,
-  cacheIsExpired: boolean,
   updatedAt: string,
 };
 
@@ -563,11 +560,39 @@ export type LastItemValue = {
 export type UpdateInventoryValueCacheInput = {
   lastItemValues?: Array< LastItemValueInput > | null,
   createdAt: string,
-  cacheIsExpired?: boolean | null,
 };
 
 export type DeleteInventoryValueCacheInput = {
   createdAt: string,
+};
+
+export type CreateCacheExpirationInput = {
+  id?: string | null,
+  earliestExpiredDate?: string | null,
+};
+
+export type ModelCacheExpirationConditionInput = {
+  earliestExpiredDate?: ModelStringInput | null,
+  and?: Array< ModelCacheExpirationConditionInput | null > | null,
+  or?: Array< ModelCacheExpirationConditionInput | null > | null,
+  not?: ModelCacheExpirationConditionInput | null,
+};
+
+export type CacheExpiration = {
+  __typename: "CacheExpiration",
+  id: string,
+  earliestExpiredDate?: string | null,
+  createdAt: string,
+  updatedAt: string,
+};
+
+export type UpdateCacheExpirationInput = {
+  id: string,
+  earliestExpiredDate?: string | null,
+};
+
+export type DeleteCacheExpirationInput = {
+  id: string,
 };
 
 export type ModelTShirtFilterInput = {
@@ -699,7 +724,6 @@ export type ModelCustomerOrderConnection = {
 
 export type ModelInventoryValueCacheFilterInput = {
   createdAt?: ModelStringInput | null,
-  cacheIsExpired?: ModelBooleanInput | null,
   and?: Array< ModelInventoryValueCacheFilterInput | null > | null,
   or?: Array< ModelInventoryValueCacheFilterInput | null > | null,
   not?: ModelInventoryValueCacheFilterInput | null,
@@ -708,6 +732,20 @@ export type ModelInventoryValueCacheFilterInput = {
 export type ModelInventoryValueCacheConnection = {
   __typename: "ModelInventoryValueCacheConnection",
   items:  Array<InventoryValueCache | null >,
+  nextToken?: string | null,
+};
+
+export type ModelCacheExpirationFilterInput = {
+  id?: ModelStringInput | null,
+  earliestExpiredDate?: ModelStringInput | null,
+  and?: Array< ModelCacheExpirationFilterInput | null > | null,
+  or?: Array< ModelCacheExpirationFilterInput | null > | null,
+  not?: ModelCacheExpirationFilterInput | null,
+};
+
+export type ModelCacheExpirationConnection = {
+  __typename: "ModelCacheExpirationConnection",
+  items:  Array<CacheExpiration | null >,
   nextToken?: string | null,
 };
 
@@ -845,9 +883,15 @@ export type ModelSubscriptionCustomerOrderFilterInput = {
 
 export type ModelSubscriptionInventoryValueCacheFilterInput = {
   createdAt?: ModelSubscriptionStringInput | null,
-  cacheIsExpired?: ModelSubscriptionBooleanInput | null,
   and?: Array< ModelSubscriptionInventoryValueCacheFilterInput | null > | null,
   or?: Array< ModelSubscriptionInventoryValueCacheFilterInput | null > | null,
+};
+
+export type ModelSubscriptionCacheExpirationFilterInput = {
+  id?: ModelSubscriptionStringInput | null,
+  earliestExpiredDate?: ModelSubscriptionStringInput | null,
+  and?: Array< ModelSubscriptionCacheExpirationFilterInput | null > | null,
+  or?: Array< ModelSubscriptionCacheExpirationFilterInput | null > | null,
 };
 
 export type CreateTShirtMutationVariables = {
@@ -1725,7 +1769,6 @@ export type CreateInventoryValueCacheMutation = {
       inventoryQty: number,
     } >,
     createdAt: string,
-    cacheIsExpired: boolean,
     updatedAt: string,
   } | null,
 };
@@ -1750,7 +1793,6 @@ export type UpdateInventoryValueCacheMutation = {
       inventoryQty: number,
     } >,
     createdAt: string,
-    cacheIsExpired: boolean,
     updatedAt: string,
   } | null,
 };
@@ -1775,7 +1817,51 @@ export type DeleteInventoryValueCacheMutation = {
       inventoryQty: number,
     } >,
     createdAt: string,
-    cacheIsExpired: boolean,
+    updatedAt: string,
+  } | null,
+};
+
+export type CreateCacheExpirationMutationVariables = {
+  input: CreateCacheExpirationInput,
+  condition?: ModelCacheExpirationConditionInput | null,
+};
+
+export type CreateCacheExpirationMutation = {
+  createCacheExpiration?:  {
+    __typename: "CacheExpiration",
+    id: string,
+    earliestExpiredDate?: string | null,
+    createdAt: string,
+    updatedAt: string,
+  } | null,
+};
+
+export type UpdateCacheExpirationMutationVariables = {
+  input: UpdateCacheExpirationInput,
+  condition?: ModelCacheExpirationConditionInput | null,
+};
+
+export type UpdateCacheExpirationMutation = {
+  updateCacheExpiration?:  {
+    __typename: "CacheExpiration",
+    id: string,
+    earliestExpiredDate?: string | null,
+    createdAt: string,
+    updatedAt: string,
+  } | null,
+};
+
+export type DeleteCacheExpirationMutationVariables = {
+  input: DeleteCacheExpirationInput,
+  condition?: ModelCacheExpirationConditionInput | null,
+};
+
+export type DeleteCacheExpirationMutation = {
+  deleteCacheExpiration?:  {
+    __typename: "CacheExpiration",
+    id: string,
+    earliestExpiredDate?: string | null,
+    createdAt: string,
     updatedAt: string,
   } | null,
 };
@@ -2720,7 +2806,6 @@ export type GetInventoryValueCacheQuery = {
       inventoryQty: number,
     } >,
     createdAt: string,
-    cacheIsExpired: boolean,
     updatedAt: string,
   } | null,
 };
@@ -2750,7 +2835,42 @@ export type ListInventoryValueCachesQuery = {
         inventoryQty: number,
       } >,
       createdAt: string,
-      cacheIsExpired: boolean,
+      updatedAt: string,
+    } | null >,
+    nextToken?: string | null,
+  } | null,
+};
+
+export type GetCacheExpirationQueryVariables = {
+  id: string,
+};
+
+export type GetCacheExpirationQuery = {
+  getCacheExpiration?:  {
+    __typename: "CacheExpiration",
+    id: string,
+    earliestExpiredDate?: string | null,
+    createdAt: string,
+    updatedAt: string,
+  } | null,
+};
+
+export type ListCacheExpirationsQueryVariables = {
+  id?: string | null,
+  filter?: ModelCacheExpirationFilterInput | null,
+  limit?: number | null,
+  nextToken?: string | null,
+  sortDirection?: ModelSortDirection | null,
+};
+
+export type ListCacheExpirationsQuery = {
+  listCacheExpirations?:  {
+    __typename: "ModelCacheExpirationConnection",
+    items:  Array< {
+      __typename: "CacheExpiration",
+      id: string,
+      earliestExpiredDate?: string | null,
+      createdAt: string,
       updatedAt: string,
     } | null >,
     nextToken?: string | null,
@@ -3616,7 +3736,6 @@ export type OnCreateInventoryValueCacheSubscription = {
       inventoryQty: number,
     } >,
     createdAt: string,
-    cacheIsExpired: boolean,
     updatedAt: string,
   } | null,
 };
@@ -3640,7 +3759,6 @@ export type OnUpdateInventoryValueCacheSubscription = {
       inventoryQty: number,
     } >,
     createdAt: string,
-    cacheIsExpired: boolean,
     updatedAt: string,
   } | null,
 };
@@ -3664,7 +3782,48 @@ export type OnDeleteInventoryValueCacheSubscription = {
       inventoryQty: number,
     } >,
     createdAt: string,
-    cacheIsExpired: boolean,
+    updatedAt: string,
+  } | null,
+};
+
+export type OnCreateCacheExpirationSubscriptionVariables = {
+  filter?: ModelSubscriptionCacheExpirationFilterInput | null,
+};
+
+export type OnCreateCacheExpirationSubscription = {
+  onCreateCacheExpiration?:  {
+    __typename: "CacheExpiration",
+    id: string,
+    earliestExpiredDate?: string | null,
+    createdAt: string,
+    updatedAt: string,
+  } | null,
+};
+
+export type OnUpdateCacheExpirationSubscriptionVariables = {
+  filter?: ModelSubscriptionCacheExpirationFilterInput | null,
+};
+
+export type OnUpdateCacheExpirationSubscription = {
+  onUpdateCacheExpiration?:  {
+    __typename: "CacheExpiration",
+    id: string,
+    earliestExpiredDate?: string | null,
+    createdAt: string,
+    updatedAt: string,
+  } | null,
+};
+
+export type OnDeleteCacheExpirationSubscriptionVariables = {
+  filter?: ModelSubscriptionCacheExpirationFilterInput | null,
+};
+
+export type OnDeleteCacheExpirationSubscription = {
+  onDeleteCacheExpiration?:  {
+    __typename: "CacheExpiration",
+    id: string,
+    earliestExpiredDate?: string | null,
+    createdAt: string,
     updatedAt: string,
   } | null,
 };

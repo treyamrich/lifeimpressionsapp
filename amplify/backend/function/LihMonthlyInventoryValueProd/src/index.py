@@ -30,7 +30,7 @@ ACCESS_KEY_SECRET = os.environ["AWS_SECRET_ACCESS_KEY"]
 REGION = os.environ["REGION"]
 target_service = "appsync"
 INV_VAL_CACHE_TABLE_NAME = os.environ["INV_VAL_CACHE_TABLE_NAME"]
-
+TZ_UTC_HOUR_OFFSET = -10
 
 class MyDateTime:
 
@@ -134,7 +134,7 @@ class GraphQLClient:
         self.headers = {
             "Accept": "application/json",
             "Content-Type": "application/json",
-            # "x-api-key": os.environ["API_KEY"],  # REMOVE AFTER
+            # "x-api-key": os.environ["API_KEY"],
         }
         
         session = requests.Session()
@@ -318,7 +318,6 @@ class InventoryValueCache:
         self._dynamodb_client = dynamodb_client
         self._graphql_client = graphql_client
         self._created_date = created_date
-        self.is_expired = False
         self._table_name = table_name
 
     def __setitem__(self, key: str, value: InventoryItemValue):
@@ -335,7 +334,6 @@ class InventoryValueCache:
             'createdAt': MyDateTime.to_ISO8601(self._created_date, is_only_date=True),
             'updatedAt': MyDateTime.to_ISO8601(MyDateTime.get_now_UTC()),
             'lastItemValues': list(map(lambda x: asdict(x), self._data.values())),
-            'cacheIsExpired': False
         }
                     
     def read_db(self):
@@ -349,7 +347,6 @@ class InventoryValueCache:
         lastItemVals = resp['lastItemValues']
         itemVals = map(lambda x: InventoryItemValue(**x), lastItemVals)
         self._data = {x.itemId: x for x in itemVals}
-        self.is_expired = resp['cacheIsExpired'] 
     
     def write_db(self):
         try:
@@ -380,10 +377,90 @@ class InventoryValueCache:
                 inventoryQty
             }
         createdAt
-        cacheIsExpired
         }
     }
     """)
+
+class CacheExpiration:
+    def __init__(self, graphql_client: GraphQLClient = GraphQLClient()):
+        self._graphql_client = graphql_client
+    
+    def get_expired_cache_range(
+        self, 
+        start_inclusive: datetime, 
+        end_exclusive: datetime
+    ) -> tuple[datetime, datetime]:
+        earliest_exp = 'earliestExpiredDate'
+        resp = self._graphql_client.make_request(CacheExpiration.getCacheExpiration, { 'id': 'A'})
+        if not resp or resp[earliest_exp] == '': 
+            return start_inclusive, end_exclusive
+
+        new_start_incl = datetime.strptime(resp[earliest_exp], '%Y-%m-%d') \
+            .replace(tzinfo=timezone(timedelta(hours=TZ_UTC_HOUR_OFFSET)))
+        new_end_excl = MyDateTime.curr_month_start_in_tz(TZ_UTC_HOUR_OFFSET)
+        
+        dFmt = lambda x: x.strftime("%Y-%m-%d %H:%M:%S %Z")
+        logging.warning("\n".join([
+            f'Caches expired starting {new_start_incl}',
+            f'Recalculating caches between the range: {dFmt(new_start_incl)} - {dFmt(new_end_excl)}',
+        ]))
+            
+        return new_start_incl, new_end_excl
+    
+    def write_cache_renewal(self):
+        self._graphql_client.make_request(
+            CacheExpiration.updateCacheExpiration, 
+            CacheExpiration.initial_cache_state_input
+        )
+        
+    def create_cache_expiration(self):
+        self._graphql_client.make_request(
+            CacheExpiration.createCacheExpiration,
+            CacheExpiration.initial_cache_state_input
+        )
+    
+    initial_cache_state_input = {
+        'input': {
+            'id': 'A',
+            'earliestExpiredDate': ''
+        }
+    }
+    
+    createCacheExpiration = Query('createCacheExpiration', 
+    """
+    mutation CreateCacheExpiration(
+        $input: CreateCacheExpirationInput!
+        $condition: ModelCacheExpirationConditionInput
+    ) {
+        createCacheExpiration(input: $input, condition: $condition) {
+            earliestExpiredDate
+        }
+    }
+    """)
+    
+    getCacheExpiration = Query('getCacheExpiration',
+    """
+        query GetCacheExpiration($id: String!) {
+            getCacheExpiration(id: $id) {
+                id
+                earliestExpiredDate
+                updatedAt
+            }
+        }
+    """)
+    
+    updateCacheExpiration = Query('updateCacheExpiration',
+    """
+        mutation UpdateCacheExpiration(
+            $input: UpdateCacheExpirationInput!
+            $condition: ModelCacheExpirationConditionInput
+        ) {
+            updateCacheExpiration(input: $input, condition: $condition) {
+                earliestExpiredDate
+            }
+        }
+    """)
+    
 
 class Main:
     QUERY_PAGE_LIMIT = 100
@@ -398,26 +475,36 @@ class Main:
         if not self._validate_start_end(start_inclusive, end_exclusive):
             return
         
-        new_bounds, initial_cache = self._get_new_bounds_and_initial_cache(start_inclusive, end_exclusive)
-        new_start_incl, new_end_incl = new_bounds
+        cache_expiration = CacheExpiration(self.graphql_client)
+        new_start_incl, new_end_excl = cache_expiration.get_expired_cache_range(start_inclusive, end_exclusive)
+        
+        prev_month = new_start_incl - relativedelta(months=1)
+        cache_last_month = InventoryValueCache(
+            self.graphql_client, 
+            self.dynamodb_client, 
+            prev_month, 
+            INV_VAL_CACHE_TABLE_NAME
+        )
+        cache_last_month.read_db()
           
         inventory = self._list_full_inventory()
         caches: list[InventoryValueCache] = []
-        for start, end in MyDateTime.date_range(new_start_incl, new_end_incl):
-            prev_cache = caches[-1] if caches else initial_cache
+        for start, end in MyDateTime.date_range(new_start_incl, new_end_excl):
+            prev_cache = caches[-1] if caches else cache_last_month
             caches.append(
                 self.calculate_inventory_balance(start, end, inventory, prev_cache)
             )
         
         if len(caches) == 1:
             caches[0].write_db()
-            return
-        
-        InventoryValueCache.batch_write_db(
-            self.dynamodb_client,
-            caches,
-            INV_VAL_CACHE_TABLE_NAME
-        )
+        else:
+            InventoryValueCache.batch_write_db(
+                self.dynamodb_client,
+                caches,
+                INV_VAL_CACHE_TABLE_NAME
+            )
+            
+        cache_expiration.write_cache_renewal()
             
     def calculate_inventory_balance(
         self,
@@ -441,44 +528,6 @@ class Main:
             new_cache[item.id] = v
 
         return new_cache
-
-    def _get_new_bounds_and_initial_cache(
-        self, 
-        start_inclusive: datetime,
-        end_exclusive: datetime
-    ) -> tuple[tuple[datetime, datetime], InventoryValueCache]:
-
-        new_start_incl, cache_last_month = start_inclusive, None
-        while True:
-            prev_month = new_start_incl - relativedelta(months=1)
-            cache_last_month = InventoryValueCache(
-                self.graphql_client, 
-                self.dynamodb_client, 
-                prev_month, 
-                INV_VAL_CACHE_TABLE_NAME
-            )
-            cache_last_month.read_db()
-            
-            if not cache_last_month.is_expired:
-                break
-        
-            new_start_incl = prev_month
-        
-        if new_start_incl != start_inclusive:
-            # Need to re-calculate up to the most recent cache
-            new_end_excl = MyDateTime.curr_month_start_in_tz(Main.TZ_UTC_HOUR_OFFSET)
-            
-            dFmt = lambda x: x.strftime("%Y-%m-%d %H:%M:%S %Z")
-            logging.warning("\n".join([
-                f'Original date range was: {dFmt(start_inclusive)} - {dFmt(end_exclusive)}',
-                f'Updated date range: {dFmt(new_start_incl)} - {dFmt(new_end_excl)}',
-                f'IF exists, earliest non-expired cache: {dFmt(prev_month)}'
-            ]))
-            
-            return ((new_start_incl, new_end_excl), cache_last_month)
-        
-        return ((start_inclusive, end_exclusive), cache_last_month)
-        
     
     def _list_full_inventory(self) -> list[InventoryItem]:
         it = PaginationIterator(
@@ -643,6 +692,7 @@ query TshirtOrderByUpdatedAt(
     }
   }""",
     )
+    
 
 def get_start_end(event):
     expected_keys = ['start_inclusive', 'end_exclusive']
@@ -651,12 +701,12 @@ def get_start_end(event):
         had_one_key = had_one_key or k in event
             
     if not had_one_key:
-        end = MyDateTime.curr_month_start_in_tz(Main.TZ_UTC_HOUR_OFFSET)
+        end = MyDateTime.curr_month_start_in_tz(TZ_UTC_HOUR_OFFSET)
         start = end - relativedelta(months=1)
         return start, end
 
     try:
-        hr_offset_pos = abs(Main.TZ_UTC_HOUR_OFFSET)
+        hr_offset_pos = abs(TZ_UTC_HOUR_OFFSET)
         s, e = event['start_inclusive'], event['end_exclusive']
         start = datetime(s['year'], s['month'], 1, hour=hr_offset_pos, tzinfo=timezone.utc)
         end = datetime(e['year'], e['month'], 1, hour=hr_offset_pos, tzinfo=timezone.utc)
@@ -668,7 +718,8 @@ def get_start_end(event):
 def handler(event, context):
     logging.info(f"received event\n{event}")
     
-    main = Main()
-    main.run(*get_start_end(event))
+    # main = Main()
+    # main.run(*get_start_end(event))
+    CacheExpiration(GraphQLClient()).create_cache_expiration()
     
     return {"statusCode": 200}
