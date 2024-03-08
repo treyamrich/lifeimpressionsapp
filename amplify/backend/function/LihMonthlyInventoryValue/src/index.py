@@ -61,6 +61,13 @@ class MyDateTime:
     @staticmethod
     def to_month_start(dt: datetime):
         return dt.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+
+    @staticmethod
+    def curr_month_start_in_tz(hour_offset: int) -> datetime:
+        now = MyDateTime.get_now_UTC()
+        now_tz = MyDateTime.to_tz(now, hour_offset)
+        end = MyDateTime.to_month_start(now_tz)
+        return end
     
     @staticmethod
     def date_range(start_inclusive: datetime, end_exclusive: datetime):
@@ -381,6 +388,8 @@ class InventoryValueCache:
 class Main:
     QUERY_PAGE_LIMIT = 100
     SORT_DIRECTION_ASC = "ASC"
+    TZ_UTC_HOUR_OFFSET = -10 # Pacific/Honolulu timezone
+    
     def __init__(self, graphql_client: GraphQLClient = GraphQLClient(), dynamodb_client: DynamoDBClient = DynamoDBClient()):
         self.graphql_client = graphql_client
         self.dynamodb_client = dynamodb_client
@@ -389,19 +398,13 @@ class Main:
         if not self._validate_start_end(start_inclusive, end_exclusive):
             return
         
-        
-        
-        # a b X d e
-        
-        prev_month = start_inclusive - relativedelta(months=1)
-        cache_last_month = InventoryValueCache(self.graphql_client, self.dynamodb_client, prev_month, INV_VAL_CACHE_TABLE_NAME)
-        cache_last_month.read_db()
+        new_bounds, initial_cache = self._get_new_bounds_and_initial_cache(start_inclusive, end_exclusive)
+        new_start_incl, new_end_incl = new_bounds
           
         inventory = self._list_full_inventory()
-        
         caches: list[InventoryValueCache] = []
-        for start, end in MyDateTime.date_range(start_inclusive, end_exclusive):
-            prev_cache = caches[-1] if caches else cache_last_month
+        for start, end in MyDateTime.date_range(new_start_incl, new_end_incl):
+            prev_cache = caches[-1] if caches else initial_cache
             caches.append(
                 self.calculate_inventory_balance(start, end, inventory, prev_cache)
             )
@@ -439,6 +442,44 @@ class Main:
 
         return new_cache
 
+    def _get_new_bounds_and_initial_cache(
+        self, 
+        start_inclusive: datetime,
+        end_exclusive: datetime
+    ) -> tuple[tuple[datetime, datetime], InventoryValueCache]:
+
+        new_start_incl, cache_last_month = start_inclusive, None
+        while True:
+            prev_month = new_start_incl - relativedelta(months=1)
+            cache_last_month = InventoryValueCache(
+                self.graphql_client, 
+                self.dynamodb_client, 
+                prev_month, 
+                INV_VAL_CACHE_TABLE_NAME
+            )
+            cache_last_month.read_db()
+            
+            if not cache_last_month.is_expired:
+                break
+        
+            new_start_incl = prev_month
+        
+        if new_start_incl != start_inclusive:
+            # Need to re-calculate up to the most recent cache
+            new_end_excl = MyDateTime.curr_month_start_in_tz(Main.TZ_UTC_HOUR_OFFSET)
+            
+            dFmt = lambda x: x.strftime("%Y-%m-%d %H:%M:%S %Z")
+            logging.warning("\n".join([
+                f'Original date range was: {dFmt(start_inclusive)} - {dFmt(end_exclusive)}',
+                f'Updated date range: {dFmt(new_start_incl)} - {dFmt(new_end_excl)}',
+                f'IF exists, earliest non-expired cache: {dFmt(prev_month)}'
+            ]))
+            
+            return ((new_start_incl, new_end_excl), cache_last_month)
+        
+        return ((start_inclusive, end_exclusive), cache_last_month)
+        
+    
     def _list_full_inventory(self) -> list[InventoryItem]:
         it = PaginationIterator(
             self.graphql_client, Main.listTshirts, {"limit": Main.QUERY_PAGE_LIMIT}
@@ -604,24 +645,21 @@ query TshirtOrderByUpdatedAt(
     )
 
 def get_start_end(event):
-    TZ_OFFSET = 10  # Pacific/Honolulu timezone
-    
     expected_keys = ['start_inclusive', 'end_exclusive']
     had_one_key = False
     for k in expected_keys:
         had_one_key = had_one_key or k in event
             
     if not had_one_key:
-        now = MyDateTime.get_now_UTC()
-        now_tz = MyDateTime.to_tz(now, -TZ_OFFSET)
-        end = MyDateTime.to_month_start(now_tz)
+        end = MyDateTime.curr_month_start_in_tz(Main.TZ_UTC_HOUR_OFFSET)
         start = end - relativedelta(months=1)
         return start, end
 
     try:
+        hr_offset_pos = abs(Main.TZ_UTC_HOUR_OFFSET)
         s, e = event['start_inclusive'], event['end_exclusive']
-        start = datetime(s['year'], s['month'], 1, hour=TZ_OFFSET, tzinfo=timezone.utc)
-        end = datetime(e['year'], e['month'], 1, hour=TZ_OFFSET, tzinfo=timezone.utc)
+        start = datetime(s['year'], s['month'], 1, hour=hr_offset_pos, tzinfo=timezone.utc)
+        end = datetime(e['year'], e['month'], 1, hour=hr_offset_pos, tzinfo=timezone.utc)
         return start, end
     except Exception as e:
         logging.exception(f'Invalid start or end date\n{e}')

@@ -26,9 +26,9 @@ class TestMain(unittest.TestCase):
         self.iso_earliest_unsold = MyDateTime.to_ISO8601(self.earliest_unsold)
         self.table_name = 'test'
     
-    def _set_mock_graphql_resp(self, get_cache_resp = {}):
+    def _set_mock_graphql_resp(self, get_cache_resp = [{}]):
         self.mock_graphql_client.make_request.side_effect = \
-            [get_cache_resp] + [x for x in mock_apis.get_rand_mock_inventory_item_api()] 
+            get_cache_resp + [x for x in mock_apis.get_rand_mock_inventory_item_api()] 
     
     def _set_mock_batch_write_resp(self, unprocessed_items: list):
         self.mock_dynamodb_client.batch_write_item.return_value = unprocessed_items
@@ -55,10 +55,6 @@ class TestMain(unittest.TestCase):
         res.earliestUnsold = self.iso_earliest_unsold
         return res
 
-    # def test_validate_date_range(self):
-    #     start, end = datetime(1970, 1, 1), datetime(1969, 12, 31)
-    #     res = self.main._validate_start_end(start, end)
-    #     self.assertFalse(res)
         
     def test_month_iteration(self):
         start, end = datetime(1970, 1, 1), datetime(1970, 4, 1)
@@ -97,6 +93,40 @@ class TestMain(unittest.TestCase):
         for args, _ in calls:
             if args[0] == InventoryValueCache.getInventoryValueCache:
                 self.assertEqual(args[1], { 'createdAt': MyDateTime.to_ISO8601(last_month, True)})
+    
+    def test_loading_expired_cache(self):
+        one_month_ago = self.start.replace(year=1969, month=12)
+        two_months_ago = one_month_ago.replace(month=11)
+        three_months_ago = one_month_ago.replace(month=10)
+        months = [one_month_ago, two_months_ago, three_months_ago]
+        
+        def build_cache_resp(expired=True):
+            return {
+                'lastItemValues': [],
+                'cacheIsExpired': expired
+            }
+        
+        cache_2 = build_cache_resp()
+        cache_1 = build_cache_resp()
+        cache_0 = build_cache_resp(False)
+        caches_resps = [cache_2, cache_1, cache_0]
+        
+        self._set_mock_graphql_resp(caches_resps)
+        res = self.main._get_new_bounds_and_initial_cache(self.start, self.end)
+        
+        calls = self.mock_graphql_client.make_request.call_args_list
+        for i, call in enumerate(calls):
+            args, _ = call
+            if args[0] == InventoryValueCache.getInventoryValueCache:
+                self.assertEqual(args[1], { 'createdAt': MyDateTime.to_ISO8601(months[i], True)})
+                if i > 2: self.fail("Too many cache's requested")
+        
+        new_bounds, initial_cache = res
+        s, e = new_bounds
+        self.assertFalse(initial_cache.is_expired)
+        self.assertEqual(s, two_months_ago)
+        self.assertEqual(e, MyDateTime.curr_month_start_in_tz(Main.TZ_UTC_HOUR_OFFSET))
+                
     
     def test_save_one_cache(self):
         item = self._build_inv_cache_item('123')
@@ -140,7 +170,7 @@ class TestMain(unittest.TestCase):
             'cacheIsExpired': False
         }
         
-        self._set_mock_graphql_resp(expected_prev_cache)
+        self._set_mock_graphql_resp([expected_prev_cache])
         self._set_mock_batch_write_resp([])
         self.main.calculate_inventory_balance = MagicMock()
         self.main.calculate_inventory_balance.side_effect = caches
