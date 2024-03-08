@@ -718,8 +718,7 @@ def get_start_end(event):
 def handler(event, context):
     logging.info(f"received event\n{event}")
     
-    # main = Main()
-    # main.run(*get_start_end(event))
-    CacheExpiration(GraphQLClient()).create_cache_expiration()
+    main = Main()
+    main.run(*get_start_end(event))
     
     return {"statusCode": 200}
