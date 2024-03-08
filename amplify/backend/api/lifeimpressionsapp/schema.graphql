@@ -160,8 +160,12 @@ type InventoryValueCache @model @auth(rules: [
 
     lastItemValues: [LastItemValue!]!
     createdAt: AWSDate! @primaryKey
-    # Updated at will be used to get the real created at date
+}
 
-    # If a cache is expired, it needs to be recalculated.
-    cacheIsExpired: Boolean!
+# Single value table to hold the earliest expired 
+type CacheExpiration @model @auth(rules: [
+  { allow: groups, groups: ["admin"], provider: userPools},
+   { allow: public, provider: iam, operations: [create, read]}]) {
+    id: String! @primaryKey
+    earliestExpiredDate: String
 }
