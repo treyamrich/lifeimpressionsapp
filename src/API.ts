@@ -519,6 +519,7 @@ export type DeleteCustomerOrderInput = {
 export type CreateInventoryValueCacheInput = {
   lastItemValues: Array< LastItemValueInput >,
   createdAt: string,
+  cacheIsExpired: boolean,
 };
 
 export type LastItemValueInput = {
@@ -533,6 +534,7 @@ export type LastItemValueInput = {
 };
 
 export type ModelInventoryValueCacheConditionInput = {
+  cacheIsExpired?: ModelBooleanInput | null,
   and?: Array< ModelInventoryValueCacheConditionInput | null > | null,
   or?: Array< ModelInventoryValueCacheConditionInput | null > | null,
   not?: ModelInventoryValueCacheConditionInput | null,
@@ -542,6 +544,7 @@ export type InventoryValueCache = {
   __typename: "InventoryValueCache",
   lastItemValues:  Array<LastItemValue >,
   createdAt: string,
+  cacheIsExpired: boolean,
   updatedAt: string,
 };
 
@@ -560,6 +563,7 @@ export type LastItemValue = {
 export type UpdateInventoryValueCacheInput = {
   lastItemValues?: Array< LastItemValueInput > | null,
   createdAt: string,
+  cacheIsExpired?: boolean | null,
 };
 
 export type DeleteInventoryValueCacheInput = {
@@ -695,6 +699,7 @@ export type ModelCustomerOrderConnection = {
 
 export type ModelInventoryValueCacheFilterInput = {
   createdAt?: ModelStringInput | null,
+  cacheIsExpired?: ModelBooleanInput | null,
   and?: Array< ModelInventoryValueCacheFilterInput | null > | null,
   or?: Array< ModelInventoryValueCacheFilterInput | null > | null,
   not?: ModelInventoryValueCacheFilterInput | null,
@@ -840,6 +845,7 @@ export type ModelSubscriptionCustomerOrderFilterInput = {
 
 export type ModelSubscriptionInventoryValueCacheFilterInput = {
   createdAt?: ModelSubscriptionStringInput | null,
+  cacheIsExpired?: ModelSubscriptionBooleanInput | null,
   and?: Array< ModelSubscriptionInventoryValueCacheFilterInput | null > | null,
   or?: Array< ModelSubscriptionInventoryValueCacheFilterInput | null > | null,
 };
@@ -1719,6 +1725,7 @@ export type CreateInventoryValueCacheMutation = {
       inventoryQty: number,
     } >,
     createdAt: string,
+    cacheIsExpired: boolean,
     updatedAt: string,
   } | null,
 };
@@ -1743,6 +1750,7 @@ export type UpdateInventoryValueCacheMutation = {
       inventoryQty: number,
     } >,
     createdAt: string,
+    cacheIsExpired: boolean,
     updatedAt: string,
   } | null,
 };
@@ -1767,6 +1775,7 @@ export type DeleteInventoryValueCacheMutation = {
       inventoryQty: number,
     } >,
     createdAt: string,
+    cacheIsExpired: boolean,
     updatedAt: string,
   } | null,
 };
@@ -2711,6 +2720,7 @@ export type GetInventoryValueCacheQuery = {
       inventoryQty: number,
     } >,
     createdAt: string,
+    cacheIsExpired: boolean,
     updatedAt: string,
   } | null,
 };
@@ -2740,6 +2750,7 @@ export type ListInventoryValueCachesQuery = {
         inventoryQty: number,
       } >,
       createdAt: string,
+      cacheIsExpired: boolean,
       updatedAt: string,
     } | null >,
     nextToken?: string | null,
@@ -3605,6 +3616,7 @@ export type OnCreateInventoryValueCacheSubscription = {
       inventoryQty: number,
     } >,
     createdAt: string,
+    cacheIsExpired: boolean,
     updatedAt: string,
   } | null,
 };
@@ -3628,6 +3640,7 @@ export type OnUpdateInventoryValueCacheSubscription = {
       inventoryQty: number,
     } >,
     createdAt: string,
+    cacheIsExpired: boolean,
     updatedAt: string,
   } | null,
 };
@@ -3651,6 +3664,7 @@ export type OnDeleteInventoryValueCacheSubscription = {
       inventoryQty: number,
     } >,
     createdAt: string,
+    cacheIsExpired: boolean,
     updatedAt: string,
   } | null,
 };

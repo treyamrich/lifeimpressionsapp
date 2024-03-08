@@ -166,4 +166,7 @@ type InventoryValueCache @model @auth(rules: [
 
     lastItemValues: [LastItemValue!]!
     createdAt: AWSDate! @primaryKey
+
+    # If a cache is expired, it needs to be recalculated.
+    cacheIsExpired: Boolean!
 }
