@@ -395,8 +395,13 @@ class CacheExpiration:
         if not resp or resp[earliest_exp] == '': 
             return start_inclusive, end_exclusive
 
-        new_start_incl = datetime.strptime(resp[earliest_exp], '%Y-%m-%d') \
-            .replace(tzinfo=timezone(timedelta(hours=TZ_UTC_HOUR_OFFSET)))
+        try:
+            new_start_incl = datetime.strptime(resp[earliest_exp], '%Y-%m-%d') \
+                .replace(tzinfo=timezone(timedelta(hours=TZ_UTC_HOUR_OFFSET)))
+        except ValueError:
+            logging.exception(f"Cache expiration 'earliestExpiredDate' had malformed value {resp[earliest_exp]}")
+            raise
+        
         new_end_excl = MyDateTime.curr_month_start_in_tz(TZ_UTC_HOUR_OFFSET)
         
         dFmt = lambda x: x.strftime("%Y-%m-%d %H:%M:%S %Z")
