@@ -32,7 +32,7 @@ class TestUnsoldItemsValue(unittest.TestCase):
         return inv_item_val
     
     def _transform_data(self, data: list):
-        return map(lambda x: {'order_type': x[0], 'qty': x[1], 'cost_per_unit': x[2]}, data)
+        return map(lambda x: {'order_type': x[0], 'qty': x[1], 'cost_per_unit': x[2], 'discount': x[3]}, data)
 
     def test_pagination(self):
         order_item = mock_apis.select_random_order_item()
@@ -45,18 +45,19 @@ class TestUnsoldItemsValue(unittest.TestCase):
         
     def test_general_case(self):
         data = self._transform_data([
-            (OrderType.CustomerOrder, 10, 0), # i = 0; Expect 0
-            (OrderType.PurchaseOrder, 3, 5.12), # i = 1; Expect 0
-            (OrderType.CustomerOrder, 5, 0), # i = 2; Expect 0
-            (OrderType.PurchaseOrder, 24, 20.12), # i = 3; Expect $(12 x 20) = $240
-            (OrderType.CustomerOrder, 5, 0), # i = 4; Expect $(7 x 20) = $140
+            (OrderType.CustomerOrder, 10, 0, 0), # i = 0; Expect 0
+            (OrderType.PurchaseOrder, 3, 5.12, 100), # i = 1; Expect 0
+            (OrderType.CustomerOrder, 5, 0, 0), # i = 2; Expect 0
+            (OrderType.PurchaseOrder, 24, 20.12, 10), # i = 3; Expect $(12 x 20) = $240 - $10 discount = $230
+            (OrderType.CustomerOrder, 5, 0, 0), # i = 4; Expect $(7 x 20) = $140 - $10 discount = $130
         ])
         
         earlist_unsold_index = 3
         remain_cost_per_unit = 20.12
+        remain_discount = 10
         n = 7
         expected = InventoryItemValue.default(self.initial_cache_val.itemId)
-        expected.aggregateValue = remain_cost_per_unit * n + self.initial_item_value
+        expected.aggregateValue = remain_cost_per_unit * n - remain_discount + self.initial_item_value
         expected.numUnsold = n
         expected.earliestUnsold = datetime.fromtimestamp(earlist_unsold_index).isoformat()
         
@@ -74,11 +75,11 @@ class TestUnsoldItemsValue(unittest.TestCase):
 
     def test_over_sold_item(self):
         data = self._transform_data([
-            (OrderType.PurchaseOrder, 10, 22),
-            (OrderType.CustomerOrder, -3, 33),
-            (OrderType.CustomerOrder, 5, 4),
-            (OrderType.CustomerOrder, 5, 5),
-            (OrderType.CustomerOrder, 5, 1),
+            (OrderType.PurchaseOrder, 10, 22, 1000),
+            (OrderType.CustomerOrder, -3, 33, 0),
+            (OrderType.CustomerOrder, 5, 4, 0),
+            (OrderType.CustomerOrder, 5, 5, 0),
+            (OrderType.CustomerOrder, 5, 1, 0),
         ])
         earlist_unsold_index = 4
         n = -2

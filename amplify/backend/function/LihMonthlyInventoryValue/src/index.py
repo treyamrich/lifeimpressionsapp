@@ -93,6 +93,7 @@ class OrderItem:
     quantity: int
     amountReceived: int
     costPerUnit: float
+    discount: float
     id: str
     createdAt: str
     updatedAt: str
@@ -556,7 +557,7 @@ class Main:
         num_unsold, total_value = 0, prev_inventory_item.aggregateValue
         for item in unsold_items:
             # Only adding POs b/c CO cost/unit is the sale value
-            total_value += max(item.get_qty() * item.costPerUnit, 0)
+            total_value += max(item.get_qty() * item.costPerUnit - item.discount, 0)
             num_unsold += item.get_qty()
 
         earliest_unsold = MyDateTime.to_ISO8601(end_exclusive)
@@ -689,6 +690,7 @@ query TshirtOrderByUpdatedAt(
         quantity
         amountReceived
         costPerUnit
+        discount
         updatedAt
         id
         createdAt
