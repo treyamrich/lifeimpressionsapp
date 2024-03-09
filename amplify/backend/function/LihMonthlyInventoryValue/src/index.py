@@ -382,6 +382,8 @@ class InventoryValueCache:
     """)
 
 class CacheExpiration:
+    CACHE_EXPIRATION_ID = 'A'
+    
     def __init__(self, graphql_client: GraphQLClient = GraphQLClient()):
         self._graphql_client = graphql_client
     
@@ -391,7 +393,8 @@ class CacheExpiration:
         end_exclusive: datetime
     ) -> tuple[datetime, datetime]:
         earliest_exp = 'earliestExpiredDate'
-        resp = self._graphql_client.make_request(CacheExpiration.getCacheExpiration, { 'id': 'A'})
+        resp = self._graphql_client.make_request(
+            CacheExpiration.getCacheExpiration, { 'id': CacheExpiration.CACHE_EXPIRATION_ID})
         if not resp or resp[earliest_exp] == '': 
             return start_inclusive, end_exclusive
 
@@ -426,7 +429,7 @@ class CacheExpiration:
     
     initial_cache_state_input = {
         'input': {
-            'id': 'A',
+            'id': CACHE_EXPIRATION_ID,
             'earliestExpiredDate': ''
         }
     }
