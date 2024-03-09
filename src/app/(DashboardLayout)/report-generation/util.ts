@@ -141,7 +141,7 @@ export const downloadHighLevelReport = (
       shipping,
       tax,
       fees,
-      itemDiscounts,
+      flatItemDiscounts,
       totalDiscounts,
       subtotal,
     } = orderIdToTotal.get(order.id)!;
@@ -149,7 +149,7 @@ export const downloadHighLevelReport = (
     order.createdAt = toReadableDateTime(order.createdAt);
     order.updatedAt = toReadableDateTime(order.updatedAt);
     order.totalDiscounts = totalDiscounts;
-    order.itemDiscounts = itemDiscounts;
+    order.flatItemDiscounts = flatItemDiscounts;
     order.tax = tax;
     order.shipping = shipping;
     order.fees = fees;
@@ -166,7 +166,7 @@ export const downloadHighLevelReport = (
     { columnKey: "createdAt", headerName: "Order Date" },
     { columnKey: "updatedAt", headerName: "Last Modified" },
 
-    { columnKey: "itemDiscounts", headerName: "Item Discounts" },
+    { columnKey: "flatItemDiscounts", headerName: "Flat Item Discounts" },
     { columnKey: "discount", headerName: "Full Order Discounts" },
     { columnKey: "totalDiscounts", headerName: "Total Discounts" },
 
@@ -217,7 +217,7 @@ export const downloadDetailedReport = (
         amountReceived: amountReceived,
         orderedQuantity: orderItem.quantity,
         costPerUnit: orderItem.costPerUnit,
-        itemDiscounts: orderItem.discount,
+        flatItemDiscounts: orderItem.discount,
       };
     });
   });
@@ -247,7 +247,7 @@ export const downloadDetailedReport = (
     { columnKey: "orderedQuantity", headerName: "Qty" },
     { columnKey: "amountReceived", headerName: "Amt. Received" },
     { columnKey: "costPerUnit", headerName: "Cost Per Unit ($/unit)" },
-    { columnKey: "itemDiscounts", headerName: "Item Discounts" },
+    { columnKey: "flatItemDiscounts", headerName: "Flat Item Discount" },
   ];
 
   if(!showOrderDeletedColumn) {
