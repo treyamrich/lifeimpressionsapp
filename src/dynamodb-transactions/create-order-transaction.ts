@@ -177,9 +177,9 @@ export const createOrderTransactionAPI = async (
   allowNegativeInventory: boolean,
   refreshTokenFn?: () => Promise<CognitoUser | undefined>
 ): Promise<Array<string>> => {
-  const orderedItems = input.orderedItems as any as TShirtOrder[]; // Locally orderedItems is just an array
   validateCreateOrderInput(input, entityType);
 
+  const commonError = new Error(`Failed to create ${entityType} order`);
   let command = null;
   let transactionStatements: PreparedStatements;
   try {
@@ -193,7 +193,7 @@ export const createOrderTransactionAPI = async (
     });
   } catch (e) {
     console.log(e);
-    throw new Error(`Failed to create ${entityType} order`);
+    throw commonError;
   }
 
   const dynamodbClient = await createDynamoDBObj(user);
@@ -219,12 +219,14 @@ export const createOrderTransactionAPI = async (
             const tshirt = transactionStatements.statementIdxToTShirt[index];
             return failedUpdateTShirtStr(tshirt);
           }
+          if (cancellationObj.Code !== "None")
+            throw commonError;
           return null;
         }
       ).filter((x: string) => x != null);
       return negativeInventoryShirts;
     }
 
-    throw new Error(`Failed to create ${entityType} order`);
+    throw commonError;
   });
 };
