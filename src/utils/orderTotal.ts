@@ -9,7 +9,7 @@ export interface OrderTotalModel {
 
 export type OrderTotal = {
     subtotal: number;
-    itemDiscounts: number;
+    flatItemDiscounts: number;
     fullOrderDiscounts: number;
     totalDiscounts: number;
     discountsApplied: number;
@@ -26,10 +26,10 @@ export const calculateOrderTotal = (order: OrderTotalModel, orderedItems: TShirt
         .reduce((prev, curr) => prev + curr, 0);
 
     const fullOrderDiscounts = order.discount;
-    const itemDiscounts = orderedItems
+    const flatItemDiscounts = orderedItems
         .map(item => item.discount)
         .reduce((prev, curr) => prev + curr, 0);
-    const totalDiscounts = fullOrderDiscounts + itemDiscounts;
+    const totalDiscounts = fullOrderDiscounts + flatItemDiscounts;
 
     const discountsApplied = Math.max(0, subtotal - totalDiscounts);
 
@@ -43,7 +43,7 @@ export const calculateOrderTotal = (order: OrderTotalModel, orderedItems: TShirt
 
     return {
         subtotal,
-        itemDiscounts,
+        flatItemDiscounts,
         fullOrderDiscounts,
         totalDiscounts,
         discountsApplied,
