@@ -382,6 +382,8 @@ class InventoryValueCache:
     """)
 
 class CacheExpiration:
+    CACHE_EXPIRATION_ID = 'A'
+    
     def __init__(self, graphql_client: GraphQLClient = GraphQLClient()):
         self._graphql_client = graphql_client
     
@@ -391,12 +393,18 @@ class CacheExpiration:
         end_exclusive: datetime
     ) -> tuple[datetime, datetime]:
         earliest_exp = 'earliestExpiredDate'
-        resp = self._graphql_client.make_request(CacheExpiration.getCacheExpiration, { 'id': 'A'})
+        resp = self._graphql_client.make_request(
+            CacheExpiration.getCacheExpiration, { 'id': CacheExpiration.CACHE_EXPIRATION_ID})
         if not resp or resp[earliest_exp] == '': 
             return start_inclusive, end_exclusive
 
-        new_start_incl = datetime.strptime(resp[earliest_exp], '%Y-%m-%d') \
-            .replace(tzinfo=timezone(timedelta(hours=TZ_UTC_HOUR_OFFSET)))
+        try:
+            new_start_incl = datetime.strptime(resp[earliest_exp], '%Y-%m-%d') \
+                .replace(tzinfo=timezone(timedelta(hours=TZ_UTC_HOUR_OFFSET)))
+        except ValueError:
+            logging.exception(f"Cache expiration 'earliestExpiredDate' had malformed value {resp[earliest_exp]}")
+            raise
+        
         new_end_excl = MyDateTime.curr_month_start_in_tz(TZ_UTC_HOUR_OFFSET)
         
         dFmt = lambda x: x.strftime("%Y-%m-%d %H:%M:%S %Z")
@@ -421,7 +429,7 @@ class CacheExpiration:
     
     initial_cache_state_input = {
         'input': {
-            'id': 'A',
+            'id': CACHE_EXPIRATION_ID,
             'earliestExpiredDate': ''
         }
     }
