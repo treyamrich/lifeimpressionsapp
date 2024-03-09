@@ -61,6 +61,10 @@ export const tshirtOrderTable: TShirtOrderTableInfo = {
 
 export const purchaseOrderTable = `PurchaseOrder${tableNameSuffix}`;
 export const customerOrderTable = `CustomerOrder${tableNameSuffix}`;
+export const cacheExpirationTable = `CacheExpiration${tableNameSuffix}`;
+
+// Single item table
+export const CACHE_EXPIRATION_ID = 'A';
 
 export const getStrOrNull = (str: string | undefined | null): AttributeValue => {
     return str ? { S: str } : { NULL: true };

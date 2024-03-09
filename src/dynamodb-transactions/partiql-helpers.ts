@@ -1,8 +1,9 @@
 import { CustomerOrder, CustomerOrderStatus, FieldChange, PurchaseOrder, TShirt, TShirtOrder, UpdateTShirtInput } from "@/API";
 import { EntityType } from "../app/(DashboardLayout)/components/po-customer-order-shared-components/CreateOrderPage"
-import { customerOrderTable, getStrOrNull, orderChangeTable, purchaseOrderTable, tshirtOrderTable, tshirtTable } from "./dynamodb"
+import { CACHE_EXPIRATION_ID, cacheExpirationTable, customerOrderTable, getStrOrNull, orderChangeTable, purchaseOrderTable, tshirtOrderTable, tshirtTable } from "./dynamodb"
 import { AttributeValue, ParameterizedStatement } from "@aws-sdk/client-dynamodb";
 import { TShirtOrderFields } from "@/app/(DashboardLayout)/components/TShirtOrderTable/table-constants";
+import { fromUTC, toAWSDateTime } from "@/utils/datetimeConversions";
 
 export type PurchaseOrderOrCustomerOrder = PurchaseOrder | CustomerOrder;
 
@@ -121,7 +122,7 @@ export const getDeleteTShirtOrderPartiQL = (
 
 export const getUpdateTShirtOrderTablePartiQL = (
     tshirtOrder: TShirtOrder,
-    createdAtTimestamp: string,
+    createdAtTimestamp?: string,
 ): ParameterizedStatement => {
     let amtReceived = tshirtOrder.amountReceived ? tshirtOrder.amountReceived.toString() : "0";
     return {
@@ -131,7 +132,7 @@ export const getUpdateTShirtOrderTablePartiQL = (
             SET ${TShirtOrderFields.AmtReceived} = ?
             SET ${TShirtOrderFields.CostPerUnit} = ?
             SET ${TShirtOrderFields.Discount} = ?
-            SET updatedAt = ?
+            ${createdAtTimestamp ? 'SET updatedAt = ?' : ''}
             WHERE ${tshirtOrderTable.pkFieldName} = ?
         `,
         Parameters: [
@@ -139,7 +140,7 @@ export const getUpdateTShirtOrderTablePartiQL = (
             { N: amtReceived },
             { N: tshirtOrder.costPerUnit.toString() },
             { N: tshirtOrder.discount.toString() },
-            { S: createdAtTimestamp },
+            ...(createdAtTimestamp ? [{ S: createdAtTimestamp }] : []),
             { S: tshirtOrder.id },
         ]
     }
@@ -298,5 +299,25 @@ export const getUpdateOrderPartiQL = (
             isDeleted ? { BOOL: true } : null,
             { S: orderId }
         ].filter(item => item !== null) as AttributeValue[]
+    }
+}
+
+// This should only be called for customer orders updated in previous months
+export const getConditionalUpdateCacheExpiration = (tshirtOrder: TShirtOrder): ParameterizedStatement => {
+    let earliestExpiredDate = fromUTC(tshirtOrder.createdAt)
+        .startOf('month')
+        .format('YYYY-MM-DD');
+    return {
+        Statement: `
+            UPDATE "${cacheExpirationTable}"
+            SET earliestExpiredDate = ?
+            WHERE id = ? AND (earliestExpiredDate > ? OR earliestExpiredDate = ?)
+        `,
+        Parameters: [
+            { S: earliestExpiredDate },
+            { S: CACHE_EXPIRATION_ID },
+            { S: earliestExpiredDate },
+            { S: ''}
+        ]
     }
 }

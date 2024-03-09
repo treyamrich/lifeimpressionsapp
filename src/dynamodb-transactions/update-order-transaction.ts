@@ -1,4 +1,5 @@
 import {
+  ExecuteStatementCommand,
   ExecuteTransactionCommand,
   ParameterizedStatement,
 } from "@aws-sdk/client-dynamodb";
@@ -22,6 +23,7 @@ import {
   getUpdateTShirtOrderTablePartiQL,
   getConditionalUpdateTShirtTablePartiQL,
   PurchaseOrderOrCustomerOrder,
+  getConditionalUpdateCacheExpiration
 } from "./partiql-helpers";
 import { DBOperation } from "@/contexts/DBErrorContext";
 import { validateTShirtOrderInput } from "./validation";
@@ -44,8 +46,9 @@ export const assembleUpdateOrderTransactionStatements = (
     inventoryQtyDelta,
   } = input;
 
-  let maybeNegatedInventoryQtyDelta =
-    entityType === EntityType.CustomerOrder
+  const isCO = entityType === EntityType.CustomerOrder;
+
+  let maybeNegatedInventoryQtyDelta = isCO
       ? -inventoryQtyDelta
       : inventoryQtyDelta;
 
@@ -64,7 +67,7 @@ export const assembleUpdateOrderTransactionStatements = (
 
   // If a new tshirt order is inserted, the id must be set
   let responseNewTShirtOrder = { ...updatedTShirtOrder };
-  const getUpdateTShirtOrderStatement = () => {
+  const getUpdateTShirtOrderStatement = (): ParameterizedStatement => {
     if (tshirtOrderTableOperation === DBOperation.CREATE) {
       responseNewTShirtOrder.id = newTShirtOrderId;
       return getInsertTShirtOrderTablePartiQL(
@@ -76,11 +79,16 @@ export const assembleUpdateOrderTransactionStatements = (
       );
     }
 
-    if (orderIsAfterStartOfMonth(input.parentOrder))
+    if (orderIsAfterStartOfMonth(input.parentOrder)) {
       return getUpdateTShirtOrderTablePartiQL(
         updatedTShirtOrder,
         createdAtTimestamp
       );
+    }
+
+    // IMPORTANT: since returns aren't supported, we are rewriting history here.
+    // We don't want to change the chronological order of the transaction ('updatedAt' field)
+    if (isCO) return getUpdateTShirtOrderTablePartiQL(updatedTShirtOrder);
 
     // Updating an item last month needs to create a separate item
     const getDeltaOrExisting = (fieldName: string, defaultObj: any) => {
@@ -101,20 +109,22 @@ export const assembleUpdateOrderTransactionStatements = (
         TShirtOrderFields.AmtReceived,
         updatedTShirtOrder
       );
-    } else {
-      justDeltasTShirtOrder.quantity = getDeltaOrExisting(
-        TShirtOrderFields.Qty,
-        updatedTShirtOrder
-      );
     }
+    // } else {
+    //   IMPLEMENTATION if customer returns are supported
+    //   justDeltasTShirtOrder.quantity = getDeltaOrExisting(
+    //     TShirtOrderFields.Qty,
+    //     updatedTShirtOrder
+    //   );
+    // }
     responseNewTShirtOrder = justDeltasTShirtOrder;
     return getInsertTShirtOrderTablePartiQL(
-      entityType,
-      parentOrder.id,
-      createdAtTimestamp,
-      justDeltasTShirtOrder,
-      newTShirtOrderId
-    );
+        entityType,
+        parentOrder.id,
+        createdAtTimestamp,
+        justDeltasTShirtOrder,
+        newTShirtOrderId
+      )
   };
 
   const transactionStatements: ParameterizedStatement[] = [
@@ -290,5 +300,23 @@ export const updateOrderTransactionAPI = async (
       }
       console.log(e.message);
       throw new Error(`Failed to update ${entityType} order`);
+    })
+    .then(response => {
+      if (orderIsAfterStartOfMonth(input.parentOrder) || 
+        entityType === EntityType.PurchaseOrder)
+        return response;
+      
+      // Update the cache expiration
+      dynamodbClient.send(new ExecuteStatementCommand(
+        getConditionalUpdateCacheExpiration(input.updatedTShirtOrder)
+      ))
+      .catch(e => {
+        if (e.name === 'ConditionalCheckFailedException')
+          return;
+        console.log(e)
+      })
+
+      // Returns on errors since we aren't awaiting above
+      return response;
     });
 };

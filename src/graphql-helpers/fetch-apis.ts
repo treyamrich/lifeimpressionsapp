@@ -19,11 +19,13 @@ import {
   OrderChangesByCreatedAtQuery,
   GetInventoryValueCacheQueryVariables,
   GetInventoryValueCacheQuery,
+  GetCacheExpirationQuery,
 } from "@/API";
 import { API } from "aws-amplify";
 import { GraphQLQuery } from "@aws-amplify/api";
 import {
   customerOrdersByCreatedAt,
+  getCacheExpiration,
   getCustomerOrder,
   getInventoryValueCache,
   getPurchaseOrder,
@@ -33,6 +35,7 @@ import {
 } from "@/graphql/queries";
 import { configuredAuthMode } from "./auth-mode";
 import { GraphQLOptions, GraphQLResult } from "@aws-amplify/api-graphql";
+import { CACHE_EXPIRATION_ID } from "@/dynamodb-transactions/dynamodb";
 
 export interface ListAPIInput<T> {
   doCompletePagination?: boolean;
@@ -286,17 +289,32 @@ export const getInventoryValueAPI = async({
     variables: { createdAt: createdAt },
     authMode: configuredAuthMode
   })
+  .catch(e => {
+    console.log(e);
+    throw new Error("Failed to fetch inventory value")
+  })
   .then(res => {
     const data = res.data?.getInventoryValueCache;
     if(!data) throw new Error('Inventory value report was not found.')
     return data;
   })
-  .catch(e => {
-    console.log(e);
-    if(e.message === 'Inventory value report was not found.') {
-      throw Error(e.message)
-    }
-    throw new Error("Failed to fetch inventory value")
-  })
   return resp
+}
+
+export const getCacheExpirationAPI = async () => {
+  const resp = await API.graphql<GraphQLQuery<GetCacheExpirationQuery>>({
+    query: getCacheExpiration,
+    variables: { id: CACHE_EXPIRATION_ID },
+    authMode: configuredAuthMode
+  })
+  .catch(e => {
+    console.log(e)
+    throw new Error('Failed to get inventory value report expiration')
+  })
+  .then(res => {
+    const data = res.data?.getCacheExpiration!;
+    if(!data) throw Error('Inventory value report expiration data not found');
+    return data;
+  })
+  return resp;
 }

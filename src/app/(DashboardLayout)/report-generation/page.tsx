@@ -3,13 +3,13 @@
 import DashboardCard from "@/app/(DashboardLayout)/components/shared/DashboardCard";
 import PageContainer from "../components/container/PageContainer";
 import GenerateReportForm, { FormState, ReportType } from "./GenerateReportForm";
-import { InventoryValueCache, TShirtOrder } from "../../../API";
+import { CacheExpiration, InventoryValueCache, TShirtOrder } from "../../../API";
 import { downloadDetailedReport, downloadHighLevelReport, downloadInventoryValueCSV, handleOrderReportRequest } from "./util";
 import dayjs from "dayjs";
 import { DBOperation, useDBOperationContext } from "@/contexts/DBErrorContext";
 import { getTodayInSetTz, toReadableDateTime } from "@/utils/datetimeConversions";
 import { OrderTotal, calculateOrderTotal } from "@/utils/orderTotal";
-import { getInventoryValueAPI } from "@/graphql-helpers/fetch-apis";
+import { getCacheExpirationAPI, getInventoryValueAPI } from "@/graphql-helpers/fetch-apis";
 
 export interface Order {
   __typename: string;
@@ -66,11 +66,24 @@ const ReportGeneration = () => {
 
   const handleInventoryValueReport = async (form: FormState) => {
     const createdAt = form.yearAndMonth.format('YYYY-MM-DD');
+
     rescueDBOperation(
-      () => getInventoryValueAPI({createdAt}),
+      () => getCacheExpirationAPI(),
       DBOperation.GET,
-      (resp: InventoryValueCache) => {
-        downloadInventoryValueCSV(resp);
+      (resp: CacheExpiration) => {
+        // is not datetime; assumes form YYYY-MM-DD
+        let earliestExpiredDate = resp.earliestExpiredDate ?? '';
+        
+        if(earliestExpiredDate !== '' && earliestExpiredDate <= createdAt)
+          throw new Error(`This report for ${form.yearAndMonth.format('ll')} is expired due to modifications to orders in the past.`)
+        
+        rescueDBOperation(
+          () => getInventoryValueAPI({createdAt}),
+          DBOperation.GET,
+          (resp: InventoryValueCache) => {
+            downloadInventoryValueCSV(resp);
+          }
+        )
       }
     )
   }
