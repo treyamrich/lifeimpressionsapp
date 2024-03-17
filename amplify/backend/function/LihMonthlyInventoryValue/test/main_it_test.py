@@ -58,7 +58,7 @@ class TestMain(unittest.TestCase):
         )
         
     def _build_inv_cache_item(self, item_id: str, cum_val=1, num_unsold=1):
-        res = InventoryItemValue.default(item_id)
+        res = InventoryItemValue(item_id)
         res.aggregateValue = cum_val
         res.numUnsold = num_unsold
         res.inventoryQty = 0
