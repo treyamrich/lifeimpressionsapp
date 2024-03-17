@@ -1,0 +1,16 @@
+[[source]]
+name = "pypi"
+url = "https://pypi.org/simple"
+verify_ssl = true
+
+[dev-packages]
+
+[packages]
+common = {editable = true, path = "./common"}
+boto3 = "*"
+requests = "*"
+requests_aws4auth = "*"
+pandas = "*"
+
+[requires]
+python_version = "3.9"
