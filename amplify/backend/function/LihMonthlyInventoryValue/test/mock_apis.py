@@ -40,9 +40,11 @@ def gen_order_items_responses(items: list[InventoryItem], n: int = 10) -> dict:
             t = datetime.fromtimestamp(i).isoformat()
 
             po_id, co_id = rand_order_type()
-            # Simulate customer returns
-            quantity = random.randint(-5,
-                                      20) if co_id else random.randint(0, 15)
+            rand_qty = lambda: random.randint(-20, 20)
+
+            quantity = rand_qty()
+            while quantity == 0:
+                quantity = rand_qty()
 
             res[i] = OrderItem(
                 id=str(uuid.uuid4()),
@@ -124,7 +126,7 @@ class IncrementalOrderItemBuilder:
         
         order_item = OrderItem(
             id=f'id-{self.i}',
-            quantity=qty if is_customer_order else 0,
+            quantity=qty,
             amountReceived=0 if is_customer_order else qty,
             costPerUnit=cost_per_unit,
             discount=discount,

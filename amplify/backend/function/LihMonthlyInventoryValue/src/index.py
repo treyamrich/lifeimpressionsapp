@@ -612,9 +612,15 @@ class Main:
 
         num_unsold, total_value = 0, prev_inventory_item.aggregateValue
         for item in unsold_items:
-            # Only adding POs b/c CO cost/unit is the sale value
-            total_value += max(item.get_qty() * item.costPerUnit - item.discount, 0)
             num_unsold += item.get_qty()
+
+            # Only adding remaining items in inventory
+            if item.get_qty() < 0: continue
+
+            # For POs item.quantity is amount ordered NOT item.amountReceived
+            discount_per_unit = item.discount / item.quantity
+            new_cost_per_unit = item.costPerUnit - discount_per_unit
+            total_value += item.get_qty() * new_cost_per_unit
 
         earliest_unsold = MyDateTime.to_ISO8601(end_exclusive)
         if unsold_items:
@@ -645,6 +651,7 @@ class Main:
                 "sortDirection": Main.SORT_DIRECTION_ASC,
                 "limit": Main.QUERY_PAGE_LIMIT,
                 "updatedAt": {'between': [start, end]},
+                "filter": { "quantity": { "ne": 0} }
             },
         )
 
