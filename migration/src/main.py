@@ -10,9 +10,12 @@ src_dir = os.path.dirname(script_dir)
 data_dir = os.path.join(src_dir, 'data')
 
 def setup_logging():
+    if not os.path.exists(data_dir):
+        os.mkdir(data_dir)
     current_datetime = datetime.datetime.now() \
         .strftime("%Y-%m-%d %H:%M:%S")
-    log_path = os.path.join(data_dir, f'migration_{current_datetime}.log')
+    current_datetime_safe = current_datetime.replace(' ', '_').replace(':', '_')
+    log_path = os.path.join(data_dir, f'migration_{current_datetime_safe}.log')
     logging.basicConfig(filename=log_path, level=logging.DEBUG)
 
 def parse_args():
