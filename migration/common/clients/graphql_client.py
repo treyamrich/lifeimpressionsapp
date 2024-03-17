@@ -56,18 +56,17 @@ class GraphQLClient:
         return resp['data'][q.name]
 
 class PaginationIterator:
-    def __init__(self, graphql_client: GraphQLClient, q: Query, variables: dict):
+    def __init__(self, graphql_client: GraphQLClient, q: Query, variables: dict, always_filter_deleted: bool = False):
         self._graphql_client = graphql_client
         self._q = q
         self._page = []
         self._next_token = None
         self._idx = 0
-
-        filters = variables.get("filter", {})  # Force filter out deleted items
-        self._variables = {
-            **variables,
-            "filter": {**filters, "isDeleted": {"ne": True}},
-        }
+        self._variables = {**variables}
+        
+        if always_filter_deleted:
+            filters = variables.get("filter", {})
+            self._variables["filter"] = {**filters, "isDeleted": {"ne": True}}
 
     def __iter__(self):
         self._get_next_page()

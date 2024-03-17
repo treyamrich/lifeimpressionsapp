@@ -10,20 +10,19 @@ inventory_index_value = 'InventoryChange'
 class OrderChangeFields(Enum):
     ID = 'id'
     INDEX_FIELD = 'indexField'
-    CO_ID = 'customerOrderOrderedItemsId'
-    PO_ID = 'purchaseOrderOrderedItemsId'
+    CO_ID = 'customerOrderChangeHistoryId'
+    PO_ID = 'purchaseOrderChangeHistoryId'
 
 def list_order_change_iterator():
     return PaginationIterator(
         GraphQLClient(), 
-        listTShirtOrders,
+        listOrderChanges,
         {
-            'filter': { 
-                OrderChangeFields.PO_ID.value: {'attributeExists': False},
-                OrderChangeFields.CO_ID.value: {'attributeExists': False}
-            }
+        'filter': { 
+            OrderChangeFields.PO_ID.value: {'attributeExists': False},
+            OrderChangeFields.CO_ID.value: {'attributeExists': False}
         }
-    )
+    })
 
 def validate_migration():
     it = list_order_change_iterator()
@@ -38,10 +37,6 @@ def run():
     full_table_name = get_full_table_name(ORDER_CHANGE_TABLE_NAME)
 
     order_changes = list_order_change_iterator()
-    for x in order_changes:
-        print(x)
-        break
-    return
     
     def process_item(item: dict):
         new_item = {
