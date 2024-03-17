@@ -57,20 +57,49 @@ class TestGetUnsoldItems(unittest.TestCase):
         unsold = self._call_get_unsold([])
         self.assertEqual(len(unsold), 0)
 
-    def test_only_customer_order(self):
+    def test_only_reductions(self):
         data = self._transform_data([
                 (OrderType.CustomerOrder, 10),
                 (OrderType.CustomerOrder, -3),
-                (OrderType.CustomerOrder, 5),
+                (OrderType.PurchaseOrder, -5),
                 (OrderType.CustomerOrder, 5),
                 (OrderType.CustomerOrder, 5),
             ])
         unsold = self._call_get_unsold(data)
         n = sum(map(lambda x: x.get_qty(), unsold))
         self.assertEqual(n, -22)
+
+    def test_zero_quantity(self):
+        data = self._transform_data([
+                (OrderType.CustomerOrder, 0),
+                (OrderType.CustomerOrder, -3),
+                (OrderType.PurchaseOrder, -5),
+                (OrderType.CustomerOrder, 5),
+                (OrderType.PurchaseOrder, 100),
+                (OrderType.CustomerOrder, 0),
+                (OrderType.PurchaseOrder, 0),
+                (OrderType.CustomerOrder, 100),
+            ])
+        unsold = self._call_get_unsold(data)
+        n = sum(map(lambda x: x.get_qty(), unsold))
+        self.assertEqual(n, -7)
+
+    def test_any_adjustment(self):
+        data = self._transform_data([
+            (OrderType.CustomerOrder, 3),  # i = 0; Sold 3; Expect: -3
+            (OrderType.CustomerOrder, -3),  # i = 1; Returned 3; Expect: 0
+            (OrderType.PurchaseOrder, 5),  # i = 2; Bought 5; Expect: 5
+            (OrderType.PurchaseOrder, -1),  # i = 3; Damaged items 1; Expect 4
+            (OrderType.PurchaseOrder, 2),  # i = 4; Bought 2; Expect: 6
+            (OrderType.CustomerOrder, 3),  # i = 5; Sold 3; Expect: 3
+        ])
+        
+        unsold = self._call_get_unsold(data)
+        n = sum(map(lambda x: x.get_qty(), unsold))
+        self.assertEqual(n, 3)
         
         for item in unsold:
-            self.assertTrue(item.is_customer_order())
+            self.assertTrue(item.is_purchase_order())
 
 if __name__ == '__main__':
     unittest.main()

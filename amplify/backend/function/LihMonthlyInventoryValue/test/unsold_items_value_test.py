@@ -78,16 +78,36 @@ class TestUnsoldItemsValue(unittest.TestCase):
             (OrderType.PurchaseOrder, 10, 22, 1000),
             (OrderType.CustomerOrder, -3, 33, 0),
             (OrderType.CustomerOrder, 5, 4, 0),
+            (OrderType.PurchaseOrder, 0, 22, 1000), # The discount should not affect value
             (OrderType.CustomerOrder, 5, 5, 0),
             (OrderType.CustomerOrder, 5, 1, 0),
         ])
-        earlist_unsold_index = 4
+        earlist_unsold_index = 5
         n = -2
         expected = InventoryItemValue(self.initial_cache_val.itemId)
         expected.aggregateValue = self.initial_item_value
         expected.numUnsold = n
         expected.earliestUnsold = datetime.fromtimestamp(earlist_unsold_index).isoformat()
 
+        unsold_value = self._call_get_unsold_items_value(data)
+        self.assertEqual(expected, unsold_value)
+
+    def test_any_adjustments(self):
+        data = self._transform_data([
+            (OrderType.CustomerOrder, 3, 0, 0),  # i = 0; Sold 3; Expect: $0
+            (OrderType.CustomerOrder, -3, 0, 0),  # i = 1; Returned 3; Expect: $0
+            (OrderType.PurchaseOrder, 5, 10, 5),  # i = 2; Bought 5; Expect: $(5 x 10 - 5) = $45
+            (OrderType.PurchaseOrder, -1, 0, 0),  # i = 3; Damaged items 1; Expect $(4 x 10 - 5) = $35
+            (OrderType.PurchaseOrder, 2, 20, 10),  # i = 4; Bought 2; Expect: $(4 x 10 - 5) + (2 x 20 - 10) = $65
+            (OrderType.CustomerOrder, 3, 0, 0), # i = 5; Sold 3; Expect $(1 x 10 - 5) + (2 x 20 - 10) = $35
+        ])
+        earlist_unsold_index = 2
+        n = 3
+        expected = InventoryItemValue(self.initial_cache_val.itemId)
+        expected.aggregateValue = 35 + self.initial_cache_val.aggregateValue
+        expected.numUnsold = n
+        expected.earliestUnsold = datetime.fromtimestamp(earlist_unsold_index).isoformat()
+        
         unsold_value = self._call_get_unsold_items_value(data)
         self.assertEqual(expected, unsold_value)
 
