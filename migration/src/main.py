@@ -27,8 +27,9 @@ def parse_args():
 def import_and_run(module_name: str):
     try:
         migration_module = importlib.import_module(module_name)
-    except ImportError:
+    except ImportError as e:
         print(f"Error: Migration script not found. {module_name}")
+        print(e)
         return
     
     try:
