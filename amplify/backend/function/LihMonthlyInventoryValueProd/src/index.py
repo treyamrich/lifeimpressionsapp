@@ -133,7 +133,7 @@ class GraphQLClient:
         self.headers = {
             "Accept": "application/json",
             "Content-Type": "application/json",
-            # "x-api-key": os.environ["API_KEY"],
+            "x-api-key": os.environ["API_KEY"],
         }
         
         session = requests.Session()
@@ -358,27 +358,14 @@ class PaginationIterator:
 @dataclass
 class InventoryItemValue:
     itemId: str
-    aggregateValue: float
-    numUnsold: int
-    inventoryQty: int
-    earliestUnsold: str
+    aggregateValue: float = 0.0
+    numUnsold: int = 0
+    inventoryQty: int = 0
+    earliestUnsold: str = None
     
-    tshirtStyleNumber: str
-    tshirtColor: str
-    tshirtSize: str
-    
-    @staticmethod
-    def default(key: str):
-        return InventoryItemValue(
-            itemId=key,
-            earliestUnsold=None,
-            aggregateValue=0.0,
-            numUnsold=0,
-            inventoryQty=0,
-            tshirtStyleNumber='',
-            tshirtColor='',
-            tshirtSize=''
-        )
+    tshirtStyleNumber: str = ''
+    tshirtColor: str = ''
+    tshirtSize: str = ''
 
 
 class InventoryValueCache:
@@ -396,7 +383,7 @@ class InventoryValueCache:
     def __getitem__(self, key) -> InventoryItemValue:
         return self._data.get(
             key,
-            InventoryItemValue.default(key),
+            InventoryItemValue(key),
         )
     
     def _to_write_db_input(self) -> dict:
@@ -634,7 +621,7 @@ class Main:
             # This may be a customer order, when num_unsold < 0. It's just where we left off.
             earliest_unsold = unsold_items[0].updatedAt
 
-        res = InventoryItemValue.default(prev_inventory_item.itemId)
+        res = InventoryItemValue(prev_inventory_item.itemId)
         res.aggregateValue = total_value
         res.earliestUnsold = earliest_unsold
         res.numUnsold = num_unsold
@@ -797,7 +784,9 @@ def get_start_end(event):
 def handler(event, context):
     logging.info(f"received event\n{event}")
     
+    s, e = get_start_end(event)
     main = Main()
-    main.run(*get_start_end(event))
+    main.run(s, e)
     
+    print('Run success for start inclusive: {} and end exclusive: {}'.format(s, e))
     return {"statusCode": 200}

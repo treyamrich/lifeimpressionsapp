@@ -20,7 +20,7 @@ class TestUnsoldItemsValue(unittest.TestCase):
         self.main = Main(self.mock_graphql_client, MagicMock())
         self.initial_item_value = 10
         
-        v = InventoryItemValue.default('some_id')
+        v = InventoryItemValue('some_id')
         v.aggregateValue = self.initial_item_value
         self.initial_cache_val = v
 
@@ -39,7 +39,7 @@ class TestUnsoldItemsValue(unittest.TestCase):
         self.mock_graphql_client.make_request.side_effect = mock_apis.get_rand_mock_order_item_api(
             order_item.id)
         self.main._get_unsold_items_value(
-            InventoryItemValue.default(order_item.id), self.dummy_dt, self.dummy_dt)
+            InventoryItemValue(order_item.id), self.dummy_dt, self.dummy_dt)
         self.assertEqual(
             self.mock_graphql_client.make_request.call_count, mock_apis.num_orders_pages)
         
@@ -56,7 +56,7 @@ class TestUnsoldItemsValue(unittest.TestCase):
         remain_cost_per_unit = 20.12
         remain_discount = 10
         n = 7
-        expected = InventoryItemValue.default(self.initial_cache_val.itemId)
+        expected = InventoryItemValue(self.initial_cache_val.itemId)
         expected.aggregateValue = remain_cost_per_unit * n - remain_discount + self.initial_item_value
         expected.numUnsold = n
         expected.earliestUnsold = datetime.fromtimestamp(earlist_unsold_index).isoformat()
@@ -66,7 +66,7 @@ class TestUnsoldItemsValue(unittest.TestCase):
 
     def test_empty_case(self):
         earliest_unsold = MyDateTime.to_ISO8601(self.dummy_dt)
-        expected = InventoryItemValue.default(self.initial_cache_val.itemId)
+        expected = InventoryItemValue(self.initial_cache_val.itemId)
         expected.aggregateValue = self.initial_item_value
         expected.earliestUnsold = earliest_unsold
         
@@ -83,7 +83,7 @@ class TestUnsoldItemsValue(unittest.TestCase):
         ])
         earlist_unsold_index = 4
         n = -2
-        expected = InventoryItemValue.default(self.initial_cache_val.itemId)
+        expected = InventoryItemValue(self.initial_cache_val.itemId)
         expected.aggregateValue = self.initial_item_value
         expected.numUnsold = n
         expected.earliestUnsold = datetime.fromtimestamp(earlist_unsold_index).isoformat()
