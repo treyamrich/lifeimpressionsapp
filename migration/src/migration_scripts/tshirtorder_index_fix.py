@@ -1,7 +1,7 @@
 from enum import Enum
 import os
 from clients.dynamodb_client import DynamoDBClient
-import migration_helper
+from migration_helper import migrate_table_items, get_full_table_name
 import pandas as pd
 from queries import *
 from clients.graphql_client import GraphQLClient, PaginationIterator
@@ -54,6 +54,7 @@ def validate_migration():
 def run():
     TSHIRT_ORDER_TABLE_NAME = os.environ['TSHIRT_ORDER_TABLE_NAME']
     TSHIRT_ORDER_CSV_PATH = os.environ['TSHIRT_ORDER_CSV_PATH']
+    full_table_name = get_full_table_name(TSHIRT_ORDER_TABLE_NAME)
 
     # tshirt_orders = read_tshirt_order_csv(TSHIRT_ORDER_CSV_PATH)
     tshirt_orders = list_tshirtorder_iterator()
@@ -67,6 +68,6 @@ def run():
     
     update_items = list(map(process_item, tshirt_orders))
 
-    migration_helper.migrate_table_items(TSHIRT_ORDER_TABLE_NAME, "id", update_items)
+    migrate_table_items(full_table_name, "id", update_items)
     
     validate_migration()

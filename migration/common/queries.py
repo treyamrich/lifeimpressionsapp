@@ -19,3 +19,23 @@ query ListTShirtOrders(
   }
     """
 )
+
+listOrderChanges = Query(
+    'listOrderChanges',
+    """
+query ListOrderChanges(
+    $filter: ModelOrderChangeFilterInput
+    $limit: Int
+    $nextToken: String
+  ) {
+    listOrderChanges(filter: $filter, limit: $limit, nextToken: $nextToken) {
+      items {
+        indexField
+        id
+        purchaseOrderChangeHistoryId
+        customerOrderChangeHistoryId
+      }
+      nextToken
+    }
+"""
+)

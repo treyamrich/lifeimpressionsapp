@@ -20,3 +20,7 @@ def migrate_table_items(table_name: str, pk_field_name: str, items: list[dict]):
     error_path = os.path.join(data_dir, f'unprocessed_items_{current_datetime}.json')
     with open(error_path, 'w') as f:
         f.write(json.dumps(unprocessed_list, indent=4))
+
+def get_full_table_name(table_name: str):
+    TABLE_SUFFIX = os.environ['TABLE_SUFFIX']
+    return f'{table_name}{TABLE_SUFFIX}'
