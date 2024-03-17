@@ -14,6 +14,14 @@
         "authConfig": {
           "additionalAuthenticationProviders": [
             {
+              "apiKeyConfig": {
+                "apiKeyExpirationDate": "2024-03-24T00:11:56.131Z",
+                "apiKeyExpirationDays": 7,
+                "description": "migration"
+              },
+              "authenticationType": "API_KEY"
+            },
+            {
               "authenticationType": "AWS_IAM"
             }
           ],
