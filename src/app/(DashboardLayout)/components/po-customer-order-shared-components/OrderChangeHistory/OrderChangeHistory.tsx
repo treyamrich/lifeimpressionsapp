@@ -13,6 +13,7 @@ import { ListAPIResponse } from "@/graphql-helpers/fetch-apis";
 const OrderChangeHistory = ({
   changeHistory,
   paginationProps,
+  isLoading,
 }: {
   changeHistory: OrderChange[];
   paginationProps?: {
@@ -22,6 +23,7 @@ const OrderChangeHistory = ({
     ) => Promise<ListAPIResponse<OrderChange>>;
     setIsLoading: React.Dispatch<SetStateAction<boolean>>;
   };
+  isLoading?: boolean
 }) => {
   const [columnFilters, setColumnFilters] = useState<MRT_ColumnFiltersState>(
     []
@@ -71,6 +73,7 @@ const OrderChangeHistory = ({
       onColumnFiltersChange={setColumnFilters}
       state={{
         columnFilters,
+        isLoading
       }}
     />
   );

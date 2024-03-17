@@ -12,7 +12,8 @@ import { listOrderChangeHistoryAPI } from "@/graphql-helpers/fetch-apis";
 
 const InventoryPage = () => {
   const [editHistory, setEditHistory] = useState<OrderChange[]>([]);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isLoadingInventory, setIsLoadingInventory] = useState<boolean>(false);
+  const [isLoadingOrderChanges, setIsLoadingOrderChanges] = useState<boolean>(false);
 
   const fetchChangeHistoryPaginationFn = (nextToken: string | null | undefined) => {
     return listOrderChangeHistoryAPI({ nextToken: nextToken, indexPartitionKey: 'InventoryChange' });
@@ -26,8 +27,8 @@ const InventoryPage = () => {
             <InventoryTable
               editHistory={editHistory}
               setEditHistory={setEditHistory}
-              isLoading={isLoading}
-              setIsLoading={setIsLoading}
+              isLoading={isLoadingInventory}
+              setIsLoading={setIsLoadingInventory}
             />
           </Section>
           <Section header="Change History" columnWidth={12}>
@@ -36,8 +37,9 @@ const InventoryPage = () => {
               paginationProps={{
                 fetchChangeHistoryPaginationFn: fetchChangeHistoryPaginationFn,
                 setChangeHistory: setEditHistory,
-                setIsLoading: setIsLoading
+                setIsLoading: setIsLoadingOrderChanges
               }}
+              isLoading={isLoadingOrderChanges}
             />
           </Section>
         </Grid>
