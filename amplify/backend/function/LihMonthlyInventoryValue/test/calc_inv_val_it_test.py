@@ -39,7 +39,7 @@ class TestCalculateInventoryValue(unittest.TestCase):
         return cache
         
     def _build_inv_cache_item(self, item_id: str, inv_qty: int = 0):
-        res = InventoryItemValue.default(item_id)
+        res = InventoryItemValue(item_id)
         res.aggregateValue=random.randint(0, 5), 
         res.numUnsold=random.randint(0, 5), 
         res.inventoryQty=inv_qty, 
