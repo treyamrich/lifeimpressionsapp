@@ -162,7 +162,7 @@ type LastItemValue {
 type InventoryValueCache @model @auth(rules: [
   { allow: groups, groups: ["admin"], provider: userPools},
    { allow: public, provider: iam, operations: [create, read]},
-   { allow: public, provider: apiKey, operations: [read]}]) {
+   { allow: public, provider: apiKey, operations: [create, read]}]) {
 
     lastItemValues: [LastItemValue!]!
     createdAt: AWSDate! @primaryKey
@@ -172,7 +172,7 @@ type InventoryValueCache @model @auth(rules: [
 type CacheExpiration @model @auth(rules: [
   { allow: groups, groups: ["admin"], provider: userPools},
    { allow: public, provider: iam, operations: [create, read]},
-   { allow: public, provider: apiKey, operations: [read]}]) {
+   { allow: public, provider: apiKey, operations: [create, read, update]}]) {
     id: String! @primaryKey
     earliestExpiredDate: String
 }
