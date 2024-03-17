@@ -332,6 +332,9 @@ class PaginationIterator:
         return self
 
     def __next__(self):
+        if not self._page:
+            raise StopIteration
+        
         at_end_of_page = self._idx == len(self._page)
         at_last_page = self._next_token == None
 

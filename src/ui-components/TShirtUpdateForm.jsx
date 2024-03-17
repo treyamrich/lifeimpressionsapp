@@ -418,6 +418,11 @@ export default function TShirtUpdateForm(props) {
           value="FiveX"
           {...getOverrideProps(overrides, "sizeoption22")}
         ></option>
+        <option
+          children="Os"
+          value="OS"
+          {...getOverrideProps(overrides, "sizeoption23")}
+        ></option>
       </SelectField>
       <SelectField
         label="Type"
