@@ -137,6 +137,14 @@ const CreateTShirtOrderModal = <TShirtOrder extends Record<string, any>>({
     setErrorMap(newErrMap);
   }
 
+  // Customer orders aren't concerned with cost/unit or discount
+  const filterOutCOCols = (col: MRT_ColumnDef<TShirtOrder>) => {
+    return entityType === EntityType.PurchaseOrder ||
+      entityType === EntityType.CustomerOrder &&
+      col.accessorKey !== TShirtOrderFields.CostPerUnit &&
+      col.accessorKey !== TShirtOrderFields.Discount
+  }
+
   return (
     <Dialog open={open}>
       <DialogTitle textAlign="center">{modalTitle}</DialogTitle>
@@ -176,6 +184,7 @@ const CreateTShirtOrderModal = <TShirtOrder extends Record<string, any>>({
                 >
                   {columns
                     .filter(col => !columnInfo.get(col.accessorKey)?.excludeOnCreate)
+                    .filter(filterOutCOCols)
                     .map((column, idx) => (
                       <NumberInput
                         key={idx}
