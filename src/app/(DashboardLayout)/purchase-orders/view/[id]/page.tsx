@@ -208,6 +208,7 @@ const OrderedItemsTable = ({
 }: OrderedItemsTableProps) => {
   const { user, refreshSession } = useAuthContext();
   const { rescueDBOperation } = useDBOperationContext();
+  const [prevUpdates, setPrevUpdates] = useState<{[x: string]: boolean}>({});
 
   const handleAfterRowEdit = (
     row: MRT_Row<TShirtOrder>,
@@ -228,6 +229,7 @@ const OrderedItemsTable = ({
       parentOrder: parentPurchaseOrder,
       inventoryQtyDelta: inventoryQtyDelta,
       createOrderChangeInput: createOrderChangeInput,
+      prevUpdatesTshirtIdsMap: prevUpdates
     };
 
     // Only warn negative inventory when inventory will be reduced
@@ -278,6 +280,7 @@ const OrderedItemsTable = ({
           ...parentPurchaseOrder,
           updatedAt: resp.orderUpdatedAtTimestamp,
         });
+        setPrevUpdates({...prevUpdates, [newTShirtOrder.tShirtOrderTshirtId]: true })
         exitEditingMode();
         setNegativeInventoryWarning({
           ...initialNegativeInventoryWarningState,
@@ -299,6 +302,7 @@ const OrderedItemsTable = ({
       parentOrder: parentPurchaseOrder,
       inventoryQtyDelta: inventoryQtyDelta,
       createOrderChangeInput: createOrderChangeInput,
+      prevUpdatesTshirtIdsMap: prevUpdates
     };
 
     // Update the purchase order with the new added item
@@ -323,7 +327,7 @@ const OrderedItemsTable = ({
         });
 
         setTableData([...tableData, resp.newTShirtOrder]);
-
+        setPrevUpdates({...prevUpdates, [newTShirtOrder.tShirtOrderTshirtId]: true })
         closeFormCallback();
         setNegativeInventoryWarning({
           ...initialNegativeInventoryWarningState,

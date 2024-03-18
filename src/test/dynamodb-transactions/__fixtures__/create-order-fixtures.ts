@@ -124,3 +124,28 @@ export const co: CustomerOrder = {
     taxRate: 0,
     discount: 0,
 };
+
+export const getDummyTShirtOrder = ({
+  id = '', 
+  quantity = 0, 
+  amountReceived = 0, 
+  tShirtOrderTshirtId = '',
+  createdAt = '',
+  updatedAt = '',
+  tshirt = tshirts[0],
+  costPerUnit = 52.1,
+  discount = 0,
+}): TShirtOrder => (
+  {
+    __typename: "TShirtOrder",
+    id: id,
+    quantity: quantity,
+    amountReceived: amountReceived,
+    tShirtOrderTshirtId: tShirtOrderTshirtId,
+    createdAt: createdAt,
+    updatedAt: updatedAt,
+    tshirt: tshirt,
+    costPerUnit: costPerUnit,
+    discount: discount,
+  }
+)

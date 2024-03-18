@@ -14,7 +14,7 @@ import {
   listCustomerOrderAPI,
   listPurchaseOrderAPI,
 } from "@/graphql-helpers/fetch-apis";
-import { toReadableDateTime } from "@/utils/datetimeConversions";
+import { datetimeInPlaceSort, toReadableDateTime } from "@/utils/datetimeConversions";
 import { FormState } from "./GenerateReportForm";
 import { Order } from "./page";
 import { CSVHeader, downloadCSV, processCSVCell } from "@/utils/csvGeneration";
@@ -223,13 +223,7 @@ export const downloadDetailedReport = (
   });
 
   // Sort the order items by updated at
-  enhancedOrderItems.sort((a, b) => {
-    let l = dayjs(a.sortKey);
-    let r = dayjs(b.sortKey);
-    if (l.isBefore(r)) return -1;
-    if (l.isAfter(r)) return 1;
-    return 0;
-  });
+  datetimeInPlaceSort(enhancedOrderItems, (x: any) => x.sortKey);
 
   let headers: CSVHeader[] = [
     { columnKey: "orderId", headerName: "Order ID" },
