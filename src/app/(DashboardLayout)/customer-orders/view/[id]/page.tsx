@@ -25,8 +25,8 @@ import { useAuthContext } from "@/contexts/AuthContext";
 import {
   UpdateOrderTransactionInput,
   UpdateOrderTransactionResponse,
-  updateOrderTransactionAPI,
-} from "@/dynamodb-transactions/update-order-transaction";
+  updateTShirtOrderTransactionAPI,
+} from "@/dynamodb-transactions/update-tshirt-order/update-tshirt-order-transaction";
 import NegativeInventoryConfirmPopup, {
   NegativeInventoryWarningState,
   initialNegativeInventoryWarningState,
@@ -233,7 +233,7 @@ const OrderedItemsTable = ({
 
     rescueDBOperation(
       () =>
-        updateOrderTransactionAPI(
+        updateTShirtOrderTransactionAPI(
           updateOrderInput,
           EntityType.CustomerOrder,
           user,
@@ -303,7 +303,7 @@ const OrderedItemsTable = ({
     // Update the customer order with the new added item
     rescueDBOperation(
       () =>
-        updateOrderTransactionAPI(
+        updateTShirtOrderTransactionAPI(
           updateOrderInput,
           EntityType.CustomerOrder,
           user,

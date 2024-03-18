@@ -100,22 +100,6 @@
     }
   },
   "parameters": {
-    "AMPLIFY_function_LihDevMonthlyInventoryValue_deploymentBucketName": {
-      "usedBy": [
-        {
-          "category": "function",
-          "resourceName": "LihDevMonthlyInventoryValue"
-        }
-      ]
-    },
-    "AMPLIFY_function_LihDevMonthlyInventoryValue_s3Key": {
-      "usedBy": [
-        {
-          "category": "function",
-          "resourceName": "LihDevMonthlyInventoryValue"
-        }
-      ]
-    },
     "AMPLIFY_function_LihMonthlyInventoryValue_deploymentBucketName": {
       "usedBy": [
         {

@@ -122,7 +122,6 @@ export const getDeleteTShirtOrderPartiQL = (
 
 export const getUpdateTShirtOrderTablePartiQL = (
     tshirtOrder: TShirtOrder,
-    createdAtTimestamp?: string,
 ): ParameterizedStatement => {
     let amtReceived = tshirtOrder.amountReceived ? tshirtOrder.amountReceived.toString() : "0";
     return {
@@ -132,7 +131,6 @@ export const getUpdateTShirtOrderTablePartiQL = (
             SET ${TShirtOrderFields.AmtReceived} = ?
             SET ${TShirtOrderFields.CostPerUnit} = ?
             SET ${TShirtOrderFields.Discount} = ?
-            ${createdAtTimestamp ? 'SET updatedAt = ?' : ''}
             WHERE ${tshirtOrderTable.pkFieldName} = ?
         `,
         Parameters: [
@@ -140,7 +138,6 @@ export const getUpdateTShirtOrderTablePartiQL = (
             { N: amtReceived },
             { N: tshirtOrder.costPerUnit.toString() },
             { N: tshirtOrder.discount.toString() },
-            ...(createdAtTimestamp ? [{ S: createdAtTimestamp }] : []),
             { S: tshirtOrder.id },
         ]
     }

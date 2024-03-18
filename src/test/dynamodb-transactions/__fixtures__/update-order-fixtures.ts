@@ -1,5 +1,5 @@
 import { TShirt, TShirtOrder, TShirtSize, TShirtType } from "@/API";
-import { UpdateOrderTransactionInput } from "@/dynamodb-transactions/update-order-transaction";
+import { UpdateOrderTransactionInput } from "@/dynamodb-transactions/update-tshirt-order/update-tshirt-order-transaction";
 import { co, po } from "./create-order-fixtures";
 
 export const updatedTShirt: TShirt = {
