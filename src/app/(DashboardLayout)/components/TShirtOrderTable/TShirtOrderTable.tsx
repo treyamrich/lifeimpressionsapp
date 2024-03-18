@@ -98,6 +98,12 @@ const TShirtOrderTable = ({
     hiddenColumns[TShirtOrderFields.AmtReceived] = false;
   }
 
+  // As of now, COs aren't concerned with these fields
+  if (entityType === EntityType.CustomerOrder) {
+    hiddenColumns[TShirtOrderFields.Discount] = false;
+    hiddenColumns[TShirtOrderFields.CostPerUnit] = false;
+  }
+
   return (
     <>
       <MaterialReactTable
