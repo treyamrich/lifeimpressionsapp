@@ -1,5 +1,5 @@
 import { EntityType } from "@/app/(DashboardLayout)/components/po-customer-order-shared-components/CreateOrderPage";
-import { assembleUpdateOrderTransactionStatements } from "@/dynamodb-transactions/update-order-transaction";
+import { assembleUpdateOrderTransactionStatements } from "@/dynamodb-transactions/update-tshirt-order/update-tshirt-order-transaction";
 import { negativeUpdateOrderInput, updateOrderInput } from "./__fixtures__/update-order-fixtures";
 import { DBOperation } from "@/contexts/DBErrorContext";
 import { compileUpdateStatement, toJson } from "./__fixtures__/json-parsing";

@@ -3,8 +3,8 @@ import {
   ExecuteTransactionCommand,
   ParameterizedStatement,
 } from "@aws-sdk/client-dynamodb";
-import { createDynamoDBObj } from "./dynamodb";
-import { EntityType } from "../app/(DashboardLayout)/components/po-customer-order-shared-components/CreateOrderPage";
+import { createDynamoDBObj } from "../dynamodb";
+import { EntityType } from "../../app/(DashboardLayout)/components/po-customer-order-shared-components/CreateOrderPage";
 import { CognitoUser } from "@aws-amplify/auth";
 import { fromUTC, getStartOfMonth, toAWSDateTime } from "@/utils/datetimeConversions";
 import dayjs from "dayjs";
@@ -24,9 +24,9 @@ import {
   getConditionalUpdateTShirtTablePartiQL,
   PurchaseOrderOrCustomerOrder,
   getConditionalUpdateCacheExpiration
-} from "./partiql-helpers";
+} from "../partiql-helpers";
 import { DBOperation } from "@/contexts/DBErrorContext";
-import { validateTShirtOrderInput } from "./validation";
+import { validateTShirtOrderInput } from "../validation";
 import { TShirtOrderFields } from "@/app/(DashboardLayout)/components/TShirtOrderTable/table-constants";
 
 export type AssembleUpdateStatementsResult = {
@@ -47,12 +47,9 @@ export const assembleUpdateOrderTransactionStatements = (
   } = input;
 
   const isCO = entityType === EntityType.CustomerOrder;
-
   let maybeNegatedInventoryQtyDelta = isCO
       ? -inventoryQtyDelta
       : inventoryQtyDelta;
-
-  // Insertion fields for new OrderChange
   const createdAtTimestamp = toAWSDateTime(dayjs());
   const orderChangeUuid = v4();
   const newTShirtOrderId = v4();
@@ -65,11 +62,11 @@ export const assembleUpdateOrderTransactionStatements = (
     })
   );
 
-  // If a new tshirt order is inserted, the id must be set
-  let responseNewTShirtOrder = { ...updatedTShirtOrder };
+  let responseTShirtOrder = { ...updatedTShirtOrder };
   const getUpdateTShirtOrderStatement = (): ParameterizedStatement => {
+    // CASE: Adding new order item to an existing order
     if (tshirtOrderTableOperation === DBOperation.CREATE) {
-      responseNewTShirtOrder.id = newTShirtOrderId;
+      responseTShirtOrder.id = newTShirtOrderId;
       return getInsertTShirtOrderTablePartiQL(
         entityType,
         parentOrder.id,
@@ -79,18 +76,9 @@ export const assembleUpdateOrderTransactionStatements = (
       );
     }
 
-    if (orderIsAfterStartOfMonth(input.parentOrder)) {
-      return getUpdateTShirtOrderTablePartiQL(
-        updatedTShirtOrder,
-        createdAtTimestamp
-      );
-    }
-
-    // IMPORTANT: since returns aren't supported, we are rewriting history here.
-    // We don't want to change the chronological order of the transaction ('updatedAt' field)
+    // CASE: Updating a CO rewrites the transaction history; item returns not supported.
     if (isCO) return getUpdateTShirtOrderTablePartiQL(updatedTShirtOrder);
 
-    // Updating an item last month needs to create a separate item
     const getDeltaOrExisting = (fieldName: string, defaultObj: any) => {
       let fieldChange = fieldChanges.find((x) => x.fieldName === fieldName);
       if (!fieldChange) return defaultObj[fieldName];
@@ -98,31 +86,27 @@ export const assembleUpdateOrderTransactionStatements = (
       let i_f = parseInt(fieldChange.newValue);
       return i_f - i_0;
     };
-    const justDeltasTShirtOrder: TShirtOrder = {
-      ...responseNewTShirtOrder,
-      id: newTShirtOrderId,
-    };
+    const amtRecvDelta = getDeltaOrExisting(
+      TShirtOrderFields.AmtReceived,
+      updatedTShirtOrder
+    );
 
-    if (entityType === EntityType.PurchaseOrder) {
-      justDeltasTShirtOrder.quantity = 0;
-      justDeltasTShirtOrder.amountReceived = getDeltaOrExisting(
-        TShirtOrderFields.AmtReceived,
-        updatedTShirtOrder
-      );
-    }
-    // } else {
-    //   IMPLEMENTATION if customer returns are supported
-    //   justDeltasTShirtOrder.quantity = getDeltaOrExisting(
-    //     TShirtOrderFields.Qty,
-    //     updatedTShirtOrder
-    //   );
-    // }
-    responseNewTShirtOrder = justDeltasTShirtOrder;
+    // CASE: Decreasing PO item rewrites history by removing from the transaction group
+    
+
+    // CASE: Receiving PO item splits the transaction to track when items were received.
+    const onlyQtyChangesCopy: TShirtOrder = {
+      ...responseTShirtOrder,
+      id: newTShirtOrderId,
+      quantity: 0,
+      amountReceived: amtRecvDelta
+    };
+    responseTShirtOrder = onlyQtyChangesCopy;
     return getInsertTShirtOrderTablePartiQL(
         entityType,
         parentOrder.id,
         createdAtTimestamp,
-        justDeltasTShirtOrder,
+        onlyQtyChangesCopy,
         newTShirtOrderId
       )
   };
@@ -165,7 +149,7 @@ export const assembleUpdateOrderTransactionStatements = (
   const response: UpdateOrderTransactionResponse = {
     orderChange: orderChange,
     orderUpdatedAtTimestamp: createdAtTimestamp,
-    newTShirtOrder: responseNewTShirtOrder,
+    newTShirtOrder: responseTShirtOrder,
   };
 
   return { transactionStatements, response };
@@ -247,7 +231,7 @@ export type UpdateOrderTransactionResponse = {
 // Returns null if allowNegativeInventory is false and the inventory will become negative in the TShirt table.
 // tshirtOrderTableOperation is the effect of the transaction. Only support for update and insert.
 // If tshirtOrderTableOpeartion is CREATE a new tshirtOrder id will be returned
-export const updateOrderTransactionAPI = async (
+export const updateTShirtOrderTransactionAPI = async (
   input: UpdateOrderTransactionInput,
   entityType: EntityType,
   user: CognitoUser,
@@ -285,7 +269,7 @@ export const updateOrderTransactionAPI = async (
         let updatedSession = await refreshTokenFn();
         if (updatedSession) {
           // Don't retry session renewal again
-          return updateOrderTransactionAPI(
+          return updateTShirtOrderTransactionAPI(
             input,
             entityType,
             updatedSession,
