@@ -29,3 +29,15 @@ export const getTodayInSetTz = () => {
 export const toAWSDateTime = (datetime: Dayjs): string => {
     return datetime.utc().format().toString()
 }
+
+export const datetimeInPlaceSort = (objs: any[], getSortKeyFn: (obj: any) => string) => {
+    objs.sort((a, b) => {
+        let aKey = getSortKeyFn(a);
+        let bKey = getSortKeyFn(b);
+        let l = dayjs(aKey);
+        let r = dayjs(bKey);
+        if (l.isBefore(r)) return -1;
+        if (l.isAfter(r)) return 1;
+        return 0;
+    });
+}

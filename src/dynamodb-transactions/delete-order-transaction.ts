@@ -2,7 +2,7 @@ import { CognitoUser } from "@aws-amplify/auth";
 import {
   PurchaseOrderOrCustomerOrder,
   getConditionalUpdateTShirtTablePartiQL,
-  getDeleteTShirtOrderPartiQL,
+  getSoftDeleteTShirtOrderPartiQL,
   getUpdateOrderPartiQL,
 } from "./partiql-helpers";
 import { EntityType } from "@/app/(DashboardLayout)/components/po-customer-order-shared-components/CreateOrderPage";
@@ -137,7 +137,7 @@ const getDeleteTShirtOrdersStatements = (
       );
       idxToTShirt[statementIdx++] = tshirtOrder.tshirt;
     }
-    res.push(getDeleteTShirtOrderPartiQL(tshirtOrder, updatedAt));
+    res.push(getSoftDeleteTShirtOrderPartiQL(tshirtOrder, updatedAt));
     statementIdx++;
   });
   return { statements: res, statementIdxToTShirt: idxToTShirt };

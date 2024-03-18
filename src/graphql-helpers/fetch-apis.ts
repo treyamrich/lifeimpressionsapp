@@ -247,7 +247,7 @@ export const listOrderChangeHistoryAPI = async (
 
 export const getPurchaseOrderAPI = async ({
   id,
-}: GetPurchaseOrderQueryVariables) => {
+}: GetPurchaseOrderQueryVariables): Promise<PurchaseOrder> => {
   const resp = await API.graphql<GraphQLQuery<GetPurchaseOrderQuery>>({
     query: getPurchaseOrder,
     variables: {
@@ -260,12 +260,12 @@ export const getPurchaseOrderAPI = async ({
       console.log(e);
       throw new Error("Failed to fetch Purchase Order");
     });
-  return resp;
+  return resp as PurchaseOrder;
 };
 
 export const getCustomerOrderAPI = async ({
   id,
-}: GetCustomerOrderQueryVariables) => {
+}: GetCustomerOrderQueryVariables): Promise<CustomerOrder> => {
   const resp = await API.graphql<GraphQLQuery<GetCustomerOrderQuery>>({
     query: getCustomerOrder,
     variables: {
@@ -278,7 +278,7 @@ export const getCustomerOrderAPI = async ({
       console.log(e);
       throw new Error("Failed to fetch Customer Order");
     });
-  return resp;
+  return resp as CustomerOrder;
 };
 
 export const getInventoryValueAPI = async({ 

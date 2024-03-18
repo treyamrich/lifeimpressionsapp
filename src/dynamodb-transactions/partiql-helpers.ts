@@ -101,7 +101,7 @@ export const getConditionalUpdateTShirtTablePartiQL = (
     ]
 })
 
-export const getDeleteTShirtOrderPartiQL = (
+export const getSoftDeleteTShirtOrderPartiQL = (
     tshirtOrder: TShirtOrder,
     updatedAtTimestamp: string
 ): ParameterizedStatement => {
@@ -115,6 +115,20 @@ export const getDeleteTShirtOrderPartiQL = (
         Parameters: [
             { BOOL: true },
             { S: updatedAtTimestamp },
+            { S: tshirtOrder.id },
+        ]
+    }
+}
+
+export const getHardDeleteTShirtOrderPartiQL = (
+    tshirtOrder: TShirtOrder,
+): ParameterizedStatement => {
+    return {
+        Statement: `
+            DELETE FROM "${tshirtOrderTable.tableName}"
+            WHERE ${tshirtOrderTable.pkFieldName} = ?
+        `,
+        Parameters: [
             { S: tshirtOrder.id },
         ]
     }
