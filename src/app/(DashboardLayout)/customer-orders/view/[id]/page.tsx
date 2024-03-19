@@ -10,6 +10,7 @@ import PageContainer from "@/app/(DashboardLayout)/components/container/PageCont
 import BlankCard from "@/app/(DashboardLayout)/components/shared/BlankCard";
 import DashboardCard from "@/app/(DashboardLayout)/components/shared/DashboardCard";
 import TShirtOrderTable, {
+  EditTShirtOrderResult,
   TableMode,
 } from "@/app/(DashboardLayout)/components/TShirtOrderTable/TShirtOrderTable";
 import { getCustomerOrderAPI } from "@/graphql-helpers/fetch-apis";
@@ -209,11 +210,11 @@ const OrderedItemsTable = ({
   const { user, refreshSession } = useAuthContext();
 
   const handleAfterRowEdit = (
-    row: MRT_Row<TShirtOrder>,
-    createOrderChangeInput: CreateOrderChangeInput,
-    exitEditingMode: () => void,
+    res: EditTShirtOrderResult,
     allowNegativeInventory: boolean = false
   ) => {
+    const { row, orderChange, exitEditingMode } = res;
+    let createOrderChangeInput = orderChange;
     const oldTShirtOrder = tableData[row.index];
     const newTShirtOrder: any = { ...oldTShirtOrder };
     createOrderChangeInput.fieldChanges.forEach((fieldChange) => {
@@ -249,12 +250,7 @@ const OrderedItemsTable = ({
           setNegativeInventoryWarning({
             show: true,
             cachedFunctionCall: () =>
-              handleAfterRowEdit(
-                row,
-                createOrderChangeInput,
-                exitEditingMode,
-                true
-              ),
+              handleAfterRowEdit(res, true),
             failedTShirts: [failedUpdateTShirtStr(oldTShirtOrder.tshirt)],
           });
           return;
@@ -374,7 +370,7 @@ const OrderedItemsTable = ({
         <TShirtOrderTable
           tableData={tableData}
           setTableData={setTableData}
-          parentOrderId={parentCustomerOrder.id}
+          parentOrder={parentCustomerOrder}
           onRowEdit={handleAfterRowEdit}
           onRowAdd={handleAfterRowAdd}
           entityType={EntityType.CustomerOrder}

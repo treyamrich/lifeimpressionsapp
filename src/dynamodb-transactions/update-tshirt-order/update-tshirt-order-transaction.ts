@@ -28,19 +28,19 @@ import {
 import { DBOperation } from "@/contexts/DBErrorContext";
 import { validateUpdateOrderInput } from "../validation";
 import { TShirtOrderFields } from "@/app/(DashboardLayout)/components/TShirtOrderTable/table-constants";
-import { isAddingNewPOItem, isCO, isReceivingPOItem, orderIsAfterStartOfMonth } from "../util";
+import { isAfterStartOfMonth, isCO, isPO, orderIsAfterStartOfMonth } from "../util";
 import { getDecreasePOItemStatements } from "./decrease-po-statements";
-import { getCustomerOrderAPI, getPurchaseOrderAPI } from "@/graphql-helpers/fetch-apis";
+import { getPurchaseOrderAPI } from "@/graphql-helpers/fetch-apis";
 
 export type GetUpdateTShirtOrderStatements = {
   updateTShirtOrderStatements: ParameterizedStatement[];
-  earliestTShirtOrder: TShirtOrder;
+  earliestTShirtOrderDate: string;
 };
 
 export type AssembleUpdateStatementsResult = {
   transactionStatements: ParameterizedStatement[];
   response: UpdateOrderTransactionResponse;
-  earliestTShirtOrder: TShirtOrder;
+  earliestTShirtOrderDate: string;
 };
 
 export const assembleUpdateOrderTransactionStatements = (
@@ -85,7 +85,7 @@ export const assembleUpdateOrderTransactionStatements = (
           updatedTShirtOrder,
           newTShirtOrderId
         )],
-        earliestTShirtOrder: updatedTShirtOrder
+        earliestTShirtOrderDate: parentOrder.createdAt
       };
     }
 
@@ -93,7 +93,7 @@ export const assembleUpdateOrderTransactionStatements = (
     if (isCO(parentOrder)) 
       return {
         updateTShirtOrderStatements: [getUpdateTShirtOrderTablePartiQL(updatedTShirtOrder)],
-        earliestTShirtOrder: updatedTShirtOrder
+        earliestTShirtOrderDate: updatedTShirtOrder.createdAt
       };
 
     const getDeltaOrExisting = (fieldName: string, defaultObj: any) => {
@@ -119,19 +119,20 @@ export const assembleUpdateOrderTransactionStatements = (
       amountReceived: amtRecvDelta
     };
     responseTShirtOrder = onlyQtyChangesCopy;
+    const createdDatetime = input.poItemReceivedDate ?? createdAtTimestamp;
     return {
       updateTShirtOrderStatements: [getInsertTShirtOrderTablePartiQL(
         entityType,
         parentOrder.id,
-        createdAtTimestamp,
+        createdDatetime,
         onlyQtyChangesCopy,
         newTShirtOrderId
       )],
-      earliestTShirtOrder: updatedTShirtOrder
+      earliestTShirtOrderDate: createdDatetime
     }
   };
 
-  const { updateTShirtOrderStatements, earliestTShirtOrder } = getUpdateTShirtOrderStatements();
+  const { updateTShirtOrderStatements, earliestTShirtOrderDate } = getUpdateTShirtOrderStatements();
 
   const transactionStatements: ParameterizedStatement[] = [
     getUpdateOrderPartiQL(entityType, parentOrder.id, createdAtTimestamp),
@@ -174,7 +175,7 @@ export const assembleUpdateOrderTransactionStatements = (
     newTShirtOrder: responseTShirtOrder,
   };
 
-  return { transactionStatements, response, earliestTShirtOrder };
+  return { transactionStatements, response, earliestTShirtOrderDate };
 };
 
 
@@ -183,6 +184,7 @@ export type UpdateOrderTransactionInput = {
   parentOrder: PurchaseOrderOrCustomerOrder;
   inventoryQtyDelta: number;
   createOrderChangeInput: CreateOrderChangeInput;
+  poItemReceivedDate?: string;
   // Remember subsequent updates to the same tshirt in a session.
   prevUpdatesTshirtIdsMap: {[x: string]: boolean};
 };
@@ -209,7 +211,7 @@ export const updateTShirtOrderTransactionAPI = async (
 
   let command = null;
   let response: UpdateOrderTransactionResponse = null;
-  let earliestTShirtOrder;
+  let earliestTShirtOrderDate;
   let parentOrder: PurchaseOrderOrCustomerOrder = input.parentOrder;
 
   try {
@@ -229,7 +231,7 @@ export const updateTShirtOrderTransactionAPI = async (
       TransactStatements: res.transactionStatements,
     });
     response = res.response;
-    earliestTShirtOrder = res.earliestTShirtOrder;
+    earliestTShirtOrderDate = res.earliestTShirtOrderDate;
   } catch (e) {
     console.log(e);
     throw new Error(`Failed to update ${entityType} order`);
@@ -262,16 +264,24 @@ export const updateTShirtOrderTransactionAPI = async (
       throw new Error(`Failed to update ${entityType} order`);
     })
     .then(response => {
+      if(!response) return response;
+      
+      let orderFromLastMonth = !orderIsAfterStartOfMonth(input.parentOrder);
+      let changeToCoInPrevMonth = isCO(input.parentOrder) && orderFromLastMonth;
+      let addingNewOrderItem = tshirtOrderTableOperation === DBOperation.CREATE;
+      
+      const shouldInvalidateCache = changeToCoInPrevMonth ||
+        isPO(input.parentOrder) && 
+          !addingNewOrderItem && (
+            !isAfterStartOfMonth(input.poItemReceivedDate!) || 
+            orderFromLastMonth && input.inventoryQtyDelta < 0 
+          )
 
-      const shouldNotUpdateCacheExpiration = !response || 
-        orderIsAfterStartOfMonth(parentOrder) || 
-        isReceivingPOItem(input) || 
-        isAddingNewPOItem(input, response?.newTShirtOrder);
-      if (shouldNotUpdateCacheExpiration) return response;
+      if (!shouldInvalidateCache) return response;
       
       // Update the cache expiration
       dynamodbClient.send(new ExecuteStatementCommand(
-        getConditionalUpdateCacheExpiration(earliestTShirtOrder)
+        getConditionalUpdateCacheExpiration(earliestTShirtOrderDate)
       ))
       .catch(e => {
         if (e.name === 'ConditionalCheckFailedException')

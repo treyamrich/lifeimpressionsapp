@@ -1,6 +1,6 @@
 "use client";
 
-import { CreateOrderChangeInput, TShirt, TShirtOrder } from "@/API";
+import { CreateOrderChangeInput, CustomerOrder, PurchaseOrder, TShirt, TShirtOrder } from "@/API";
 import React, { useMemo, useState, useEffect } from "react";
 import { getTableColumns, TShirtOrderFields } from "./table-constants";
 import {
@@ -17,16 +17,20 @@ import { EntityType } from "../po-customer-order-shared-components/CreateOrderPa
 import TableToolbar from "../Table/TableToolbar";
 import TableRowActions from "../Table/TableRowActions";
 import { fetchAllNonDeletedTShirts } from "../../inventory/util";
+import { Dayjs } from "dayjs";
+
+export type EditTShirtOrderResult = {
+  row: MRT_Row<TShirtOrder>;
+  orderChange: CreateOrderChangeInput;
+  exitEditingMode: () => void;
+  poItemDateReceived?: Dayjs;
+}
 
 interface TShirtOrderTableProps {
   tableData: TShirtOrder[];
   setTableData: React.Dispatch<React.SetStateAction<TShirtOrder[]>>;
-  parentOrderId: string | undefined;
-  onRowEdit: (
-    row: MRT_Row<TShirtOrder>,
-    orderChange: CreateOrderChangeInput,
-    exitEditingMode: () => void
-  ) => void | undefined;
+  parentOrder: PurchaseOrder | CustomerOrder | undefined;
+  onRowEdit: (res: EditTShirtOrderResult) => void | undefined;
   onRowAdd: (
     newRowValue: TShirtOrder,
     orderChange: CreateOrderChangeInput,
@@ -49,7 +53,7 @@ type EditMode = {
 const TShirtOrderTable = ({
   tableData,
   setTableData,
-  parentOrderId,
+  parentOrder,
   onRowEdit,
   onRowAdd,
   entityType,
@@ -68,13 +72,19 @@ const TShirtOrderTable = ({
 
   const handleEditRowAudit = (
     orderChange: CreateOrderChangeInput,
-    resetEditFormCallback: () => void
+    resetEditFormCallback: () => void,
+    poItemDateReceived?: Dayjs,
   ) => {
     const row = editMode.row;
     if (!row) return;
-    onRowEdit(row, orderChange, () => {
-      setEditMode({ show: false, row: undefined });
-      resetEditFormCallback();
+    onRowEdit({
+      row, 
+      orderChange, 
+      exitEditingMode: () => {
+        setEditMode({ show: false, row: undefined });
+        resetEditFormCallback();
+      },
+      poItemDateReceived: poItemDateReceived?.set('second', 0)
     });
   };
 
@@ -178,7 +188,7 @@ const TShirtOrderTable = ({
         tshirtChoices={tshirtChoices}
         tableData={tableData}
         entityType={entityType}
-        parentOrderId={parentOrderId}
+        parentOrderId={parentOrder?.id}
       />
       <EditRowPopup
         open={editMode.show}
@@ -186,7 +196,7 @@ const TShirtOrderTable = ({
         onSubmit={handleEditRowAudit}
         onClose={() => setEditMode({ show: false, row: undefined })}
         title="Edit"
-        parentOrderId={parentOrderId}
+        parentOrder={parentOrder}
         entityType={entityType}
         mode={mode}
       />

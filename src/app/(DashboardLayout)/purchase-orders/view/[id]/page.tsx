@@ -10,6 +10,7 @@ import PageContainer from "@/app/(DashboardLayout)/components/container/PageCont
 import BlankCard from "@/app/(DashboardLayout)/components/shared/BlankCard";
 import DashboardCard from "@/app/(DashboardLayout)/components/shared/DashboardCard";
 import TShirtOrderTable, {
+  EditTShirtOrderResult,
   TableMode,
 } from "@/app/(DashboardLayout)/components/TShirtOrderTable/TShirtOrderTable";
 import { getPurchaseOrderAPI } from "@/graphql-helpers/fetch-apis";
@@ -40,7 +41,7 @@ import Section from "@/app/(DashboardLayout)/components/po-customer-order-shared
 import { deleteOrderTransactionAPI } from "@/dynamodb-transactions/delete-order-transaction";
 import { combineTShirtOrderQtys, failedUpdateTShirtStr, groupTShirtOrders } from "@/utils/tshirtOrder";
 import MoreInfoAccordian from "@/app/(DashboardLayout)/components/MoreInfoAccordian/MoreInfoAccordian";
-import { fromUTC, getStartOfMonth } from "@/utils/datetimeConversions";
+import { fromUTC, getStartOfMonth, toAWSDateTime } from "@/utils/datetimeConversions";
 
 type ViewPurchaseOrderProps = {
   params: { id: string };
@@ -211,11 +212,11 @@ const OrderedItemsTable = ({
   const [prevUpdates, setPrevUpdates] = useState<{[x: string]: boolean}>({});
 
   const handleAfterRowEdit = (
-    row: MRT_Row<TShirtOrder>,
-    createOrderChangeInput: CreateOrderChangeInput,
-    exitEditingMode: () => void,
+    res: EditTShirtOrderResult,
     allowNegativeInventory: boolean = false
   ) => {
+    const { row, orderChange, exitEditingMode, poItemDateReceived } = res;
+    let createOrderChangeInput = orderChange;
     const oldTShirtOrder = tableData[row.index];
     const newTShirtOrder: any = { ...oldTShirtOrder };
     createOrderChangeInput.fieldChanges.forEach((fieldChange) => {
@@ -229,7 +230,9 @@ const OrderedItemsTable = ({
       parentOrder: parentPurchaseOrder,
       inventoryQtyDelta: inventoryQtyDelta,
       createOrderChangeInput: createOrderChangeInput,
-      prevUpdatesTshirtIdsMap: prevUpdates
+      prevUpdatesTshirtIdsMap: prevUpdates,
+      poItemReceivedDate: poItemDateReceived ? 
+        toAWSDateTime(poItemDateReceived) : undefined
     };
 
     // Only warn negative inventory when inventory will be reduced
@@ -252,12 +255,7 @@ const OrderedItemsTable = ({
           setNegativeInventoryWarning({
             show: true,
             cachedFunctionCall: () =>
-              handleAfterRowEdit(
-                row,
-                createOrderChangeInput,
-                exitEditingMode,
-                true
-              ),
+              handleAfterRowEdit(res, true),
             failedTShirts: [failedUpdateTShirtStr(oldTShirtOrder.tshirt)],
           });
           return;
@@ -361,7 +359,7 @@ const OrderedItemsTable = ({
         <TShirtOrderTable
           tableData={tableData}
           setTableData={setTableData}
-          parentOrderId={parentPurchaseOrder.id}
+          parentOrder={parentPurchaseOrder}
           onRowEdit={handleAfterRowEdit}
           onRowAdd={handleAfterRowAdd}
           entityType={EntityType.PurchaseOrder}

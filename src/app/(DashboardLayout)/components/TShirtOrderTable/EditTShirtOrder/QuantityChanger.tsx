@@ -1,4 +1,4 @@
-import { Button, FormLabel, Grid, Typography } from "@mui/material";
+import { Box, Button, FormLabel, Grid, Typography } from "@mui/material";
 import { SetStateAction } from "react";
 import StrictIntegerInput from "../../inputs/StrictNumberInput";
 
@@ -46,11 +46,13 @@ const QuantityChanger = ({ newQty, setNewQty, title, currentQty, allowNewQtyToBe
                                 </Button>
                             </Grid>
                             <Grid item>
-                            <StrictIntegerInput
-                                initialValue={newQty}
-                                onChange={newVal => setNewQty(newVal)}
-                                name="qty-changer-int-input"
-                            />
+                                <Box width={100}>
+                                    <StrictIntegerInput
+                                        initialValue={newQty}
+                                        onChange={newVal => setNewQty(newVal)}
+                                        name="qty-changer-int-input"
+                                    />
+                                </Box>
                             </Grid>
                             <Grid item>
                                 <Button

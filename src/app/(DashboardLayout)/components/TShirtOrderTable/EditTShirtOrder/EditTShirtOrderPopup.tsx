@@ -8,7 +8,7 @@ import {
 } from "@mui/material";
 import { useEffect, useState } from "react";
 import { MRT_Row } from "material-react-table";
-import { CreateOrderChangeInput, TShirtOrder } from "@/API";
+import { CreateOrderChangeInput, CustomerOrder, PurchaseOrder, TShirtOrder } from "@/API";
 import { EntityType } from "../../po-customer-order-shared-components/CreateOrderPage";
 import { TableMode } from "../TShirtOrderTable";
 import { TShirtOrderFields } from "../table-constants";
@@ -23,16 +23,19 @@ import {
   getInitialEditReasonState,
   validateAndGetEditReason,
 } from "../../EditReasonRadioGroup/EditReasonRadioGroup";
+import { fromUTC, getTodayInSetTz } from "@/utils/datetimeConversions";
+import { Dayjs } from "dayjs";
 
 interface EditTShirtOrderPopupProps {
   onSubmit: (
     createOrderChangeInput: CreateOrderChangeInput,
-    resetFormCallback: () => void
+    resetFormCallback: () => void,
+    poItemDateReceived?: Dayjs,
   ) => void;
   onClose: () => void;
   open: boolean;
   row: MRT_Row<TShirtOrder> | undefined;
-  parentOrderId: string | undefined;
+  parentOrder: PurchaseOrder | CustomerOrder | undefined;
   title: string;
   entityType: EntityType;
   mode: TableMode;
@@ -46,7 +49,7 @@ export interface FormValue<T> {
 const EditTShirtOrderPopup = ({
   open,
   row,
-  parentOrderId,
+  parentOrder,
   onSubmit,
   onClose,
   title,
@@ -70,6 +73,8 @@ const EditTShirtOrderPopup = ({
     value: 0,
     hasError: false,
   });
+
+  const [poItemDateReceived, setPoItemDateReceived] = useState(getTodayInSetTz());
 
   const currentDiscount = row
     ? (row.getValue(TShirtOrderFields.Discount) as number)
@@ -117,7 +122,7 @@ const EditTShirtOrderPopup = ({
     let input: BuildOrderChangeInput = {
       oldTShirtOrder: row!.original,
       newTShirtOrder: newTShirtOrder,
-      parentOrderId: parentOrderId,
+      parentOrderId: parentOrder?.id,
       reason: editReasonMsg ? editReasonMsg : "",
       entityType: entityType,
     };
@@ -132,7 +137,13 @@ const EditTShirtOrderPopup = ({
 
     if (newCostPerUnit.hasError || newDiscount.hasError || hadError) return;
 
-    onSubmit(createOrderChangeInput, resetForm);
+    onSubmit(
+      createOrderChangeInput, 
+      resetForm,
+      entityType === EntityType.CustomerOrder ? 
+        undefined :
+        poItemDateReceived
+    );
   };
 
   useEffect(() => {
@@ -164,6 +175,9 @@ const EditTShirtOrderPopup = ({
               setNewDiscount={setNewDiscount}
               editReason={editReason}
               setEditReason={setEditReason}
+              poItemDateReceived={poItemDateReceived}
+              setPoItemDateReceived={setPoItemDateReceived}
+              minDateReceived={parentOrder ? fromUTC(parentOrder.createdAt) : undefined}
               entityType={entityType}
               mode={mode}
             />

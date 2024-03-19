@@ -3,6 +3,7 @@ import { TShirtOrderFields } from "@/app/(DashboardLayout)/components/TShirtOrde
 import { DBOperation } from "@/contexts/DBErrorContext";
 import { UpdateOrderTransactionInput } from "./update-tshirt-order/update-tshirt-order-transaction";
 import { orderIsAfterStartOfMonth } from "./util";
+import { fromUTC } from "@/utils/datetimeConversions";
 
 export const validateTShirtOrderInput = (
   tshirtOrder: TShirtOrder,
@@ -81,6 +82,11 @@ export const validateUpdateOrderInput = (
   //   throw Error(
   //     "Orders from prior months cannot be updated except when... 1) Receiving outstanding purchase order items. 2) Returning customer bought items to inventory"
   //   );
+  
+  let recvDate = input.poItemReceivedDate;
+  if(recvDate && fromUTC(recvDate).isBefore(fromUTC(input.parentOrder.createdAt))) {
+    throw Error("Date received can't be before the order date")
+  }
 
   validateOrderChangeInput(createOrderChangeInput);
   validateTShirtOrderInput(updatedTShirtOrder, tshirtOrderTableOperation);
