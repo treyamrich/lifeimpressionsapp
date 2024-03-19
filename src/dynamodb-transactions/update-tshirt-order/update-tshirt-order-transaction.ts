@@ -263,11 +263,11 @@ export const updateTShirtOrderTransactionAPI = async (
     })
     .then(response => {
 
-      if (!response || 
+      const shouldNotUpdateCacheExpiration = !response || 
         orderIsAfterStartOfMonth(parentOrder) || 
         isReceivingPOItem(input) || 
-        isAddingNewPOItem(input, response?.newTShirtOrder)) 
-        return response;
+        isAddingNewPOItem(input, response?.newTShirtOrder);
+      if (shouldNotUpdateCacheExpiration) return response;
       
       // Update the cache expiration
       dynamodbClient.send(new ExecuteStatementCommand(
