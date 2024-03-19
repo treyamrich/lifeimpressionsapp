@@ -1,12 +1,7 @@
 import {
   CardContent,
   FormControl,
-  FormControlLabel,
-  FormLabel,
   Grid,
-  Radio,
-  RadioGroup,
-  TextField,
 } from "@mui/material";
 import BlankCard from "../../shared/BlankCard";
 import { EntityType } from "../../po-customer-order-shared-components/CreateOrderPage";
@@ -21,6 +16,8 @@ import {
 import EditReasonRadioGroup, {
   EditReasonFormState,
 } from "../../EditReasonRadioGroup/EditReasonRadioGroup";
+import { Dayjs } from "dayjs";
+import { DateTimePicker } from "@mui/x-date-pickers";
 
 type EditCardProps = {
   currentAmtReceived: number;
@@ -41,6 +38,10 @@ type EditCardProps = {
 
   editReason: EditReasonFormState;
   setEditReason: React.Dispatch<React.SetStateAction<EditReasonFormState>>;
+
+  poItemDateReceived: Dayjs;
+  setPoItemDateReceived: React.Dispatch<React.SetStateAction<Dayjs>>;
+  minDateReceived: Dayjs | undefined;
 
   entityType: EntityType;
   mode: TableMode;
@@ -66,6 +67,10 @@ const EditCard = ({
   editReason,
   setEditReason,
 
+  poItemDateReceived,
+  setPoItemDateReceived,
+  minDateReceived,
+
   entityType,
   mode,
 }: EditCardProps) => {
@@ -76,15 +81,28 @@ const EditCard = ({
           <Grid container direction="column" spacing={2}>
             {entityType === EntityType.PurchaseOrder &&
               mode === TableMode.Edit && (
-                <Grid item>
-                  <QuantityChanger
-                    title="Amount On Hand"
-                    newQty={newAmtReceived}
-                    setNewQty={setNewAmtReceived}
-                    currentQty={currentAmtReceived}
-                    allowNewQtyToBeZero={true}
-                  />
-                </Grid>
+                <>
+                  <Grid item>
+                    <QuantityChanger
+                      title="Amount On Hand"
+                      newQty={newAmtReceived}
+                      setNewQty={setNewAmtReceived}
+                      currentQty={currentAmtReceived}
+                      allowNewQtyToBeZero={true}
+                    />
+                  </Grid>
+                  <Grid item>
+                    <DateTimePicker
+                      label='Date Received'
+                      value={poItemDateReceived}
+                      onChange={(newVal: any) => setPoItemDateReceived(newVal)}
+                      views={['year', 'month', 'day', 'hours', 'minutes']}
+                      disableFuture
+                      minDateTime={minDateReceived}
+                      disabled={newAmtReceived <= 0}
+                    />
+                  </Grid>
+                </>
               )}
             <Grid item>
               <QuantityChanger

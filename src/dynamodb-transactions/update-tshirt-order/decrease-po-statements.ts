@@ -47,5 +47,5 @@ export const getDecreasePOItemStatements = (
     }
   }
 
-  return { updateTShirtOrderStatements: removalStatements, earliestTShirtOrder: earliestTShirtOrder};
+  return { updateTShirtOrderStatements: removalStatements, earliestTShirtOrderDate: earliestTShirtOrder.createdAt};
 };

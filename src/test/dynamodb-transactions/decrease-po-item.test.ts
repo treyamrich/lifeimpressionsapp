@@ -37,7 +37,7 @@ describe("Decrease PO Item", () => {
         let amtRecvDelta = -5;
         let res = getDecreasePOItemStatements(newPo, input, amtRecvDelta);
         let statements = res.updateTShirtOrderStatements;
-        let earliestTShirtOrder = res.earliestTShirtOrder;
+        let earliestTShirtOrderDate = res.earliestTShirtOrderDate;
 
         statements.forEach((res, i) => {
             expect(res.Statement?.includes('DELETE')).toBeTruthy()
@@ -46,29 +46,29 @@ describe("Decrease PO Item", () => {
         })
         expect(statements.length).toBe(2);
         expect(statements.find(x => x.Parameters?.at(0)?.S === '0')).toBeUndefined()
-        expect(earliestTShirtOrder).toBe(newTShirtOrders[3])
+        expect(earliestTShirtOrderDate).toBe(newTShirtOrders[3].createdAt)
 
         newTShirtOrders.push(getDummyTShirtOrder({
             ...defaultTShirtOrder, id: '3', amountReceived: 3, createdAt: '2020-01-01T10:10:12Z'}))
         amtRecvDelta = -7;
         res = getDecreasePOItemStatements(newPo, input, amtRecvDelta);
         statements = res.updateTShirtOrderStatements;
-        earliestTShirtOrder = res.earliestTShirtOrder;
+        earliestTShirtOrderDate = res.earliestTShirtOrderDate;
         
         expect(statements.length).toBe(3)
         expect(statements[0].Statement?.includes('DELETE')).toBeTruthy();
         expect(statements[1].Statement?.includes('DELETE')).toBeTruthy();
         expect(statements[2].Statement?.includes('UPDATE')).toBeTruthy();
-        expect(earliestTShirtOrder).toBe(newTShirtOrders[3])
+        expect(earliestTShirtOrderDate).toBe(newTShirtOrders[3].createdAt)
 
         // Test deleting everything
         amtRecvDelta = -9;
         res = getDecreasePOItemStatements(newPo, input, amtRecvDelta);
         statements = res.updateTShirtOrderStatements;
-        earliestTShirtOrder = res.earliestTShirtOrder;
+        earliestTShirtOrderDate = res.earliestTShirtOrderDate;
 
         expect(statements.length).toBe(4);
-        expect(earliestTShirtOrder).toBe(newTShirtOrders[1]);
+        expect(earliestTShirtOrderDate).toBe(newTShirtOrders[1].createdAt);
         expect(statements[3].Statement?.includes('UPDATE')).toBeTruthy();
         statements.slice(0, 3).forEach(x => expect(x.Statement?.includes('DELETE')).toBeTruthy())
     })

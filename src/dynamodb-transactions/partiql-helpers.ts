@@ -314,8 +314,8 @@ export const getUpdateOrderPartiQL = (
 }
 
 // This should only be called for customer orders updated in previous months
-export const getConditionalUpdateCacheExpiration = (tshirtOrder: TShirtOrder): ParameterizedStatement => {
-    let earliestExpiredDate = fromUTC(tshirtOrder.createdAt)
+export const getConditionalUpdateCacheExpiration = (expirationDateUTC: string): ParameterizedStatement => {
+    let earliestExpiredDate = fromUTC(expirationDateUTC)
         .startOf('month')
         .format('YYYY-MM-DD');
     return {

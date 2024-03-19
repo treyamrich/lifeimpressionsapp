@@ -8,13 +8,8 @@ export const isPO = (order: PurchaseOrderOrCustomerOrder) => order.__typename ==
 
 export const orderIsAfterStartOfMonth = (
     order: PurchaseOrderOrCustomerOrder
-  ): boolean => fromUTC(order.createdAt) >= getStartOfMonth(0)
+  ): boolean => isAfterStartOfMonth(order.createdAt)
 
-export const isReceivingPOItem = (
-  input: UpdateOrderTransactionInput
-): boolean => isPO(input.parentOrder) && input.inventoryQtyDelta > 0;
-
-export const isAddingNewPOItem = (
-  input: UpdateOrderTransactionInput,
-  updateTShirtOrderResp: TShirtOrder | undefined
-) => isPO(input.parentOrder) && input.updatedTShirtOrder.id !== updateTShirtOrderResp?.id;
+export const isAfterStartOfMonth = (
+  dateTimeStr: string
+) => fromUTC(dateTimeStr) >= getStartOfMonth(0);

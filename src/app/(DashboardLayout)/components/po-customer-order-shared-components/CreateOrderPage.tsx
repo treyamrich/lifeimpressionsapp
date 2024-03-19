@@ -7,7 +7,7 @@ import { TextField, Stack, MenuItem, Box, Button, Typography } from "@mui/materi
 
 import { MRT_ColumnDef, MRT_Row } from "material-react-table";
 import { CreateOrderChangeInput, TShirtOrder } from "@/API";
-import TShirtOrderTable, { TableMode } from "../TShirtOrderTable/TShirtOrderTable";
+import TShirtOrderTable, { EditTShirtOrderResult, TableMode } from "../TShirtOrderTable/TShirtOrderTable";
 import ConfirmPopup from "../../components/forms/confirm-popup/ConfirmPopup";
 import { useRouter } from "next/navigation";
 import { ColumnInfo, SelectValue } from "../../purchase-orders/table-constants";
@@ -229,12 +229,9 @@ function CreateOrderPage<T extends Record<any, any>>({
                             setTableData={(newValues) =>
                                 setValues({ ...values, orderedItems: newValues })
                             }
-                            parentOrderId={undefined}
-                            onRowEdit={(
-                                row: MRT_Row<TShirtOrder>,
-                                orderChange: CreateOrderChangeInput,
-                                exitEditingMode: () => void
-                            ) => {
+                            parentOrder={undefined}
+                            onRowEdit={(res: EditTShirtOrderResult) => {
+                                const { row, orderChange, exitEditingMode } = res;
                                 const tableData = values.orderedItems;
                                 orderChange.fieldChanges.forEach(fieldChange => {
                                     tableData[row.index][fieldChange.fieldName] = fieldChange.newValue;
