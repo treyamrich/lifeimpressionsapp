@@ -11,7 +11,7 @@ describe("Decrease PO Item", () => {
         let updatedTShirtOrder = getDummyTShirtOrder({...defaultTShirtOrder, id: '0' });
         let newTShirtOrders = [
             getDummyTShirtOrder({ tShirtOrderTshirtId: 'SOMETHING_ELSE', id: '-1'}),
-            getDummyTShirtOrder({...defaultTShirtOrder, quantity: 10,  id: '0', createdAt: '2020-01-01T10:10:10Z'}),
+            getDummyTShirtOrder({...defaultTShirtOrder, quantity: 10, amountReceived: 1, id: '0', createdAt: '2020-01-01T10:10:10Z'}),
             getDummyTShirtOrder({...defaultTShirtOrder, amountReceived: 3, id: '2', createdAt: '2020-01-01T10:10:14Z'}),
             getDummyTShirtOrder({...defaultTShirtOrder, amountReceived: 2, id: '1', createdAt: '2020-01-01T10:10:11Z'}),
         ]
@@ -60,5 +60,16 @@ describe("Decrease PO Item", () => {
         expect(statements[1].Statement?.includes('DELETE')).toBeTruthy();
         expect(statements[2].Statement?.includes('UPDATE')).toBeTruthy();
         expect(earliestTShirtOrder).toBe(newTShirtOrders[3])
+
+        // Test deleting everything
+        amtRecvDelta = -9;
+        res = getDecreasePOItemStatements(newPo, input, amtRecvDelta);
+        statements = res.updateTShirtOrderStatements;
+        earliestTShirtOrder = res.earliestTShirtOrder;
+
+        expect(statements.length).toBe(4);
+        expect(earliestTShirtOrder).toBe(newTShirtOrders[1]);
+        expect(statements[3].Statement?.includes('UPDATE')).toBeTruthy();
+        statements.slice(0, 3).forEach(x => expect(x.Statement?.includes('DELETE')).toBeTruthy())
     })
 })

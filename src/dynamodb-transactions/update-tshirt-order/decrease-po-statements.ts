@@ -17,8 +17,6 @@ export const getDecreasePOItemStatements = (
       tshirtOrder.tShirtOrderTshirtId === updatedTShirtOrder.tShirtOrderTshirtId
   );
   datetimeInPlaceSort(receivedPOItems, x => x.createdAt)
-  // Don't change the original copy
-  receivedPOItems = receivedPOItems.slice(1)
 
   let remainingRemovals = Math.abs(amtRecvDelta);
   let removalStatements: ParameterizedStatement[] = [];
@@ -31,7 +29,13 @@ export const getDecreasePOItemStatements = (
     let remainder = amtRecv - remainingRemovals;
     earliestTShirtOrder = receivedPOItems[i];
     finalIdx = i;
-    if (remainder > 0) {
+
+    if(i !== 0 && remainder <= 0){
+      removalStatements.push(
+        getHardDeleteTShirtOrderPartiQL(receivedPOItems[i])
+      );
+      remainingRemovals = -remainder;
+    } else if (remainder >= 0) {
       let updatedTShirtOrder: TShirtOrder = {
         ...receivedPOItems[i],
         amountReceived: remainder,
@@ -40,11 +44,6 @@ export const getDecreasePOItemStatements = (
         getUpdateTShirtOrderTablePartiQL(updatedTShirtOrder)
       );
       remainingRemovals = 0;
-    } else {
-      removalStatements.push(
-        getHardDeleteTShirtOrderPartiQL(receivedPOItems[i])
-      );
-      remainingRemovals = -remainder;
     }
   }
 
