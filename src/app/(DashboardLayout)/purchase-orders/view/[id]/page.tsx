@@ -347,12 +347,13 @@ const OrderedItemsTable = ({
         {orderFromPriorMonth && (
           <MoreInfoAccordian variant="warn">
             <Typography variant="body2">
-              This purchase order is from last month. When editing an item in
-              the order, you will only be able to{" "}
+              This purchase order is from a prior month. Removing items will 
+              take away from the newest items. If you receive an item from a month
+              prior to <span style={underlineBoldStyle}>now</span>, all inventory value reports will be invalidated from the order date
+              and onwards.
               <span style={underlineBoldStyle}>
-                increase the quantity on hand
+                It is recommended to only increase the quantity on hand and set the received date in the current month.
               </span>
-              {" "} which increases inventory quantity.
             </Typography>
           </MoreInfoAccordian>
         )}

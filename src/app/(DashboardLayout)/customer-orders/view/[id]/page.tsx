@@ -354,16 +354,9 @@ const OrderedItemsTable = ({
         {orderFromPriorMonth && (
           <MoreInfoAccordian variant="warn">
             <Typography variant="body2">
-              This customer order is from last month. When editing an item in
-              the order, you will only be able to{" "}
-              <span style={underlineBoldStyle}>
-                {" "}
-                decrease the ordered quantity
-              </span>
-              {" "} which increases inventory quantity. This invalidates previous
-              {" "} inventory value reports from the date this order was placed
-              {" "} and the most recent month's report. The next time a report is generated,
-              {" "} the old reports will also be regenerated.
+              This customer order is from a prior month. When editing an item in
+              the order, you will be rewriting history and invalidating inventory
+              value reports generated from the order date and onwards.
             </Typography>
           </MoreInfoAccordian>
         )}
