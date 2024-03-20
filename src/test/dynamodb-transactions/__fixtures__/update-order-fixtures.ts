@@ -36,7 +36,8 @@ export const updateOrderInput: UpdateOrderTransactionInput = {
     },
     inventoryQtyDelta: 2,
     updatedTShirtOrder: updatedTShirtOrder,
-    parentOrder: co
+    parentOrder: co,
+    prevUpdatesTshirtIdsMap: {}
 }
 
 export const negativeUpdateOrderInput: UpdateOrderTransactionInput = {
@@ -47,5 +48,6 @@ export const negativeUpdateOrderInput: UpdateOrderTransactionInput = {
     },
     inventoryQtyDelta: -2,
     updatedTShirtOrder: updatedTShirtOrder,
-    parentOrder: po
+    parentOrder: po,
+    prevUpdatesTshirtIdsMap: {}
 }

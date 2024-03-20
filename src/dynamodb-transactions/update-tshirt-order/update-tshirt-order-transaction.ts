@@ -211,7 +211,7 @@ export const updateTShirtOrderTransactionAPI = async (
 
   let command = null;
   let response: UpdateOrderTransactionResponse = null;
-  let earliestTShirtOrderDate;
+  let earliestTShirtOrderDate: string;
   let parentOrder: PurchaseOrderOrCustomerOrder = input.parentOrder;
 
   try {
