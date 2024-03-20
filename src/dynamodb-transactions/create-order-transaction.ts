@@ -127,8 +127,9 @@ const validateCreateOrderInput = (
     throw Error("Date order placed has an invalid date format");
   if (inputTimestamp > now)
     throw Error("Date order was placed cannot be in the future.");
-  if (inputTimestamp < now.startOf("month"))
-    throw Error("Orders cannot be placed in prior months");
+  // TEMPORARY UNLOCK. Need to add this back.
+  // if (inputTimestamp < now.startOf("month"))
+  //   throw Error("Orders cannot be placed in prior months");
 
   const isValidStr = (str: string | undefined | null) =>
     str !== undefined && str !== null;
