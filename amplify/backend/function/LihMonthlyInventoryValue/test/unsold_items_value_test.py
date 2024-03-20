@@ -32,7 +32,7 @@ class TestUnsoldItemsValue(unittest.TestCase):
         return inv_item_val
     
     def _transform_data(self, data: list):
-        return map(lambda x: {'order_type': x[0], 'qty': x[1], 'cost_per_unit': x[2], 'discount': x[3]}, data)
+        return map(lambda x: {'order_type': x[0], 'qty': x[1], 'cost_per_unit': x[2]}, data)
 
     def test_pagination(self):
         order_item = mock_apis.select_random_order_item()
@@ -45,16 +45,16 @@ class TestUnsoldItemsValue(unittest.TestCase):
         
     def test_general_case(self):
         data = self._transform_data([
-            (OrderType.CustomerOrder, 10, 0, 0), # i = 0; Expect 0
-            (OrderType.PurchaseOrder, 3, 5.12, 100), # i = 1; Expect 0
-            (OrderType.CustomerOrder, 5, 0, 0), # i = 2; Expect 0
-            (OrderType.PurchaseOrder, 24, 20.12, 10), # i = 3; Expect $12(20.12 - 10/24) = $236.44
-            (OrderType.CustomerOrder, 5, 0, 0), # i = 4; Expect $7(20.12 - 10/24) = $137.92333333333335
+            (OrderType.CustomerOrder, 10, 0), # i = 0; Expect 0
+            (OrderType.PurchaseOrder, 3, 5.12), # i = 1; Expect 0
+            (OrderType.CustomerOrder, 5, 0), # i = 2; Expect 0
+            (OrderType.PurchaseOrder, 24, 20.12), # i = 3; Expect $(12 x 20.12) = $241.44
+            (OrderType.CustomerOrder, 5, 0), # i = 4; Expect $(7 x 20.12) = $140.84
         ])
         
         earlist_unsold_index = 3
         expected = InventoryItemValue(self.initial_cache_val.itemId)
-        expected.aggregateValue = 137.92333333333335 + self.initial_item_value
+        expected.aggregateValue = 140.84 + self.initial_item_value
         expected.numUnsold = 7
         expected.earliestUnsold = datetime.fromtimestamp(earlist_unsold_index).isoformat()
         
@@ -72,12 +72,12 @@ class TestUnsoldItemsValue(unittest.TestCase):
 
     def test_over_sold_item(self):
         data = self._transform_data([
-            (OrderType.PurchaseOrder, 10, 22, 1000),
-            (OrderType.CustomerOrder, -3, 33, 0),
-            (OrderType.CustomerOrder, 5, 4, 0),
-            (OrderType.PurchaseOrder, 0, 22, 1000), # The discount should not affect value
-            (OrderType.CustomerOrder, 5, 5, 0),
-            (OrderType.CustomerOrder, 5, 1, 0),
+            (OrderType.PurchaseOrder, 10, 22),
+            (OrderType.CustomerOrder, -3, 33),
+            (OrderType.CustomerOrder, 5, 4),
+            (OrderType.PurchaseOrder, 0, 22),
+            (OrderType.CustomerOrder, 5, 5),
+            (OrderType.CustomerOrder, 5, 1),
         ])
         earlist_unsold_index = 5
         n = -2
@@ -91,17 +91,17 @@ class TestUnsoldItemsValue(unittest.TestCase):
 
     def test_any_adjustments(self):
         data = self._transform_data([
-            (OrderType.CustomerOrder, 3, 0, 0),  # i = 0; Sold 3; Expect: $0
-            (OrderType.CustomerOrder, -3, 0, 0),  # i = 1; Returned 3; Expect: $0
-            (OrderType.PurchaseOrder, 5, 10, 5),  # i = 2; Bought 5; Expect: $(5 x 10 - 5) = $45
-            (OrderType.PurchaseOrder, -1, 0, 0),  # i = 3; Damaged items 1; Expect $4(10 - 5/5) = $36
-            (OrderType.PurchaseOrder, 2, 20, 10),  # i = 4; Bought 2; Expect: $4(10 - 1) + 2(20 - 10/2) = $66
-            (OrderType.CustomerOrder, 3, 0, 0), # i = 5; Sold 3; Expect $1(10 - 1) + 2(20 - 10/2) = $39
+            (OrderType.CustomerOrder, 3, 0),  # i = 0; Sold 3; Expect: $0
+            (OrderType.CustomerOrder, -3, 0),  # i = 1; Returned 3; Expect: $0
+            (OrderType.PurchaseOrder, 5, 10),  # i = 2; Bought 5; Expect: $(5 x 10) = $50
+            (OrderType.PurchaseOrder, -1, 0),  # i = 3; Damaged items 1; Expect $(4 x 10) = $40
+            (OrderType.PurchaseOrder, 2, 20),  # i = 4; Bought 2; Expect: $(4 x 10) + (2 x 20) = $80
+            (OrderType.CustomerOrder, 3, 0), # i = 5; Sold 3; Expect $(1 x 10) + (2 x 20) = $50
         ])
         earlist_unsold_index = 2
         n = 3
         expected = InventoryItemValue(self.initial_cache_val.itemId)
-        expected.aggregateValue = 39 + self.initial_cache_val.aggregateValue
+        expected.aggregateValue = 50 + self.initial_cache_val.aggregateValue
         expected.numUnsold = n
         expected.earliestUnsold = datetime.fromtimestamp(earlist_unsold_index).isoformat()
         
