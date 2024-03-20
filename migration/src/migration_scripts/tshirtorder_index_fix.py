@@ -1,7 +1,7 @@
 from enum import Enum
 import os
 from clients.dynamodb_client import DynamoDBClient
-from migration_helper import migrate_table_items, get_full_table_name
+from migration_helper import batch_execute_partiql, get_full_table_name
 import pandas as pd
 from queries import *
 from clients.graphql_client import GraphQLClient, PaginationIterator
@@ -20,7 +20,7 @@ def read_tshirt_order_csv(file):
         'costPerUnit': float,
         'createdAt': str,
         'discount': float,
-        'quantity': int,
+        'quantity': str,
         TShirtOrderFields.TSHIRT_ID.value: str,
         'updatedAt': str
     }
@@ -68,6 +68,6 @@ def run():
     
     update_items = list(map(process_item, tshirt_orders))
 
-    migrate_table_items(full_table_name, "id", update_items)
+    batch_execute_partiql(full_table_name, "id", update_items)
     
     validate_migration()

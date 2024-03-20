@@ -1,7 +1,7 @@
 from enum import Enum
 import os
 from clients.dynamodb_client import DynamoDBClient
-from migration_helper import migrate_table_items, get_full_table_name
+from migration_helper import batch_execute_partiql, get_full_table_name
 from queries import *
 from clients.graphql_client import GraphQLClient, PaginationIterator
 
@@ -47,6 +47,6 @@ def run():
     
     update_items = list(map(process_item, order_changes))
 
-    migrate_table_items(full_table_name, "id", update_items)
+    batch_execute_partiql(full_table_name, "id", update_items)
     
     validate_migration()

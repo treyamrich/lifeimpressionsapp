@@ -13,6 +13,7 @@ class DynamoDBClient:
         NONE = 0
         INSERT = 1
         UPDATE = 2
+        REMOVE_ATTRIBUTES = 3
     
     def __init__(self, client = None):
         
@@ -32,19 +33,17 @@ class DynamoDBClient:
     @staticmethod
     def _rec_to_attribute_val(x):
         if x == None:
-            return None
+            return { 'NULL': True }
         elif type(x) == dict:
             res = {}
             for k, v in x.items():
                 attr_val = DynamoDBClient._rec_to_attribute_val(v)
-                if not attr_val: continue
                 res[k] = attr_val
             return {'M': res}
         elif type(x) == list:
             res = []
             for i in x:
                 attr_val = DynamoDBClient._rec_to_attribute_val(i)
-                if not attr_val: continue
                 res.append(attr_val)
             return {'L': res}
         elif type(x) == int or type(x) == float:
@@ -54,7 +53,7 @@ class DynamoDBClient:
         elif type(x) == bool:
             return {'BOOL': x}
         raise Exception(f"New type '{type(x)}' with no conversion to DynamoDB AttributeValue")
-        
+                     
     @staticmethod
     def _to_update_partiql(table_name: str, pk_field_name: str, item: dict):
         table_operation = f'UPDATE "{table_name}"'
@@ -67,7 +66,15 @@ class DynamoDBClient:
         statement = "\n".join([table_operation, *set_statements, pk_where_clause])
         params = (*params, DynamoDBClient._attr_to_attribute_val(item[pk_field_name]))
         return statement, params
-
+    
+    @staticmethod
+    def _to_remove_attr_partiql(table_name: str, pk_field_name: str, item: dict):
+        table_operation = f'UPDATE "{table_name}"'
+        pk_where_clause = f'WHERE {pk_field_name} = ?'
+        remove_statements = [f'REMOVE {x}' for x in item.keys() if x != pk_field_name]
+        statement = "\n".join([table_operation, *remove_statements, pk_where_clause])
+        return statement, [DynamoDBClient._attr_to_attribute_val(item[pk_field_name])]
+    
     @staticmethod
     def _batch_operation(
         batch_transformer: Callable[[List], List], 
@@ -122,7 +129,16 @@ class DynamoDBClient:
             batch_processor,
             items
         )
-        
+    
+    @staticmethod
+    def get_partiql_by_op(table_name: str, pk_field_name: str, op: DBOperation, item: dict):
+        params = (table_name, pk_field_name, item)
+        if op == DynamoDBClient.DBOperation.UPDATE:
+            return DynamoDBClient._to_update_partiql(*params)
+        if op == DynamoDBClient.DBOperation.REMOVE_ATTRIBUTES:
+            return DynamoDBClient._to_remove_attr_partiql(*params)
+        raise NotImplementedError
+            
     def batch_execute_statement(self, table_name: str, pk_field_name: str, items: List[tuple[DBOperation, dict]]):
         
         def batch_transformer(batch: List[tuple[DynamoDBClient.DBOperation, dict]]):
@@ -131,8 +147,7 @@ class DynamoDBClient:
                 'Parameters': params,
             }
             return [
-                to_statement(*DynamoDBClient._to_update_partiql(table_name, pk_field_name, item))
-                if op == DynamoDBClient.DBOperation.UPDATE else item
+                to_statement(*self.get_partiql_by_op(table_name, pk_field_name, op, item))
                 for op, item in batch   
             ]
         
@@ -152,3 +167,84 @@ class DynamoDBClient:
             batch_processor,
             items
         )
+        
+    def execute_statement(self, statement, parameters=None, next_token=None):
+        params = {'Statement': statement}
+        def add_if_not_none(k, v):
+            if v:
+                params[k] = v
+        add_if_not_none('Parameters', parameters)
+        add_if_not_none('NextToken', next_token)
+        return self.client.execute_statement(**params)
+        
+        
+class DynamoDBPaginationIterator:
+    def __init__(
+        self, 
+        dynamodb_client: DynamoDBClient, 
+        table_name: str, 
+        cols: List[str],
+        statement_parameters: List[dict] = None,
+        query_where_clause: str = None
+    ):
+        self._dynamodb_client = dynamodb_client
+        self.table_name = table_name
+        self._statement_parameters = statement_parameters
+        self._statement = "\n".join([
+            f'SELECT {", ".join(cols)}',
+            f'FROM "{table_name}"',
+            *([query_where_clause] if query_where_clause else [])
+        ])
+        self._page = []
+        self._next_token = None
+        self._idx = 0
+
+    def __iter__(self):
+        self._get_next_page()
+        return self
+
+    def __next__(self):
+        if not self._page:
+            raise StopIteration
+        
+        at_end_of_page = self._idx == len(self._page)
+        at_last_page = self._next_token == None
+
+        if at_end_of_page and at_last_page:
+            raise StopIteration
+
+        if at_end_of_page:
+            self._get_next_page()
+
+        item = self._page[self._idx]
+        self._idx += 1
+        return item
+
+    def _get_next_page(self):
+        resp = self._dynamodb_client.execute_statement(self._statement, self._statement_parameters)
+        self._page, self._next_token = [self._from_attr_vals(x) for x in resp["Items"]], resp.get("NextToken", None)
+        self._idx = 0
+        
+    @staticmethod
+    def _from_attr_vals(item: dict):
+        def cast_non_iterable(v, T):
+            if T == 'NULL':
+                return None
+            if T == 'S':
+                return v
+            if T == 'N':
+                return float(v) if '.' in v else int(v)
+            if T == 'BOOL':
+                return v
+            raise NotImplementedError
+        
+        def rec(v):
+            if 'L' in v and len(v) == 1: # {'L': []}
+                return [rec(i) for i in v['L']]
+            if 'M' in v and len(v) == 1: # {'M': {}}
+                return { key: rec(val) for key, val in v['M'].items()}
+            
+            T, v = list(v.items())[0]
+            return cast_non_iterable(v, T)
+        
+        return {k: rec(v) for k, v in item.items()}
