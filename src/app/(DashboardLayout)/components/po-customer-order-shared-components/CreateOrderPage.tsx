@@ -128,7 +128,8 @@ function CreateOrderPage<T extends Record<any, any>>({
         const colInfo = columnInfo.get(column.accessorKey);
         if (colInfo?.dateTimeField) {
             const getMaxDate = colInfo?.dateTimeField.getMaxDateRestriction;
-            const getMinDate = colInfo?.dateTimeField.getMinDateRestriction;
+            // NEED TO ADD BACK
+            const getMinDate = () => undefined; // colInfo?.dateTimeField.getMinDateRestriction;
             return (
                 <DateTimePicker
                     label={column.header}
