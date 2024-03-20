@@ -91,7 +91,6 @@ class OrderItem:
     quantity: int
     amountReceived: int
     costPerUnit: float
-    discount: float
     id: str
     createdAt: str
     updatedAt: str
@@ -618,9 +617,7 @@ class Main:
             if item.get_qty() < 0: continue
 
             # For POs item.quantity is amount ordered NOT item.amountReceived
-            discount_per_unit = item.discount / item.quantity
-            new_cost_per_unit = item.costPerUnit - discount_per_unit
-            total_value += item.get_qty() * new_cost_per_unit
+            total_value += item.get_qty() * item.costPerUnit
 
         earliest_unsold = MyDateTime.to_ISO8601(end_exclusive)
         if unsold_items:
@@ -753,7 +750,6 @@ query TshirtOrderByUpdatedAt(
         quantity
         amountReceived
         costPerUnit
-        discount
         updatedAt
         id
         createdAt

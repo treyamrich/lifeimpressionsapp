@@ -51,7 +51,6 @@ def gen_order_items_responses(items: list[InventoryItem], n: int = 10) -> dict:
                 quantity=quantity,
                 amountReceived=random.randint(0, 10),
                 costPerUnit=round(random.uniform(0, 100), 2),
-                discount=random.randint(0, 10),
                 createdAt=t,
                 updatedAt=t,
                 tShirtOrderTshirtId=item.id,
@@ -120,7 +119,7 @@ class OrderType(Enum):
 class IncrementalOrderItemBuilder:
     def __init__(self):
         self.i = 0
-    def get_order_item(self, order_type: OrderType, qty: int, cost_per_unit: float = 0, discount: float = 0):
+    def get_order_item(self, order_type: OrderType, qty: int, cost_per_unit: float = 0):
         def get_time(x): return datetime.fromtimestamp(x).isoformat()
         is_customer_order = order_type == OrderType.CustomerOrder
         
@@ -129,7 +128,6 @@ class IncrementalOrderItemBuilder:
             quantity=qty,
             amountReceived=0 if is_customer_order else qty,
             costPerUnit=cost_per_unit,
-            discount=discount,
             createdAt=get_time(random.randint(0, self.i)),
             updatedAt=get_time(self.i),
             tShirtOrderTshirtId='some tshirt id',
