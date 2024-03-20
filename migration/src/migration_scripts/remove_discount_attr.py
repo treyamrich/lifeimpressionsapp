@@ -19,7 +19,7 @@ def run():
     purchase_order_table_name = get_full_table_name(os.environ['PURCHASE_ORDER_TABLE_NAME'])
     customer_order_table_name = get_full_table_name(os.environ['CUSTOMER_ORDER_TABLE_NAME'])
     tshirt_order_table_name = get_full_table_name(os.environ['TSHIRT_ORDER_TABLE_NAME'])
-    table_names = [customer_order_table_name, purchase_order_table_name]
+    table_names = [tshirt_order_table_name, customer_order_table_name, purchase_order_table_name]
     
     # TSHIRT_ORDER_CSV_PATH = os.environ['TSHIRT_ORDER_CSV_PATH']
     # tshirt_orders = tshirtorder_index_fix.read_tshirt_order_csv(TSHIRT_ORDER_CSV_PATH)
