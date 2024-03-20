@@ -132,7 +132,7 @@ class GraphQLClient:
         self.headers = {
             "Accept": "application/json",
             "Content-Type": "application/json",
-            "x-api-key": os.environ["API_KEY"],
+            # "x-api-key": os.environ["API_KEY"],
         }
         
         session = requests.Session()
