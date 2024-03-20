@@ -62,7 +62,6 @@ type PurchaseOrder @model @auth(rules: [
   shipping: Float!
   shippingAddress: String
   fees: Float!
-  discount: Float!
   dateExpected: AWSDateTime!
 
   isDeleted: Boolean @default(value: "false")
@@ -104,7 +103,6 @@ type TShirtOrder @model @auth(rules: [
   quantity: Int!
   amountReceived: Int @default(value: "0") # This is only used for PurchaseOrder
   costPerUnit: Float!
-  discount: Float!
 
   indexField: String @index(name: "tshirtOrderByUpdatedAt", queryField: "tshirtOrderByUpdatedAt", sortKeyFields: ["updatedAt"])
   updatedAt: String!
@@ -130,7 +128,6 @@ type CustomerOrder @model @auth(rules: [
   changeHistory: [OrderChange!] @hasMany
 
   taxRate: Float!
-  discount: Float!
 
   isDeleted: Boolean @default(value: "false")
   type: String @default(value: "CustomerOrder") @index(name: "customerOrdersByCreatedAt", queryField: "customerOrdersByCreatedAt", sortKeyFields: ["createdAt"])
