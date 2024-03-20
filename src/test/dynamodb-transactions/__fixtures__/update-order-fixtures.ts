@@ -26,7 +26,6 @@ export const updatedTShirtOrder: TShirtOrder = {
     updatedAt: '',
     tshirt: updatedTShirt,
     costPerUnit: 0,
-    discount: 0,
 };
 
 export const updateOrderInput: UpdateOrderTransactionInput = {

@@ -11,9 +11,6 @@ const OrderTotalCard = ({ order, orderedItems }: {
 }) => {
     const {
         subtotal,
-        flatItemDiscounts,
-        fullOrderDiscounts,
-        totalDiscounts,
         taxRate,
         fees,
         shipping,
@@ -67,12 +64,6 @@ const OrderTotalCard = ({ order, orderedItems }: {
                             getGridRow(formatTShirtDisplay(item), formatTShirtOrderCost(item))
                         )}
                         {getGridRow("Sub Total", `$${subtotal}`, tableRowColor)}
-                    </GridSection>
-
-                    <GridSection>
-                        {getGridRow("Flat Item Discounts", `-$${flatItemDiscounts}`)}
-                        {getGridRow("Full Order Discounts", `-$${fullOrderDiscounts}`)}
-                        {getGridRow("Total Discounts", `-$${totalDiscounts}`, tableRowColor)}
                     </GridSection>
 
                     <GridSection>

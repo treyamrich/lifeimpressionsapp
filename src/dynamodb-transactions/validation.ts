@@ -23,7 +23,6 @@ export const validateTShirtOrderInput = (
     throw Error("Invalid amount received input");
   if (tshirtOrder.quantity < 0) throw Error("Invalid quantity inputs");
   if (tshirtOrder.costPerUnit < 0) throw Error("Invalid cost per unit input");
-  if (tshirtOrder.discount < 0) throw Error("Invalid discount input");
   if (
     !tshirtOrder.tshirt ||
     !tshirtOrder.tShirtOrderTshirtId ||

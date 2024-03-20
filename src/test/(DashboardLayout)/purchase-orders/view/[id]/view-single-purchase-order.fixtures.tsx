@@ -12,7 +12,6 @@ export const validPO: PurchaseOrder = {
   taxRate: 0,
   shipping: 0,
   fees: 0,
-  discount: 0,
   dateExpected: "2023-01-01T10:10:10",
   type: "field is only for indexing in dynamodb",
   createdAt: "2023-01-01T10:10:10",

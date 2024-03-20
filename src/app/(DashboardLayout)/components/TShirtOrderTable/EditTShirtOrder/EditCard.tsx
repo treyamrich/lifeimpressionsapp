@@ -32,10 +32,6 @@ type EditCardProps = {
   newCostPerUnit: FormValue<number>;
   setNewCostPerUnit: React.Dispatch<React.SetStateAction<FormValue<number>>>;
 
-  currentDiscount: number;
-  newDiscount: FormValue<number>;
-  setNewDiscount: React.Dispatch<React.SetStateAction<FormValue<number>>>;
-
   editReason: EditReasonFormState;
   setEditReason: React.Dispatch<React.SetStateAction<EditReasonFormState>>;
 
@@ -59,10 +55,6 @@ const EditCard = ({
   currentCostPerUnit,
   newCostPerUnit,
   setNewCostPerUnit,
-
-  currentDiscount,
-  newDiscount,
-  setNewDiscount,
 
   editReason,
   setEditReason,
@@ -136,25 +128,6 @@ const EditCard = ({
                       });
                     }}
                     name="costPerUnit"
-                  />
-                </Grid>
-                <Grid item>
-                  <NumberInput
-                    label={
-                      toTShirtOrderColumnHeaderMap[TShirtOrderFields.Discount]
-                    }
-                    initialValue={currentDiscount}
-                    isFloat
-                    isValidFn={(newValue: number) => {
-                      let err =
-                        newValue < 0 ? "Discount cannot be negative" : "";
-                      setNewDiscount({ value: newValue, hasError: err !== "" });
-                      return err;
-                    }}
-                    onChange={(newValue: number, hasError: boolean) => {
-                      setNewDiscount({ value: newValue, hasError: hasError });
-                    }}
-                    name="discount"
                   />
                 </Grid>
               </>

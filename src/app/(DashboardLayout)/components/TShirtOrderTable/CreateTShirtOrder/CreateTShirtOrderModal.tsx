@@ -93,7 +93,6 @@ const CreateTShirtOrderModal = <TShirtOrder extends Record<string, any>>({
         fieldChanges: [
           { fieldName: TShirtOrderFields.Qty, oldValue: "-", newValue: values[TShirtOrderFields.Qty].toString() },
           { fieldName: TShirtOrderFields.CostPerUnit, oldValue: "-", newValue: values[TShirtOrderFields.CostPerUnit].toString() },
-          { fieldName: TShirtOrderFields.Discount, oldValue: "-", newValue: values[TShirtOrderFields.Discount].toString() }
         ],
         orderChangeTshirtId: values.tshirt.id,
         [`${entityType === EntityType.PurchaseOrder ? "purchase" : "customer"}OrderChangeHistoryId`]: parentOrderId,
@@ -137,12 +136,11 @@ const CreateTShirtOrderModal = <TShirtOrder extends Record<string, any>>({
     setErrorMap(newErrMap);
   }
 
-  // Customer orders aren't concerned with cost/unit or discount
+  // Customer orders aren't concerned with cost/unit
   const filterOutCOCols = (col: MRT_ColumnDef<TShirtOrder>) => {
     return entityType === EntityType.PurchaseOrder ||
       entityType === EntityType.CustomerOrder &&
-      col.accessorKey !== TShirtOrderFields.CostPerUnit &&
-      col.accessorKey !== TShirtOrderFields.Discount
+      col.accessorKey !== TShirtOrderFields.CostPerUnit
   }
 
   return (
@@ -199,8 +197,6 @@ const CreateTShirtOrderModal = <TShirtOrder extends Record<string, any>>({
                           let errMsg = "";
                           if (column.accessorKey === TShirtOrderFields.Qty && newValue <= 0) {
                             errMsg = "Number must be positive";
-                          } else if (column.accessorKey === TShirtOrderFields.Discount && newValue < 0) {
-                            errMsg = "Discount cannot be negative";
                           } else if (column.accessorKey === TShirtOrderFields.CostPerUnit && newValue < 0) {
                             errMsg = "Cost cannot be negative";
                           }

@@ -93,7 +93,6 @@ export const createPurchaseOrder = /* GraphQL */ `
           quantity
           amountReceived
           costPerUnit
-          discount
           indexField
           updatedAt
           isDeleted
@@ -148,7 +147,6 @@ export const createPurchaseOrder = /* GraphQL */ `
       shipping
       shippingAddress
       fees
-      discount
       dateExpected
       isDeleted
       type
@@ -186,7 +184,6 @@ export const updatePurchaseOrder = /* GraphQL */ `
           quantity
           amountReceived
           costPerUnit
-          discount
           indexField
           updatedAt
           isDeleted
@@ -241,7 +238,6 @@ export const updatePurchaseOrder = /* GraphQL */ `
       shipping
       shippingAddress
       fees
-      discount
       dateExpected
       isDeleted
       type
@@ -279,7 +275,6 @@ export const deletePurchaseOrder = /* GraphQL */ `
           quantity
           amountReceived
           costPerUnit
-          discount
           indexField
           updatedAt
           isDeleted
@@ -334,7 +329,6 @@ export const deletePurchaseOrder = /* GraphQL */ `
       shipping
       shippingAddress
       fees
-      discount
       dateExpected
       isDeleted
       type
@@ -481,7 +475,6 @@ export const createTShirtOrder = /* GraphQL */ `
       quantity
       amountReceived
       costPerUnit
-      discount
       indexField
       updatedAt
       isDeleted
@@ -517,7 +510,6 @@ export const updateTShirtOrder = /* GraphQL */ `
       quantity
       amountReceived
       costPerUnit
-      discount
       indexField
       updatedAt
       isDeleted
@@ -553,7 +545,6 @@ export const deleteTShirtOrder = /* GraphQL */ `
       quantity
       amountReceived
       costPerUnit
-      discount
       indexField
       updatedAt
       isDeleted
@@ -595,7 +586,6 @@ export const createCustomerOrder = /* GraphQL */ `
           quantity
           amountReceived
           costPerUnit
-          discount
           indexField
           updatedAt
           isDeleted
@@ -649,7 +639,6 @@ export const createCustomerOrder = /* GraphQL */ `
         __typename
       }
       taxRate
-      discount
       isDeleted
       type
       createdAt
@@ -687,7 +676,6 @@ export const updateCustomerOrder = /* GraphQL */ `
           quantity
           amountReceived
           costPerUnit
-          discount
           indexField
           updatedAt
           isDeleted
@@ -741,7 +729,6 @@ export const updateCustomerOrder = /* GraphQL */ `
         __typename
       }
       taxRate
-      discount
       isDeleted
       type
       createdAt
@@ -779,7 +766,6 @@ export const deleteCustomerOrder = /* GraphQL */ `
           quantity
           amountReceived
           costPerUnit
-          discount
           indexField
           updatedAt
           isDeleted
@@ -833,7 +819,6 @@ export const deleteCustomerOrder = /* GraphQL */ `
         __typename
       }
       taxRate
-      discount
       isDeleted
       type
       createdAt

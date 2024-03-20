@@ -23,7 +23,6 @@ export const getInitialCustomerOrderFormState = () => ({
   customerEmail: "",
   customerPhoneNumber: "",
   taxRate: 0,
-  discount: 0,
   createdAt: getTodayInSetTz()
 });
 
@@ -96,10 +95,6 @@ export const getTableColumns = (): MRT_ColumnDef<CustomerOrder>[] => {
     {
       accessorKey: "taxRate",
       header: "Tax Rate %",
-    } as MRT_ColumnDef<CustomerOrder>,
-    {
-      accessorKey: "discount",
-      header: "Order Discount $",
     } as MRT_ColumnDef<CustomerOrder>,
   ];
 };
@@ -179,14 +174,6 @@ export const columnInfo = new Map<
   ],
   [
     "taxRate",
-    {
-      isFloatField: true,
-      isEditable: true,
-      hideInTable: true,
-    } as ColumnInfo,
-  ],
-  [
-    "discount",
     {
       isFloatField: true,
       isEditable: true,
