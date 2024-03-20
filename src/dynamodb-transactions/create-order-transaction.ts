@@ -118,7 +118,6 @@ const validateCreateOrderInput = (
       throw Error("Received amount should be 0 on order creation");
   });
 
-  if (input.discount < 0) throw Error("Invalid discount for order");
   if (input.taxRate < 0) throw Error("Invalid tax rate");
 
   const now = getTodayInSetTz();

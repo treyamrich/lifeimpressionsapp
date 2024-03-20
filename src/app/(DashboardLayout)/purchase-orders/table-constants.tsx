@@ -24,7 +24,6 @@ export const getInitialPurchaseOrderState = () => ({
   shipping: 0,
   shippingAddress: "",
   fees: 0,
-  discount: 0,
   sentToVendor: false,
   dateExpected: getStartOfDay(1),
   createdAt: getTodayInSetTz()
@@ -103,10 +102,6 @@ export const getTableColumns = (): MRT_ColumnDef<PurchaseOrder>[] => {
       accessorKey: "fees",
       header: "Fees $",
     } as MRT_ColumnDef<PurchaseOrder>,
-    {
-      accessorKey: "discount",
-      header: "Order Discount $",
-    } as MRT_ColumnDef<PurchaseOrder>,
   ];
 };
 
@@ -171,10 +166,6 @@ export const columnInfo = new Map<
   ["shippingAddress", { isEditable: true, hideInTable: true } as ColumnInfo],
   [
     "fees",
-    { isFloatField: true, isEditable: true, hideInTable: true } as ColumnInfo,
-  ],
-  [
-    "discount",
     { isFloatField: true, isEditable: true, hideInTable: true } as ColumnInfo,
   ],
   ["dateExpected", { 

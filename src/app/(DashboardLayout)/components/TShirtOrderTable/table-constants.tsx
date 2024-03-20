@@ -14,14 +14,12 @@ export enum TShirtOrderFields {
   Qty = "quantity",
   AmtReceived = "amountReceived",
   CostPerUnit = "costPerUnit",
-  Discount = "discount",
 }
 
 export const toTShirtOrderColumnHeaderMap = {
   [TShirtOrderFields.Qty]: "Quantity",
   [TShirtOrderFields.AmtReceived]: "Amt. Received",
   [TShirtOrderFields.CostPerUnit]: "Cost/Unit $",
-  [TShirtOrderFields.Discount]: "Flat Item Discount $",
 };
 
 export const numberInputFields = new Set<string>([
@@ -41,7 +39,6 @@ export const initialTShirtOrderFormState: any = {
   quantity: 1,
   amountReceived: 0,
   costPerUnit: 0,
-  discount: 0,
   tShirtOrderTshirtId: "",
 };
 
@@ -85,10 +82,6 @@ export const getTableColumns = (): MRT_ColumnDef<TShirtOrder>[] => {
       header: toTShirtOrderColumnHeaderMap[TShirtOrderFields.CostPerUnit],
     } as MRT_ColumnDef<TShirtOrder>,
     {
-      accessorKey: TShirtOrderFields.Discount,
-      header: toTShirtOrderColumnHeaderMap[TShirtOrderFields.Discount],
-    } as MRT_ColumnDef<TShirtOrder>,
-    {
       accessorKey: "id",
       header: "Id",
       enableEditing: false,
@@ -122,10 +115,6 @@ export const columnInfo = new Map<
   ],
   [
     TShirtOrderFields.CostPerUnit,
-    { isEditable: true, isFloatField: true } as ColumnInfo,
-  ],
-  [
-    TShirtOrderFields.Discount,
     { isEditable: true, isFloatField: true } as ColumnInfo,
   ],
 ]);

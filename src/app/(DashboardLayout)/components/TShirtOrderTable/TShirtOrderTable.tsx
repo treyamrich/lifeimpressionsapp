@@ -110,7 +110,6 @@ const TShirtOrderTable = ({
 
   // As of now, COs aren't concerned with these fields
   if (entityType === EntityType.CustomerOrder) {
-    hiddenColumns[TShirtOrderFields.Discount] = false;
     hiddenColumns[TShirtOrderFields.CostPerUnit] = false;
   }
 

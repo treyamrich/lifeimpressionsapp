@@ -18,7 +18,6 @@ export interface Order {
   createdAt: string;
   updatedAt: string;
   taxRate: number;
-  discount: number;
   orderedItems: TShirtOrder[];
   isDeleted?: boolean | null;
 }

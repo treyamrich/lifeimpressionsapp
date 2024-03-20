@@ -15,6 +15,5 @@ export const validPO: PurchaseOrder = {
   taxRate: 20,
   shipping: 45,
   fees: 0,
-  discount: 0,
   dateExpected: "2023-01-01T10:10:10",
 };

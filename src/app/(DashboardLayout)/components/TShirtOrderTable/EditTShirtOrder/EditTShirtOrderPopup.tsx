@@ -76,14 +76,6 @@ const EditTShirtOrderPopup = ({
 
   const [poItemDateReceived, setPoItemDateReceived] = useState(getTodayInSetTz());
 
-  const currentDiscount = row
-    ? (row.getValue(TShirtOrderFields.Discount) as number)
-    : 0.0;
-  const [newDiscount, setNewDiscount] = useState<FormValue<number>>({
-    value: 0,
-    hasError: false,
-  });
-
   const [editReason, setEditReason] = useState<EditReasonFormState>(
     getInitialEditReasonState()
   );
@@ -113,7 +105,6 @@ const EditTShirtOrderPopup = ({
     const newTShirtOrder: TShirtOrder = {
       ...row!.original,
       costPerUnit: newCostPerUnit.value,
-      discount: newDiscount.value,
       // These two variables are delta's
       quantity: currentAmtOrdered + newAmtOrdered,
       amountReceived: currentAmtReceived + newAmtReceived,
@@ -135,7 +126,7 @@ const EditTShirtOrderPopup = ({
       setNoChangeError(undefined);
     }
 
-    if (newCostPerUnit.hasError || newDiscount.hasError || hadError) return;
+    if (newCostPerUnit.hasError || hadError) return;
 
     onSubmit(
       createOrderChangeInput, 
@@ -147,7 +138,6 @@ const EditTShirtOrderPopup = ({
   };
 
   useEffect(() => {
-    setNewDiscount({ ...newDiscount, value: currentDiscount });
     setNewCostPerUnit({ ...newCostPerUnit, value: currentCostPerUnit });
   }, [row]);
 
@@ -170,9 +160,6 @@ const EditTShirtOrderPopup = ({
               currentCostPerUnit={currentCostPerUnit}
               newCostPerUnit={newCostPerUnit}
               setNewCostPerUnit={setNewCostPerUnit}
-              currentDiscount={currentDiscount}
-              newDiscount={newDiscount}
-              setNewDiscount={setNewDiscount}
               editReason={editReason}
               setEditReason={setEditReason}
               poItemDateReceived={poItemDateReceived}

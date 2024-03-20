@@ -144,14 +144,12 @@ export const getUpdateTShirtOrderTablePartiQL = (
             SET ${TShirtOrderFields.Qty} = ?
             SET ${TShirtOrderFields.AmtReceived} = ?
             SET ${TShirtOrderFields.CostPerUnit} = ?
-            SET ${TShirtOrderFields.Discount} = ?
             WHERE ${tshirtOrderTable.pkFieldName} = ?
         `,
         Parameters: [
             { N: tshirtOrder.quantity.toString() },
             { N: amtReceived },
             { N: tshirtOrder.costPerUnit.toString() },
-            { N: tshirtOrder.discount.toString() },
             { S: tshirtOrder.id },
         ]
     }
@@ -174,7 +172,6 @@ export const getInsertTShirtOrderTablePartiQL = (
                 '${TShirtOrderFields.Qty}': ?,
                 '${TShirtOrderFields.AmtReceived}': ?,
                 '${TShirtOrderFields.CostPerUnit}': ?,
-                '${TShirtOrderFields.Discount}': ?,
                 '${entityType}OrderOrderedItemsId': ?,
                 'tShirtOrderTshirtId': ?,
                 'createdAt': ?,
@@ -189,7 +186,6 @@ export const getInsertTShirtOrderTablePartiQL = (
             { N: tshirtOrder.quantity.toString() },
             { N: tshirtOrder.amountReceived ? tshirtOrder.amountReceived.toString() : "0" },
             { N: tshirtOrder.costPerUnit.toString() },
-            { N: tshirtOrder.discount.toString() },
             { S: parentOrderUuid },
             { S: tshirtOrder.tshirt.id },
             { S: createdAtTimestamp },
@@ -223,7 +219,6 @@ export const getInsertOrderPartiQL = (
                 'shipping': ?,
                 'shippingAddress': ?,
                 'fees': ?,
-                'discount': ?,
                 'dateExpected': ?,
                 'isDeleted': ?,
                 'type': ?,
@@ -242,7 +237,6 @@ export const getInsertOrderPartiQL = (
                 { N: purchaseOrder.shipping.toString() },
                 getStrOrNull(purchaseOrder.shippingAddress),
                 { N: purchaseOrder.fees.toString() },
-                { N: purchaseOrder.discount.toString() },
                 { S: purchaseOrder.dateExpected },
                 { BOOL: false },
                 { S: typename },
@@ -265,7 +259,6 @@ export const getInsertOrderPartiQL = (
           'orderStatus': ?,
           'orderNotes': ?,
           'taxRate': ?,
-          'discount': ?,
           'dateNeededBy': ?,
           'isDeleted': ?,
           'type': ?,
@@ -283,7 +276,7 @@ export const getInsertOrderPartiQL = (
             { S: CustomerOrderStatus.NEW },
             getStrOrNull(customerOrder.orderNotes),
             { N: customerOrder.taxRate.toString() },
-            { N: customerOrder.discount.toString() },
+
             { S: customerOrder.dateNeededBy },
             { BOOL: false },
             { S: typename },
