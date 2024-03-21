@@ -1,4 +1,4 @@
-import { CustomerOrder, CustomerOrderStatus, POStatus, PurchaseOrder, TShirt, TShirtOrder, TShirtSize, TShirtType } from "@/API";
+import { CustomerOrder, CustomerOrderStatus, POStatus, PurchaseOrder, TShirt, TShirtOrder, TShirtSize, TShirtType, POReceival } from "@/API";
 
 export const tshirts: TShirt[] = [
     {
@@ -121,15 +121,17 @@ export const co: CustomerOrder = {
 };
 
 export const getDummyTShirtOrder = ({
-  id = '', 
-  quantity = 0, 
-  amountReceived = 0, 
-  tShirtOrderTshirtId = '',
-  createdAt = '',
-  updatedAt = '',
-  tshirt = tshirts[0],
-  costPerUnit = 52.1,
-}): TShirtOrder => (
+    id = '', 
+    quantity = 0, 
+    amountReceived = 0, 
+    tShirtOrderTshirtId = '',
+    createdAt = '',
+    updatedAt = '',
+    tshirt = tshirts[0],
+    costPerUnit = 52.1,
+  }, 
+  receivals: POReceival[] | null = null
+): TShirtOrder => (
   {
     __typename: "TShirtOrder",
     id: id,
@@ -140,5 +142,6 @@ export const getDummyTShirtOrder = ({
     updatedAt: updatedAt,
     tshirt: tshirt,
     costPerUnit: costPerUnit,
+    receivals: receivals
   }
 )

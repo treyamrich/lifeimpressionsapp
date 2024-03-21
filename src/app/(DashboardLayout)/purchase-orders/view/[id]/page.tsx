@@ -20,7 +20,6 @@ import { CardContent, Grid, Typography } from "@mui/material";
 import React, { useState, useEffect } from "react";
 import ViewPOHeaderFields from "./ViewPOHeaders";
 
-import { MRT_Row } from "material-react-table";
 import { EntityType } from "@/app/(DashboardLayout)/components/po-customer-order-shared-components/CreateOrderPage";
 import { useAuthContext } from "@/contexts/AuthContext";
 import {
@@ -39,7 +38,7 @@ import ViewOrderActions from "@/app/(DashboardLayout)/components/po-customer-ord
 import { useRouter } from "next/navigation";
 import Section from "@/app/(DashboardLayout)/components/po-customer-order-shared-components/ViewOrderHeader/Section";
 import { deleteOrderTransactionAPI } from "@/dynamodb-transactions/delete-order-transaction";
-import { combineTShirtOrderQtys, failedUpdateTShirtStr, groupTShirtOrders } from "@/utils/tshirtOrder";
+import { failedUpdateTShirtStr } from "@/utils/tshirtOrder";
 import MoreInfoAccordian from "@/app/(DashboardLayout)/components/MoreInfoAccordian/MoreInfoAccordian";
 import { fromUTC, getStartOfMonth, toAWSDateTime } from "@/utils/datetimeConversions";
 
@@ -79,7 +78,6 @@ const ViewPurchaseOrder = ({ params }: ViewPurchaseOrderProps) => {
         let orderedItems = res.orderedItems
           ? (res.orderedItems.items.filter((v) => v !== null) as TShirtOrder[])
           : [];
-        orderedItems = groupTShirtOrders(orderedItems);
         setUpdatedOrderedItems(orderedItems);
       },
       "Order does not exist."
@@ -209,7 +207,6 @@ const OrderedItemsTable = ({
 }: OrderedItemsTableProps) => {
   const { user, refreshSession } = useAuthContext();
   const { rescueDBOperation } = useDBOperationContext();
-  const [prevUpdates, setPrevUpdates] = useState<{[x: string]: boolean}>({});
 
   const handleAfterRowEdit = (
     res: EditTShirtOrderResult,
@@ -230,7 +227,6 @@ const OrderedItemsTable = ({
       parentOrder: parentPurchaseOrder,
       inventoryQtyDelta: inventoryQtyDelta,
       createOrderChangeInput: createOrderChangeInput,
-      prevUpdatesTshirtIdsMap: prevUpdates,
       poItemReceivedDate: poItemDateReceived ? 
         toAWSDateTime(poItemDateReceived) : undefined
     };
@@ -261,24 +257,14 @@ const OrderedItemsTable = ({
           return;
         }
 
-        // If a new tshirt order was created combine with existing
-        if (resp.newTShirtOrder.id !== tableData[row.index].id) {
-          tableData[row.index] = combineTShirtOrderQtys(
-            tableData[row.index],
-            resp.newTShirtOrder
-          );
-        } else {
-          tableData[row.index] = resp.newTShirtOrder;
-        }
+        console.log('RESP', resp)
+        tableData[row.index] = resp.newTShirtOrder;
         setTableData([...tableData]);
-
-        // Update local change history table
         setChangeHistory([resp.orderChange, ...changeHistory]);
         setPurchaseOrder({
           ...parentPurchaseOrder,
           updatedAt: resp.orderUpdatedAtTimestamp,
         });
-        setPrevUpdates({...prevUpdates, [newTShirtOrder.tShirtOrderTshirtId]: true })
         exitEditingMode();
         setNegativeInventoryWarning({
           ...initialNegativeInventoryWarningState,
@@ -300,7 +286,6 @@ const OrderedItemsTable = ({
       parentOrder: parentPurchaseOrder,
       inventoryQtyDelta: inventoryQtyDelta,
       createOrderChangeInput: createOrderChangeInput,
-      prevUpdatesTshirtIdsMap: prevUpdates
     };
 
     // Update the purchase order with the new added item
@@ -325,7 +310,6 @@ const OrderedItemsTable = ({
         });
 
         setTableData([...tableData, resp.newTShirtOrder]);
-        setPrevUpdates({...prevUpdates, [newTShirtOrder.tShirtOrderTshirtId]: true })
         closeFormCallback();
         setNegativeInventoryWarning({
           ...initialNegativeInventoryWarningState,

@@ -27,13 +27,11 @@ import {
 } from "../partiql-helpers";
 import { DBOperation } from "@/contexts/DBErrorContext";
 import { validateUpdateOrderInput } from "../validation";
-import { TShirtOrderFields } from "@/app/(DashboardLayout)/components/TShirtOrderTable/table-constants";
 import { isAfterStartOfMonth, isCO, isPO, orderIsAfterStartOfMonth } from "../util";
-import { getDecreasePOItemStatements } from "./decrease-po-statements";
-import { getPurchaseOrderAPI } from "@/graphql-helpers/fetch-apis";
+import { getDecreasePOItemStatement, getIncreasePOItemStatement } from "./get-update-po-statement";
 
-export type GetUpdateTShirtOrderStatements = {
-  updateTShirtOrderStatements: ParameterizedStatement[];
+export type GetUpdateTShirtOrderStatement = {
+  updateTShirtOrderStatement: ParameterizedStatement;
   earliestTShirtOrderDate: string;
 };
 
@@ -72,19 +70,19 @@ export const assembleUpdateOrderTransactionStatements = (
   );
 
   let responseTShirtOrder = { ...updatedTShirtOrder };
-  const getUpdateTShirtOrderStatements = (): GetUpdateTShirtOrderStatements => {
+  const getUpdateTShirtOrderStatements = (): GetUpdateTShirtOrderStatement => {
     // CASE: Adding new order item to an existing order
     if (tshirtOrderTableOperation === DBOperation.CREATE) {
       responseTShirtOrder.id = newTShirtOrderId;
       return {
-        updateTShirtOrderStatements: [
+        updateTShirtOrderStatement:
           getInsertTShirtOrderTablePartiQL(
           entityType,
           parentOrder.id,
           createdAtTimestamp,
           updatedTShirtOrder,
           newTShirtOrderId
-        )],
+        ),
         earliestTShirtOrderDate: parentOrder.createdAt
       };
     }
@@ -92,47 +90,26 @@ export const assembleUpdateOrderTransactionStatements = (
     // CASE: Updating a CO rewrites the transaction history; item returns not supported.
     if (isCO(parentOrder)) 
       return {
-        updateTShirtOrderStatements: [getUpdateTShirtOrderTablePartiQL(updatedTShirtOrder)],
+        updateTShirtOrderStatement: getUpdateTShirtOrderTablePartiQL(updatedTShirtOrder),
         earliestTShirtOrderDate: updatedTShirtOrder.createdAt
       };
 
-    const getDeltaOrExisting = (fieldName: string, defaultObj: any) => {
-      let fieldChange = fieldChanges.find((x) => x.fieldName === fieldName);
-      if (!fieldChange) return defaultObj[fieldName];
-      let i_0 = parseInt(fieldChange.oldValue);
-      let i_f = parseInt(fieldChange.newValue);
-      return i_f - i_0;
-    };
-    const amtRecvDelta = getDeltaOrExisting(
-      TShirtOrderFields.AmtReceived,
-      updatedTShirtOrder
-    );
-
-    // CASE: Decreasing PO item rewrites history by removing from the transaction group
-    if (amtRecvDelta < 0) return getDecreasePOItemStatements(parentOrder, input, amtRecvDelta)
-
-    // CASE: Receiving PO item splits the transaction to track when items were received.
-    const onlyQtyChangesCopy: TShirtOrder = {
-      ...responseTShirtOrder,
-      id: newTShirtOrderId,
-      quantity: 0,
-      amountReceived: amtRecvDelta
-    };
-    responseTShirtOrder = onlyQtyChangesCopy;
-    const createdDatetime = input.poItemReceivedDate ?? createdAtTimestamp;
+    // CASES: Decreasing/Increasing PO item qty
+    const amtRecvDelta = input.inventoryQtyDelta;
+    const receivedAtDatetime = input.poItemReceivedDate ?? createdAtTimestamp;
+    const { newPOReceivals, earliestTShirtOrderDate } = amtRecvDelta < 0 ? 
+      getDecreasePOItemStatement(responseTShirtOrder, amtRecvDelta) :
+      getIncreasePOItemStatement(responseTShirtOrder, amtRecvDelta, receivedAtDatetime);
+    
+    responseTShirtOrder.receivals = newPOReceivals;
+    
     return {
-      updateTShirtOrderStatements: [getInsertTShirtOrderTablePartiQL(
-        entityType,
-        parentOrder.id,
-        createdDatetime,
-        onlyQtyChangesCopy,
-        newTShirtOrderId
-      )],
-      earliestTShirtOrderDate: createdDatetime
+      updateTShirtOrderStatement: getUpdateTShirtOrderTablePartiQL(responseTShirtOrder),
+      earliestTShirtOrderDate
     }
   };
 
-  const { updateTShirtOrderStatements, earliestTShirtOrderDate } = getUpdateTShirtOrderStatements();
+  const { updateTShirtOrderStatement, earliestTShirtOrderDate } = getUpdateTShirtOrderStatements();
 
   const transactionStatements: ParameterizedStatement[] = [
     getUpdateOrderPartiQL(entityType, parentOrder.id, createdAtTimestamp),
@@ -142,7 +119,7 @@ export const assembleUpdateOrderTransactionStatements = (
       createdAtTimestamp,
       updatedTShirtOrder.tshirt.id
     ),
-    ...updateTShirtOrderStatements,
+    updateTShirtOrderStatement,
     getInsertOrderChangePartiQL(
       orderChangeUuid,
       updatedTShirtOrder.tshirt.id,
@@ -185,8 +162,6 @@ export type UpdateOrderTransactionInput = {
   inventoryQtyDelta: number;
   createOrderChangeInput: CreateOrderChangeInput;
   poItemReceivedDate?: string;
-  // Remember subsequent updates to the same tshirt in a session.
-  prevUpdatesTshirtIdsMap: {[x: string]: boolean};
 };
 
 export type UpdateOrderTransactionResponse = {
@@ -215,11 +190,6 @@ export const updateTShirtOrderTransactionAPI = async (
   let parentOrder: PurchaseOrderOrCustomerOrder = input.parentOrder;
 
   try {
-    if (entityType === EntityType.PurchaseOrder && 
-      input.prevUpdatesTshirtIdsMap[input.updatedTShirtOrder.tshirt.id]) {
-      parentOrder = await getPurchaseOrderAPI({ id: input.parentOrder.id });
-    }
-
     const res = assembleUpdateOrderTransactionStatements(
       parentOrder,
       input,
