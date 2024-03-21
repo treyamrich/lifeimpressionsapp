@@ -114,6 +114,11 @@ export const getPurchaseOrder = /* GraphQL */ `
           }
           quantity
           amountReceived
+          receivals {
+            timestamp
+            quantity
+            __typename
+          }
           costPerUnit
           indexField
           updatedAt
@@ -215,6 +220,11 @@ export const listPurchaseOrders = /* GraphQL */ `
             }
             quantity
             amountReceived
+            receivals {
+              timestamp
+              quantity
+              __typename
+            }
             costPerUnit
             indexField
             updatedAt
@@ -321,6 +331,11 @@ export const purchaseOrdersByCreatedAt = /* GraphQL */ `
             }
             quantity
             amountReceived
+            receivals {
+              timestamp
+              quantity
+              __typename
+            }
             costPerUnit
             indexField
             updatedAt
@@ -538,6 +553,11 @@ export const getTShirtOrder = /* GraphQL */ `
       }
       quantity
       amountReceived
+      receivals {
+        timestamp
+        quantity
+        __typename
+      }
       costPerUnit
       indexField
       updatedAt
@@ -575,6 +595,11 @@ export const listTShirtOrders = /* GraphQL */ `
         }
         quantity
         amountReceived
+        receivals {
+          timestamp
+          quantity
+          __typename
+        }
         costPerUnit
         indexField
         updatedAt
@@ -625,6 +650,11 @@ export const tshirtOrderByUpdatedAt = /* GraphQL */ `
         }
         quantity
         amountReceived
+        receivals {
+          timestamp
+          quantity
+          __typename
+        }
         costPerUnit
         indexField
         updatedAt
@@ -666,6 +696,11 @@ export const getCustomerOrder = /* GraphQL */ `
           }
           quantity
           amountReceived
+          receivals {
+            timestamp
+            quantity
+            __typename
+          }
           costPerUnit
           indexField
           updatedAt
@@ -766,6 +801,11 @@ export const listCustomerOrders = /* GraphQL */ `
             }
             quantity
             amountReceived
+            receivals {
+              timestamp
+              quantity
+              __typename
+            }
             costPerUnit
             indexField
             updatedAt
@@ -871,6 +911,11 @@ export const customerOrdersByCreatedAt = /* GraphQL */ `
             }
             quantity
             amountReceived
+            receivals {
+              timestamp
+              quantity
+              __typename
+            }
             costPerUnit
             indexField
             updatedAt

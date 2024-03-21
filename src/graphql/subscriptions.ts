@@ -82,6 +82,11 @@ export const onCreatePurchaseOrder = /* GraphQL */ `
           }
           quantity
           amountReceived
+          receivals {
+            timestamp
+            quantity
+            __typename
+          }
           costPerUnit
           indexField
           updatedAt
@@ -172,6 +177,11 @@ export const onUpdatePurchaseOrder = /* GraphQL */ `
           }
           quantity
           amountReceived
+          receivals {
+            timestamp
+            quantity
+            __typename
+          }
           costPerUnit
           indexField
           updatedAt
@@ -262,6 +272,11 @@ export const onDeletePurchaseOrder = /* GraphQL */ `
           }
           quantity
           amountReceived
+          receivals {
+            timestamp
+            quantity
+            __typename
+          }
           costPerUnit
           indexField
           updatedAt
@@ -458,6 +473,11 @@ export const onCreateTShirtOrder = /* GraphQL */ `
       }
       quantity
       amountReceived
+      receivals {
+        timestamp
+        quantity
+        __typename
+      }
       costPerUnit
       indexField
       updatedAt
@@ -492,6 +512,11 @@ export const onUpdateTShirtOrder = /* GraphQL */ `
       }
       quantity
       amountReceived
+      receivals {
+        timestamp
+        quantity
+        __typename
+      }
       costPerUnit
       indexField
       updatedAt
@@ -526,6 +551,11 @@ export const onDeleteTShirtOrder = /* GraphQL */ `
       }
       quantity
       amountReceived
+      receivals {
+        timestamp
+        quantity
+        __typename
+      }
       costPerUnit
       indexField
       updatedAt
@@ -566,6 +596,11 @@ export const onCreateCustomerOrder = /* GraphQL */ `
           }
           quantity
           amountReceived
+          receivals {
+            timestamp
+            quantity
+            __typename
+          }
           costPerUnit
           indexField
           updatedAt
@@ -655,6 +690,11 @@ export const onUpdateCustomerOrder = /* GraphQL */ `
           }
           quantity
           amountReceived
+          receivals {
+            timestamp
+            quantity
+            __typename
+          }
           costPerUnit
           indexField
           updatedAt
@@ -744,6 +784,11 @@ export const onDeleteCustomerOrder = /* GraphQL */ `
           }
           quantity
           amountReceived
+          receivals {
+            timestamp
+            quantity
+            __typename
+          }
           costPerUnit
           indexField
           updatedAt
