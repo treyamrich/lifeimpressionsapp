@@ -268,7 +268,7 @@ export type TShirtOrder = {
 
 export type POReceival = {
   __typename: "POReceival",
-  timestamp?: string | null,
+  timestamp: string,
   quantity: number,
 };
 
@@ -395,7 +395,7 @@ export type CreateTShirtOrderInput = {
 };
 
 export type POReceivalInput = {
-  timestamp?: string | null,
+  timestamp: string,
   quantity: number,
 };
 
@@ -989,7 +989,7 @@ export type CreatePurchaseOrderMutation = {
         amountReceived?: number | null,
         receivals?:  Array< {
           __typename: "POReceival",
-          timestamp?: string | null,
+          timestamp: string,
           quantity: number,
         } > | null,
         costPerUnit: number,
@@ -1086,7 +1086,7 @@ export type UpdatePurchaseOrderMutation = {
         amountReceived?: number | null,
         receivals?:  Array< {
           __typename: "POReceival",
-          timestamp?: string | null,
+          timestamp: string,
           quantity: number,
         } > | null,
         costPerUnit: number,
@@ -1183,7 +1183,7 @@ export type DeletePurchaseOrderMutation = {
         amountReceived?: number | null,
         receivals?:  Array< {
           __typename: "POReceival",
-          timestamp?: string | null,
+          timestamp: string,
           quantity: number,
         } > | null,
         costPerUnit: number,
@@ -1390,7 +1390,7 @@ export type CreateTShirtOrderMutation = {
     amountReceived?: number | null,
     receivals?:  Array< {
       __typename: "POReceival",
-      timestamp?: string | null,
+      timestamp: string,
       quantity: number,
     } > | null,
     costPerUnit: number,
@@ -1431,7 +1431,7 @@ export type UpdateTShirtOrderMutation = {
     amountReceived?: number | null,
     receivals?:  Array< {
       __typename: "POReceival",
-      timestamp?: string | null,
+      timestamp: string,
       quantity: number,
     } > | null,
     costPerUnit: number,
@@ -1472,7 +1472,7 @@ export type DeleteTShirtOrderMutation = {
     amountReceived?: number | null,
     receivals?:  Array< {
       __typename: "POReceival",
-      timestamp?: string | null,
+      timestamp: string,
       quantity: number,
     } > | null,
     costPerUnit: number,
@@ -1521,7 +1521,7 @@ export type CreateCustomerOrderMutation = {
         amountReceived?: number | null,
         receivals?:  Array< {
           __typename: "POReceival",
-          timestamp?: string | null,
+          timestamp: string,
           quantity: number,
         } > | null,
         costPerUnit: number,
@@ -1617,7 +1617,7 @@ export type UpdateCustomerOrderMutation = {
         amountReceived?: number | null,
         receivals?:  Array< {
           __typename: "POReceival",
-          timestamp?: string | null,
+          timestamp: string,
           quantity: number,
         } > | null,
         costPerUnit: number,
@@ -1713,7 +1713,7 @@ export type DeleteCustomerOrderMutation = {
         amountReceived?: number | null,
         receivals?:  Array< {
           __typename: "POReceival",
-          timestamp?: string | null,
+          timestamp: string,
           quantity: number,
         } > | null,
         costPerUnit: number,
@@ -2004,7 +2004,7 @@ export type GetPurchaseOrderQuery = {
         amountReceived?: number | null,
         receivals?:  Array< {
           __typename: "POReceival",
-          timestamp?: string | null,
+          timestamp: string,
           quantity: number,
         } > | null,
         costPerUnit: number,
@@ -2106,7 +2106,7 @@ export type ListPurchaseOrdersQuery = {
           amountReceived?: number | null,
           receivals?:  Array< {
             __typename: "POReceival",
-            timestamp?: string | null,
+            timestamp: string,
             quantity: number,
           } > | null,
           costPerUnit: number,
@@ -2211,7 +2211,7 @@ export type PurchaseOrdersByCreatedAtQuery = {
           amountReceived?: number | null,
           receivals?:  Array< {
             __typename: "POReceival",
-            timestamp?: string | null,
+            timestamp: string,
             quantity: number,
           } > | null,
           costPerUnit: number,
@@ -2431,7 +2431,7 @@ export type GetTShirtOrderQuery = {
     amountReceived?: number | null,
     receivals?:  Array< {
       __typename: "POReceival",
-      timestamp?: string | null,
+      timestamp: string,
       quantity: number,
     } > | null,
     costPerUnit: number,
@@ -2475,7 +2475,7 @@ export type ListTShirtOrdersQuery = {
       amountReceived?: number | null,
       receivals?:  Array< {
         __typename: "POReceival",
-        timestamp?: string | null,
+        timestamp: string,
         quantity: number,
       } > | null,
       costPerUnit: number,
@@ -2524,7 +2524,7 @@ export type TshirtOrderByUpdatedAtQuery = {
       amountReceived?: number | null,
       receivals?:  Array< {
         __typename: "POReceival",
-        timestamp?: string | null,
+        timestamp: string,
         quantity: number,
       } > | null,
       costPerUnit: number,
@@ -2574,7 +2574,7 @@ export type GetCustomerOrderQuery = {
         amountReceived?: number | null,
         receivals?:  Array< {
           __typename: "POReceival",
-          timestamp?: string | null,
+          timestamp: string,
           quantity: number,
         } > | null,
         costPerUnit: number,
@@ -2675,7 +2675,7 @@ export type ListCustomerOrdersQuery = {
           amountReceived?: number | null,
           receivals?:  Array< {
             __typename: "POReceival",
-            timestamp?: string | null,
+            timestamp: string,
             quantity: number,
           } > | null,
           costPerUnit: number,
@@ -2779,7 +2779,7 @@ export type CustomerOrdersByCreatedAtQuery = {
           amountReceived?: number | null,
           receivals?:  Array< {
             __typename: "POReceival",
-            timestamp?: string | null,
+            timestamp: string,
             quantity: number,
           } > | null,
           costPerUnit: number,
@@ -3028,7 +3028,7 @@ export type OnCreatePurchaseOrderSubscription = {
         amountReceived?: number | null,
         receivals?:  Array< {
           __typename: "POReceival",
-          timestamp?: string | null,
+          timestamp: string,
           quantity: number,
         } > | null,
         costPerUnit: number,
@@ -3124,7 +3124,7 @@ export type OnUpdatePurchaseOrderSubscription = {
         amountReceived?: number | null,
         receivals?:  Array< {
           __typename: "POReceival",
-          timestamp?: string | null,
+          timestamp: string,
           quantity: number,
         } > | null,
         costPerUnit: number,
@@ -3220,7 +3220,7 @@ export type OnDeletePurchaseOrderSubscription = {
         amountReceived?: number | null,
         receivals?:  Array< {
           __typename: "POReceival",
-          timestamp?: string | null,
+          timestamp: string,
           quantity: number,
         } > | null,
         costPerUnit: number,
@@ -3423,7 +3423,7 @@ export type OnCreateTShirtOrderSubscription = {
     amountReceived?: number | null,
     receivals?:  Array< {
       __typename: "POReceival",
-      timestamp?: string | null,
+      timestamp: string,
       quantity: number,
     } > | null,
     costPerUnit: number,
@@ -3463,7 +3463,7 @@ export type OnUpdateTShirtOrderSubscription = {
     amountReceived?: number | null,
     receivals?:  Array< {
       __typename: "POReceival",
-      timestamp?: string | null,
+      timestamp: string,
       quantity: number,
     } > | null,
     costPerUnit: number,
@@ -3503,7 +3503,7 @@ export type OnDeleteTShirtOrderSubscription = {
     amountReceived?: number | null,
     receivals?:  Array< {
       __typename: "POReceival",
-      timestamp?: string | null,
+      timestamp: string,
       quantity: number,
     } > | null,
     costPerUnit: number,
@@ -3551,7 +3551,7 @@ export type OnCreateCustomerOrderSubscription = {
         amountReceived?: number | null,
         receivals?:  Array< {
           __typename: "POReceival",
-          timestamp?: string | null,
+          timestamp: string,
           quantity: number,
         } > | null,
         costPerUnit: number,
@@ -3646,7 +3646,7 @@ export type OnUpdateCustomerOrderSubscription = {
         amountReceived?: number | null,
         receivals?:  Array< {
           __typename: "POReceival",
-          timestamp?: string | null,
+          timestamp: string,
           quantity: number,
         } > | null,
         costPerUnit: number,
@@ -3741,7 +3741,7 @@ export type OnDeleteCustomerOrderSubscription = {
         amountReceived?: number | null,
         receivals?:  Array< {
           __typename: "POReceival",
-          timestamp?: string | null,
+          timestamp: string,
           quantity: number,
         } > | null,
         costPerUnit: number,
