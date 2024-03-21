@@ -257,7 +257,6 @@ const OrderedItemsTable = ({
           return;
         }
 
-        console.log('RESP', resp)
         tableData[row.index] = resp.newTShirtOrder;
         setTableData([...tableData]);
         setChangeHistory([resp.orderChange, ...changeHistory]);
