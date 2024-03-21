@@ -1,4 +1,4 @@
-import { CustomerOrder, CustomerOrderStatus, FieldChange, PurchaseOrder, TShirt, TShirtOrder, UpdateTShirtInput } from "@/API";
+import { CustomerOrder, CustomerOrderStatus, FieldChange, POReceival, PurchaseOrder, TShirt, TShirtOrder, UpdateTShirtInput } from "@/API";
 import { EntityType } from "../app/(DashboardLayout)/components/po-customer-order-shared-components/CreateOrderPage"
 import { CACHE_EXPIRATION_ID, cacheExpirationTable, customerOrderTable, getStrOrNull, orderChangeTable, purchaseOrderTable, tshirtOrderTable, tshirtTable } from "./dynamodb"
 import { AttributeValue, ParameterizedStatement } from "@aws-sdk/client-dynamodb";
@@ -120,36 +120,32 @@ export const getSoftDeleteTShirtOrderPartiQL = (
     }
 }
 
-export const getHardDeleteTShirtOrderPartiQL = (
-    tshirtOrder: TShirtOrder,
-): ParameterizedStatement => {
-    return {
-        Statement: `
-            DELETE FROM "${tshirtOrderTable.tableName}"
-            WHERE ${tshirtOrderTable.pkFieldName} = ?
-        `,
-        Parameters: [
-            { S: tshirtOrder.id },
-        ]
-    }
-}
-
 export const getUpdateTShirtOrderTablePartiQL = (
-    tshirtOrder: TShirtOrder,
+    tshirtOrder: TShirtOrder
 ): ParameterizedStatement => {
     let amtReceived = tshirtOrder.amountReceived ? tshirtOrder.amountReceived.toString() : "0";
+    const receivalAttrVals = tshirtOrder.receivals?.map(receival => {
+        let poReceivalAttrVal: any = {
+            __typename: { S: receival.__typename },
+            quantity: { N: receival.quantity.toString() },
+            timestamp: { S: receival.timestamp }
+        };
+        return { M: poReceivalAttrVal } as AttributeValue;
+    });
     return {
         Statement: `
             UPDATE "${tshirtOrderTable.tableName}"
             SET ${TShirtOrderFields.Qty} = ?
             SET ${TShirtOrderFields.AmtReceived} = ?
             SET ${TShirtOrderFields.CostPerUnit} = ?
+            ${receivalAttrVals ? `SET ${TShirtOrderFields.Receivals} = ?` : ''}
             WHERE ${tshirtOrderTable.pkFieldName} = ?
         `,
         Parameters: [
             { N: tshirtOrder.quantity.toString() },
             { N: amtReceived },
             { N: tshirtOrder.costPerUnit.toString() },
+            ...(receivalAttrVals ? [{ L: receivalAttrVals }] : []),
             { S: tshirtOrder.id },
         ]
     }

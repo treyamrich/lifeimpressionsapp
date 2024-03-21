@@ -19,7 +19,6 @@ import { DBOperation, useDBOperationContext } from "@/contexts/DBErrorContext";
 import { Typography, CardContent, Grid } from "@mui/material";
 import { useState, useEffect } from "react";
 
-import { MRT_Row } from "material-react-table";
 import { EntityType } from "@/app/(DashboardLayout)/components/po-customer-order-shared-components/CreateOrderPage";
 import ViewCOHeaderFields from "./ViewCOHeaderFields";
 import { useAuthContext } from "@/contexts/AuthContext";
@@ -38,7 +37,7 @@ import ViewOrderActions from "@/app/(DashboardLayout)/components/po-customer-ord
 import { useRouter } from "next/navigation";
 import Section from "@/app/(DashboardLayout)/components/po-customer-order-shared-components/ViewOrderHeader/Section";
 import { deleteOrderTransactionAPI } from "@/dynamodb-transactions/delete-order-transaction";
-import { combineTShirtOrderQtys, failedUpdateTShirtStr, groupTShirtOrders } from "@/utils/tshirtOrder";
+import { failedUpdateTShirtStr } from "@/utils/tshirtOrder";
 import MoreInfoAccordian from "@/app/(DashboardLayout)/components/MoreInfoAccordian/MoreInfoAccordian";
 import { fromUTC, getStartOfMonth } from "@/utils/datetimeConversions";
 
@@ -80,8 +79,6 @@ const ViewCustomerOrder = ({ params }: ViewCustomerOrderProps) => {
         let orderedItems = res.orderedItems
           ? (res.orderedItems.items.filter((v) => v !== null) as TShirtOrder[])
           : [];
-        orderedItems = groupTShirtOrders(orderedItems);
-
         setUpdatedOrderedItems(orderedItems);
       },
       "Order does not exist."
@@ -227,7 +224,6 @@ const OrderedItemsTable = ({
       parentOrder: parentCustomerOrder,
       inventoryQtyDelta: inventoryQtyDelta,
       createOrderChangeInput: createOrderChangeInput,
-      prevUpdatesTshirtIdsMap: {}
     };
 
     // Only warn negative inventory when inventory will be reduced
@@ -256,18 +252,8 @@ const OrderedItemsTable = ({
           return;
         }
 
-        // If a new tshirt order was created combine with existing
-        if (resp.newTShirtOrder.id !== tableData[row.index].id) {
-          tableData[row.index] = combineTShirtOrderQtys(
-            tableData[row.index],
-            resp.newTShirtOrder
-          );
-        } else {
-          tableData[row.index] = resp.newTShirtOrder;
-        }
+        tableData[row.index] = resp.newTShirtOrder;
         setTableData([...tableData]);
-
-        // Update local change history table
         setChangeHistory([resp.orderChange, ...changeHistory]);
         setCustomerOrder({
           ...parentCustomerOrder,
@@ -295,7 +281,6 @@ const OrderedItemsTable = ({
       parentOrder: parentCustomerOrder,
       inventoryQtyDelta: inventoryQtyDelta,
       createOrderChangeInput: createOrderChangeInput,
-      prevUpdatesTshirtIdsMap: {}
     };
 
     // Update the customer order with the new added item
