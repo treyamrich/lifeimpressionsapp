@@ -15,10 +15,9 @@ import {
   TextField,
 } from "@aws-amplify/ui-react";
 import { fetchByPath, getOverrideProps, validateField } from "./utils";
-import { generateClient } from "aws-amplify/api";
+import { API } from "aws-amplify";
 import { getTShirt } from "../graphql/queries";
 import { updateTShirt } from "../graphql/mutations";
-const client = generateClient();
 export default function TShirtUpdateForm(props) {
   const {
     id: idProp,
@@ -73,7 +72,7 @@ export default function TShirtUpdateForm(props) {
     const queryData = async () => {
       const record = idProp
         ? (
-            await client.graphql({
+            await API.graphql({
               query: getTShirt.replaceAll("__typename", ""),
               variables: { id: idProp },
             })
@@ -157,7 +156,7 @@ export default function TShirtUpdateForm(props) {
               modelFields[key] = null;
             }
           });
-          await client.graphql({
+          await API.graphql({
             query: updateTShirt.replaceAll("__typename", ""),
             variables: {
               input: {
@@ -417,6 +416,11 @@ export default function TShirtUpdateForm(props) {
           children="Five x"
           value="FiveX"
           {...getOverrideProps(overrides, "sizeoption22")}
+        ></option>
+        <option
+          children="Os"
+          value="OS"
+          {...getOverrideProps(overrides, "sizeoption23")}
         ></option>
       </SelectField>
       <SelectField
