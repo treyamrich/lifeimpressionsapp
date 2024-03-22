@@ -95,6 +95,11 @@ type OrderChange @model @auth(rules: [
   indexField: String @index(name: "orderChangesByCreatedAt", queryField: "orderChangesByCreatedAt", sortKeyFields: ["createdAt"])
 }
 
+type POReceival {
+  timestamp: AWSDateTime
+  quantity: Int!
+}
+
 type TShirtOrder @model @auth(rules: [
   { allow: groups, groups: ["admin"], provider: userPools},
   { allow: public, provider: iam, operations: [read]},
@@ -102,6 +107,7 @@ type TShirtOrder @model @auth(rules: [
   tshirt: TShirt! @hasOne
   quantity: Int!
   amountReceived: Int @default(value: "0") # This is only used for PurchaseOrder
+  receivals: [POReceival!]
   costPerUnit: Float!
 
   indexField: String @index(name: "tshirtOrderByUpdatedAt", queryField: "tshirtOrderByUpdatedAt", sortKeyFields: ["updatedAt"])
