@@ -96,7 +96,7 @@ type OrderChange @model @auth(rules: [
 }
 
 type POReceival {
-  timestamp: AWSDateTime
+  timestamp: AWSDateTime!
   quantity: Int!
 }
 
