@@ -40,3 +40,43 @@ query ListOrderChanges(
   }
 """
 )
+
+getPurchaseOrderIDsOnly = Query(
+    'getPurchaseOrder',
+    """
+query GetPurchaseOrder($id: ID!) {
+    getPurchaseOrder(id: $id) {
+      id
+      orderedItems {
+        items {
+          id
+          createdAt
+          updatedAt
+        }
+        nextToken
+      }
+      createdAt
+      updatedAt
+    }
+  }"""
+)
+
+getCustomerOrderIDsOnly = Query(
+    'getCustomerOrder',
+    """
+query GetCustomerOrder($id: ID!) {
+    getCustomerOrder(id: $id) {
+      id
+      orderedItems {
+        items {
+          id
+          createdAt
+          updatedAt
+        }
+        nextToken
+      }
+      createdAt
+      updatedAt
+    }
+  }"""
+)

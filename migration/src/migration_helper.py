@@ -1,7 +1,7 @@
 import os
 import json
 import datetime
-from typing import Callable
+from typing import Callable, List
 from queries import *
 from clients.dynamodb_client import DynamoDBClient
 
@@ -25,7 +25,7 @@ def get_full_table_name(table_name: str):
     TABLE_SUFFIX = os.environ['TABLE_SUFFIX']
     return f'{table_name}{TABLE_SUFFIX}'
 
-def batch_execute_partiql(table_name: str, pk_field_name: str, items: list[dict]):
+def batch_execute_partiql(table_name: str, pk_field_name: str, items: List[tuple[DynamoDBClient.DBOperation, dict]]):
     def f():
         client = DynamoDBClient()
         return client.batch_execute_statement(table_name, pk_field_name, items)
