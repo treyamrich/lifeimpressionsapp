@@ -55,6 +55,12 @@ const radiobuttons: any = {
   },
 };
 
+const dateRangeInputTitle = {
+  [ReportType.HighLevel]:  "Order Date Placed Range:",
+  [ReportType.Detailed]: "Transaction Date Range:",
+  [ReportType.InventoryValue]: "Report Month:"
+}
+
 export type FormState = {
   dateStart: Dayjs;
   dateEnd: Dayjs;
@@ -109,33 +115,38 @@ const ReportGenerationForm = ({
   };
 
   const renderDateRangeInput = () => (
-    <Stack direction={"row"} spacing={3}>
-      {reportType !== ReportType.InventoryValue ? (
-        <>
-          <DatePicker
-            label="Start of day"
-            value={dateStart}
-            onChange={(newVal: any) => updateFormField("dateStart", newVal)}
-            views={["year", "month", "day"]}
-          />
-          <DatePicker
-            label="End of day"
-            value={dateEnd}
-            onChange={(newVal: any) => updateFormField("dateEnd", newVal)}
-            views={["year", "month", "day"]}
-          />
-        </>
-      ) : (
-        <DatePicker
-          label="Date"
-          value={yearAndMonth}
-          onChange={(newVal: any) => updateFormField("yearAndMonth", newVal)}
-          views={["year", "month"]}
-          openTo="month"
-          maxDate={getStartOfMonth(-1)}
-        />
-      )}
-    </Stack>
+    <FormControl>
+      <FormLabel component="legend" sx={{marginBottom: 2}}>{dateRangeInputTitle[reportType]}</FormLabel>
+      <FormGroup row>
+        <Stack direction={"row"} spacing={3}>
+          {reportType !== ReportType.InventoryValue ? (
+            <>
+              <DatePicker
+                label="Start of day"
+                value={dateStart}
+                onChange={(newVal: any) => updateFormField("dateStart", newVal)}
+                views={["year", "month", "day"]}
+              />
+              <DatePicker
+                label="End of day"
+                value={dateEnd}
+                onChange={(newVal: any) => updateFormField("dateEnd", newVal)}
+                views={["year", "month", "day"]}
+              />
+            </>
+          ) : (
+            <DatePicker
+              label="Date"
+              value={yearAndMonth}
+              onChange={(newVal: any) => updateFormField("yearAndMonth", newVal)}
+              views={["year", "month"]}
+              openTo="month"
+              maxDate={getStartOfMonth(-1)}
+            />
+          )}
+        </Stack>
+      </FormGroup>
+    </FormControl>
   );
 
   const renderCheckboxes = () => (
