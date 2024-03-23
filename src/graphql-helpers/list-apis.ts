@@ -27,6 +27,7 @@ import {
 import { configuredAuthMode } from "./auth-mode";
 import { GraphQLOptions, GraphQLResult } from "@aws-amplify/api-graphql";
 import { ListAPIInput, ListAPIResponse, Query } from "./types";
+import { OrderMinInfo } from "@/my-graphql-queries/types";
 
 
 const PAGINATION_LIMIT = 100;
