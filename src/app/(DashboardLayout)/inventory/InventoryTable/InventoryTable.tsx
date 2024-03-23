@@ -1,7 +1,8 @@
 "use client";
 
 import { createTShirtAPI } from "@/graphql-helpers/create-apis";
-import { ListAPIResponse, listTShirtAPI } from "@/graphql-helpers/fetch-apis";
+import { listTShirtAPI } from "@/graphql-helpers/list-apis";
+import { ListAPIResponse } from "@/graphql-helpers/types";
 import { updateTShirtAPI } from "@/graphql-helpers/update-apis";
 
 import { DBOperation, useDBOperationContext } from "@/contexts/DBErrorContext";

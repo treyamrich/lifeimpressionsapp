@@ -18,11 +18,11 @@ import {
   expectedErrsDuplicate,
 } from "./inventory.fixtures";
 import Inventory from "@/app/(DashboardLayout)/inventory/page";
-import { listTShirtAPI } from "@/graphql-helpers/fetch-apis";
+import { listTShirtAPI } from "@/graphql-helpers/list-apis";
 import { CreateTShirtInput } from "@/API";
 import { createTShirtAPI } from "@/graphql-helpers/create-apis";
 
-jest.mock("@/graphql-helpers/fetch-apis", () => ({
+jest.mock("@/graphql-helpers/list-apis", () => ({
   listTShirtAPI: jest.fn().mockResolvedValue([tshirt]),
 }));
 

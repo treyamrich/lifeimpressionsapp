@@ -13,7 +13,7 @@ import {
 } from "material-react-table";
 import { ColumnInfo } from "../../purchase-orders/table-constants";
 import TableToolbar from "../Table/TableToolbar";
-import { ListAPIResponse } from "@/graphql-helpers/fetch-apis";
+import { ListAPIResponse } from "@/graphql-helpers/types";
 import TableInfoHeader from "../Table/TableInfoHeader";
 import { Stack } from "@mui/material";
 import { EntityType } from "./CreateOrderPage";

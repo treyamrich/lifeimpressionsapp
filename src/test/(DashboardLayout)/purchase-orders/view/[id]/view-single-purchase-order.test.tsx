@@ -3,15 +3,13 @@ import { renderWithProviders } from "@/test/util/render";
 
 import { mockNextRouterPush } from "../../../../../../setupTests";
 import { updatePurchaseOrderAPI } from "@/graphql-helpers/update-apis";
-import {
-  getPurchaseOrderAPI,
-  listTShirtAPI,
-} from "@/graphql-helpers/fetch-apis";
+import { getPurchaseOrderAPI } from "@/graphql-helpers/get-apis";
+import { listTShirtAPI } from "@/graphql-helpers/list-apis";
 import ViewPurchaseOrder from "@/app/(DashboardLayout)/purchase-orders/view/[id]/page";
 import { validPO, validTShirts } from "./view-single-purchase-order.fixtures";
 import { POStatus } from "@/API";
 
-jest.mock("@/graphql-helpers/fetch-apis", () => ({
+jest.mock("@/graphql-helpers/list-apis", () => ({
   getPurchaseOrderAPI: jest.fn(),
   listTShirtAPI: jest.fn(),
 }));

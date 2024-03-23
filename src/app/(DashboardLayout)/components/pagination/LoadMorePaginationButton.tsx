@@ -1,9 +1,9 @@
 import { DBOperation, useDBOperationContext } from "@/contexts/DBErrorContext";
-import { ListAPIResponse } from "@/graphql-helpers/fetch-apis";
+import { ListAPIResponse } from "@/graphql-helpers/types";
 import { IconButton, Tooltip } from "@mui/material";
 import CloudSyncIcon from "@mui/icons-material/CloudSync";
 
-import React, { SetStateAction, useEffect, useMemo, useState } from "react";
+import React, { SetStateAction, useEffect, useState } from "react";
 
 export type LoadMorePaginationButtonProps<T> = {
   items: T[];

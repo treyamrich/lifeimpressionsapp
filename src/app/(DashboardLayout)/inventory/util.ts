@@ -1,6 +1,7 @@
 import { TShirt } from "@/API";
 import { DBOperation } from "@/contexts/DBErrorContext";
-import { ListAPIResponse, listTShirtAPI } from "@/graphql-helpers/fetch-apis";
+import { listTShirtAPI } from "@/graphql-helpers/list-apis";
+import { ListAPIResponse } from "@/graphql-helpers/types";
 import { CSVHeader, downloadCSV } from "@/utils/csvGeneration";
 import { getTodayInSetTz, toReadableDateTime } from "@/utils/datetimeConversions";
 import { TShirtFields, tshirtSizeToLabel, tshirtTypeToLabel } from "./InventoryTable/table-constants";

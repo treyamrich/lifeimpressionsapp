@@ -9,7 +9,7 @@ import dayjs from "dayjs";
 import { DBOperation, useDBOperationContext } from "@/contexts/DBErrorContext";
 import { getTodayInSetTz, toReadableDateTime } from "@/utils/datetimeConversions";
 import { OrderTotal, calculateOrderTotal } from "@/utils/orderTotal";
-import { getCacheExpirationAPI, getInventoryValueAPI } from "@/graphql-helpers/fetch-apis";
+import { getCacheExpirationAPI, getInventoryValueAPI } from "@/graphql-helpers/get-apis";
 
 export interface Order {
   __typename: string;

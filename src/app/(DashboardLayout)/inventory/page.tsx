@@ -8,7 +8,7 @@ import React, { useState } from "react";
 import Section from "../components/po-customer-order-shared-components/ViewOrderHeader/Section";
 import OrderChangeHistory from "../components/po-customer-order-shared-components/OrderChangeHistory/OrderChangeHistory";
 import InventoryTable from "./InventoryTable/InventoryTable";
-import { listOrderChangeHistoryAPI } from "@/graphql-helpers/fetch-apis";
+import { listOrderChangeHistoryAPI } from "@/graphql-helpers/list-apis";
 
 const InventoryPage = () => {
   const [editHistory, setEditHistory] = useState<OrderChange[]>([]);

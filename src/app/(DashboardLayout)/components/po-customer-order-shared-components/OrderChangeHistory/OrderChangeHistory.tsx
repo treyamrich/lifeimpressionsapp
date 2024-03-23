@@ -8,7 +8,7 @@ import MaterialReactTable, {
 import { getTableColumns } from "./tabel-constants";
 import React, { SetStateAction, useMemo, useState } from "react";
 import TableToolbar from "../../Table/TableToolbar";
-import { ListAPIResponse } from "@/graphql-helpers/fetch-apis";
+import { ListAPIResponse } from "@/graphql-helpers/types";
 
 const OrderChangeHistory = ({
   changeHistory,

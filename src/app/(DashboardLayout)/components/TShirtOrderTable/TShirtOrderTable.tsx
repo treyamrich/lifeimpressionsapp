@@ -9,7 +9,7 @@ import {
   type MRT_Row,
   type MRT_ColumnFiltersState,
 } from "material-react-table";
-import { ListAPIResponse } from "@/graphql-helpers/fetch-apis";
+import { ListAPIResponse } from "@/graphql-helpers/types";
 import CreateTShirtOrderModal from "./CreateTShirtOrder/CreateTShirtOrderModal";
 import EditRowPopup from "./EditTShirtOrder/EditTShirtOrderPopup";
 import { useDBOperationContext } from "@/contexts/DBErrorContext";
