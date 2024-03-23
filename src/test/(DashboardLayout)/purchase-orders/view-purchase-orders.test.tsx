@@ -6,11 +6,11 @@ import {
 import { renderWithProviders } from "@/test/util/render";
 import PurchaseOrders from "@/app/(DashboardLayout)/purchase-orders/page";
 import { validPO } from "./view-purchase-orders.fixtures";
-import { listPurchaseOrderAPI } from "@/graphql-helpers/fetch-apis";
+import { listPurchaseOrderAPI } from "@/graphql-helpers/list-apis";
 import { ModelSortDirection } from "@/API";
 import { mockNextRouterPush } from "../../../../setupTests";
 
-jest.mock("@/graphql-helpers/fetch-apis", () => ({
+jest.mock("@/graphql-helpers/list-apis", () => ({
   listPurchaseOrderAPI: jest.fn(),
 }));
 

@@ -3,7 +3,7 @@
 import { ModelSortDirection, PurchaseOrder } from "@/API";
 import React, { useState } from "react";
 import { useRouter } from 'next/navigation';
-import { listPurchaseOrderAPI } from "@/graphql-helpers/fetch-apis";
+import { listPurchaseOrderAPI } from "@/graphql-helpers/list-apis";
 
 import {
   columnInfo,

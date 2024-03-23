@@ -10,10 +10,10 @@ import {
 } from "@/API";
 import { AsyncBatchItem, DBOperation } from "@/contexts/DBErrorContext";
 import {
-  ListAPIResponse,
   listCustomerOrderAPI,
   listPurchaseOrderAPI,
-} from "@/graphql-helpers/fetch-apis";
+} from "@/graphql-helpers/list-apis";
+import {  ListAPIResponse } from "@/graphql-helpers/types";
 import { datetimeInPlaceSort, toReadableDateTime } from "@/utils/datetimeConversions";
 import { FormState } from "./GenerateReportForm";
 import { Order } from "./page";

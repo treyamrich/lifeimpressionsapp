@@ -13,7 +13,7 @@ import TShirtOrderTable, {
   EditTShirtOrderResult,
   TableMode,
 } from "@/app/(DashboardLayout)/components/TShirtOrderTable/TShirtOrderTable";
-import { getCustomerOrderAPI } from "@/graphql-helpers/fetch-apis";
+import { getCustomerOrderAPI } from "@/graphql-helpers/get-apis";
 import { DBOperation, useDBOperationContext } from "@/contexts/DBErrorContext";
 
 import { Typography, CardContent, Grid } from "@mui/material";

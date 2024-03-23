@@ -3,7 +3,7 @@
 import { CustomerOrder, CustomerOrderStatus, ModelSortDirection } from "@/API";
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import { listCustomerOrderAPI } from "@/graphql-helpers/fetch-apis";
+import { listCustomerOrderAPI } from "@/graphql-helpers/list-apis";
 
 import {
   columnInfo,
