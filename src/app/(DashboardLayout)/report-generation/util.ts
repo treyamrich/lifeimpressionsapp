@@ -19,7 +19,6 @@ import { FormState } from "./GenerateReportForm";
 import { Order } from "./page";
 import { CSVHeader, downloadCSV, processCSVCell } from "@/utils/csvGeneration";
 import { OrderTotal } from "@/utils/orderTotal";
-import dayjs from "dayjs";
 
 export type RequestFilters = {
   poFilter: ModelPurchaseOrderFilterInput;
@@ -184,32 +183,41 @@ export const downloadDetailedReport = (
   todaysDate: string,
   showOrderDeletedColumn: boolean
 ) => {
-  let csvData: any[] = orders;
-  const enhancedOrderItems = csvData.flatMap((order) => {
+  const enhancedOrderItems = orders.flatMap((order: Order) => {
     const orderCreatedAt = toReadableDateTime(order.createdAt);
-    const isPO = order.__typename === 'PurchaseOrder';
-    // const updatedAt = toReadableDateTime(order.updatedAt);
-    return order.orderedItems.map((orderItem: TShirtOrder) => {
-      const amountReceived = isPO ? orderItem.amountReceived : 'N/A';
-      return {
+    const isCO = order.__typename === 'CustomerOrder';
+
+    return order.orderedItems.flatMap((orderItem: TShirtOrder) => {
+      const transactionGroupId = isCO ? '' : `${order.id}@${orderItem.tShirtOrderTshirtId}`;
+      
+      const get_enhanced_order_item = (amountReceived: string, orderedQty: string, transact_date: string) => ({
         orderId: order.id,
         orderNumber: order.orderNumber,
         orderIsDeleted: order.isDeleted,
         __typename: order.__typename,
-        createdAt: orderCreatedAt,
-        transactionGroupId: `${order.id}@${orderItem.tShirtOrderTshirtId}`,
+        orderDatePlaced: orderCreatedAt,
+        transactionGroupId,
 
-        sortKey: orderItem.updatedAt, // ONLY USED FOR SORTING
+        sortKey: transact_date, // ONLY USED FOR SORTING
 
-        updatedAt: toReadableDateTime(orderItem.updatedAt),
+        orderItemTransactionDate: toReadableDateTime(transact_date),
         tshirtStyleNumber: orderItem.tshirt.styleNumber,
         tshirtColor: orderItem.tshirt.color,
         tshirtSize: orderItem.tshirt.size,
 
         amountReceived: amountReceived,
-        orderedQuantity: orderItem.quantity,
+        orderedQuantity: orderedQty,
         costPerUnit: orderItem.costPerUnit,
-      };
+      })
+
+      const originalOrderItemQty = orderItem.quantity.toString();
+      if (isCO) return [get_enhanced_order_item('N/A', originalOrderItemQty, orderItem.updatedAt)];
+
+      const receivals = orderItem.receivals ?? [];
+      return [
+        get_enhanced_order_item('0', originalOrderItemQty, orderItem.updatedAt), 
+        ...receivals.map(recv => get_enhanced_order_item(recv.quantity.toString(), '0', recv.timestamp))
+      ];
     });
   });
 
@@ -221,11 +229,11 @@ export const downloadDetailedReport = (
     { columnKey: "orderNumber", headerName: "Order #" },
     { columnKey: "__typename", headerName: "Order Type" },
     { columnKey: "orderIsDeleted", headerName: "Order Deleted?"},
-    { columnKey: "createdAt", headerName: "Order Date Placed" },
+    { columnKey: "orderDatePlaced", headerName: "Order Date Placed" },
 
     { columnKey: "transactionGroupId", headerName: "Transaction Group ID"},
 
-    { columnKey: "updatedAt", headerName: "Order Item: Last Modified" },
+    { columnKey: "orderItemTransactionDate", headerName: "Order Item: Transaction Date" },
     { columnKey: "tshirtStyleNumber", headerName: "Style No." },
     { columnKey: "tshirtColor", headerName: "Color" },
     { columnKey: "tshirtSize", headerName: "Size" },
@@ -243,12 +251,12 @@ export const downloadDetailedReport = (
     '',
     'Info: An Order Item aka Order Transaction consists of cost/unit, qty, and item SKU',
     '',
-    `Info: Transactions are sorted by the "Order Item: Last Modified" column"`,
+    `Info: Transactions are sorted by the "Order Item: Transaction Date" column`,
     '',
     'Info: The column "Transaction Group ID" assumes the form <Order_ID>@<Item_ID>',
     'The transaction group id is used to group modifications to an order which have spanned over multiple months.',
     'For example, if a PO was placed in March but was marked as received in April.',
-    'New items were available for sale in April, but are a part of the same order.',
+    'New items were available for sale in April, but are a part of the same transaction.',
     'Thus in the inventory value report, the value is calculated based on items available during the month.'
   ].map(processCSVCell).join(',\n');
 
