@@ -1,7 +1,6 @@
 import { CustomerOrder, CustomerOrderStatus } from "@/API";
 import { MRT_ColumnDef } from "material-react-table";
 import { ColumnInfo } from "../purchase-orders/table-constants";
-import dayjs from "dayjs";
 import { getStartOfDay, getStartOfMonth, getTodayInSetTz, toReadableDateTime } from "@/utils/datetimeConversions";
 import { Chip } from "@mui/material";
 
@@ -38,11 +37,11 @@ export const getTableColumns = (): MRT_ColumnDef<CustomerOrder>[] => {
     {
       accessorKey: "id",
       header: "Id",
-      muiTableHeadCellProps: { sx: { color: "green" } }, //custom props
     } as MRT_ColumnDef<CustomerOrder>,
     {
       accessorKey: "orderNumber",
       header: "Order No.",
+      muiTableHeadCellProps: { sx: { color: "green" } }, //custom props
     } as MRT_ColumnDef<CustomerOrder>,
     {
       accessorKey: "dateNeededBy",
@@ -110,7 +109,7 @@ export const columnInfo = new Map<
   string | number | symbol | undefined,
   ColumnInfo
 >([
-  ["id", { excludeOnCreate: true } as ColumnInfo],
+  ["id", { excludeOnCreate: true, hideInTable: true } as ColumnInfo],
   ["updatedAt", { excludeOnCreate: true } as ColumnInfo],
   ["createdAt", { dateTimeField: {
     getMaxDateRestriction: () => getTodayInSetTz(),

@@ -40,15 +40,22 @@ export const getTableColumns = (): MRT_ColumnDef<PurchaseOrder>[] => {
     {
       accessorKey: "id",
       header: "Id",
-      muiTableHeadCellProps: { sx: { color: "green" } }, //custom props
     } as MRT_ColumnDef<PurchaseOrder>,
     {
       accessorKey: "orderNumber",
       header: "PO number",
+      muiTableHeadCellProps: { sx: { color: "green" } }, //custom props
     } as MRT_ColumnDef<PurchaseOrder>,
     {
       accessorKey: "vendor",
       header: "Vendor",
+    } as MRT_ColumnDef<PurchaseOrder>,
+    {
+      accessorKey: "dateExpected",
+      header: "Expected Date",
+      Cell: ({ renderedCellValue, row }) => (
+        <span>{toReadableDateTime(row.original.dateExpected)}</span>
+      ),
     } as MRT_ColumnDef<PurchaseOrder>,
     {
       accessorKey: "status",
@@ -59,13 +66,6 @@ export const getTableColumns = (): MRT_ColumnDef<PurchaseOrder>[] => {
           label={poStatusToHeaderMap[row.original.status]}
           color={poStatusToColor[row.original.status] as any}
         />
-      ),
-    } as MRT_ColumnDef<PurchaseOrder>,
-    {
-      accessorKey: "dateExpected",
-      header: "Expected Date",
-      Cell: ({ renderedCellValue, row }) => (
-        <span>{toReadableDateTime(row.original.dateExpected)}</span>
       ),
     } as MRT_ColumnDef<PurchaseOrder>,
     {
@@ -135,7 +135,7 @@ export const columnInfo = new Map<
   string | number | symbol | undefined,
   ColumnInfo
 >([
-  ["id", { excludeOnCreate: true } as ColumnInfo],
+  ["id", { excludeOnCreate: true, hideInTable: true } as ColumnInfo],
   ["updatedAt", { excludeOnCreate: true } as ColumnInfo],
   ["createdAt", { 
     dateTimeField: {

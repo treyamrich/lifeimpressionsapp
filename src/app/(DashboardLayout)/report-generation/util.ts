@@ -43,7 +43,7 @@ export const getOrderRequestFilters = (form: FormState) => {
   return { poFilter, coFilter, createdAtRangeFilter };
 };
 
-export const handleOrderReportRequest = async (
+export const handleHighLevelReportRequest = async (
   form: FormState,
   rescueDBOperationBatch: <T>(
     batchItems: AsyncBatchItem<T>[],
@@ -124,7 +124,9 @@ export const handleOrderReportRequest = async (
     );
   }
 
-  return Promise.resolve(filteredOrders);
+  const orders = await Promise.resolve(filteredOrders);
+  datetimeInPlaceSort(orders, (x: Order) => x.updatedAt);
+  return orders;
 };
 
 export const downloadHighLevelReport = (
