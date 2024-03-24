@@ -25,6 +25,8 @@ import {
   getStartOfDay,
   getStartOfMonth,
 } from "@/utils/datetimeConversions";
+import { useDBOperationContext } from "@/contexts/DBErrorContext";
+import { handleGenerateSubmission } from "./report-form-handlers";
 
 const checkboxLabels: any = {
   includePOs: "Purchase Orders",
@@ -93,25 +95,25 @@ const getInitialFormState = (): FormState => ({
   yearAndMonth: getStartOfMonth(-1),
 });
 
-const ReportGenerationForm = ({
-  onSubmit,
-}: {
-  onSubmit: (form: FormState) => void;
-}) => {
+const ReportGenerationForm = () => {
+  const { rescueDBOperationBatch, rescueDBOperation } = useDBOperationContext();
   const [formState, setFormState] = useState(getInitialFormState());
-
+  const [isDownloading, setIsDownloading] = useState(false);
   const { dateStart, dateEnd, errMsg, yearAndMonth, reportType } = formState;
 
   const updateFormField = (key: string, value: any) => {
     setFormState({ ...formState, [key]: value });
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (dateStart.isAfter(dateEnd)) {
       updateFormField("errMsg", "Start date cannot be after end date");
       return;
     }
-    onSubmit({ ...formState });
+    if (isDownloading) return;
+    setIsDownloading(true)
+    await handleGenerateSubmission(formState, rescueDBOperation, rescueDBOperationBatch);
+    setIsDownloading(false);
   };
 
   const renderDateRangeInput = () => (
@@ -208,6 +210,7 @@ const ReportGenerationForm = ({
         fullWidth
         onClick={handleSubmit}
         type="submit"
+        disabled={isDownloading}
       >
         <DownloadIcon />
       </Button>

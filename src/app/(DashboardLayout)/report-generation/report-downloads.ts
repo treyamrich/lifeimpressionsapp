@@ -4,7 +4,7 @@ import {
   datetimeInPlaceSort,
   toReadableDateTime,
 } from "@/utils/datetimeConversions";
-import { DetailedReportOrder, Order } from "./page";
+import { DetailedReportOrder, Order } from "./types";
 import { CSVHeader, downloadCSV, processCSVCell } from "@/utils/csvGeneration";
 import { OrderTotal } from "@/utils/orderTotal";
 
