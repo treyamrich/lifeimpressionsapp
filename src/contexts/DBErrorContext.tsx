@@ -1,4 +1,5 @@
 import { ReactNode, useState, createContext, useContext, SetStateAction } from "react";
+import { rescueDBOperationBatch } from "./db-context-funcs";
 
 export enum DBOperation {
     CREATE = "Create",
@@ -34,16 +35,14 @@ type DBErrorContextType = {
         operation: DBOperation,
         onSuccess: any,
         customErrorMessage?: string) => void;
-    rescueDBOperationBatch: <T>(batchItems: AsyncBatchItem<T>[]) => void;
+    rescueDBOperationBatch: <T>(batchItems: AsyncBatchItem<T>[]) => Promise<void>;
 };
-
-function dummyBatchFn<T>(batchItems: AsyncBatchItem<T>[]) { }
 
 const dbOpErrorContextDefaultValues: DBErrorContextType = {
     dbOperationError: defaultDBOperationError,
     clearDBOperationErrors: () => { },
     rescueDBOperation: () => { },
-    rescueDBOperationBatch: dummyBatchFn,
+    rescueDBOperationBatch: () => Promise.resolve(),
 };
 
 const DBOpContext = createContext<DBErrorContextType>(dbOpErrorContextDefaultValues);
@@ -78,38 +77,11 @@ export const DBOperationContextProvider = ({ children }: Props) => {
         return resp;
     };
 
-    async function rescueDBOperationBatch<T>(batchItems: AsyncBatchItem<T>[], customMasterErrMsg?: string) {
-        let promises: any = [];
-        let errors: DBOperationError[] = [];
-        batchItems.forEach(item => {
-            let promise = item.requestFn()
-                .then(x => {
-                    if (item.successHandler)
-                        item.successHandler(x)
-                })
-                .catch(e => {
-                    let errMsg = item.errorMessage ?
-                        item.errorMessage :
-                        `Failed operation: ${item.dbOperation}`;
-                    errors.push({ errorMessage: errMsg, operationName: item.dbOperation })
-
-                    if (item.errorHandler)
-                        item.errorHandler(e)
-                });
-            promises.push(promise);
-        });
-
-        await Promise.all(promises);
-        
-        if (errors.length > 0) {
-            let newErrMsg = customMasterErrMsg ?
-                customMasterErrMsg :
-                errors.map(e => e.errorMessage).join(', ');
-            setDBOperationError({
-                errorMessage: newErrMsg,
-                operationName: DBOperation.BATCH,
-            } as DBOperationError);
-        }
+    async function rescueDBOperationBatchHelper<T>(
+        batchItems: AsyncBatchItem<T>[], 
+        customMasterErrMsg?: string
+    ) {
+        return await rescueDBOperationBatch(setDBOperationError, batchItems, customMasterErrMsg)
     }
 
     const clearDBOperationErrors = () => setDBOperationError({ ...defaultDBOperationError });
@@ -119,7 +91,7 @@ export const DBOperationContextProvider = ({ children }: Props) => {
             dbOperationError,
             clearDBOperationErrors,
             rescueDBOperation,
-            rescueDBOperationBatch
+            rescueDBOperationBatch: rescueDBOperationBatchHelper
         }}>
             {children}
         </DBOpContext.Provider>

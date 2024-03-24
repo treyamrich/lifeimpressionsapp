@@ -4,7 +4,7 @@ import DashboardCard from "@/app/(DashboardLayout)/components/shared/DashboardCa
 import PageContainer from "../components/container/PageContainer";
 import GenerateReportForm, { FormState, ReportType } from "./GenerateReportForm";
 import { CacheExpiration, InventoryValueCache, TShirtOrder } from "../../../API";
-import { handleHighLevelReportRequest } from "./report-requests";
+import { handleDetailedReportRequest, handleHighLevelReportRequest } from "./report-requests";
 import { downloadDetailedReport, downloadHighLevelReport, downloadInventoryValueCSV } from "./report-downloads";
 import { DBOperation, useDBOperationContext } from "@/contexts/DBErrorContext";
 import { getTodayInSetTz, toReadableDateTime } from "@/utils/datetimeConversions";
@@ -18,6 +18,16 @@ export interface Order {
   createdAt: string;
   updatedAt: string;
   taxRate: number;
+  orderedItems: TShirtOrder[];
+  isDeleted?: boolean | null;
+}
+
+export interface DetailedReportOrder {
+  __typename: string;
+  id: string;
+  orderNumber: string;
+  createdAt: string;
+  updatedAt: string;
   orderedItems: TShirtOrder[];
   isDeleted?: boolean | null;
 }
@@ -38,17 +48,18 @@ const ReportGeneration = () => {
     const showDeletedOrderColumn = form.includeDeletedCOs || form.includeDeletedPOs;
     switch(form.reportType) {
       case ReportType.Detailed:
-        downloadDetailedReport([], today, showDeletedOrderColumn)
+        const detailedOrders = await handleDetailedReportRequest(form ,rescueDBOperationBatch);
+        downloadDetailedReport(detailedOrders, today, showDeletedOrderColumn)
         break
       default:
-        const orders = await handleHighLevelReportRequest(form, rescueDBOperationBatch);
+        const highLevelOrders = await handleHighLevelReportRequest(form, rescueDBOperationBatch);
         let orderIdToTotalMap = new Map<string, OrderTotal>(
-            orders.map(order => {
+            highLevelOrders.map(order => {
                 const total = calculateOrderTotal(order, order.orderedItems);
                 return [order.id, total]
             })
         );
-        downloadHighLevelReport(orders, orderIdToTotalMap, today, showDeletedOrderColumn)
+        downloadHighLevelReport(highLevelOrders, orderIdToTotalMap, today, showDeletedOrderColumn)
     }
   }
 

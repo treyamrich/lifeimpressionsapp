@@ -1,3 +1,5 @@
+import { GetCustomerOrderQuery, GetPurchaseOrderQuery } from "@/API";
+
 export type OrderMinInfo = {
     __typename: 'CustomerOrder' | 'PurchaseOrder';
     id: string;
@@ -6,3 +8,5 @@ export type OrderMinInfo = {
     createdAt: string;
     updatedAt: string;
 }
+
+export interface OrderMinInfoQuery extends GetPurchaseOrderQuery, GetCustomerOrderQuery {};
