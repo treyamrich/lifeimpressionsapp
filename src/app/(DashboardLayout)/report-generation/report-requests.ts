@@ -16,7 +16,7 @@ import {
 import { ListAPIResponse } from "@/graphql-helpers/types";
 import { datetimeInPlaceSort } from "@/utils/datetimeConversions";
 import { FormState } from "./GenerateReportForm";
-import { DetailedReportOrder, Order } from "./page";
+import { DetailedReportOrder, Order } from "./types";
 import { getOrderMinInfoAPI } from "@/graphql-helpers/get-apis";
 import { EntityType } from "../components/po-customer-order-shared-components/CreateOrderPage";
 import { OrderMinInfo } from "@/my-graphql-queries/types";
