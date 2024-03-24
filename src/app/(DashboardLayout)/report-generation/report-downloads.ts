@@ -4,7 +4,7 @@ import {
   datetimeInPlaceSort,
   toReadableDateTime,
 } from "@/utils/datetimeConversions";
-import { Order } from "./page";
+import { DetailedReportOrder, Order } from "./page";
 import { CSVHeader, downloadCSV, processCSVCell } from "@/utils/csvGeneration";
 import { OrderTotal } from "@/utils/orderTotal";
 
@@ -56,13 +56,14 @@ export const downloadHighLevelReport = (
 };
 
 export const downloadDetailedReport = (
-  orders: Order[],
+  orders: DetailedReportOrder[],
   todaysDate: string,
   showOrderDeletedColumn: boolean
 ) => {
-  const enhancedOrderItems = orders.flatMap((order: Order) => {
+  const enhancedOrderItems = orders.flatMap((order: DetailedReportOrder) => {
     const orderCreatedAt = toReadableDateTime(order.createdAt);
     const isCO = order.__typename === "CustomerOrder";
+    const isAdjustment = order.__typename === "Adjustment";
 
     return order.orderedItems.flatMap((orderItem: TShirtOrder) => {
       const transactionGroupId = isCO
@@ -94,7 +95,7 @@ export const downloadDetailedReport = (
       });
 
       const originalOrderItemQty = orderItem.quantity.toString();
-      if (isCO)
+      if (isCO || isAdjustment)
         return [
           get_enhanced_order_item(
             "N/A",
@@ -105,7 +106,7 @@ export const downloadDetailedReport = (
 
       const receivals = orderItem.receivals ?? [];
       return [
-        get_enhanced_order_item("0", originalOrderItemQty, orderItem.updatedAt),
+        get_enhanced_order_item("0", originalOrderItemQty, orderCreatedAt),
         ...receivals.map((recv) =>
           get_enhanced_order_item(recv.quantity.toString(), "0", recv.timestamp)
         ),
@@ -120,7 +121,7 @@ export const downloadDetailedReport = (
     { columnKey: "orderId", headerName: "Order ID" },
     { columnKey: "orderNumber", headerName: "Order #" },
     { columnKey: "__typename", headerName: "Order Type" },
-    { columnKey: "orderIsDeleted", headerName: "Order Deleted?" },
+    { columnKey: "orderIsDeleted", headerName: "Order Deleted" },
     { columnKey: "orderDatePlaced", headerName: "Order Date Placed" },
 
     { columnKey: "transactionGroupId", headerName: "Transaction Group ID" },

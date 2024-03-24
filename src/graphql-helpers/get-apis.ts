@@ -22,6 +22,9 @@ import {
 import { configuredAuthMode } from "./auth-mode";
 import { CACHE_EXPIRATION_ID } from "@/dynamodb-transactions/dynamodb";
 import { Query } from "./types";
+import { EntityType } from "@/app/(DashboardLayout)/components/po-customer-order-shared-components/CreateOrderPage";
+import { getCustomerOrderMin, getPurchaseOrderMin } from "@/my-graphql-queries/queries";
+import { OrderMinInfo, OrderMinInfoQuery } from "@/my-graphql-queries/types";
 
 async function getAPI<Q, R>(
   q: Query,
@@ -101,3 +104,18 @@ export const getCacheExpirationAPI = async () => {
     return cacheExpiration;
   });
 };
+
+export const getOrderMinInfoAPI = async (
+  orderId: string, 
+  orderType: EntityType
+): Promise<OrderMinInfo> => {
+  const q: Query = orderType === EntityType.PurchaseOrder ? 
+    { name: "getPurchaseOrder", query: getPurchaseOrderMin } : 
+    { name: "getCustomerOrder", query: getCustomerOrderMin }
+  const v = { id: orderId };
+  return await getAPI<OrderMinInfoQuery, OrderMinInfo>(
+    q,
+    v,
+    "Failed to fetch Order"
+  );
+}

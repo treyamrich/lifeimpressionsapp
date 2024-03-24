@@ -3,7 +3,6 @@ export const getPurchaseOrderMin = /* GraphQL */ `
     getPurchaseOrder(id: $id) {
       id
       orderNumber
-      status
       isDeleted
       createdAt
       updatedAt
@@ -17,7 +16,6 @@ export const getCustomerOrderMin = /* GraphQL */ `
     getCustomerOrder(id: $id) {
       id
       orderNumber
-      orderStatus
       isDeleted
       createdAt
       updatedAt
