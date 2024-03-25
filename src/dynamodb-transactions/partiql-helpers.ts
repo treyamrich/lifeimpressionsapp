@@ -159,6 +159,7 @@ export const getInsertTShirtOrderTablePartiQL = (
     tshirtOrderUuid: string,
 
 ): ParameterizedStatement => {
+    const isPO = entityType === EntityType.PurchaseOrder;
     return {
         Statement: `
             INSERT INTO "${tshirtOrderTable.tableName}"
@@ -187,7 +188,7 @@ export const getInsertTShirtOrderTablePartiQL = (
             { S: createdAtTimestamp },
             { S: createdAtTimestamp },
             { BOOL: false },
-            { S: `${tshirtOrder.tshirt.id}-unproc` },
+            { S: `${tshirtOrder.tshirt.id}-${isPO ? 'PO' : 'CO'}` },
         ]
     }
 }
