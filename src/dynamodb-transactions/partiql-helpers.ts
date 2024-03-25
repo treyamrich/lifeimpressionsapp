@@ -187,7 +187,7 @@ export const getInsertTShirtOrderTablePartiQL = (
             { S: createdAtTimestamp },
             { S: createdAtTimestamp },
             { BOOL: false },
-            { S: tshirtOrder.tshirt.id },
+            { S: `${tshirtOrder.tshirt.id}-unproc` },
         ]
     }
 }
