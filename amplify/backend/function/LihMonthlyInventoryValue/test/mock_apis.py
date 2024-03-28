@@ -1,17 +1,19 @@
 from enum import Enum
-from typing import Iterable
+from typing import Iterable, List
 import uuid
 import random
-import json
 import sys
 import os
 from datetime import datetime
 from dataclasses import asdict
 
 sys.path.insert(0, os.path.abspath(".."))
-from src.index import InventoryItem, OrderItem, Main
+from src.index import InventoryItem, OrderItem, Main, QueueItem
 sys.path.pop(0)
 
+class OrderType(Enum):
+    CustomerOrder = 0
+    PurchaseOrder = 1
 
 def gen_inventory_items_response(n: int = 100):
     return [
@@ -25,47 +27,55 @@ def gen_inventory_items_response(n: int = 100):
         for _ in range(n)
     ]
 
+unix_to_iso = lambda x: datetime.fromtimestamp(x).isoformat()
 
-def gen_order_items_responses(items: list[InventoryItem], n: int = 10) -> dict:
-    item_responses = {}
+def gen_po_receivals(min_t: int, max_t: int):
+    times = sorted([random.randint(min_t, max_t) for _ in range(5)])
+    times = map(unix_to_iso, times)
+    return [{'quantity': random.randint(1, 10), 'timestamp': t} for t in times]
 
-    def rand_order_type():
-        if random.randint(0, 1):
-            return "PurchaseOrder", None
-        return None, "CustomerOrder"
+def gen_order_items_responses(order_type: OrderType, n: int = 10) -> Iterable[OrderItem]:
+    is_PO = order_type == OrderType.PurchaseOrder
+    res: List[OrderItem] = []
+    for i in range(n):
+        t = unix_to_iso(i)
+        receivals = None
 
-    for item in items:
-        res = [0 for _ in range(n)]
-        for i in range(n):
-            t = datetime.fromtimestamp(i).isoformat()
+        if is_PO:
+            earliestTransaction = i + random.randint(0, 20)
+            latestTransaction = earliestTransaction + random.randint(0, 20)
+            receivals = gen_po_receivals(earliestTransaction, latestTransaction)
+            earliestTransaction = receivals[0]['timestamp']
+            latestTransaction = receivals[-1]['timestamp']
+        else:
+            earliestTransaction, latestTransaction = t, t
 
-            po_id, co_id = rand_order_type()
-            rand_qty = lambda: random.randint(-20, 20)
-
-            quantity = rand_qty()
-            while quantity == 0:
-                quantity = rand_qty()
-
-            res[i] = OrderItem(
-                id=str(uuid.uuid4()),
-                quantity=quantity,
-                amountReceived=random.randint(0, 10),
+        id_me = lambda: str(uuid.uuid4())
+        
+        res.append(
+            OrderItem(
+                id=id_me(),
+                quantity=0,
+                amountReceived=sum(map(lambda x: x['quantity'], receivals)) if is_PO else 0,
                 costPerUnit=round(random.uniform(0, 100), 2),
                 createdAt=t,
                 updatedAt=t,
-                tShirtOrderTshirtId=item.id,
-                purchaseOrderOrderedItemsId=po_id,
-                customerOrderOrderedItemsId=co_id,
+                tShirtOrderTshirtId=id_me(),
+                purchaseOrderOrderedItemsId=id_me() if is_PO else None,
+                customerOrderOrderedItemsId=id_me() if not is_PO else None,
+                receivals=receivals,
+                earliestTransaction=earliestTransaction,
+                latestTransaction=latestTransaction
             )
-        item_responses[item.id] = res
-    return item_responses
+        )
+    return sorted(res, key=lambda x: x.earliestTransaction)
 
 
-class PaginationSimulator:
+class MockPagination:
 
     def __init__(self, items: Iterable, page_count: int, query_name: str):
         dict_items = list(map(lambda x: asdict(x), items))
-        self.pages = PaginationSimulator._partition_list(
+        self.pages = MockPagination._partition_list(
             page_count, dict_items)
         self.i = 0
         self.query_name = query_name
@@ -97,24 +107,27 @@ num_orders_per_item = 30
 num_orders_pages = 3
 
 inv_items = gen_inventory_items_response(num_inv_items)
-order_items = gen_order_items_responses(inv_items, num_orders_per_item)
 
 
-def get_rand_mock_inventory_item_api(items = inv_items, num_pages = num_inv_pages): return PaginationSimulator(
+def get_rand_mock_inventory_item_api(items = inv_items, num_pages = num_inv_pages): return MockPagination(
     items, num_pages, Main.listTshirts.name
 )
 
+def get_mock_CO_resp(n = 10):
+    mp = MockPagination(
+        gen_order_items_responses(OrderType.CustomerOrder, n), 1, Main.tshirtOrderByUpdatedAt.name
+    )
+    return next(mp)
 
-def get_rand_mock_order_item_api(item_id): return PaginationSimulator(
-    order_items[item_id], num_orders_pages, Main.tshirtOrderByUpdatedAt.name
-)
+def get_mock_PO_resp(n = 10):
+    mp = MockPagination(
+        gen_order_items_responses(OrderType.PurchaseOrder, n), 1, Main.tshirtOrderByUpdatedAt.name
+    )
+    return next(mp)
 
 
 def select_random_order_item(): return random.choice(inv_items)
 
-class OrderType(Enum):
-    CustomerOrder = 0
-    PurchaseOrder = 1
     
 class IncrementalOrderItemBuilder:
     def __init__(self):
@@ -123,6 +136,8 @@ class IncrementalOrderItemBuilder:
         def get_time(x): return datetime.fromtimestamp(x).isoformat()
         is_customer_order = order_type == OrderType.CustomerOrder
         
+        receivals = [x for x in gen_po_receivals()]
+        n = len(receivals)
         order_item = OrderItem(
             id=f'id-{self.i}',
             quantity=qty,
@@ -133,14 +148,29 @@ class IncrementalOrderItemBuilder:
             tShirtOrderTshirtId='some tshirt id',
             purchaseOrderOrderedItemsId=None if is_customer_order else 'some po id',
             customerOrderOrderedItemsId='some co id' if is_customer_order else None,
+            receivals=receivals,
+            earliestTransaction=receivals[0]['timestamp'],
+            latestTransaction=receivals[n-1]['timestamp']
         )
         self.i += 1
         return order_item
 
 def get_predictable_mock_order_item_api(partial_order_items: Iterable[dict], num_pages=2):
     predicable_builder = IncrementalOrderItemBuilder()
-    return PaginationSimulator(
+    return MockPagination(
         map(lambda x: predicable_builder.get_order_item(**x), partial_order_items),
         num_pages,
         Main.tshirtOrderByUpdatedAt.name
     )
+
+def mock_get_order_item_iterators(partial_queue_items: Iterable[dict]):
+    partial_queue_items = [x for x in partial_queue_items]
+                           
+    def get_queue_item(qty: int, cost_per_unit: float = 0, timestamp='', **kwargs):
+        return QueueItem(qty = qty, cost_per_unit = cost_per_unit, iso_dt = timestamp)
+    
+    def get_mock_it(t: OrderType):
+        filtered = filter(lambda x: x['order_type'] == t, partial_queue_items)
+        return map(lambda x: get_queue_item(**x), filtered)
+
+    return get_mock_it(OrderType.CustomerOrder), get_mock_it(OrderType.PurchaseOrder)

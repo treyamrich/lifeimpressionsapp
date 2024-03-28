@@ -1,7 +1,7 @@
 from enum import Enum
 import os
 import json
-from typing import Callable, List
+from typing import Callable, List, Tuple, Union
 from dateutil.relativedelta import relativedelta
 from datetime import datetime, timedelta, timezone
 import requests
@@ -9,7 +9,7 @@ from dataclasses import asdict, dataclass
 from requests_aws4auth import AWS4Auth
 import boto3
 import logging
-
+import heapq
 
 # Dev stuff
 def load_env_vars(file_path):
@@ -85,6 +85,10 @@ class InventoryItem:
     size: str
     quantityOnHand: int
 
+@dataclass
+class POReceival:
+    quantity: int
+    timestamp: str
 
 @dataclass
 class OrderItem:
@@ -94,26 +98,28 @@ class OrderItem:
     id: str
     createdAt: str
     updatedAt: str
+    earliestTransaction: str
+    latestTransaction: str
     purchaseOrderOrderedItemsId: str
     customerOrderOrderedItemsId: str
     tShirtOrderTshirtId: str
+    receivals: Union[List[POReceival], None]
 
-    def is_customer_order(self):
-        return self.customerOrderOrderedItemsId != None
+    def __post_init__(self):
+        if self.amountReceived > 0 and not self.receivals:
+            raise Exception('Missing or empty PO receivals when amt received > 0')
+        if self.purchaseOrderOrderedItemsId:
+            self.receivals = [POReceival(**recv_data) for recv_data in self.receivals]
 
-    def is_purchase_order(self):
-        return self.purchaseOrderOrderedItemsId != None
+@dataclass
+class QueueItem:
+    qty: int = 0
+    cost_per_unit: float = 0
+    iso_dt: str = '1970-01-01T00:00:00Z'
 
-    def get_qty(self):
-        return self.quantity if self.is_customer_order() else self.amountReceived
-
-    def set_qty(self, new_qty: int):
-        if self.is_customer_order():
-            self.quantity = new_qty
-            return
-        self.amountReceived = new_qty
-
-
+    def __lt__(self, other):
+        return self.iso_dt < other.iso_dt
+    
 @dataclass
 class Query:
     name: str
@@ -281,9 +287,9 @@ class DynamoDBClient:
             items
         )
         
-    def batch_execute_statement(self, table_name: str, pk_field_name: str, items: List[tuple[DBOperation, dict]]):
+    def batch_execute_statement(self, table_name: str, pk_field_name: str, items: List[Tuple[DBOperation, dict]]):
         
-        def batch_transformer(batch: List[tuple[DynamoDBClient.DBOperation, dict]]):
+        def batch_transformer(batch: List[Tuple[DynamoDBClient.DBOperation, dict]]):
             to_statement = lambda statement, params: {
                 'Statement': statement,
                 'Parameters': params,
@@ -353,14 +359,17 @@ class PaginationIterator:
         self._idx = 0
         self._variables["nextToken"] = self._next_token
 
-
 @dataclass
 class InventoryItemValue:
     itemId: str
     aggregateValue: float = 0.0
     numUnsold: int = 0
     inventoryQty: int = 0
-    earliestUnsold: str = None
+
+    poQueueHead: str = None
+    poQueueHeadQtyRemain: int = 0
+    coQueueHead: str = None
+    coQueueHeadQtyRemain: int = 0
     
     tshirtStyleNumber: str = ''
     tshirtColor: str = ''
@@ -431,6 +440,10 @@ class InventoryValueCache:
                 earliestUnsold
                 numUnsold
                 inventoryQty
+                poQueueHead
+                poQueueHeadQtyRemain
+                coQueueHead
+                coQueueHeadQtyRemain
             }
         createdAt
         }
@@ -447,7 +460,7 @@ class CacheExpiration:
         self, 
         start_inclusive: datetime, 
         end_exclusive: datetime
-    ) -> tuple[datetime, datetime]:
+    ) -> Tuple[datetime, datetime]:
         earliest_exp = 'earliestExpiredDate'
         resp = self._graphql_client.make_request(
             CacheExpiration.getCacheExpiration, { 'id': CacheExpiration.CACHE_EXPIRATION_ID})
@@ -599,6 +612,71 @@ class Main:
         )
         return [InventoryItem(**x) for x in it]
 
+    def _get_order_items_iterators(
+        self,
+        prev_item_val: InventoryItemValue, 
+        start_inclusive: datetime, 
+        end_exclusive: datetime
+    ) -> Tuple[PaginationIterator, PaginationIterator]:
+        
+        start = MyDateTime.to_ISO8601(start_inclusive)
+        end = MyDateTime.to_ISO8601(end_exclusive - relativedelta(seconds=1))
+        start_po = prev_item_val.poQueueHead \
+            if prev_item_val.poQueueHead else start
+        start_co = prev_item_val.coQueueHead \
+            if prev_item_val.coQueueHead else start
+        
+        def get_it(transac_type: str):
+            start = start_po if transac_type == 'PO' else start_co
+            return PaginationIterator(
+                self.graphql_client,
+                Main.tshirtOrderByUpdatedAt,
+                {
+                    "indexField": f'{prev_item_val.itemId}-{transac_type}',
+                    "sortDirection": Main.SORT_DIRECTION_ASC,
+                    "limit": Main.QUERY_PAGE_LIMIT,
+                    "earliestTransaction": {'lt': end},
+                    "filter": {
+                        # NEED TO FILTER OUT 0 QUANTITY TRANSACTIONS
+                        "latestTransaction": {"ge": start},
+                        "quantity": { "ne": 0},
+                    }
+                },
+            )
+        
+        """ This works because each interval is sorted by start
+            All values in interval are sorted, and next interval starts after, 
+            but they may overlap"""
+        po_heap = []
+        def POs_generator(it):
+            for po in it:
+                item = OrderItem(**po)
+                for x in item.receivals:
+                    if x.timestamp < start or x.timestamp >= end:
+                        continue
+                    receival = QueueItem(
+                        qty = x.quantity, 
+                        cost_per_unit = item.costPerUnit, 
+                        iso_dt = x.timestamp
+                    )
+                    heapq.heappush(po_heap, receival)
+                if po_heap:
+                    yield heapq.heappop(po_heap)
+            while po_heap:
+                yield heapq.heappop(po_heap)
+        
+        def CO_generator(it):
+            for co in it:
+                item = OrderItem(**co)
+                yield QueueItem(
+                    qty = item.quantity, 
+                    cost_per_unit = item.costPerUnit, 
+                    iso_dt = item.earliestTransaction
+                )
+
+        return CO_generator(get_it('CO')), POs_generator(get_it('PO'))
+
+
     def _get_unsold_items_value(
         self, 
         prev_inventory_item: InventoryItemValue, 
@@ -606,86 +684,72 @@ class Main:
         end_exclusive: datetime
     ) -> InventoryItemValue:
         # Returns the value and the earliest unsold item
-        unsold_items = self._get_unsold_items(
+        unsold_POs, unproc_COs = self._get_unsold_items(
             prev_inventory_item, start_inclusive, end_exclusive)
 
-        num_unsold, total_value = 0, prev_inventory_item.aggregateValue
-        for item in unsold_items:
-            num_unsold += item.get_qty()
+        res = InventoryItemValue(
+            itemId = prev_inventory_item.itemId, 
+            aggregateValue = prev_inventory_item.aggregateValue
+        )
 
-            # Only adding remaining items in inventory
-            if item.get_qty() < 0: continue
+        for item in unsold_POs:
+            res.numUnsold += item.qty
+            res.aggregateValue += item.qty * item.cost_per_unit
 
-            # For POs item.quantity is amount ordered NOT item.amountReceived
-            total_value += item.get_qty() * item.costPerUnit
+        # IF items oversold
+        for item in unproc_COs:
+            res.numUnsold -= item.qty
 
-        earliest_unsold = MyDateTime.to_ISO8601(end_exclusive)
-        if unsold_items:
-            # This may be a customer order, when num_unsold < 0. It's just where we left off.
-            earliest_unsold = unsold_items[0].updatedAt
+        res.poQueueHead = MyDateTime.to_ISO8601(end_exclusive)
+        res.coQueueHead = res.poQueueHead
 
-        res = InventoryItemValue(prev_inventory_item.itemId)
-        res.aggregateValue = total_value
-        res.earliestUnsold = earliest_unsold
-        res.numUnsold = num_unsold
+        if unsold_POs:
+            res.poQueueHead = unsold_POs[0].iso_dt
+            res.poQueueHeadQtyRemain = unsold_POs[0].qty
+        if unproc_COs:
+            res.coQueueHead = unproc_COs[0].iso_dt
+            res.coQueueHeadQtyRemain = unproc_COs[0].qty
+
         return res
 
     def _get_unsold_items(
-        self, 
-        inventory_item: InventoryItemValue, 
+        self,
+        prev_item_val: InventoryItemValue, 
         start_inclusive: datetime, 
         end_exclusive: datetime
-    ):
-        start = inventory_item.earliestUnsold \
-            if inventory_item.earliestUnsold else MyDateTime.to_ISO8601(start_inclusive)
-        end = MyDateTime.to_ISO8601(end_exclusive - relativedelta(seconds=1))
+    ) -> Tuple[List[QueueItem], List[QueueItem]]:
 
-        it = PaginationIterator(
-            self.graphql_client,
-            Main.tshirtOrderByUpdatedAt,
-            {
-                "indexField": inventory_item.itemId,
-                "sortDirection": Main.SORT_DIRECTION_ASC,
-                "limit": Main.QUERY_PAGE_LIMIT,
-                "updatedAt": {'between': [start, end]},
-                "filter": { "quantity": { "ne": 0} }
-            },
+        def get(it: PaginationIterator) -> QueueItem: 
+            return next(it, None)
+
+        co_it, po_it = self._get_order_items_iterators(
+            prev_item_val, 
+            start_inclusive, 
+            end_exclusive
         )
+        co_item, po_item = get(co_it), get(po_it)
+        if prev_item_val.poQueueHeadQtyRemain:
+            po_item.qty = prev_item_val.poQueueHeadQtyRemain
+        if prev_item_val.coQueueHeadQtyRemain:
+            co_item.qty = prev_item_val.coQueueHeadQtyRemain
 
-        def flip_qty(order_item: OrderItem):
-            # Returns become positive; customer orders become negative
-            if order_item.is_customer_order():
-                order_item.set_qty(-order_item.get_qty())
+        while co_item and  po_item:
+            remainder = po_item.qty - co_item.qty
+            if remainder == 0:
+                co_item, po_item = get(co_it), get(po_it)
+            elif remainder > 0:
+                po_item.qty = remainder
+                co_item = get(co_it)
+            else:
+                co_item.qty = -remainder
+                po_item = get(po_it)
 
-        def is_same_sign(a, b): return a > 0 and b > 0 or a < 0 and b < 0
-
-        q: list[OrderItem] = []
-        for order_item_dict in it:
-            curr = OrderItem(**order_item_dict)
-            flip_qty(curr)
-
-            if not q or is_same_sign(curr.get_qty(), q[0].get_qty()):
-                q.append(curr)
-                continue
-
-            while q and curr.get_qty() != 0:
-                head = q[0]
-                remainder = curr.get_qty() + head.get_qty()
-
-                if remainder == 0:
-                    q.pop(0)
-                    curr.set_qty(0)
-                elif is_same_sign(curr.get_qty(), remainder):
-                    curr.set_qty(remainder)
-                    q.pop(0)
-                else:
-                    head.set_qty(remainder)
-                    curr.set_qty(0)
-
-            if curr.get_qty() != 0:
-                q.append(curr)
-
-        return q
+        POs, COs = [], []
+        if po_item:
+            POs = [po_item, *[x for x in po_it]]
+        if co_item:
+            COs = [co_item, *[x for x in co_it]]
+        return POs, COs
     
     def _validate_start_end(self, start_inclusive: datetime, end_exclusive) -> bool:
         to_iso = lambda x: MyDateTime.to_ISO8601(x)

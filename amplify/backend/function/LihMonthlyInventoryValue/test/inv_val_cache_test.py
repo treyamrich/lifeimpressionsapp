@@ -26,11 +26,16 @@ class TestInventoryValueCache(unittest.TestCase):
 
     def _build_cache_item(self, itemId):
         return {
-            'aggregateValue': 11.10,
             'itemId': itemId,
-            'earliestUnsold': "",
+            'aggregateValue': 11.10,
             'numUnsold': 2,
             'inventoryQty': 5,
+
+            'poQueueHead': "asdf",
+            'poQueueHeadQtyRemain': 4,
+            'coQueueHead': "asdfadfga",
+            'coQueueHeadQtyRemain': 4,
+
             'tshirtStyleNumber': '',
             'tshirtColor': '',
             'tshirtSize': ''
