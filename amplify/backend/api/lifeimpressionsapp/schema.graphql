@@ -106,12 +106,15 @@ type TShirtOrder @model @auth(rules: [
   { allow: public, provider: apiKey, operations: [read]}]) {
   tshirt: TShirt! @hasOne
   quantity: Int!
-  amountReceived: Int @default(value: "0") # This is only used for PurchaseOrder
-  receivals: [POReceival!]
   costPerUnit: Float!
 
+  amountReceived: Int @default(value: "0") # This is only used for PurchaseOrder
+  receivals: [POReceival!]
+  earliestTransaction: AWSDateTime!
+  latestTransaction: AWSDateTime!
+
   # Will store tshirtId-PO or tshirtId-CO
-  indexField: String @index(name: "tshirtOrderByUpdatedAt", queryField: "tshirtOrderByUpdatedAt", sortKeyFields: ["updatedAt"])
+  indexField: String @index(name: "tshirtTransactionQueues", queryField: "tshirtTransactionQueues", sortKeyFields: ["earliestTransaction"])
   
   updatedAt: String!
   isDeleted: Boolean @default(value: "false")
@@ -158,7 +161,10 @@ type LastItemValue {
   tshirtColor: String!
   tshirtSize: TShirtSize!
 
-  earliestUnsold: AWSDateTime! # This is the head of the 'queue'
+  poQueueHead: AWSDateTime!
+  poQueueHeadQtyRemain: Int!
+  coQueueHead: AWSDateTime!
+  coQueueHeadQtyRemain: Int!
 
   numUnsold: Int!
   inventoryQty: Int!

@@ -134,11 +134,12 @@ class GraphQLException(Exception):
 
 class GraphQLClient:
 
-    def __init__(self):
+    def __init__(self, use_api_key=False):
+        api_key = {"x-api-key": os.environ["API_KEY"]} if use_api_key else {}
         self.headers = {
             "Accept": "application/json",
             "Content-Type": "application/json",
-            # "x-api-key": os.environ["API_KEY"],
+            **api_key
         }
         
         session = requests.Session()
@@ -627,19 +628,20 @@ class Main:
             if prev_item_val.coQueueHead else start
         
         def get_it(transac_type: str):
-            start = start_po if transac_type == 'PO' else start_co
+            is_PO = transac_type == 'PO'
+            start = start_po if is_PO else start_co
+            qty_filter = {"amountReceived": { "gt": 0}} if is_PO else {"quantity": { "gt": 0}}
             return PaginationIterator(
                 self.graphql_client,
-                Main.tshirtOrderByUpdatedAt,
+                Main.tshirtTransactionQueues,
                 {
                     "indexField": f'{prev_item_val.itemId}-{transac_type}',
                     "sortDirection": Main.SORT_DIRECTION_ASC,
                     "limit": Main.QUERY_PAGE_LIMIT,
                     "earliestTransaction": {'lt': end},
                     "filter": {
-                        # NEED TO FILTER OUT 0 QUANTITY TRANSACTIONS
                         "latestTransaction": {"ge": start},
-                        "quantity": { "ne": 0},
+                        **qty_filter
                     }
                 },
             )
@@ -791,39 +793,46 @@ query ListTShirts(
 """,
     )
 
-    tshirtOrderByUpdatedAt = Query(
-        name="tshirtOrderByUpdatedAt",
+    tshirtTransactionQueues = Query(
+        name="tshirtTransactionQueues",
         query="""
-query TshirtOrderByUpdatedAt(
-    $indexField: String!
-    $updatedAt: ModelStringKeyConditionInput
-    $sortDirection: ModelSortDirection
-    $filter: ModelTShirtOrderFilterInput
-    $limit: Int
-    $nextToken: String
+query TshirtTransactionQueues(
+  $indexField: String!
+  $earliestTransaction: ModelStringKeyConditionInput
+  $sortDirection: ModelSortDirection
+  $filter: ModelTShirtOrderFilterInput
+  $limit: Int
+  $nextToken: String
+) {
+  tshirtTransactionQueues(
+    indexField: $indexField
+    earliestTransaction: $earliestTransaction
+    sortDirection: $sortDirection
+    filter: $filter
+    limit: $limit
+    nextToken: $nextToken
   ) {
-    tshirtOrderByUpdatedAt(
-      indexField: $indexField
-      updatedAt: $updatedAt
-      sortDirection: $sortDirection
-      filter: $filter
-      limit: $limit
-      nextToken: $nextToken
-    ) {
-      items {
+    items {
+      quantity
+      costPerUnit
+      amountReceived
+      receivals {
+        timestamp
         quantity
-        amountReceived
-        costPerUnit
-        updatedAt
-        id
-        createdAt
-        purchaseOrderOrderedItemsId
-        customerOrderOrderedItemsId
-        tShirtOrderTshirtId
       }
-      nextToken
+      earliestTransaction
+      latestTransaction
+      indexField
+      updatedAt
+      id
+      createdAt
+      purchaseOrderOrderedItemsId
+      customerOrderOrderedItemsId
+      tShirtOrderTshirtId
     }
-  }""",
+    nextToken
+  }
+}""",
     )
     
 
@@ -857,3 +866,21 @@ def handler(event, context):
     
     print('Run success for start inclusive: {} and end exclusive: {}'.format(s, e))
     return {"statusCode": 200}
+
+
+# a = GraphQLClient(use_api_key=True).make_request(
+#     Main.tshirtTransactionQueues,
+#     {
+#         "indexField": f'test',
+#         "sortDirection": Main.SORT_DIRECTION_ASC,
+#         "limit": Main.QUERY_PAGE_LIMIT,
+#         "earliestTransaction": {'lt': 'asdf'},
+#         "filter": {
+#             # NEED TO FILTER OUT 0 QUANTITY TRANSACTIONS
+#             "latestTransaction": {"ge": 'asdf'},
+#             "quantity": { "ne": 0},
+#         }
+#     },
+# )
+
+# print(a)
