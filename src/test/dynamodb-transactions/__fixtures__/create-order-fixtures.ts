@@ -53,6 +53,8 @@ export const tshirtOrders: TShirtOrder[] = [
         updatedAt: '',
         tshirt: tshirts[0],
         costPerUnit: 52.1,
+        earliestTransaction: 'earliest_transaction_t',
+        latestTransaction: 'latest_transaction_t'
     },
     {
         __typename: "TShirtOrder",
@@ -64,6 +66,8 @@ export const tshirtOrders: TShirtOrder[] = [
         updatedAt: '',
         tshirt: tshirts[1],
         costPerUnit: 52.4,
+        earliestTransaction: 'earliest_transaction_t',
+        latestTransaction: 'latest_transaction_t'
     }
 ]
 
@@ -129,19 +133,23 @@ export const getDummyTShirtOrder = ({
     updatedAt = '',
     tshirt = tshirts[0],
     costPerUnit = 52.1,
+    earliestTransaction = 'earliest_transaction_t',
+    latestTransaction = 'latest_transaction_t'
   }, 
   receivals: POReceival[] | null = null
 ): TShirtOrder => (
   {
     __typename: "TShirtOrder",
-    id: id,
-    quantity: quantity,
-    amountReceived: amountReceived,
-    tShirtOrderTshirtId: tShirtOrderTshirtId,
-    createdAt: createdAt,
-    updatedAt: updatedAt,
-    tshirt: tshirt,
-    costPerUnit: costPerUnit,
-    receivals: receivals
+    id,
+    quantity,
+    amountReceived,
+    tShirtOrderTshirtId,
+    createdAt,
+    updatedAt,
+    tshirt,
+    costPerUnit,
+    receivals,
+    earliestTransaction,
+    latestTransaction
   }
 )
