@@ -97,11 +97,11 @@ export const assembleUpdateOrderTransactionStatements = (
     // CASES: Decreasing/Increasing PO item qty
     const amtRecvDelta = input.inventoryQtyDelta;
     const receivedAtDatetime = input.poItemReceivedDate ?? createdAtTimestamp;
-    const { newPOReceivals, earliestTShirtOrderDate } = amtRecvDelta < 0 ? 
+    const { newResponseTShirtOrder, earliestTShirtOrderDate } = amtRecvDelta < 0 ? 
       getDecreasePOItemStatement(responseTShirtOrder, amtRecvDelta) :
       getIncreasePOItemStatement(responseTShirtOrder, amtRecvDelta, receivedAtDatetime);
     
-    responseTShirtOrder.receivals = newPOReceivals;
+    responseTShirtOrder = newResponseTShirtOrder;
     
     return {
       updateTShirtOrderStatement: getUpdateTShirtOrderTablePartiQL(responseTShirtOrder),

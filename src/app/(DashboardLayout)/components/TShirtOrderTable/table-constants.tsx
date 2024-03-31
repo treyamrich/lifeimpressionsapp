@@ -14,7 +14,9 @@ export enum TShirtOrderFields {
   Qty = "quantity",
   AmtReceived = "amountReceived",
   CostPerUnit = "costPerUnit",
-  Receivals = "receivals"
+  Receivals = "receivals",
+  EarliestTransaction = "earliestTransaction",
+  LatestTransaction = "latestTransaction"
 }
 
 export const toTShirtOrderColumnHeaderMap = {
