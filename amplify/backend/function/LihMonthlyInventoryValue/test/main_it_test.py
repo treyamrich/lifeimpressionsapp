@@ -62,7 +62,6 @@ class TestMain(unittest.TestCase):
         res.aggregateValue = cum_val
         res.numUnsold = num_unsold
         res.inventoryQty = 0
-        res.earliestUnsold = self.iso_earliest_unsold
         return res
 
         

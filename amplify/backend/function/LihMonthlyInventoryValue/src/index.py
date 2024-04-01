@@ -438,7 +438,6 @@ class InventoryValueCache:
             lastItemValues {
                 aggregateValue
                 itemId
-                earliestUnsold
                 numUnsold
                 inventoryQty
                 poQueueHead

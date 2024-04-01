@@ -43,7 +43,6 @@ class TestCalculateInventoryValue(unittest.TestCase):
         res.aggregateValue=random.randint(0, 5), 
         res.numUnsold=random.randint(0, 5), 
         res.inventoryQty=inv_qty, 
-        res.earliestUnsold=self.iso_earliest_unsold
         return res
 
     def test_setting_inv_qty(self):

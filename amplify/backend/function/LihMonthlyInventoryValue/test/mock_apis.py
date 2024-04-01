@@ -115,13 +115,13 @@ def get_rand_mock_inventory_item_api(items = inv_items, num_pages = num_inv_page
 
 def get_mock_CO_resp(n = 10):
     mp = MockPagination(
-        gen_order_items_responses(OrderType.CustomerOrder, n), 1, Main.tshirtOrderByUpdatedAt.name
+        gen_order_items_responses(OrderType.CustomerOrder, n), 1, Main.tshirtTransactionQueues.name
     )
     return next(mp)
 
 def get_mock_PO_resp(n = 10):
     mp = MockPagination(
-        gen_order_items_responses(OrderType.PurchaseOrder, n), 1, Main.tshirtOrderByUpdatedAt.name
+        gen_order_items_responses(OrderType.PurchaseOrder, n), 1, Main.tshirtTransactionQueues.name
     )
     return next(mp)
 
