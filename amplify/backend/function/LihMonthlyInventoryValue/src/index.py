@@ -10,6 +10,7 @@ from requests_aws4auth import AWS4Auth
 import boto3
 import logging
 import heapq
+import threading
 
 # Dev stuff
 def load_env_vars(file_path):
@@ -109,7 +110,8 @@ class OrderItem:
         if self.amountReceived > 0 and not self.receivals:
             raise Exception('Missing or empty PO receivals when amt received > 0')
         if self.purchaseOrderOrderedItemsId:
-            self.receivals = [POReceival(**recv_data) for recv_data in self.receivals]
+            self.receivals = [POReceival(**recv_data) for recv_data in self.receivals] \
+                if self.receivals else []
 
 @dataclass
 class QueueItem:
@@ -592,7 +594,11 @@ class Main:
     ) -> InventoryValueCache:
         
         new_cache = InventoryValueCache(self.graphql_client, self.dynamodb_client, start_inclusive, INV_VAL_CACHE_TABLE_NAME)
-        for item in inventory:
+
+        lock = threading.Lock()
+        num_workers = os.cpu_count()
+
+        def worker(item: InventoryItem):
             v = self._get_unsold_items_value(
                 prev_cache[item.id], 
                 start_inclusive, 
@@ -602,7 +608,18 @@ class Main:
             v.tshirtColor = item.color
             v.tshirtSize = item.size
             v.tshirtStyleNumber = item.styleNumber
-            new_cache[item.id] = v
+            with lock:
+                new_cache[item.id] = v
+        
+        for i in range(0, len(inventory), num_workers):
+            items = inventory[i:i+num_workers]
+            threads = []
+            for item in items:
+                thread = threading.Thread(target=worker, args=(item,))
+                thread.start()
+                threads.append(thread)
+            for thread in threads:
+                thread.join()
 
         return new_cache
     
@@ -821,7 +838,6 @@ query TshirtTransactionQueues(
       }
       earliestTransaction
       latestTransaction
-      indexField
       updatedAt
       id
       createdAt
@@ -865,21 +881,3 @@ def handler(event, context):
     
     print('Run success for start inclusive: {} and end exclusive: {}'.format(s, e))
     return {"statusCode": 200}
-
-
-# a = GraphQLClient(use_api_key=True).make_request(
-#     Main.tshirtTransactionQueues,
-#     {
-#         "indexField": f'test',
-#         "sortDirection": Main.SORT_DIRECTION_ASC,
-#         "limit": Main.QUERY_PAGE_LIMIT,
-#         "earliestTransaction": {'lt': 'asdf'},
-#         "filter": {
-#             # NEED TO FILTER OUT 0 QUANTITY TRANSACTIONS
-#             "latestTransaction": {"ge": 'asdf'},
-#             "quantity": { "ne": 0},
-#         }
-#     },
-# )
-
-# print(a)
