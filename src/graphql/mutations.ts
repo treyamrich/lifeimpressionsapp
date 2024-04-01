@@ -102,13 +102,15 @@ export const createPurchaseOrder = /* GraphQL */ `mutation CreatePurchaseOrder(
           __typename
         }
         quantity
+        costPerUnit
         amountReceived
         receivals {
           timestamp
           quantity
           __typename
         }
-        costPerUnit
+        earliestTransaction
+        latestTransaction
         indexField
         updatedAt
         isDeleted
@@ -200,13 +202,15 @@ export const updatePurchaseOrder = /* GraphQL */ `mutation UpdatePurchaseOrder(
           __typename
         }
         quantity
+        costPerUnit
         amountReceived
         receivals {
           timestamp
           quantity
           __typename
         }
-        costPerUnit
+        earliestTransaction
+        latestTransaction
         indexField
         updatedAt
         isDeleted
@@ -298,13 +302,15 @@ export const deletePurchaseOrder = /* GraphQL */ `mutation DeletePurchaseOrder(
           __typename
         }
         quantity
+        costPerUnit
         amountReceived
         receivals {
           timestamp
           quantity
           __typename
         }
-        costPerUnit
+        earliestTransaction
+        latestTransaction
         indexField
         updatedAt
         isDeleted
@@ -511,13 +517,15 @@ export const createTShirtOrder = /* GraphQL */ `mutation CreateTShirtOrder(
       __typename
     }
     quantity
+    costPerUnit
     amountReceived
     receivals {
       timestamp
       quantity
       __typename
     }
-    costPerUnit
+    earliestTransaction
+    latestTransaction
     indexField
     updatedAt
     isDeleted
@@ -553,13 +561,15 @@ export const updateTShirtOrder = /* GraphQL */ `mutation UpdateTShirtOrder(
       __typename
     }
     quantity
+    costPerUnit
     amountReceived
     receivals {
       timestamp
       quantity
       __typename
     }
-    costPerUnit
+    earliestTransaction
+    latestTransaction
     indexField
     updatedAt
     isDeleted
@@ -595,13 +605,15 @@ export const deleteTShirtOrder = /* GraphQL */ `mutation DeleteTShirtOrder(
       __typename
     }
     quantity
+    costPerUnit
     amountReceived
     receivals {
       timestamp
       quantity
       __typename
     }
-    costPerUnit
+    earliestTransaction
+    latestTransaction
     indexField
     updatedAt
     isDeleted
@@ -643,13 +655,15 @@ export const createCustomerOrder = /* GraphQL */ `mutation CreateCustomerOrder(
           __typename
         }
         quantity
+        costPerUnit
         amountReceived
         receivals {
           timestamp
           quantity
           __typename
         }
-        costPerUnit
+        earliestTransaction
+        latestTransaction
         indexField
         updatedAt
         isDeleted
@@ -740,13 +754,15 @@ export const updateCustomerOrder = /* GraphQL */ `mutation UpdateCustomerOrder(
           __typename
         }
         quantity
+        costPerUnit
         amountReceived
         receivals {
           timestamp
           quantity
           __typename
         }
-        costPerUnit
+        earliestTransaction
+        latestTransaction
         indexField
         updatedAt
         isDeleted
@@ -837,13 +853,15 @@ export const deleteCustomerOrder = /* GraphQL */ `mutation DeleteCustomerOrder(
           __typename
         }
         quantity
+        costPerUnit
         amountReceived
         receivals {
           timestamp
           quantity
           __typename
         }
-        costPerUnit
+        earliestTransaction
+        latestTransaction
         indexField
         updatedAt
         isDeleted
@@ -919,7 +937,10 @@ export const createInventoryValueCache = /* GraphQL */ `mutation CreateInventory
       tshirtStyleNumber
       tshirtColor
       tshirtSize
-      earliestUnsold
+      poQueueHead
+      poQueueHeadQtyRemain
+      coQueueHead
+      coQueueHeadQtyRemain
       numUnsold
       inventoryQty
       __typename
@@ -944,7 +965,10 @@ export const updateInventoryValueCache = /* GraphQL */ `mutation UpdateInventory
       tshirtStyleNumber
       tshirtColor
       tshirtSize
-      earliestUnsold
+      poQueueHead
+      poQueueHeadQtyRemain
+      coQueueHead
+      coQueueHeadQtyRemain
       numUnsold
       inventoryQty
       __typename
@@ -969,7 +993,10 @@ export const deleteInventoryValueCache = /* GraphQL */ `mutation DeleteInventory
       tshirtStyleNumber
       tshirtColor
       tshirtSize
-      earliestUnsold
+      poQueueHead
+      poQueueHeadQtyRemain
+      coQueueHead
+      coQueueHeadQtyRemain
       numUnsold
       inventoryQty
       __typename

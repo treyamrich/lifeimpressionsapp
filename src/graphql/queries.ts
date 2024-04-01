@@ -121,13 +121,15 @@ export const getPurchaseOrder = /* GraphQL */ `query GetPurchaseOrder($id: ID!) 
           __typename
         }
         quantity
+        costPerUnit
         amountReceived
         receivals {
           timestamp
           quantity
           __typename
         }
-        costPerUnit
+        earliestTransaction
+        latestTransaction
         indexField
         updatedAt
         isDeleted
@@ -229,13 +231,15 @@ export const listPurchaseOrders = /* GraphQL */ `query ListPurchaseOrders(
             __typename
           }
           quantity
+          costPerUnit
           amountReceived
           receivals {
             timestamp
             quantity
             __typename
           }
-          costPerUnit
+          earliestTransaction
+          latestTransaction
           indexField
           updatedAt
           isDeleted
@@ -342,13 +346,15 @@ export const purchaseOrdersByCreatedAt = /* GraphQL */ `query PurchaseOrdersByCr
             __typename
           }
           quantity
+          costPerUnit
           amountReceived
           receivals {
             timestamp
             quantity
             __typename
           }
-          costPerUnit
+          earliestTransaction
+          latestTransaction
           indexField
           updatedAt
           isDeleted
@@ -572,13 +578,15 @@ export const getTShirtOrder = /* GraphQL */ `query GetTShirtOrder($id: ID!) {
       __typename
     }
     quantity
+    costPerUnit
     amountReceived
     receivals {
       timestamp
       quantity
       __typename
     }
-    costPerUnit
+    earliestTransaction
+    latestTransaction
     indexField
     updatedAt
     isDeleted
@@ -616,13 +624,15 @@ export const listTShirtOrders = /* GraphQL */ `query ListTShirtOrders(
         __typename
       }
       quantity
+      costPerUnit
       amountReceived
       receivals {
         timestamp
         quantity
         __typename
       }
-      costPerUnit
+      earliestTransaction
+      latestTransaction
       indexField
       updatedAt
       isDeleted
@@ -641,17 +651,17 @@ export const listTShirtOrders = /* GraphQL */ `query ListTShirtOrders(
   APITypes.ListTShirtOrdersQueryVariables,
   APITypes.ListTShirtOrdersQuery
 >;
-export const tshirtOrderByUpdatedAt = /* GraphQL */ `query TshirtOrderByUpdatedAt(
+export const tshirtTransactionQueues = /* GraphQL */ `query TshirtTransactionQueues(
   $indexField: String!
-  $updatedAt: ModelStringKeyConditionInput
+  $earliestTransaction: ModelStringKeyConditionInput
   $sortDirection: ModelSortDirection
   $filter: ModelTShirtOrderFilterInput
   $limit: Int
   $nextToken: String
 ) {
-  tshirtOrderByUpdatedAt(
+  tshirtTransactionQueues(
     indexField: $indexField
-    updatedAt: $updatedAt
+    earliestTransaction: $earliestTransaction
     sortDirection: $sortDirection
     filter: $filter
     limit: $limit
@@ -673,13 +683,15 @@ export const tshirtOrderByUpdatedAt = /* GraphQL */ `query TshirtOrderByUpdatedA
         __typename
       }
       quantity
+      costPerUnit
       amountReceived
       receivals {
         timestamp
         quantity
         __typename
       }
-      costPerUnit
+      earliestTransaction
+      latestTransaction
       indexField
       updatedAt
       isDeleted
@@ -695,8 +707,8 @@ export const tshirtOrderByUpdatedAt = /* GraphQL */ `query TshirtOrderByUpdatedA
   }
 }
 ` as GeneratedQuery<
-  APITypes.TshirtOrderByUpdatedAtQueryVariables,
-  APITypes.TshirtOrderByUpdatedAtQuery
+  APITypes.TshirtTransactionQueuesQueryVariables,
+  APITypes.TshirtTransactionQueuesQuery
 >;
 export const getCustomerOrder = /* GraphQL */ `query GetCustomerOrder($id: ID!) {
   getCustomerOrder(id: $id) {
@@ -721,13 +733,15 @@ export const getCustomerOrder = /* GraphQL */ `query GetCustomerOrder($id: ID!) 
           __typename
         }
         quantity
+        costPerUnit
         amountReceived
         receivals {
           timestamp
           quantity
           __typename
         }
-        costPerUnit
+        earliestTransaction
+        latestTransaction
         indexField
         updatedAt
         isDeleted
@@ -828,13 +842,15 @@ export const listCustomerOrders = /* GraphQL */ `query ListCustomerOrders(
             __typename
           }
           quantity
+          costPerUnit
           amountReceived
           receivals {
             timestamp
             quantity
             __typename
           }
-          costPerUnit
+          earliestTransaction
+          latestTransaction
           indexField
           updatedAt
           isDeleted
@@ -940,13 +956,15 @@ export const customerOrdersByCreatedAt = /* GraphQL */ `query CustomerOrdersByCr
             __typename
           }
           quantity
+          costPerUnit
           amountReceived
           receivals {
             timestamp
             quantity
             __typename
           }
-          costPerUnit
+          earliestTransaction
+          latestTransaction
           indexField
           updatedAt
           isDeleted
@@ -1022,7 +1040,10 @@ export const getInventoryValueCache = /* GraphQL */ `query GetInventoryValueCach
       tshirtStyleNumber
       tshirtColor
       tshirtSize
-      earliestUnsold
+      poQueueHead
+      poQueueHeadQtyRemain
+      coQueueHead
+      coQueueHeadQtyRemain
       numUnsold
       inventoryQty
       __typename
@@ -1057,7 +1078,10 @@ export const listInventoryValueCaches = /* GraphQL */ `query ListInventoryValueC
         tshirtStyleNumber
         tshirtColor
         tshirtSize
-        earliestUnsold
+        poQueueHead
+        poQueueHeadQtyRemain
+        coQueueHead
+        coQueueHeadQtyRemain
         numUnsold
         inventoryQty
         __typename

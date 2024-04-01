@@ -92,13 +92,15 @@ export const onCreatePurchaseOrder = /* GraphQL */ `subscription OnCreatePurchas
           __typename
         }
         quantity
+        costPerUnit
         amountReceived
         receivals {
           timestamp
           quantity
           __typename
         }
-        costPerUnit
+        earliestTransaction
+        latestTransaction
         indexField
         updatedAt
         isDeleted
@@ -189,13 +191,15 @@ export const onUpdatePurchaseOrder = /* GraphQL */ `subscription OnUpdatePurchas
           __typename
         }
         quantity
+        costPerUnit
         amountReceived
         receivals {
           timestamp
           quantity
           __typename
         }
-        costPerUnit
+        earliestTransaction
+        latestTransaction
         indexField
         updatedAt
         isDeleted
@@ -286,13 +290,15 @@ export const onDeletePurchaseOrder = /* GraphQL */ `subscription OnDeletePurchas
           __typename
         }
         quantity
+        costPerUnit
         amountReceived
         receivals {
           timestamp
           quantity
           __typename
         }
-        costPerUnit
+        earliestTransaction
+        latestTransaction
         indexField
         updatedAt
         isDeleted
@@ -495,13 +501,15 @@ export const onCreateTShirtOrder = /* GraphQL */ `subscription OnCreateTShirtOrd
       __typename
     }
     quantity
+    costPerUnit
     amountReceived
     receivals {
       timestamp
       quantity
       __typename
     }
-    costPerUnit
+    earliestTransaction
+    latestTransaction
     indexField
     updatedAt
     isDeleted
@@ -536,13 +544,15 @@ export const onUpdateTShirtOrder = /* GraphQL */ `subscription OnUpdateTShirtOrd
       __typename
     }
     quantity
+    costPerUnit
     amountReceived
     receivals {
       timestamp
       quantity
       __typename
     }
-    costPerUnit
+    earliestTransaction
+    latestTransaction
     indexField
     updatedAt
     isDeleted
@@ -577,13 +587,15 @@ export const onDeleteTShirtOrder = /* GraphQL */ `subscription OnDeleteTShirtOrd
       __typename
     }
     quantity
+    costPerUnit
     amountReceived
     receivals {
       timestamp
       quantity
       __typename
     }
-    costPerUnit
+    earliestTransaction
+    latestTransaction
     indexField
     updatedAt
     isDeleted
@@ -624,13 +636,15 @@ export const onCreateCustomerOrder = /* GraphQL */ `subscription OnCreateCustome
           __typename
         }
         quantity
+        costPerUnit
         amountReceived
         receivals {
           timestamp
           quantity
           __typename
         }
-        costPerUnit
+        earliestTransaction
+        latestTransaction
         indexField
         updatedAt
         isDeleted
@@ -720,13 +734,15 @@ export const onUpdateCustomerOrder = /* GraphQL */ `subscription OnUpdateCustome
           __typename
         }
         quantity
+        costPerUnit
         amountReceived
         receivals {
           timestamp
           quantity
           __typename
         }
-        costPerUnit
+        earliestTransaction
+        latestTransaction
         indexField
         updatedAt
         isDeleted
@@ -816,13 +832,15 @@ export const onDeleteCustomerOrder = /* GraphQL */ `subscription OnDeleteCustome
           __typename
         }
         quantity
+        costPerUnit
         amountReceived
         receivals {
           timestamp
           quantity
           __typename
         }
-        costPerUnit
+        earliestTransaction
+        latestTransaction
         indexField
         updatedAt
         isDeleted
@@ -897,7 +915,10 @@ export const onCreateInventoryValueCache = /* GraphQL */ `subscription OnCreateI
       tshirtStyleNumber
       tshirtColor
       tshirtSize
-      earliestUnsold
+      poQueueHead
+      poQueueHeadQtyRemain
+      coQueueHead
+      coQueueHeadQtyRemain
       numUnsold
       inventoryQty
       __typename
@@ -921,7 +942,10 @@ export const onUpdateInventoryValueCache = /* GraphQL */ `subscription OnUpdateI
       tshirtStyleNumber
       tshirtColor
       tshirtSize
-      earliestUnsold
+      poQueueHead
+      poQueueHeadQtyRemain
+      coQueueHead
+      coQueueHeadQtyRemain
       numUnsold
       inventoryQty
       __typename
@@ -945,7 +969,10 @@ export const onDeleteInventoryValueCache = /* GraphQL */ `subscription OnDeleteI
       tshirtStyleNumber
       tshirtColor
       tshirtSize
-      earliestUnsold
+      poQueueHead
+      poQueueHeadQtyRemain
+      coQueueHead
+      coQueueHeadQtyRemain
       numUnsold
       inventoryQty
       __typename
