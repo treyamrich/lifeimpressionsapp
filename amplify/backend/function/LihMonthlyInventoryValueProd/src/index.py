@@ -746,12 +746,12 @@ class Main:
             end_exclusive
         )
         co_item, po_item = get(co_it), get(po_it)
-        if prev_item_val.poQueueHeadQtyRemain:
+        if po_item and prev_item_val.poQueueHeadQtyRemain:
             po_item.qty = prev_item_val.poQueueHeadQtyRemain
-        if prev_item_val.coQueueHeadQtyRemain:
+        if co_item and  prev_item_val.coQueueHeadQtyRemain:
             co_item.qty = prev_item_val.coQueueHeadQtyRemain
 
-        while co_item and  po_item:
+        while co_item and po_item:
             remainder = po_item.qty - co_item.qty
             if remainder == 0:
                 co_item, po_item = get(co_it), get(po_it)

@@ -21,7 +21,7 @@ class TestUnsoldItemsValue(unittest.TestCase):
         self.main = Main(self.mock_graphql_client, MagicMock())
         self.initial_item_value = 10
         
-        v = InventoryItemValue('some_id')
+        v = InventoryItemValue('some_id', poQueueHeadQtyRemain=2)
         v.aggregateValue = self.initial_item_value
         self.initial_cache_val = v
 
@@ -45,9 +45,9 @@ class TestUnsoldItemsValue(unittest.TestCase):
         expected_po_head = 'PO_HEAD'
         data = self._transform_data([
             (OrderType.CustomerOrder, 10, 0, ''), # i = 0; Expect 0
-            (OrderType.PurchaseOrder, 3, 5.12, ''), # i = 1; Expect 0
+            (OrderType.PurchaseOrder, 3, 5.12, ''), # i = 1; Expect 0; PO Queue Head Remaining = 2
             (OrderType.CustomerOrder, 5, 0, ''), # i = 2; Expect 0
-            (OrderType.PurchaseOrder, 24, 20.12, expected_po_head), # i = 3; Expect $(12 x 20.12) = $241.44
+            (OrderType.PurchaseOrder, 25, 20.12, expected_po_head), # i = 3; Expect $(12 x 20.12) = $241.44
             (OrderType.CustomerOrder, 5, 0, ''), # i = 4; Expect $(7 x 20.12) = $140.84
         ])
         expected = InventoryItemValue(
@@ -78,19 +78,19 @@ class TestUnsoldItemsValue(unittest.TestCase):
     def test_over_sold_item(self):
         expected_co_head = 'CO_HEAD'
         data = self._transform_data([
-            (OrderType.PurchaseOrder, 10, 22, ''),
-            (OrderType.CustomerOrder, 3, 33, ''),
+            (OrderType.PurchaseOrder, 10, 22, ''), # PO Queue Head Remaining = 2
+            (OrderType.CustomerOrder, 3, 33, expected_co_head),
             (OrderType.CustomerOrder, 5, 4, ''),
-            (OrderType.CustomerOrder, 5, 5, expected_co_head),
+            (OrderType.CustomerOrder, 5, 5, ''),
             (OrderType.CustomerOrder, 5, 1, ''),
         ])
         expected = InventoryItemValue(
             itemId = self.initial_cache_val.itemId,
             aggregateValue = self.initial_cache_val.aggregateValue,
-            numUnsold = -8,
+            numUnsold = -16,
             poQueueHead = self.end_exclusive_str,
             coQueueHead = expected_co_head,
-            coQueueHeadQtyRemain = 3,
+            coQueueHeadQtyRemain = 1,
             poQueueHeadQtyRemain = 0
         )
         unsold_value = self._call_get_unsold_items_value(data)
@@ -101,8 +101,8 @@ class TestUnsoldItemsValue(unittest.TestCase):
         data = self._transform_data([
             (OrderType.CustomerOrder, 3, 0, ''),  # i = 0; Sold 3; Expect: $0
             (OrderType.CustomerOrder, 3, 0, ''),  # i = 1; Sold 3; Expect: $0
-            (OrderType.PurchaseOrder, 5, 10, ''),  # i = 2; Bought 5; Expect $0
-            (OrderType.PurchaseOrder, 5, 2, expected_po_head),  # i = 3; Bought 1; Expect $(4 x 2) = $8
+            (OrderType.PurchaseOrder, 5, 10, ''),  # i = 2; Bought 5; Expect $0; PO Queue Head Remaining = 2
+            (OrderType.PurchaseOrder, 8, 2, expected_po_head),  # i = 3; Bought 1; Expect $(4 x 2) = $8
             (OrderType.PurchaseOrder, 2, 20, ''),  # i = 4; Bought 2; Expect: $(4 x 2) +  $(2 x 20) = $48
             (OrderType.CustomerOrder, 3, 0, ''), # i = 5; Sold 3; Expect $(1 x 2) + (2 x 20) = $42
         ])

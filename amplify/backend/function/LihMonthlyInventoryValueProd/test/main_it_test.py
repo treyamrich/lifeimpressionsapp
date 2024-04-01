@@ -222,13 +222,15 @@ class TestMain(unittest.TestCase):
         item5_data = [
             (OrderType.PurchaseOrder, 10, 20) # Expect $200 + $4
         ]
+
+        items6_empty_case_data = []
         
         expected_cache_item_vals = [140.84, 223, 2, 258, 204]
         expected_num_unsolds = [7, 4, -9, 85, 10]
         
         order_items_resps = list(map(
             lambda d: mock_apis.mock_get_order_item_iterators(self._transform_data(d)), 
-            [item1_data, item2_data, item3_data, item4_data, item5_data]
+            [item1_data, item2_data, item3_data, item4_data, item5_data, items6_empty_case_data]
         ))
         resps = [cache_expir_resp, expected_initial_cache] + inv_resp
         write_cache_expiration_resp = {}

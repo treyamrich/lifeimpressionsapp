@@ -171,6 +171,6 @@ def mock_get_order_item_iterators(partial_queue_items: Iterable[dict]):
     
     def get_mock_it(t: OrderType):
         filtered = filter(lambda x: x['order_type'] == t, partial_queue_items)
-        return map(lambda x: get_queue_item(**x), filtered)
+        return map(lambda x: get_queue_item(**x), filtered) if partial_queue_items else iter([])
 
     return get_mock_it(OrderType.CustomerOrder), get_mock_it(OrderType.PurchaseOrder)
