@@ -62,7 +62,6 @@ class TestMain(unittest.TestCase):
         res.aggregateValue = cum_val
         res.numUnsold = num_unsold
         res.inventoryQty = 0
-        res.earliestUnsold = self.iso_earliest_unsold
         return res
 
         
@@ -195,13 +194,8 @@ class TestMain(unittest.TestCase):
             'updatedAt': '1970-01-01T00:00:00Z'
         }
 
-        # List Order Item
-        def exhaust_mock_api_iterator(data):
-            data = self._transform_data(data)
-            num_pages = 1
-            return [x for x in mock_apis.get_predictable_mock_order_item_api(data, num_pages)]
-        
-        data_1 = [
+        # List Order Item Iterators
+        item1_data = [
             (OrderType.CustomerOrder, 10, 0), # i = 0; Expect 0
             (OrderType.PurchaseOrder, 3, 5.12), # i = 1; Expect 0
             (OrderType.CustomerOrder, 5, 0), # i = 2; Expect 0
@@ -209,37 +203,40 @@ class TestMain(unittest.TestCase):
             (OrderType.CustomerOrder, 5, 0), # i = 4; Expect $(7 x 20) = $140 + 0
         ]
         
-        data_2 = [
+        item2_data = [
             (OrderType.PurchaseOrder, 10, 55.5),
             (OrderType.CustomerOrder, 6, 0) # Expect 4 x 55.5 = $222 + $1
         ]
         
-        data_3 = [
+        item3_data = [
             (OrderType.CustomerOrder, 10, 0),
             (OrderType.PurchaseOrder, 1, 5) #Expect $0 + $2
         ]
         
-        data_4 = [
+        item4_data = [
             (OrderType.CustomerOrder, 10, 0),
             (OrderType.CustomerOrder, 5, 0),
             (OrderType.PurchaseOrder, 100, 3) # Expect 85 x 3 = $255 + 3
         ]
         
-        data_5 = [
+        item5_data = [
             (OrderType.PurchaseOrder, 10, 20) # Expect $200 + $4
         ]
         
         expected_cache_item_vals = [140.84, 223, 2, 258, 204]
         expected_num_unsolds = [7, 4, -9, 85, 10]
         
-        order_items = list(map(
-            lambda d: exhaust_mock_api_iterator(d)[0], 
-            [data_1, data_2, data_3, data_4, data_5]
+        order_items_resps = list(map(
+            lambda d: mock_apis.mock_get_order_item_iterators(self._transform_data(d)), 
+            [item1_data, item2_data, item3_data, item4_data, item5_data]
         ))
         resps = [cache_expir_resp, expected_initial_cache] + inv_resp
-        resps.extend(order_items)
         write_cache_expiration_resp = {}
         resps.append(write_cache_expiration_resp)
+
+        mock = MagicMock()
+        mock.side_effect = order_items_resps
+        self.main._get_order_items_iterators = mock
 
         self.mock_graphql_client.make_request.side_effect = resps
         
