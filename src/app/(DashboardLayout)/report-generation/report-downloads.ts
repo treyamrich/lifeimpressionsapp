@@ -169,7 +169,7 @@ export const downloadInventoryValueCSV = (
 
   let rows = lastItemValues.map((itemValue: LastItemValue) => ({
     ...itemValue,
-    earliestUnsold: toReadableDateTime(itemValue.earliestUnsold),
+    earliestUnsold: toReadableDateTime(itemValue.poQueueHead),
   }));
 
   let headers: CSVHeader[] = [
