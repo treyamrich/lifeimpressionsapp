@@ -40,10 +40,6 @@ class TestListOrderItems(unittest.TestCase):
         for i, po in enumerate(POs):
             next_po = POs[i+1] if i < len(POs)-1 else po
             self.assertTrue(po.iso_dt <= next_po.iso_dt)
-        
-        # TEST THAT THE FILTERS ARE CORRECT
-
-
 
     def test_empty_response(self):
         co_resp = mock_apis.get_mock_CO_resp(0)

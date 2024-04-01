@@ -98,23 +98,5 @@
       "providerPlugin": "awscloudformation",
       "service": "Lambda"
     }
-  },
-  "parameters": {
-    "AMPLIFY_function_LihMonthlyInventoryValue_deploymentBucketName": {
-      "usedBy": [
-        {
-          "category": "function",
-          "resourceName": "LihMonthlyInventoryValue"
-        }
-      ]
-    },
-    "AMPLIFY_function_LihMonthlyInventoryValue_s3Key": {
-      "usedBy": [
-        {
-          "category": "function",
-          "resourceName": "LihMonthlyInventoryValue"
-        }
-      ]
-    }
   }
 }
