@@ -3,7 +3,9 @@ import {
   IconUsersGroup,
   IconReceipt,
   IconBox,
-  IconChecklist
+  IconChecklist,
+  IconCubePlus,
+  IconClipboardPlus
 } from "@tabler/icons-react";
 
 import { uniqueId } from "lodash";
@@ -27,9 +29,29 @@ const Menuitems = [
   },
   {
     id: uniqueId(),
+    title: "Report Generation",
+    icon: IconReceipt,
+    href: "/report-generation",
+  },
+  {
+    navlabel: true,
+    subheader: "Purchase Orders",
+  },
+  {
+    id: uniqueId(),
     title: "Purchase Orders",
     icon: IconBox,
     href: "/purchase-orders",
+  },
+  {
+    id: uniqueId(),
+    title: "Add Purchase Order",
+    icon: IconCubePlus,
+    href: "/purchase-orders/create"
+  },
+  {
+    navlabel: true,
+    subheader: "Customer Orders",
   },
   {
     id: uniqueId(),
@@ -39,9 +61,9 @@ const Menuitems = [
   },
   {
     id: uniqueId(),
-    title: "Report Generation",
-    icon: IconReceipt,
-    href: "/report-generation",
+    title: "Add Customer Order",
+    icon: IconClipboardPlus,
+    href: "/customer-orders/create"
   },
   // {
   //   navlabel: true,
