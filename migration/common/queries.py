@@ -13,6 +13,17 @@ query ListTShirtOrders(
         id
         tShirtOrderTshirtId
         indexField
+        amountReceived
+        purchaseOrderOrderedItemsId
+        customerOrderOrderedItemsId
+        earliestTransaction
+        latestTransaction
+        createdAt
+        receivals {
+          __typename
+          quantity
+          timestamp
+        }
       }
       nextToken
     }

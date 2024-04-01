@@ -168,13 +168,14 @@ class DynamoDBClient:
             items
         )
         
-    def execute_statement(self, statement, parameters=None, next_token=None):
+    def execute_statement(self, statement, parameters=None, next_token=None, limit=None):
         params = {'Statement': statement}
         def add_if_not_none(k, v):
             if v:
                 params[k] = v
         add_if_not_none('Parameters', parameters)
         add_if_not_none('NextToken', next_token)
+        add_if_not_none('Limit', limit)
         return self.client.execute_statement(**params)
         
         
@@ -193,7 +194,7 @@ class DynamoDBPaginationIterator:
         self._statement = "\n".join([
             f'SELECT {", ".join(cols)}',
             f'FROM "{table_name}"',
-            *([query_where_clause] if query_where_clause else [])
+            *([query_where_clause] if query_where_clause else []),
         ])
         self._page = []
         self._next_token = None
@@ -221,7 +222,7 @@ class DynamoDBPaginationIterator:
         return item
 
     def _get_next_page(self):
-        resp = self._dynamodb_client.execute_statement(self._statement, self._statement_parameters)
+        resp = self._dynamodb_client.execute_statement(self._statement, self._statement_parameters, limit=100, next_token=self._next_token)
         self._page, self._next_token = [self._from_attr_vals(x) for x in resp["Items"]], resp.get("NextToken", None)
         self._idx = 0
         
