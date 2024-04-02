@@ -61,6 +61,44 @@ export const listTShirts = /* GraphQL */ `query ListTShirts(
   APITypes.ListTShirtsQueryVariables,
   APITypes.ListTShirtsQuery
 >;
+export const tshirtsByStyleNumber = /* GraphQL */ `query TshirtsByStyleNumber(
+  $styleNumber: String!
+  $quantityOnHand: ModelIntKeyConditionInput
+  $sortDirection: ModelSortDirection
+  $filter: ModelTShirtFilterInput
+  $limit: Int
+  $nextToken: String
+) {
+  tshirtsByStyleNumber(
+    styleNumber: $styleNumber
+    quantityOnHand: $quantityOnHand
+    sortDirection: $sortDirection
+    filter: $filter
+    limit: $limit
+    nextToken: $nextToken
+  ) {
+    items {
+      id
+      styleNumber
+      brand
+      color
+      size
+      type
+      quantityOnHand
+      isDeleted
+      indexField
+      createdAt
+      updatedAt
+      __typename
+    }
+    nextToken
+    __typename
+  }
+}
+` as GeneratedQuery<
+  APITypes.TshirtsByStyleNumberQueryVariables,
+  APITypes.TshirtsByStyleNumberQuery
+>;
 export const tshirtsByQty = /* GraphQL */ `query TshirtsByQty(
   $indexField: String!
   $quantityOnHand: ModelIntKeyConditionInput

@@ -15,7 +15,7 @@ const TableInfoHeader = ({ subheaderText }: { subheaderText: string }) => {
           <ListItemText primary="By default, the first 100 records will be loaded into the table." />
         </ListItem>
         <ListItem style={{ paddingTop: 0, paddingBottom: 0 }} key="item-1">
-          <ListItemText primary="Press the load more button to load records into the table." />
+          <ListItemText primary='If the "Load More" button is green your results are incomplete.' />
         </ListItem>
         <ListItem style={{ paddingTop: 0, paddingBottom: 0 }}>
           <ListItemText

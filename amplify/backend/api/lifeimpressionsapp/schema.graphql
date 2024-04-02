@@ -3,7 +3,7 @@ type TShirt @model @auth(rules: [
   { allow: public, provider: iam, operations: [read]},
   { allow: public, provider: apiKey, operations: [read]}]) {
   id: ID! @primaryKey
-  styleNumber: String!
+  styleNumber: String! @index(name: "tshirtsByStyleNumber", queryField: "tshirtsByStyleNumber", sortKeyFields: ["quantityOnHand"])
   brand: String!
   color: String!
   size: TShirtSize!
