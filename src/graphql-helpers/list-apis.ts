@@ -23,12 +23,11 @@ import {
   orderChangesByCreatedAt,
   purchaseOrdersByCreatedAt,
   tshirtsByQty,
+  tshirtsByStyleNumber
 } from "@/graphql/queries";
 import { configuredAuthMode } from "./auth-mode";
 import { GraphQLOptions, GraphQLResult } from "@aws-amplify/api-graphql";
 import { ListAPIInput, ListAPIResponse, Query } from "./types";
-import { OrderMinInfo } from "@/my-graphql-queries/types";
-
 
 const PAGINATION_LIMIT = 100;
 
@@ -104,13 +103,20 @@ async function listAPI<F, Q, R>(
 };
 
 export const listTShirtAPI = async (
-  input: ListAPIInput<ModelTShirtFilterInput>
+  input: ListAPIInput<ModelTShirtFilterInput>,
+  queryColumn?: "byStyleNumber" | "byQty"
 ): Promise<ListAPIResponse<TShirt>> => {
-  const q: Query = { name: 'tshirtsByQty', query: tshirtsByQty };
-  const v = {
-    sortDirection: input.sortDirection,
-    indexField: "TShirtIndexField" // Required to access 2nd index
-  };
+  let q: Query;
+  let v: any = { sortDirection: input.sortDirection }
+
+  if (queryColumn === "byStyleNumber") {
+    q = { name: 'tshirtsByStyleNumber', query: tshirtsByStyleNumber };
+    v = {...v, styleNumber: input.indexPartitionKey };
+  } else {
+    q = { name: 'tshirtsByQty', query: tshirtsByQty };
+    v = {...v, indexField: "TShirtIndexField" };
+  }
+    
   return await listAPI<ModelTShirtFilterInput, TshirtsByQtyQuery, TShirt>(
     input,
     q,

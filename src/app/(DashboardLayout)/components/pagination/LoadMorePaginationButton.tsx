@@ -14,6 +14,10 @@ export type LoadMorePaginationButtonProps<T> = {
   filterDuplicates?: {
     getHashkey: (obj: T) => string;
   }
+  updatedFetchFn?: {
+    updated: boolean;
+    setUpdated: React.Dispatch<SetStateAction<boolean>>;
+  }
   setIsLoading?: React.Dispatch<SetStateAction<boolean>>;
 };
 
@@ -22,7 +26,8 @@ function LoadMorePaginationButton<T>({
   setItems,
   fetchFunc,
   setIsLoading,
-  filterDuplicates
+  filterDuplicates,
+  updatedFetchFn
 }: LoadMorePaginationButtonProps<T>) {
   const { rescueDBOperation } = useDBOperationContext();
   const [nextToken, setNextToken] = useState<string | undefined | null>(
@@ -42,38 +47,50 @@ function LoadMorePaginationButton<T>({
     return filteredResults;
   }
 
-  const handleLoadMore = () => {
+  const handleLoadMore = (expireNextToken = false) => {
     if(setIsLoading) setIsLoading(true);
+    let token = expireNextToken ? undefined : nextToken;
 
     rescueDBOperation(
-      () => fetchFunc(nextToken),
+      () => fetchFunc(token),
       DBOperation.LIST,
       (resp: ListAPIResponse<T>) => {
         let newRes = resp.result;
-        
-        if(filterDuplicates) {
-          newRes = _filterDuplicates(newRes)
+
+        if (expireNextToken) {
+          setItems(newRes);
+        } 
+        else {
+          if(filterDuplicates) {
+            newRes = _filterDuplicates(newRes)
+          }
+          setItems(items.concat(newRes));
         }
 
-        setItems(items.concat(newRes));
         setNextToken(resp.nextToken);
-
         if(setIsLoading) setIsLoading(false);
       }
     );
   };
 
   // Fetch first page
+  const depArr = updatedFetchFn ? [updatedFetchFn.updated] : [];
   useEffect(() => {
-    handleLoadMore();
-  }, []);
+    if (updatedFetchFn && updatedFetchFn.updated) {
+      setNextToken(undefined);
+      handleLoadMore(true);
+      updatedFetchFn.setUpdated(false);
+    } else if(!updatedFetchFn) {
+      handleLoadMore();
+    }
+  }, depArr);
 
   return (
     <Tooltip title="Loads more table items">
       <span>
         <IconButton
           disabled={!nextToken}
-          onClick={handleLoadMore}
+          onClick={() => handleLoadMore()}
           color="success"
           size="small"
         >

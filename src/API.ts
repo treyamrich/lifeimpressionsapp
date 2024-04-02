@@ -1987,6 +1987,36 @@ export type ListTShirtsQuery = {
   } | null,
 };
 
+export type TshirtsByStyleNumberQueryVariables = {
+  styleNumber: string,
+  quantityOnHand?: ModelIntKeyConditionInput | null,
+  sortDirection?: ModelSortDirection | null,
+  filter?: ModelTShirtFilterInput | null,
+  limit?: number | null,
+  nextToken?: string | null,
+};
+
+export type TshirtsByStyleNumberQuery = {
+  tshirtsByStyleNumber?:  {
+    __typename: "ModelTShirtConnection",
+    items:  Array< {
+      __typename: "TShirt",
+      id: string,
+      styleNumber: string,
+      brand: string,
+      color: string,
+      size: TShirtSize,
+      type: TShirtType,
+      quantityOnHand: number,
+      isDeleted?: boolean | null,
+      indexField?: string | null,
+      createdAt: string,
+      updatedAt: string,
+    } | null >,
+    nextToken?: string | null,
+  } | null,
+};
+
 export type TshirtsByQtyQueryVariables = {
   indexField: string,
   quantityOnHand?: ModelIntKeyConditionInput | null,

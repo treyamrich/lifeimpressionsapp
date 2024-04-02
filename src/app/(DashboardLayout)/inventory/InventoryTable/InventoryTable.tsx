@@ -17,7 +17,7 @@ import {
   MaterialReactTable,
   type MRT_ColumnDef,
   type MRT_Row,
-  type MRT_ColumnFiltersState,
+  type MRT_ColumnFiltersState
 } from "material-react-table";
 import CreateTShirtModal from "./CreateTShirtModal";
 import TableToolbar from "../../components/Table/TableToolbar";
@@ -37,6 +37,7 @@ import React, {
   useState,
   useCallback,
   SetStateAction,
+  useEffect
 } from "react";
 import { downloadInventoryCSV, fetchAllNonDeletedTShirts } from "../util";
 
@@ -56,10 +57,22 @@ const InventoryTable = ({
   isLoading: boolean;
   setIsLoading: React.Dispatch<SetStateAction<boolean>>;
 }) => {
+
+  const fetchTShirtsNoFilterFn = (nextToken: string | null | undefined) => {
+    const deletedFilter = { isDeleted: { ne: true } };
+    return listTShirtAPI({ filters: deletedFilter, nextToken: nextToken });
+  };
+
+  const fetchTShirtsByStyleNumberFn = (styleNo: string) => {
+    const deletedFilter = { isDeleted: { ne: true } };
+    return (nextToken: string | null | undefined) => listTShirtAPI(
+      { filters: deletedFilter, nextToken: nextToken, indexPartitionKey: styleNo, doCompletePagination: true}, "byStyleNumber")
+  }
+
   const { rescueDBOperation } = useDBOperationContext();
   const { user, refreshSession } = useAuthContext();
   const [createModalOpen, setCreateModalOpen] = useState<boolean>(false);
-
+  const [updatedFetchFn, setUpdatedFetchFn] = useState(false);
   const [editRowState, setEditRowState] = useState<EditRowState>({
     showEditPopup: false,
     row: undefined,
@@ -68,6 +81,7 @@ const InventoryTable = ({
   const [columnFilters, setColumnFilters] = useState<MRT_ColumnFiltersState>(
     []
   );
+  const [styleNoFilter, setStyleNoFilter] = useState('');
 
   const closeEditModal = () =>
     setEditRowState({ row: undefined, showEditPopup: false });
@@ -141,10 +155,26 @@ const InventoryTable = ({
 
   const columns = useMemo<MRT_ColumnDef<TShirt>[]>(() => getTableColumns(), []);
 
-  const fetchTShirtsPaginationFn = (nextToken: string | null | undefined) => {
-    const deletedFilter = { isDeleted: { ne: true } };
-    return listTShirtAPI({ filters: deletedFilter, nextToken: nextToken });
-  };
+  const fetchTShirtsPaginationFn = useMemo(() => {
+    setUpdatedFetchFn(true);
+    if (styleNoFilter !== '') {
+      return fetchTShirtsByStyleNumberFn(styleNoFilter);
+    }
+    return fetchTShirtsNoFilterFn;
+  }, [styleNoFilter])
+
+  const handleColFiltersChange = () => {
+    let idx = columnFilters.findIndex((x: any) => x.id === 'styleNumber')
+    if (idx >= 0) {
+      setStyleNoFilter(columnFilters[idx].value as string);
+    } else {
+      setStyleNoFilter('');
+    }
+  }
+
+  useEffect(() => {
+    handleColFiltersChange();
+  }, [columnFilters])
 
   return (
     <BlankCard>
@@ -170,8 +200,8 @@ const InventoryTable = ({
                   desc: false,
                 },
               ],
+              pagination: { pageIndex: 0, pageSize: 25 }
             }}
-            enableColumnOrdering
             onColumnFiltersChange={setColumnFilters}
             state={{
               columnFilters,
@@ -184,6 +214,13 @@ const InventoryTable = ({
               },
             })}
             enableEditing
+            enableColumnOrdering
+            enableGlobalFilter={false}
+            filterFns={{
+              noOpFilterFn: (row, id, filterValue) => {
+                return true;
+              },
+            }}
             renderRowActions={({ row, table }) => (
               <TableRowActions
                 onEdit={() =>
@@ -204,6 +241,7 @@ const InventoryTable = ({
                   filterDuplicates: {
                     getHashkey: (tshirt: TShirt) => tshirt.id,
                   },
+                  updatedFetchFn: { updated: updatedFetchFn, setUpdated: setUpdatedFetchFn }
                 }}
                 addButton={{
                   onAdd: () => setCreateModalOpen(true),

@@ -81,11 +81,13 @@ export const getTableColumns = (): MRT_ColumnDef<TShirt>[] => {
       header: toTShirtColumnHeaderMap[TShirtFields.StyleNumber],
       muiTableHeadCellProps: { sx: { color: "green" } }, //custom props
       enableEditing: false,
+      filterFn: 'noOpFilterFn'
     } as MRT_ColumnDef<TShirt>,
     {
       accessorKey: TShirtFields.QtyOnHand,
       header: toTShirtColumnHeaderMap[TShirtFields.QtyOnHand],
       size: 50,
+      filterFn: 'equals'
     } as MRT_ColumnDef<TShirt>,
     {
       accessorKey: TShirtFields.Color,
