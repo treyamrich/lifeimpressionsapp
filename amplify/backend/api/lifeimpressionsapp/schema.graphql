@@ -125,7 +125,7 @@ type CustomerOrder @model @auth(rules: [
   { allow: public, provider: apiKey, operations: [read]}]) {
   id: ID! @primaryKey
 
-  customerName: String!
+  customerName: String! @index(name: "customerOrderByCustomerName", queryField: "customerOrderByCustomerName")
   customerEmail: AWSEmail
   customerPhoneNumber: AWSPhone
 
