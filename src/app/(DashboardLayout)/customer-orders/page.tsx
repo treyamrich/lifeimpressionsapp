@@ -1,22 +1,29 @@
 "use client";
 
-import { CustomerOrder, CustomerOrderStatus, ModelSortDirection } from "@/API";
-import React, { useState } from "react";
+import { CustomerOrder, ModelSortDirection } from "@/API";
+import React, { useState, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { listCustomerOrderAPI } from "@/graphql-helpers/list-apis";
 
 import {
   columnInfo,
   getTableColumns,
-  coStatusToHeaderMap,
 } from "./table-constants";
-import { type MRT_Row } from "material-react-table";
+import { 
+  type MRT_Row, 
+  type MRT_ColumnFiltersState 
+} from "material-react-table";
 import OrderViewAddPage from "../components/po-customer-order-shared-components/ViewOrdersPage";
 import { EntityType } from "../components/po-customer-order-shared-components/CreateOrderPage";
 
 const CustomerOrders = () => {
   const { push } = useRouter();
   const [tableData, setTableData] = useState<CustomerOrder[]>([]);
+  const [columnFilters, setColumnFilters] = useState<MRT_ColumnFiltersState>(
+    []
+  );
+  const [didUpdateFetchFn, setDidUpdateFetchFn] = useState(false);
+  const [customerNameFilter, setCustomerNameFilter] = useState('');
 
   const handleRowClick = (row: MRT_Row<CustomerOrder>) => {
     const orderId = row.getValue("id");
@@ -24,7 +31,7 @@ const CustomerOrders = () => {
   };
   const handleAddRow = () => push("/customer-orders/create");
 
-  const fetchCustomerOrdersPaginationFn = (
+  const fetchCustomerOrdersNoFilterFn = (
     nextToken: string | null | undefined
   ) => {
     const deletedFilter = { isDeleted: { ne: true } };
@@ -35,8 +42,39 @@ const CustomerOrders = () => {
     });
   };
 
-  return (
+  const fetchCustomerOrdersByCustomerNameFn = (customerName: string) => {
+    const deletedFilter = { isDeleted: { ne: true }};
+    return (nextToken: string | null | undefined) => listCustomerOrderAPI({
+      filters: deletedFilter,
+      doCompletePagination: true,
+      nextToken,
+      indexPartitionKey: customerName
+    },
+    "byCustomerName");
+  }
 
+  const fetchOrdersPaginationFn = useMemo(() => {
+    setDidUpdateFetchFn(true);
+    if (customerNameFilter !== '') {
+      return fetchCustomerOrdersByCustomerNameFn(customerNameFilter);
+    }
+    return fetchCustomerOrdersNoFilterFn;
+  }, [customerNameFilter]);
+
+  const handleColFiltersChange = () => {
+    let idx = columnFilters.findIndex((x: any) => x.id === 'customerName')
+    if (idx >= 0) {
+      setCustomerNameFilter(columnFilters[idx].value as string);
+    } else {
+      setCustomerNameFilter('');
+    }
+  }
+
+  useEffect(() => {
+    handleColFiltersChange();
+  }, [columnFilters])
+
+  return (
     <OrderViewAddPage
       tableData={tableData}
       setTableData={setTableData}
@@ -46,8 +84,9 @@ const CustomerOrders = () => {
       entityType={EntityType.CustomerOrder}
       getTableColumns={getTableColumns}
       columnInfo={columnInfo}
-
-      fetchOrdersPaginationFn={fetchCustomerOrdersPaginationFn}
+      columnFiltersState={{ columnFilters, setColumnFilters }}
+      fetchOrdersPaginationFn={fetchOrdersPaginationFn}
+      didUpdateFetchFnState={{ updated: didUpdateFetchFn, setUpdated: setDidUpdateFetchFn }}
     />
   );
 };

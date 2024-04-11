@@ -11,6 +11,7 @@ import {
 } from "./table-constants";
 import {
   type MRT_Row,
+  type MRT_ColumnFiltersState
 } from "material-react-table";
 import OrderViewAddPage from "../components/po-customer-order-shared-components/ViewOrdersPage";
 import { EntityType } from "../components/po-customer-order-shared-components/CreateOrderPage";
@@ -18,6 +19,9 @@ import { EntityType } from "../components/po-customer-order-shared-components/Cr
 const PurchaseOrders = () => {
   const { push } = useRouter();
   const [tableData, setTableData] = useState<PurchaseOrder[]>([]);
+  const [columnFilters, setColumnFilters] = useState<MRT_ColumnFiltersState>(
+    []
+  );
 
   const handleRowClick = (row: MRT_Row<PurchaseOrder>) => {
     const poId = row.getValue('id')
@@ -46,7 +50,7 @@ const PurchaseOrders = () => {
       entityType={EntityType.PurchaseOrder}
       getTableColumns={getTableColumns}
       columnInfo={columnInfo}
-
+      columnFiltersState={{ columnFilters, setColumnFilters }}
       fetchOrdersPaginationFn={fetchPurchaseOrdersPaginationFn}
     />
   )

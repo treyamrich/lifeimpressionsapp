@@ -44,13 +44,6 @@ export const getTableColumns = (): MRT_ColumnDef<CustomerOrder>[] => {
       muiTableHeadCellProps: { sx: { color: "green" } }, //custom props
     } as MRT_ColumnDef<CustomerOrder>,
     {
-      accessorKey: "dateNeededBy",
-      header: "Date Needed",
-      Cell: ({ renderedCellValue, row }) => (
-        <span>{toReadableDateTime(row.original.dateNeededBy)}</span>
-      ),
-    } as MRT_ColumnDef<CustomerOrder>,
-    {
       accessorKey: "orderStatus",
       header: "Status",
       Cell: ({ renderedCellValue, row }) => (
@@ -82,6 +75,7 @@ export const getTableColumns = (): MRT_ColumnDef<CustomerOrder>[] => {
     {
       accessorKey: "customerName",
       header: "Customer Name",
+      filterFn: 'noOpFilterFn'
     } as MRT_ColumnDef<CustomerOrder>,
     {
       accessorKey: "customerEmail",
@@ -148,7 +142,6 @@ export const columnInfo = new Map<
   [
     "customerName",
     {
-      hideInTable: true,
       isRequired: true,
       isEditable: true,
     } as ColumnInfo,
