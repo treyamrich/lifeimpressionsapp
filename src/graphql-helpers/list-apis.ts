@@ -19,6 +19,7 @@ import { API } from "aws-amplify";
 import { GraphQLQuery } from "@aws-amplify/api";
 import {
   customerOrdersByCreatedAt,
+  customerOrderByCustomerName,
   listTShirtOrders,
   orderChangesByCreatedAt,
   purchaseOrdersByCreatedAt,
@@ -144,16 +145,29 @@ export const listPurchaseOrderAPI = async (
 };
 
 export const listCustomerOrderAPI = async (
-  input: ListAPIInput<ModelCustomerOrderFilterInput>
+  input: ListAPIInput<ModelCustomerOrderFilterInput>,
+  queryColumn?: "byCustomerName" | "byCreatedAt"
 ): Promise<ListAPIResponse<CustomerOrder>> => {
-  const q: Query = {
-    name: 'customerOrdersByCreatedAt',
-    query: customerOrdersByCreatedAt
-  }
-  const v = {
-    sortDirection: input.sortDirection,
-    type: "CustomerOrder", // Index Key
-    createdAt: input.createdAt // Sort key
+  let q: Query;
+  let v: any = { sortDirection: input.sortDirection }
+  switch (queryColumn) {
+    case "byCustomerName":
+      q = {
+        name: 'customerOrderByCustomerName',
+        query: customerOrderByCustomerName
+      };
+      v = { ...v, customerName: input.indexPartitionKey };
+      break;
+    default:
+      q = {
+        name: 'customerOrdersByCreatedAt',
+        query: customerOrdersByCreatedAt
+      }
+      v = {
+        ...v,
+        type: "CustomerOrder", // Index Key
+        createdAt: input.createdAt // Sort key
+      }
   }
   return await listAPI<
     ModelCustomerOrderFilterInput,

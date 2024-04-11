@@ -28,6 +28,8 @@ function ViewOrdersPage<T extends Record<any, any>>({
   entityType,
   getTableColumns,
   columnInfo,
+  columnFiltersState,
+  didUpdateFetchFnState,
 }: {
   tableData: T[];
   setTableData: React.Dispatch<SetStateAction<T[]>>;
@@ -40,12 +42,17 @@ function ViewOrdersPage<T extends Record<any, any>>({
   entityType: EntityType;
   getTableColumns: () => MRT_ColumnDef<T>[];
   columnInfo: Map<string | number | symbol | undefined, ColumnInfo>;
+  columnFiltersState: {
+    columnFilters: MRT_ColumnFiltersState;
+    setColumnFilters: React.Dispatch<SetStateAction<MRT_ColumnFiltersState>>;
+  };
+  didUpdateFetchFnState?: { 
+    updated: boolean;
+    setUpdated: React.Dispatch<SetStateAction<boolean>>; 
+  }
 }) {
   const [isLoading, setIsLoading] = useState<boolean>(true);
-
-  const [columnFilters, setColumnFilters] = useState<MRT_ColumnFiltersState>(
-    []
-  );
+  const { columnFilters, setColumnFilters } = columnFiltersState;
 
   const columns = useMemo<MRT_ColumnDef<T>[]>(() => getTableColumns(), []);
 
@@ -92,10 +99,16 @@ function ViewOrdersPage<T extends Record<any, any>>({
             editingMode="modal" //default
             enableColumnOrdering
             enableHiding={false}
+            enableGlobalFilter={false}
             onColumnFiltersChange={setColumnFilters}
             state={{
               columnFilters,
               isLoading
+            }}
+            filterFns={{
+              noOpFilterFn: (row, id, filterValue) => {
+                return true;
+              },
             }}
             renderTopToolbarCustomActions={() => (
               <TableToolbar
@@ -103,7 +116,8 @@ function ViewOrdersPage<T extends Record<any, any>>({
                   items: tableData,
                   setItems: setTableData,
                   fetchFunc: fetchOrdersPaginationFn,
-                  setIsLoading: setIsLoading
+                  setIsLoading: setIsLoading,
+                  updatedFetchFn: didUpdateFetchFnState
                 }}
                 addButton={{
                   onAdd: onAddRow,
