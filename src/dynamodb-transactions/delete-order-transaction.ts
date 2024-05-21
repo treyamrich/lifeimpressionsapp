@@ -125,12 +125,12 @@ const getDeleteTShirtOrdersStatements = (
   const res: ParameterizedStatement[] = [];
   orderedItems.forEach((tshirtOrder: TShirtOrder) => {
     const amtReceived = tshirtOrder.amountReceived ?? 0;
-    // Deleting POs potentially reduces inventory
-    if(entityType === EntityType.PurchaseOrder && amtReceived > 0) {
+    const tshirtQtyChange = entityType === EntityType.PurchaseOrder ? -amtReceived : tshirtOrder.quantity;
+    if(tshirtQtyChange !== 0) {
       res.push(
         getConditionalUpdateTShirtTablePartiQL(
-          -amtReceived,
-          allowNegativeInventory,
+          tshirtQtyChange, 
+          allowNegativeInventory, // Deleting POs potentially reduces inventory
           updatedAt,
           tshirtOrder.tshirt.id
         )
