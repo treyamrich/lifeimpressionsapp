@@ -209,6 +209,7 @@ const OrderedItemsTable = ({
 }: OrderedItemsTableProps) => {
   const { user, refreshSession } = useAuthContext();
   const { rescueDBOperation, rescueDBOperationBatch } = useDBOperationContext();
+  const [receiveAllDisabled, setReceiveAllDisabled] = useState(false);
 
   const handleAfterRowEdit = (
     res: EditTShirtOrderResult,
@@ -323,6 +324,7 @@ const OrderedItemsTable = ({
 
   const handleReceiveAllItems = async () => {
     // A semi-copy of handleAfterRowEdit
+    setReceiveAllDisabled(true);
     const today = toAWSDateTime(getTodayInSetTz().set('second', 0));
     let poUpdatedAt = today;
     const newTableData = [...tableData];
@@ -398,6 +400,7 @@ const OrderedItemsTable = ({
     setNegativeInventoryWarning({
       ...initialNegativeInventoryWarningState,
     });
+    setReceiveAllDisabled(false);
   };
 
   const orderFromPriorMonth =
@@ -430,6 +433,7 @@ const OrderedItemsTable = ({
           onRowEdit={handleAfterRowEdit}
           onRowAdd={handleAfterRowAdd}
           onReceiveAllItems={handleReceiveAllItems}
+          receiveAllDisabled={receiveAllDisabled}
           entityType={EntityType.PurchaseOrder}
           mode={TableMode.Edit}
         />

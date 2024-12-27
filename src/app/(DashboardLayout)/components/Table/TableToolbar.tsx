@@ -10,15 +10,17 @@ const TableToolbarButton = ({
   onClick,
   text,
   tooltip,
-  icon
+  icon,
+  disabled
 }: {
   onClick?: () => void;
   text?: string;
   tooltip: string;
   icon: React.ReactNode;
+  disabled?: boolean;
 }) => (
   <Tooltip title={tooltip}>
-    <IconButton onClick={onClick} color="primary" size="small">
+    <IconButton onClick={onClick} color="primary" size="small" disabled={disabled}>
       {text}
       {icon}
     </IconButton>
@@ -43,6 +45,7 @@ function TableToolbar<T>({
   };
   receiveAllItemsButton?: {
     onReceiveAllItems: () => void;
+    isDisabled?: boolean;
   };
 }) {
   return (
@@ -78,6 +81,7 @@ function TableToolbar<T>({
           onClick={receiveAllItemsButton.onReceiveAllItems}
           icon={<ChecklistRtlIcon />}
           tooltip="Receive all items"
+          disabled={receiveAllItemsButton.isDisabled}
         />
       )}
     </Stack>

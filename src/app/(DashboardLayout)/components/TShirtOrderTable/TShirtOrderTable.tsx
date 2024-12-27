@@ -37,6 +37,7 @@ interface TShirtOrderTableProps {
     closeFormCallback: () => void
   ) => void | undefined;
   onReceiveAllItems?: () => void;
+  receiveAllDisabled?: boolean;
   entityType: EntityType;
   mode: TableMode;
 }
@@ -58,6 +59,7 @@ const TShirtOrderTable = ({
   onRowEdit,
   onRowAdd,
   onReceiveAllItems,
+  receiveAllDisabled,
   entityType,
   mode,
 }: TShirtOrderTableProps) => {
@@ -178,7 +180,9 @@ const TShirtOrderTable = ({
             addButton={{
               onAdd: () => setCreateModalOpen(true),
             }}
-            receiveAllItemsButton={ onReceiveAllItems !== undefined ? { onReceiveAllItems } : undefined }
+            receiveAllItemsButton={ onReceiveAllItems !== undefined ? { 
+              onReceiveAllItems: onReceiveAllItems, 
+              isDisabled: receiveAllDisabled } : undefined }
           />
         )}
       />
