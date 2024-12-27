@@ -52,6 +52,7 @@ export const assembleUpdateOrderTransactionStatements = (
     updatedTShirtOrder,
     createOrderChangeInput,
     inventoryQtyDelta,
+    shouldUpdateOrderTable,
   } = input;
 
   let maybeNegatedInventoryQtyDelta = isCO(parentOrder)
@@ -112,7 +113,9 @@ export const assembleUpdateOrderTransactionStatements = (
   const { updateTShirtOrderStatement, earliestTShirtOrderDate } = getUpdateTShirtOrderStatements();
 
   const transactionStatements: ParameterizedStatement[] = [
-    getUpdateOrderPartiQL(entityType, parentOrder.id, createdAtTimestamp),
+    // If this API is called multiple times for the same order, we only want to update the order table once
+    // i.e. this is used for the receive all items in a PO at the single click of a button
+    ...(shouldUpdateOrderTable ? [getUpdateOrderPartiQL(entityType, parentOrder.id, createdAtTimestamp)] : []),
     getConditionalUpdateTShirtTablePartiQL(
       maybeNegatedInventoryQtyDelta,
       allowNegativeInventory,
@@ -162,6 +165,7 @@ export type UpdateOrderTransactionInput = {
   inventoryQtyDelta: number;
   createOrderChangeInput: CreateOrderChangeInput;
   poItemReceivedDate?: string;
+  shouldUpdateOrderTable: boolean;
 };
 
 export type UpdateOrderTransactionResponse = {

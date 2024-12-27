@@ -1,9 +1,7 @@
 import { CreateOrderChangeInput, TShirtOrder } from "@/API";
-import { TShirtOrderFields } from "@/app/(DashboardLayout)/components/TShirtOrderTable/table-constants";
 import { DBOperation } from "@/contexts/DBErrorContext";
 import { UpdateOrderTransactionInput } from "./update-tshirt-order/update-tshirt-order-transaction";
 import { fromUTC } from "@/utils/datetimeConversions";
-import { isPO } from "./util";
 
 export const validateTShirtOrderInput = (
   tshirtOrder: TShirtOrder,

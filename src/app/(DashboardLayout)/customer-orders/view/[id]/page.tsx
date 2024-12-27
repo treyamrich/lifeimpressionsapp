@@ -224,6 +224,7 @@ const OrderedItemsTable = ({
       parentOrder: parentCustomerOrder,
       inventoryQtyDelta: inventoryQtyDelta,
       createOrderChangeInput: createOrderChangeInput,
+      shouldUpdateOrderTable: true,
     };
 
     // Only warn negative inventory when inventory will be reduced
@@ -281,6 +282,7 @@ const OrderedItemsTable = ({
       parentOrder: parentCustomerOrder,
       inventoryQtyDelta: inventoryQtyDelta,
       createOrderChangeInput: createOrderChangeInput,
+      shouldUpdateOrderTable: true,
     };
 
     // Update the customer order with the new added item

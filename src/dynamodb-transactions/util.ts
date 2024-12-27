@@ -1,7 +1,5 @@
 import { fromUTC, getStartOfMonth } from "@/utils/datetimeConversions";
 import { PurchaseOrderOrCustomerOrder } from "./partiql-helpers";
-import { UpdateOrderTransactionInput } from "./update-tshirt-order/update-tshirt-order-transaction";
-import { TShirtOrder } from "@/API";
 import { AttributeValue } from "@aws-sdk/client-dynamodb";
 
 export const isCO = (order: PurchaseOrderOrCustomerOrder) => order.__typename === 'CustomerOrder';
