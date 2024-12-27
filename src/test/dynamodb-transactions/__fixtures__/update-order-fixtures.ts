@@ -39,6 +39,7 @@ export const updateOrderInput: UpdateOrderTransactionInput = {
     inventoryQtyDelta: 2,
     updatedTShirtOrder: updatedTShirtOrder,
     parentOrder: co,
+    shouldUpdateOrderTable: true,
 }
 
 export const negativeUpdateOrderInput: UpdateOrderTransactionInput = {
@@ -50,4 +51,5 @@ export const negativeUpdateOrderInput: UpdateOrderTransactionInput = {
     inventoryQtyDelta: -2,
     updatedTShirtOrder: updatedTShirtOrder,
     parentOrder: po,
+    shouldUpdateOrderTable: true,
 }

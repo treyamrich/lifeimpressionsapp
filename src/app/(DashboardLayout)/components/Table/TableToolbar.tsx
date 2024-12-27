@@ -1,9 +1,10 @@
-import { IconButton, ListItemIcon, ListItemText, MenuItem, MenuList, Stack, Tooltip, Typography } from "@mui/material";
+import { IconButton, Stack, Tooltip } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 import LoadMorePaginationButton, { LoadMorePaginationButtonProps } from "../pagination/LoadMorePaginationButton";
 import React from "react";
 import IconMenu from "../IconMenu/IconMenu";
+import ChecklistRtlIcon from '@mui/icons-material/ChecklistRtl';
 
 const TableToolbarButton = ({
   onClick,
@@ -27,7 +28,8 @@ const TableToolbarButton = ({
 function TableToolbar<T>({
   pagination,
   addButton,
-  exportButton
+  exportButton,
+  receiveAllItemsButton,
 }: {
   pagination?: LoadMorePaginationButtonProps<T>;
   addButton?: {
@@ -38,6 +40,9 @@ function TableToolbar<T>({
     onExportAll: () => void;
     onExportResults: () => void;
     text?: string;
+  };
+  receiveAllItemsButton?: {
+    onReceiveAllItems: () => void;
   };
 }) {
   return (
@@ -66,6 +71,13 @@ function TableToolbar<T>({
             text: "Export loaded results",
             onClick: exportButton.onExportResults
           }]}
+        />
+      )}
+      {receiveAllItemsButton && (
+        <TableToolbarButton 
+          onClick={receiveAllItemsButton.onReceiveAllItems}
+          icon={<ChecklistRtlIcon />}
+          tooltip="Receive all items"
         />
       )}
     </Stack>

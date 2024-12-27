@@ -14,7 +14,7 @@ import TShirtOrderTable, {
   TableMode,
 } from "@/app/(DashboardLayout)/components/TShirtOrderTable/TShirtOrderTable";
 import { getPurchaseOrderAPI } from "@/graphql-helpers/get-apis";
-import { DBOperation, useDBOperationContext } from "@/contexts/DBErrorContext";
+import { AsyncBatchItem, DBOperation, useDBOperationContext } from "@/contexts/DBErrorContext";
 
 import { CardContent, Grid, Typography } from "@mui/material";
 import React, { useState, useEffect } from "react";
@@ -40,7 +40,9 @@ import Section from "@/app/(DashboardLayout)/components/po-customer-order-shared
 import { deleteOrderTransactionAPI } from "@/dynamodb-transactions/delete-order-transaction";
 import { failedUpdateTShirtStr } from "@/utils/tshirtOrder";
 import MoreInfoAccordian from "@/app/(DashboardLayout)/components/MoreInfoAccordian/MoreInfoAccordian";
-import { fromUTC, getStartOfMonth, toAWSDateTime } from "@/utils/datetimeConversions";
+import { fromUTC, getStartOfMonth, getTodayInSetTz, toAWSDateTime } from "@/utils/datetimeConversions";
+import { buildOrderChangeInput, BuildOrderChangeInput } from "@/app/(DashboardLayout)/components/po-customer-order-shared-components/OrderChangeHistory/util";
+
 
 type ViewPurchaseOrderProps = {
   params: { id: string };
@@ -206,7 +208,7 @@ const OrderedItemsTable = ({
   setNegativeInventoryWarning,
 }: OrderedItemsTableProps) => {
   const { user, refreshSession } = useAuthContext();
-  const { rescueDBOperation } = useDBOperationContext();
+  const { rescueDBOperation, rescueDBOperationBatch } = useDBOperationContext();
 
   const handleAfterRowEdit = (
     res: EditTShirtOrderResult,
@@ -228,7 +230,8 @@ const OrderedItemsTable = ({
       inventoryQtyDelta: inventoryQtyDelta,
       createOrderChangeInput: createOrderChangeInput,
       poItemReceivedDate: poItemDateReceived ? 
-        toAWSDateTime(poItemDateReceived) : undefined
+        toAWSDateTime(poItemDateReceived) : undefined,
+      shouldUpdateOrderTable: true,
     };
 
     // Only warn negative inventory when inventory will be reduced
@@ -285,6 +288,7 @@ const OrderedItemsTable = ({
       parentOrder: parentPurchaseOrder,
       inventoryQtyDelta: inventoryQtyDelta,
       createOrderChangeInput: createOrderChangeInput,
+      shouldUpdateOrderTable: true,
     };
 
     // Update the purchase order with the new added item
@@ -317,6 +321,85 @@ const OrderedItemsTable = ({
     );
   };
 
+  const handleReceiveAllItems = async () => {
+    // A semi-copy of handleAfterRowEdit
+    const today = toAWSDateTime(getTodayInSetTz().set('second', 0));
+    let poUpdatedAt = today;
+    const newTableData = [...tableData];
+    const newChangeHistory = [...changeHistory];
+    const batchItems: AsyncBatchItem<UpdateOrderTransactionResponse>[] = [];
+
+    tableData.forEach((oldTShirtOrder, idx) => {
+      if (oldTShirtOrder.amountReceived! >= oldTShirtOrder.quantity) return;
+  
+      let newTShirtOrder: TShirtOrder = {
+        ...oldTShirtOrder,
+        amountReceived: oldTShirtOrder.quantity,
+      };
+
+      // Create the order change audit log
+      let input: BuildOrderChangeInput = {
+        oldTShirtOrder: oldTShirtOrder,
+        newTShirtOrder: newTShirtOrder,
+        parentOrderId: parentPurchaseOrder?.id,
+        reason: "Received Item",
+        entityType: EntityType.PurchaseOrder,
+      };
+      const createOrderChangeInput = buildOrderChangeInput(input);
+
+      // Calculate the inventory delta and create DB transaction input
+      const inventoryQtyDelta =
+        newTShirtOrder.amountReceived! - oldTShirtOrder.amountReceived!;
+      const updateOrderInput: UpdateOrderTransactionInput = {
+        updatedTShirtOrder: newTShirtOrder,
+        parentOrder: parentPurchaseOrder,
+        inventoryQtyDelta: inventoryQtyDelta,
+        createOrderChangeInput: createOrderChangeInput,
+        poItemReceivedDate: today,
+        shouldUpdateOrderTable: idx === 0, // Only update Orders table 1 time
+      };
+
+      const batchItem: AsyncBatchItem<UpdateOrderTransactionResponse> = {
+        requestFn: () =>
+          updateTShirtOrderTransactionAPI(
+            updateOrderInput,
+            EntityType.PurchaseOrder,
+            user,
+            DBOperation.UPDATE,
+            true,
+            refreshSession
+          ),
+        dbOperation: DBOperation.UPDATE,
+        successHandler: (resp: UpdateOrderTransactionResponse) => {
+          if (resp === null) {
+            // Transaction failed shouldn't fail due to inventory counts for editing a PO when adding items
+            // but if it failed, the UI shouldn't update the local item
+            return;
+          }
+
+          poUpdatedAt = resp.orderUpdatedAtTimestamp;
+          newTableData[idx] = resp.newTShirtOrder;
+          newChangeHistory.unshift(resp.orderChange);
+        },
+        errorMessage: `failed to receive item for (${oldTShirtOrder.tshirt.styleNumber}, ${oldTShirtOrder.tshirt.color}, ${oldTShirtOrder.tshirt.size})`,
+      }
+
+      batchItems.push(batchItem);
+    });
+
+    await rescueDBOperationBatch(batchItems);
+
+    setTableData(newTableData);
+    setChangeHistory(newChangeHistory);
+    setPurchaseOrder({
+      ...parentPurchaseOrder,
+      updatedAt: poUpdatedAt,
+    });
+    setNegativeInventoryWarning({
+      ...initialNegativeInventoryWarningState,
+    });
+  };
+
   const orderFromPriorMonth =
     fromUTC(parentPurchaseOrder.createdAt) < getStartOfMonth(0);
 
@@ -346,6 +429,7 @@ const OrderedItemsTable = ({
           parentOrder={parentPurchaseOrder}
           onRowEdit={handleAfterRowEdit}
           onRowAdd={handleAfterRowAdd}
+          onReceiveAllItems={handleReceiveAllItems}
           entityType={EntityType.PurchaseOrder}
           mode={TableMode.Edit}
         />
