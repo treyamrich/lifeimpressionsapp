@@ -1,7 +1,6 @@
 type TShirt @model @auth(rules: [
   { allow: groups, groups: ["admin"], provider: userPools},
-  { allow: public, provider: iam, operations: [read]},
-  { allow: public, provider: apiKey, operations: [read]}]) {
+  { allow: public, provider: iam, operations: [read]}]) {
   id: ID! @primaryKey
   styleNumber: String! @index(name: "tshirtsByStyleNumber", queryField: "tshirtsByStyleNumber", sortKeyFields: ["quantityOnHand"])
   brand: String!
@@ -48,8 +47,7 @@ enum TShirtType {
 
 type PurchaseOrder @model @auth(rules: [
   { allow: groups, groups: ["admin"], provider: userPools},
-  { allow: public, provider: iam, operations: [create, read]},
-  { allow: public, provider: apiKey, operations: [read]}]) {
+  { allow: public, provider: iam, operations: [create, read]}]) {
   id: ID! @primaryKey
   orderNumber: String!
   vendor: String!
@@ -86,8 +84,7 @@ type FieldChange {
 # potentially can rename this to EntityAudit
 type OrderChange @model @auth(rules: [
   { allow: groups, groups: ["admin"], provider: userPools},
-  { allow: public, provider: iam, operations: [read]},
-  { allow: public, provider: apiKey, operations: [read]}]) {
+  { allow: public, provider: iam, operations: [read]}]) {
   tshirt: TShirt! @hasOne
   reason: String!
   fieldChanges: [FieldChange!]!
@@ -102,8 +99,7 @@ type POReceival {
 
 type TShirtOrder @model @auth(rules: [
   { allow: groups, groups: ["admin"], provider: userPools},
-  { allow: public, provider: iam, operations: [read]},
-  { allow: public, provider: apiKey, operations: [read]}]) {
+  { allow: public, provider: iam, operations: [read]}]) {
   tshirt: TShirt! @hasOne
   quantity: Int!
   costPerUnit: Float!
@@ -121,8 +117,7 @@ type TShirtOrder @model @auth(rules: [
 
 type CustomerOrder @model @auth(rules: [
   { allow: groups, groups: ["admin"], provider: userPools},
-  { allow: public, provider: iam, operations: [create, read]},
-  { allow: public, provider: apiKey, operations: [read]}]) {
+  { allow: public, provider: iam, operations: [create, read]}]) {
   id: ID! @primaryKey
 
   customerName: String! @index(name: "customerOrderByCustomerName", queryField: "customerOrderByCustomerName")
@@ -171,8 +166,7 @@ type LastItemValue {
 
 type InventoryValueCache @model @auth(rules: [
   { allow: groups, groups: ["admin"], provider: userPools},
-   { allow: public, provider: iam, operations: [create, read]},
-   { allow: public, provider: apiKey, operations: [create, read]}]) {
+   { allow: public, provider: iam, operations: [create, read]}]) {
 
     lastItemValues: [LastItemValue!]!
     createdAt: AWSDate! @primaryKey
@@ -181,8 +175,7 @@ type InventoryValueCache @model @auth(rules: [
 # Single value table to hold the earliest expired 
 type CacheExpiration @model @auth(rules: [
   { allow: groups, groups: ["admin"], provider: userPools},
-   { allow: public, provider: iam, operations: [create, read]},
-   { allow: public, provider: apiKey, operations: [create, read, update]}]) {
+   { allow: public, provider: iam, operations: [create, read]}]) {
     id: String! @primaryKey
     earliestExpiredDate: String
 }
