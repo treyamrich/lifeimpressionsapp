@@ -50,36 +50,27 @@ const getOrderRequestFilters = (form: FormState) => {
 };
 
 const getTShirtOrderRequestFilter = (form: FormState) => {
-    const { includeDeletedCOs, includeDeletedPOs } = form;
     const updatedAtRangeFilter = getDateRangeFilter(form);
     let filter: ModelTShirtOrderFilterInput = { updatedAt: updatedAtRangeFilter };
+    filter.or = [];
 
-    if(!includeDeletedPOs && !includeDeletedCOs) {
-        filter.isDeleted = { ne: true };
+    if (form.includeCOs) {
+      const f: ModelTShirtOrderFilterInput = { customerOrderOrderedItemsId: { attributeExists: true } };
+      if (!form.includeDeletedCOs) {
+        f.isDeleted = { ne: true };
+      }
+      filter.or.push(f);
     }
-    else if(!includeDeletedPOs) {
-        filter.or = [
-            { 
-                purchaseOrderOrderedItemsId: { attributeExists: true },
-                isDeleted: { ne: true } 
-            },
-            {
-                purchaseOrderOrderedItemsId: { attributeExists: false }
-            }
-
-        ];
+    if (form.includePOs) {
+      const f: ModelTShirtOrderFilterInput = { purchaseOrderOrderedItemsId: { attributeExists: true } };
+      if (!form.includeDeletedPOs) {
+        f.isDeleted = { ne: true };
+      }
+      filter.or.push(f);
     }
-    else if(!includeDeletedCOs) {
-        filter.or = [
-            { 
-                customerOrderOrderedItemsId: { attributeExists: true },
-                isDeleted: { ne: true } 
-            },
-            {
-                customerOrderOrderedItemsId: { attributeExists: false }
-            }
 
-        ];
+    if (!form.includeCOs && !form.includePOs) {
+      filter.or = undefined;
     }
     return filter
 }
