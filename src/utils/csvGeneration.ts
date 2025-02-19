@@ -10,6 +10,7 @@ declare global {
 }
 
 export const processCSVCell = (value: any): string => {
+    if (!value) return '';
     let innerValue = value.toString();
     let result = innerValue.replace(/"/g, '""');
     if (result.search(/("|,|\n)/g) >= 0)
