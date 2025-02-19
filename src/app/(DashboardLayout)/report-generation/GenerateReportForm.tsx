@@ -14,7 +14,6 @@ import {
   Radio,
   RadioGroup,
   Stack,
-  Typography,
 } from "@mui/material";
 import DownloadIcon from "@mui/icons-material/Download";
 import { DatePicker } from "@mui/x-date-pickers";
@@ -112,8 +111,13 @@ const ReportGenerationForm = () => {
     }
     if (isDownloading) return;
     setIsDownloading(true)
-    await handleGenerateSubmission(formState, rescueDBOperation, rescueDBOperationBatch);
-    setIsDownloading(false);
+    try {
+      await handleGenerateSubmission(formState, rescueDBOperation, rescueDBOperationBatch);
+    } catch (e) {
+      updateFormField("errMsg", "Error generating report.");
+    } finally {
+      setIsDownloading(false);
+    }
   };
 
   const renderDateRangeInput = () => (
@@ -194,8 +198,8 @@ const ReportGenerationForm = () => {
   const renderErrorMessages = () => {
     return (
       errMsg !== "" && (
-        <Alert color="error">
-          <Typography color="error">{errMsg}</Typography>
+        <Alert color="error" variant="filled">
+          {errMsg}
         </Alert>
       )
     );
