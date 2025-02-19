@@ -27,19 +27,27 @@ import {
 import { useDBOperationContext } from "@/contexts/DBErrorContext";
 import { handleGenerateSubmission } from "./report-form-handlers";
 
-const checkboxLabels: any = {
-  includePOs: "Purchase Orders",
-  includeCOs: "Customer Orders",
-  includeDeletedPOs: "Deleted Purchase Orders",
-  includeDeletedCOs: "Deleted Customer Orders",
-  includeZeroQtyOrders: "Orders with 0 items",
-};
-
 export enum ReportType {
   HighLevel = "highLevel",
   Detailed = "detailed",
   InventoryValue = "inventoryValue",
 }
+
+export enum ReportFormFields {
+  includePOs = "includePOs",
+  includeCOs = "includeCOs",
+  includeDeletedPOs = "includeDeletedPOs",
+  includeDeletedCOs = "includeDeletedCOs",
+  includeZeroQtyOrders = "includeZeroQtyOrders",
+}
+
+const checkboxLabels: Record<ReportFormFields, string> = {
+  [ReportFormFields.includePOs]: "Purchase Orders",
+  [ReportFormFields.includeCOs]: "Customer Orders",
+  [ReportFormFields.includeDeletedPOs]: "Deleted Purchase Orders",
+  [ReportFormFields.includeDeletedCOs]: "Deleted Customer Orders",
+  [ReportFormFields.includeZeroQtyOrders]: "Orders with 0 items",
+};
 
 const radiobuttons: any = {
   orderLevel: {
@@ -104,13 +112,31 @@ const ReportGenerationForm = () => {
     setFormState({ ...formState, [key]: value });
   };
 
-  const handleSubmit = async () => {
+  const validateForm = () => {
     if (dateStart.isAfter(dateEnd)) {
       updateFormField("errMsg", "Start date cannot be after end date");
-      return;
+      return false;
     }
+    const noSelectedFilters = !formState.includePOs && !formState.includeCOs;
+    const isFilteredQuery = reportType === ReportType.Detailed || reportType === ReportType.HighLevel;
+    if (noSelectedFilters && isFilteredQuery) {
+      updateFormField("errMsg", "Please select at least one order type");
+      return false;
+    }
+    return true;
+  }
+
+  const handleSubmit = async () => {
+    updateFormField("errMsg", "");
+    if (!validateForm()) return;
+
+    // Constraint to ensure that deleted orders are only included if the non-deleted orders are included
+    formState.includeDeletedCOs = formState.includeCOs && formState.includeDeletedCOs;
+    formState.includeDeletedPOs = formState.includePOs && formState.includeDeletedPOs;
+
     if (isDownloading) return;
     setIsDownloading(true)
+
     try {
       await handleGenerateSubmission(formState, rescueDBOperation, rescueDBOperationBatch);
     } catch (e) {
@@ -155,14 +181,20 @@ const ReportGenerationForm = () => {
     </FormControl>
   );
 
-  const renderCheckboxes = () => (
+  const renderCheckBoxes = () => {
+    const filteredCheckBoxes = Object.keys(checkboxLabels).filter((key) => {
+      if (key === ReportFormFields.includeDeletedPOs && !formState.includePOs) return false;
+      if (key === ReportFormFields.includeDeletedCOs && !formState.includeCOs) return false;
+      return true;
+    });
+    return (
     <FormControl>
       <FormLabel component="legend">Include in report:</FormLabel>
       <FormGroup row>
-        {Object.keys(checkboxLabels).map((key, idx) => (
+        {filteredCheckBoxes.map((key, idx) => (
           <FormControlLabel
             key={`Checkbox-${idx}`}
-            label={checkboxLabels[key]}
+            label={checkboxLabels[key as keyof typeof checkboxLabels]}
             control={
               <Checkbox
                 checked={formState[key as keyof FormState] as boolean}
@@ -173,15 +205,19 @@ const ReportGenerationForm = () => {
         ))}
       </FormGroup>
     </FormControl>
-  );
+  )}
 
-  const renderRadiobuttons = () => (
+  const renderRadioButtons = () => (
     <FormControl>
       <FormLabel component="legend">Report Type:</FormLabel>
       <RadioGroup
         row
         value={formState.reportType}
-        onChange={(e) => updateFormField("reportType", e.target.value)}
+        onChange={(e) => setFormState({ 
+          ...formState, 
+          errMsg: "", 
+          reportType: e.target.value as ReportType 
+        })}
       >
         {Object.keys(radiobuttons).map((key, idx) => (
           <FormControlLabel
@@ -235,8 +271,8 @@ const ReportGenerationForm = () => {
             }}
           >
             {renderDateRangeInput()}
-            {reportType !== ReportType.InventoryValue && (renderCheckboxes())}
-            {renderRadiobuttons()}
+            {reportType !== ReportType.InventoryValue && (renderCheckBoxes())}
+            {renderRadioButtons()}
 
             {renderErrorMessages()}
 
