@@ -81,12 +81,13 @@ class TestItemQueue(unittest.TestCase):
         self.assertEqual(item_queue.read_current_value(), 5 * 10 + 1 * 3)
         items = item_queue.read_current_items()
         self.assertEqual(items[0].iso_dt, MyDateTime.to_ISO8601(expected_date))
+        self.assertEqual(len(item_queue.read_current_items()), 2) # 2 distinct transactions
 
         not_evicted = item_queue.evict_items(5)
         self.assertEqual(not_evicted, 0)
         self.assertEqual(item_queue.read_current_qty(), 1)
         self.assertEqual(item_queue.read_current_value(), 10)
-        queue_item = item_queue.read_current_items()[0]
+        queue_item = item_queue.peek()
         self.assertEqual(queue_item.qty, 1)
 
     def build_queue_items(self, input):
