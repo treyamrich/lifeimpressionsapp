@@ -1,7 +1,7 @@
 from enum import Enum
 import os
 import json
-from typing import Callable, List, Tuple, Union
+from typing import Callable, Iterable, List, Optional, Tuple, Union
 from dateutil.relativedelta import relativedelta
 from datetime import datetime, timedelta, timezone
 import requests
@@ -29,7 +29,7 @@ if os.path.exists(path):
 
 GRAPHQL_ENDPOINT = os.environ["API_LIFEIMPRESSIONSAPP_GRAPHQLAPIENDPOINTOUTPUT"]
 INV_VAL_CACHE_TABLE_NAME = os.environ["INV_VAL_CACHE_TABLE_NAME"]
-TZ_UTC_HOUR_OFFSET = -10
+TZ_UTC_HOUR_OFFSET = -10 # Pacific/Honolulu timezone
 
 class MyDateTime:
 
@@ -362,6 +362,39 @@ class PaginationIterator:
         self._idx = 0
         self._variables["nextToken"] = self._next_token
 
+class BucketUnit(Enum):
+    DAY = "day"
+    MONTH = "month"
+    
+class BucketIterator:
+    """
+        Iterates over a range of dates and returns a bucket (iterable) of data points in the range.
+        Assumptions that MUST be true:
+        - Data points timestamps are in UTC time ISO8601 format and are sorted in ascending order
+        - Data points are within [start_inclusive, end_exclusive)
+    """
+    def __init__(self, start_inclusive: datetime, end_exclusive: datetime, unit: BucketUnit, data_source: Iterable[QueueItem]):
+        self._data_source = data_source
+        self._start = start_inclusive
+        self._end = end_exclusive
+        self._delta = relativedelta(days=1) if unit == BucketUnit.DAY else relativedelta(months=1)
+
+    def __iter__(self):
+        return self
+    
+    def __next__(self):
+        if self._start >= self._end:
+            raise StopIteration
+        
+        end = min(self._start + self._delta, self._end)
+        res = []
+        for x in self._data_source:
+            d = MyDateTime.parse_UTC(x.iso_dt, TZ_UTC_HOUR_OFFSET)
+            if self._start <= d < end:
+                res.append(x)
+        self._start = end
+        return res
+
 @dataclass
 class InventoryItemValue:
     itemId: str
@@ -397,14 +430,10 @@ class InventoryValueCache:
             InventoryItemValue(key),
         )
     
-    def _to_write_db_input(self) -> dict:
-        return {
-            'createdAt': MyDateTime.to_ISO8601(self._created_date, is_only_date=True),
-            'updatedAt': MyDateTime.to_ISO8601(MyDateTime.get_now_UTC()),
-            'lastItemValues': list(map(lambda x: asdict(x), self._data.values())),
-        }
+    def get_created_date(self) -> datetime:
+        return self._created_date
                     
-    def read_db(self):
+    def read_db(self) -> 'InventoryValueCache':
         resp = self._graphql_client.make_request(
             InventoryValueCache.getInventoryValueCache, 
             { 'createdAt': MyDateTime.to_ISO8601(self._created_date, is_only_date=True) }
@@ -415,6 +444,7 @@ class InventoryValueCache:
         lastItemVals = resp['lastItemValues']
         itemVals = map(lambda x: InventoryItemValue(**x), lastItemVals)
         self._data = {x.itemId: x for x in itemVals}
+        return self
     
     def write_db(self):
         try:
@@ -426,11 +456,22 @@ class InventoryValueCache:
             logging.exception(f'Failed to write cache to db key createdAt = {self._created_date}', extra={'error': str(e)})
             
     @staticmethod
-    def batch_write_db(client: DynamoDBClient, caches: list, table_name: str):
+    def batch_write_db(client: DynamoDBClient, caches: List['InventoryValueCache'], table_name: str):
+        if len(caches) == 0: return
+        if len(caches) == 1: 
+            caches[0].write_db()
+            return
         items = [c._to_write_db_input() for c in caches]
         unprocessed_list = client.batch_write_item(table_name, items)
         if unprocessed_list:
             logging.warning(f'Failed batch cache write. Unprocessed items: {unprocessed_list}')
+    
+    def _to_write_db_input(self) -> dict:
+        return {
+            'createdAt': MyDateTime.to_ISO8601(self._created_date, is_only_date=True),
+            'updatedAt': MyDateTime.to_ISO8601(MyDateTime.get_now_UTC()),
+            'lastItemValues': list(map(lambda x: asdict(x), self._data.values())),
+        }
         
         
     getInventoryValueCache = Query('getInventoryValueCache',
@@ -455,14 +496,27 @@ class InventoryValueCache:
 class CacheExpiration:
     CACHE_EXPIRATION_ID = 'A'
     
-    def __init__(self, graphql_client: GraphQLClient = GraphQLClient()):
+    def __init__(self, start_inclusive: datetime, end_exclusive: datetime, graphql_client: GraphQLClient = GraphQLClient()):
         self._graphql_client = graphql_client
+        self.start_i = start_inclusive
+        self.start_inclusive, self.end_exclusive = self._get_expired_range(start_inclusive, end_exclusive)
     
-    def get_expired_cache_range(
+    def get_expired_range(self) -> Tuple[datetime, datetime]:
+        if not self.is_expired(): return None
+        return self.start_inclusive, self.end_exclusive
+    
+    def is_expired(self) -> bool:
+        return self.start_i != self.start_inclusive
+    
+    def _get_expired_range(
         self, 
         start_inclusive: datetime, 
         end_exclusive: datetime
     ) -> Tuple[datetime, datetime]:
+        """
+            When a cache is expired, we recalculate all caches after the earliest expired date up to the beginning of the current month.
+            It's worth noting if end_exclusive was > the start of the current month, then the monthly report doesn't exist yet.
+        """
         earliest_exp = 'earliestExpiredDate'
         resp = self._graphql_client.make_request(
             CacheExpiration.getCacheExpiration, { 'id': CacheExpiration.CACHE_EXPIRATION_ID})
@@ -539,7 +593,66 @@ class CacheExpiration:
             }
         }
     """)
+
+class ItemQueue:
+
+    def __init__(self):
+        self._items: List[QueueItem] = []
+        self._value = 0.0
+        self._total_qty = 0
     
+    def load_items(self, items: List[QueueItem]) -> 'ItemQueue':
+        """
+            Loads more items into the unsold items queue. This increases the value and total qty.
+        """
+        for item in items:
+            self._value += item.qty * item.cost_per_unit
+            self._total_qty += item.qty
+        self._items.extend(items)
+        return self
+
+    def evict_items(self, evict_count: int) -> int:
+        """
+            Sells items from the unsold items queue. This decreases the value and total qty.
+
+            Returns the amount of items that were not sold due to lack of inventory.
+        """
+        while evict_count > 0 and self._items:
+            item = self._items[0]
+            remainder = item.qty - evict_count
+
+            if remainder == 0:
+                self._total_qty -= evict_count
+                self._value -= evict_count * item.cost_per_unit
+                self._items.pop(0)
+                evict_count = 0
+            elif remainder > 0:
+                item.qty = remainder
+                self._total_qty -= evict_count
+                self._value -= evict_count * item.cost_per_unit
+                evict_count = 0
+            else:
+                self._total_qty -= item.qty
+                self._value -= item.qty * item.cost_per_unit
+                self._items.pop(0)
+                evict_count = -remainder
+
+        return evict_count
+    
+    def peek(self) -> QueueItem:
+        return self._items[0] if self._items else None
+    
+    def tail(self) -> QueueItem:
+        return self._items[-1] if self._items else None
+    
+    def read_current_value(self):
+        return self._value
+
+    def read_current_qty(self):
+        return self._total_qty
+    
+    def read_current_items(self):
+        return self._items
 
 class Main:
     QUERY_PAGE_LIMIT = 100
@@ -550,40 +663,56 @@ class Main:
         self.graphql_client = graphql_client
         self.dynamodb_client = dynamodb_client
 
-    def run(self, start_inclusive: datetime, end_exclusive: datetime):
-        if not self._validate_start_end(start_inclusive, end_exclusive):
-            return
-        
-        cache_expiration = CacheExpiration(self.graphql_client)
-        new_start_incl, new_end_excl = cache_expiration.get_expired_cache_range(start_inclusive, end_exclusive)
-        
+    def get_inventory_values(self, start_inclusive: datetime, end_exclusive: datetime) -> List[InventoryValueCache]:
+        self._validate_start_end(start_inclusive, end_exclusive)
+
+        # e.g. if start_incl is Feb 18th, then prev_cache is Jan 1st
+        prev_month = MyDateTime.to_month_start(start_inclusive) - relativedelta(months=1)
+
+        initial_cache = None
+        # Expired caches may not fall in range of [start_incl, end_excl) but this keeps the caches up to date
+        cache_expiration = CacheExpiration(start_inclusive, end_exclusive)
+        if cache_expiration.is_expired():
+            renewed_caches = self.create_monthly_report(None, None, cache_expiration)
+            initial_cache = filter(lambda x: x.get_created_date() == prev_month, renewed_caches)
+            initial_cache = next(initial_cache, None)
+
+        if not initial_cache:
+            initial_cache = self._build_inventory_val_cache(prev_month).read_db()
+    
+        return
+
+    def create_monthly_report(self, start_inclusive: datetime, end_exclusive: datetime, cache_expiration: CacheExpiration = None) -> List[InventoryValueCache]:
+        """
+            Given a range of dates, calculates the value of each month's inventory and saves it to DynamoDB.
+            If the cache is expired, it will recalculate the cache from the earliest expired date up to the beginning of the current month.
+        """
+        self._validate_start_end(start_inclusive, end_exclusive)
+
+        new_start_incl, new_end_excl = start_inclusive, end_exclusive
+        cache_expiration = cache_expiration or CacheExpiration(start_inclusive, end_exclusive)
+        if cache_expiration.is_expired():
+            new_start_incl, new_end_excl = cache_expiration.get_expired_range()
+
         prev_month = new_start_incl - relativedelta(months=1)
-        cache_last_month = InventoryValueCache(
-            self.graphql_client, 
-            self.dynamodb_client, 
-            prev_month, 
-            INV_VAL_CACHE_TABLE_NAME
-        )
-        cache_last_month.read_db()
+        last_good_cache = self._build_inventory_val_cache(prev_month).read_db()
           
         inventory = self._list_full_inventory()
-        caches: list[InventoryValueCache] = []
+        caches: List[InventoryValueCache] = []
         for start, end in MyDateTime.date_range(new_start_incl, new_end_excl):
-            prev_cache = caches[-1] if caches else cache_last_month
+            prev_cache = caches[-1] if caches else last_good_cache
             caches.append(
                 self.calculate_inventory_balance(start, end, inventory, prev_cache)
             )
         
-        if len(caches) == 1:
-            caches[0].write_db()
-        else:
-            InventoryValueCache.batch_write_db(
-                self.dynamodb_client,
-                caches,
-                INV_VAL_CACHE_TABLE_NAME
-            )
+        InventoryValueCache.batch_write_db(
+            self.dynamodb_client,
+            caches,
+            INV_VAL_CACHE_TABLE_NAME
+        )
             
         cache_expiration.write_cache_renewal()
+        return caches
             
     def calculate_inventory_balance(
         self,
@@ -592,8 +721,7 @@ class Main:
         inventory: list[InventoryItem],
         prev_cache: InventoryValueCache
     ) -> InventoryValueCache:
-        
-        new_cache = InventoryValueCache(self.graphql_client, self.dynamodb_client, start_inclusive, INV_VAL_CACHE_TABLE_NAME)
+        new_cache = self._build_inventory_val_cache(start_inclusive)
 
         lock = threading.Lock()
         num_workers = os.cpu_count()
@@ -691,7 +819,6 @@ class Main:
                     cost_per_unit = item.costPerUnit, 
                     iso_dt = item.earliestTransaction
                 )
-
         return CO_generator(get_it('CO')), POs_generator(get_it('PO'))
 
 
@@ -701,7 +828,6 @@ class Main:
         start_inclusive: datetime, 
         end_exclusive: datetime
     ) -> InventoryItemValue:
-        # Returns the value and the earliest unsold item
         unsold_POs, unproc_COs = self._get_unsold_items(
             prev_inventory_item, start_inclusive, end_exclusive)
 
@@ -709,15 +835,20 @@ class Main:
             itemId = prev_inventory_item.itemId, 
             aggregateValue = prev_inventory_item.aggregateValue
         )
+            
+        # Loop over each bucket size (day or month)
+        # 
+        po_queue = ItemQueue()
+        co_queue = ItemQueue()
 
-        for item in unsold_POs:
-            res.numUnsold += item.qty
-            res.aggregateValue += item.qty * item.cost_per_unit
+        po_queue.load_items(unsold_POs)
+        co_queue.load_items(unproc_COs)
 
-        # IF items oversold
-        for item in unproc_COs:
-            res.numUnsold -= item.qty
+        num_to_sell = co_queue.read_current_qty()
+        num_over_sold = po_queue.evict_items(num_to_sell)
+        num_to_sell -= num_over_sold
 
+        # Set the new queue heads
         res.poQueueHead = MyDateTime.to_ISO8601(end_exclusive)
         res.coQueueHead = res.poQueueHead
 
@@ -776,8 +907,10 @@ class Main:
                 'Start date is greater than end date', 
                 extra={'start': to_iso(start_inclusive), 'end': to_iso(end_exclusive)}
             )
-            return False
-        return True
+            raise ValueError('Start date is greater than end date')
+    
+    def _build_inventory_val_cache(self, created_date: datetime) -> InventoryValueCache:
+        return InventoryValueCache(self.graphql_client, self.dynamodb_client, created_date, INV_VAL_CACHE_TABLE_NAME)
 
     listTshirts = Query(
         name="listTShirts",
@@ -869,15 +1002,33 @@ def get_start_end(event):
         end = datetime(e['year'], e['month'], 1, hour=hr_offset_pos, tzinfo=timezone.utc)
         return start, end
     except Exception as e:
-        logging.exception(f'Invalid start or end date\n{e}')
+        logging.exception(f'create_monthly_inventory_val_report: Invalid start or end date\n{e}')
         raise ValueError('Invalid start or end date')
+
+def create_monthly_inventory_val_report(event):
+    s, e = get_start_end(event)
+    logging.info('create_monthly_inventory_val_report: invoked')
+
+    Main()
+
+    print('Run success for start inclusive: {} and end exclusive: {}'.format(s, e))
+
+def get_inventory_values(event):
+    if any(x not in event for x in ['start_inclusive', 'end_exclusive']):
+        logging.exception('get_inventory_values: Missing start_inclusive or end_exclusive')
+        raise ValueError('Missing start_inclusive or end_exclusive')
+    logging.info('get_inventory_values: invoked')
+    
+    Main()
 
 def handler(event, context):
     logging.info(f"received event\n{event}")
     
-    s, e = get_start_end(event)
-    main = Main()
-    main.run(s, e)
-    
-    print('Run success for start inclusive: {} and end exclusive: {}'.format(s, e))
-    return {"statusCode": 200}
+    command_type = event.get('command_type')
+    if command_type == 'create_monthly_inventory_val_report':
+        create_monthly_inventory_val_report(event)
+        return {"statusCode": 200}
+    elif command_type == 'get_inventory_values':
+        return get_inventory_values(event)
+    logging.error(f"Unknown command type '{command_type}'")
+    raise ValueError(f"Unknown command type '{command_type}'")

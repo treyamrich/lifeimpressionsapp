@@ -4,11 +4,11 @@ import uuid
 import random
 import sys
 import os
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 from dataclasses import asdict
 
 sys.path.insert(0, os.path.abspath(".."))
-from src.index import InventoryItem, OrderItem, Main, QueueItem
+from src.index import TZ_UTC_HOUR_OFFSET, InventoryItem, OrderItem, Main, QueueItem
 sys.path.pop(0)
 
 class OrderType(Enum):
@@ -174,3 +174,6 @@ def mock_get_order_item_iterators(partial_queue_items: Iterable[dict]):
         return map(lambda x: get_queue_item(**x), filtered) if partial_queue_items else iter([])
 
     return get_mock_it(OrderType.CustomerOrder), get_mock_it(OrderType.PurchaseOrder)
+
+def build_date(year, month, day, hour=0):
+    return datetime(year, month, day, hour, tzinfo=timezone(timedelta(hours=TZ_UTC_HOUR_OFFSET)))
