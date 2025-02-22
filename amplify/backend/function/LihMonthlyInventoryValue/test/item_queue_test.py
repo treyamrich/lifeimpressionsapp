@@ -4,7 +4,7 @@ import sys
 import os
 
 sys.path.insert(0, os.path.abspath(".."))
-from src.index import BucketIterator, ItemQueue, QueueItem, MyDateTime, BucketUnit
+from src.index import ItemQueue, QueueItem
 
 sys.path.pop(0)
 
@@ -80,7 +80,7 @@ class TestItemQueue(unittest.TestCase):
         self.assertEqual(item_queue.read_current_qty(), 1 + 5)
         self.assertEqual(item_queue.read_current_value(), 5 * 10 + 1 * 3)
         items = item_queue.read_current_items()
-        self.assertEqual(items[0].iso_dt, MyDateTime.to_ISO8601(expected_date))
+        self.assertEqual(items[0].date, expected_date)
         self.assertEqual(len(item_queue.read_current_items()), 2) # 2 distinct transactions
 
         not_evicted = item_queue.evict_items(5)
@@ -94,8 +94,8 @@ class TestItemQueue(unittest.TestCase):
         res = []
         for x in input:
             if len(x) == 2:
-                res.append(QueueItem(x[0], x[1], MyDateTime.to_ISO8601(self.date)))
+                res.append(QueueItem(x[0], x[1], self.date))
             else:
-                res.append(QueueItem(x[0], x[1], MyDateTime.to_ISO8601(x[2])))
+                res.append(QueueItem(x[0], x[1], x[2]))
 
         return res

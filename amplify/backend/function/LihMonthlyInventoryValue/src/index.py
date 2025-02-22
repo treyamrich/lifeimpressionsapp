@@ -117,10 +117,10 @@ class OrderItem:
 class QueueItem:
     qty: int = 0
     cost_per_unit: float = 0
-    iso_dt: str = '1970-01-01T00:00:00Z'
+    date: datetime = datetime(1970, 1, 1)
 
     def __lt__(self, other):
-        return self.iso_dt < other.iso_dt
+        return self.date < other.date
     
 @dataclass
 class Query:
@@ -369,9 +369,7 @@ class BucketUnit(Enum):
 class BucketIterator:
     """
         Iterates over a range of dates and returns a bucket (iterable) of data points in the range.
-        Assumptions that MUST be true:
-        - Data points timestamps are in UTC time ISO8601 format and are sorted in ascending order
-        - Data points are within [start_inclusive, end_exclusive)
+        Assumption that must be true: items from data_source are within [start_inclusive, end_exclusive)
     """
     def __init__(self, start_inclusive: datetime, end_exclusive: datetime, unit: BucketUnit, data_source: Iterable[QueueItem]):
         self._data_source = data_source
@@ -387,11 +385,7 @@ class BucketIterator:
             raise StopIteration
         
         end = min(self._start + self._delta, self._end)
-        res = []
-        for x in self._data_source:
-            d = MyDateTime.parse_UTC(x.iso_dt, TZ_UTC_HOUR_OFFSET)
-            if self._start <= d < end:
-                res.append(x)
+        res = [x for x in self._data_source if self._start <= x.date < end]
         self._start = end
         return res
 
@@ -594,6 +588,74 @@ class CacheExpiration:
         }
     """)
 
+class QueueItemStreamFactory:
+    """
+        Creates streams of QueueItems for Purchase Orders or Customer Orders.
+
+        Internal details: Mainly transforms the GraphQL resp from PaginationIterator.
+    """
+    CO = 'CO'
+    PO = 'PO'
+
+    def __init__(self, item_id: str, graphql_client: GraphQLClient):
+        self.graphql_client = graphql_client
+        self.item_id = item_id
+
+    def get_PO_data_source(self, start_incl_utc: str, end_excl_utc: str) -> Iterable[QueueItem]:
+        """ This works because each interval is sorted by start
+            All values in interval are sorted, and next interval starts after, 
+            but they may overlap"""
+        po_heap = []
+        query_paginator = self._build_iterator(start_incl_utc, end_excl_utc, QueueItemStreamFactory.CO)
+        def decorate(it):
+            start, end = start_incl_utc, end_excl_utc
+            for po in it:
+                item = OrderItem(**po)
+                for x in item.receivals:
+                    if x.timestamp < start or x.timestamp >= end:
+                        continue
+                    receival = QueueItem(
+                        qty = x.quantity, 
+                        cost_per_unit = item.costPerUnit, 
+                        date = MyDateTime.parse_UTC(x.timestamp, TZ_UTC_HOUR_OFFSET)
+                    )
+                    heapq.heappush(po_heap, receival)
+                if po_heap:
+                    yield heapq.heappop(po_heap)
+            while po_heap:
+                yield heapq.heappop(po_heap)
+        return decorate(query_paginator)
+    
+    def get_CO_data_source(self, start_incl_utc: str, end_excl_utc: str) -> Iterable[QueueItem]:
+        query_paginator = self._build_iterator(start_incl_utc, end_excl_utc, QueueItemStreamFactory.CO)
+        def decorate(it):
+            for co in it:
+                item = OrderItem(**co)
+                yield QueueItem(
+                    qty = item.quantity, 
+                    cost_per_unit = item.costPerUnit, 
+                    date = MyDateTime.parse_UTC(item.earliestTransaction, TZ_UTC_HOUR_OFFSET)
+                )
+        return decorate(query_paginator)
+    
+    def _build_iterator(self, start_incl_utc: str, end_excl_utc: str, transac_type: str) -> PaginationIterator:
+        is_PO = transac_type == QueueItemStreamFactory.PO
+        qty_filter = {"amountReceived": { "gt": 0}} if is_PO else {"quantity": { "gt": 0}}
+        return PaginationIterator(
+            self.graphql_client,
+            Main.tshirtTransactionQueues,
+            {
+                "indexField": f'{self.item_id}-{transac_type}',
+                "sortDirection": Main.SORT_DIRECTION_ASC,
+                "limit": Main.QUERY_PAGE_LIMIT,
+                "earliestTransaction": {'lt': end_excl_utc},
+                "filter": {
+                    "latestTransaction": {"ge": start_incl_utc},
+                    **qty_filter
+                }
+            },
+        )
+    
 class ItemQueue:
 
     def __init__(self):
@@ -757,70 +819,23 @@ class Main:
         )
         return [InventoryItem(**x) for x in it]
 
-    def _get_order_items_iterators(
-        self,
-        prev_item_val: InventoryItemValue, 
-        start_inclusive: datetime, 
-        end_exclusive: datetime
-    ) -> Tuple[PaginationIterator, PaginationIterator]:
-        
-        start = MyDateTime.to_ISO8601(start_inclusive)
-        end = MyDateTime.to_ISO8601(end_exclusive - relativedelta(seconds=1))
-        start_po = prev_item_val.poQueueHead \
-            if prev_item_val.poQueueHead else start
-        start_co = prev_item_val.coQueueHead \
-            if prev_item_val.coQueueHead else start
-        
-        def get_it(transac_type: str):
-            is_PO = transac_type == 'PO'
-            start = start_po if is_PO else start_co
-            qty_filter = {"amountReceived": { "gt": 0}} if is_PO else {"quantity": { "gt": 0}}
-            return PaginationIterator(
-                self.graphql_client,
-                Main.tshirtTransactionQueues,
-                {
-                    "indexField": f'{prev_item_val.itemId}-{transac_type}',
-                    "sortDirection": Main.SORT_DIRECTION_ASC,
-                    "limit": Main.QUERY_PAGE_LIMIT,
-                    "earliestTransaction": {'lt': end},
-                    "filter": {
-                        "latestTransaction": {"ge": start},
-                        **qty_filter
-                    }
-                },
-            )
-        
-        """ This works because each interval is sorted by start
-            All values in interval are sorted, and next interval starts after, 
-            but they may overlap"""
-        po_heap = []
-        def POs_generator(it):
-            for po in it:
-                item = OrderItem(**po)
-                for x in item.receivals:
-                    if x.timestamp < start or x.timestamp >= end:
-                        continue
-                    receival = QueueItem(
-                        qty = x.quantity, 
-                        cost_per_unit = item.costPerUnit, 
-                        iso_dt = x.timestamp
-                    )
-                    heapq.heappush(po_heap, receival)
-                if po_heap:
-                    yield heapq.heappop(po_heap)
-            while po_heap:
-                yield heapq.heappop(po_heap)
-        
-        def CO_generator(it):
-            for co in it:
-                item = OrderItem(**co)
-                yield QueueItem(
-                    qty = item.quantity, 
-                    cost_per_unit = item.costPerUnit, 
-                    iso_dt = item.earliestTransaction
-                )
-        return CO_generator(get_it('CO')), POs_generator(get_it('PO'))
 
+
+    def get_item_values(self, prev_item_val: InventoryItemValue, start_incl: datetime, end_excl: datetime) -> List[InventoryItemValue]:
+        start_utc = MyDateTime.to_ISO8601(start_incl)
+        end_utc = MyDateTime.to_ISO8601(end_excl - relativedelta(seconds=1))
+        start_utc_po = prev_item_val.poQueueHead \
+            if prev_item_val.poQueueHead else start_utc
+        start_utc_co = prev_item_val.coQueueHead \
+            if prev_item_val.coQueueHead else start_utc
+
+        datasource_factory = QueueItemStreamFactory(prev_item_val.itemId, self.graphql_client)
+        po_data_source = datasource_factory.get_PO_data_source()
+        co_data_source = datasource_factory.get_CO_data_source()
+        po_bucket_it = BucketIterator(start_incl, end_excl, BucketUnit.DAY, po_data_source)
+
+        po_queue = ItemQueue()
+        co_queue = ItemQueue()
 
     def _get_unsold_items_value(
         self, 
@@ -838,8 +853,7 @@ class Main:
             
         # Loop over each bucket size (day or month)
         # 
-        po_queue = ItemQueue()
-        co_queue = ItemQueue()
+        
 
         po_queue.load_items(unsold_POs)
         co_queue.load_items(unproc_COs)

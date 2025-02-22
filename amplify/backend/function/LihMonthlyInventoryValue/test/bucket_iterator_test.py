@@ -16,6 +16,7 @@ class TestBucketIterator(unittest.TestCase):
             build_date(2020, 1, 1, hour=1),
             build_date(2020, 1, 1, hour=3),
             build_date(2020, 1, 1, hour=5),
+            build_date(2020, 1, 1, hour=23),
             build_date(2020, 1, 3, hour=1),
             build_date(2020, 1, 3, hour=3),
             build_date(2020, 1, 4, hour=0),
@@ -24,7 +25,7 @@ class TestBucketIterator(unittest.TestCase):
             build_date(2020, 3, 8, hour=0),
         ]
         self.data_source = [
-            QueueItem(0, 0, MyDateTime.to_ISO8601(d)) for d in data_source
+            QueueItem(0, 0, d) for d in data_source
         ]
 
     def test_day_iteration(self):
@@ -33,13 +34,13 @@ class TestBucketIterator(unittest.TestCase):
         bucket_iterator = BucketIterator(start, end, BucketUnit.DAY, self.data_source)
 
         day_1 = next(bucket_iterator)
-        self.assertEqual(day_1, self.data_source[0:3])
+        self.assertEqual(day_1, self.data_source[0:4])
 
         day_2 = next(bucket_iterator)
         self.assertEqual(day_2, [])
 
         day_3 = next(bucket_iterator)
-        self.assertEqual(day_3, self.data_source[3:5])
+        self.assertEqual(day_3, self.data_source[4:6])
 
     def test_month_iteration(self):
         start = build_date(2020, 1, 1)
@@ -47,10 +48,10 @@ class TestBucketIterator(unittest.TestCase):
         bucket_iterator = BucketIterator(start, end, BucketUnit.MONTH, self.data_source)
 
         month_1 = next(bucket_iterator)
-        self.assertEqual(month_1, self.data_source[0:6])
+        self.assertEqual(month_1, self.data_source[0:7])
 
         month_2 = next(bucket_iterator)
-        self.assertEqual(month_2, self.data_source[6:8])
+        self.assertEqual(month_2, self.data_source[7:9])
 
         with self.assertRaises(StopIteration):
             next(bucket_iterator)
