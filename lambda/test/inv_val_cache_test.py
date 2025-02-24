@@ -1,0 +1,59 @@
+from decimal import Decimal
+import unittest
+from unittest.mock import MagicMock
+import sys
+import os
+from datetime import datetime, timezone
+import uuid
+
+# Import your module
+sys.path.insert(0, os.path.abspath(".."))
+from src.index import InventoryValueCache
+sys.path.pop(0)
+
+
+class TestInventoryValueCache(unittest.TestCase):
+    
+    def setUp(self):
+        self.mock_graphql_client = MagicMock()
+        self.mock_dynamodb_client = MagicMock()
+        self.cache = InventoryValueCache(
+            self.mock_graphql_client, 
+            self.mock_dynamodb_client,
+            datetime(1970, 1, 1, tzinfo=timezone.utc)
+        )
+
+    def _build_cache_item(self, itemId):
+        return {
+            'itemId': itemId,
+            'aggregateValue': Decimal(11.10),
+            'numUnsold': 2,
+            'inventoryQty': 5,
+
+            'poQueueHead': "asdf",
+            'poQueueHeadQtyRemain': 4,
+            'coQueueHead': "asdfadfga",
+            'coQueueHeadQtyRemain': 4,
+
+            'tshirtStyleNumber': '',
+            'tshirtColor': '',
+            'tshirtSize': ''
+        }
+
+    def test_load(self):
+        n = 10
+        ids = [str(uuid.uuid4()) for _ in range(n)]
+        cache_items = [self._build_cache_item(itemId=ids[i]) for i in range(n)]
+        self._set_mock_get_cache_resp(cache_items)
+        self.cache.read_db()
+
+        for i in range(n):
+            self.assertEqual(ids[i], self.cache[ids[i]].itemId)
+
+    def _set_mock_get_cache_resp(self, items: list[dict], created_at: str = '1970-01-01'):
+        self.mock_graphql_client.make_request.return_value = \
+            { 'lastItemValues': items, 'createdAt': created_at }
+            
+
+if __name__ == '__main__':
+    unittest.main()
