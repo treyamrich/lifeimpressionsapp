@@ -10,6 +10,8 @@ src = {editable = true, path = "./src"}
 boto3 = "*"
 requests = "*"
 requests_aws4auth = "*"
+awsgi = "*"
+flask = "*"
 
 [requires]
 python_version = "3.9"

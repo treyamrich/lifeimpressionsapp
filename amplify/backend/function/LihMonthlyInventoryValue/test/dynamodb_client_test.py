@@ -1,3 +1,4 @@
+from decimal import Decimal
 import unittest
 from unittest.mock import MagicMock
 import sys
@@ -25,13 +26,13 @@ class TestDynamoDBClient(unittest.TestCase):
             'w': {
                 'a': 2,
                 'b': None,
-                'c': 22.1,
+                'c': Decimal('22.1'),
                 'd': True,
                 'e': False
             },
             'x': 1,
             'y': [2, 'a'],
-            'z': 2.1,
+            'z': Decimal('2.1')
         }
         expected = {
             'w': { 'M': {

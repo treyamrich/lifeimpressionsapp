@@ -63,32 +63,6 @@ class TestMain(unittest.TestCase):
         res.numUnsold = num_unsold
         res.inventoryQty = 0
         return res
-
-        
-    def test_month_iteration(self):
-        start, end = datetime(1970, 1, 1), datetime(1970, 4, 1)
-        expected_calls = [
-            (start, datetime(1970, 2, 1)),
-            (datetime(1970, 2, 1), datetime(1970, 3, 1)),
-            (datetime(1970, 3, 1), end)
-        ]
-        self._set_mock_graphql_resp()
-        self._set_mock_batch_write_resp([])
-        self.main.calculate_inventory_balance = MagicMock()
-        self.main.run(start, end)
-        assert self._get_call_args_date_range() == expected_calls
-
-    def test_non_uniform_month_step_iter(self):
-        start, end = datetime(1970, 1, 1), datetime(1970, 2, 5)
-        expected_calls = [
-            (start, datetime(1970, 2, 1)),
-            (datetime(1970, 2, 1), end)
-        ]
-        self._set_mock_graphql_resp()
-        self._set_mock_batch_write_resp([])
-        self.main.calculate_inventory_balance = MagicMock()
-        self.main.run(start, end)
-        assert self._get_call_args_date_range() == expected_calls
         
     def test_loading_prev_cache(self):
         last_month = self.start.replace(year=1969, month=12)

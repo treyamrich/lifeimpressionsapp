@@ -1,3 +1,4 @@
+from decimal import Decimal
 import unittest
 from unittest.mock import MagicMock
 import sys
@@ -27,7 +28,7 @@ class TestInventoryValueCache(unittest.TestCase):
     def _build_cache_item(self, itemId):
         return {
             'itemId': itemId,
-            'aggregateValue': 11.10,
+            'aggregateValue': Decimal(11.10),
             'numUnsold': 2,
             'inventoryQty': 5,
 
@@ -41,9 +42,9 @@ class TestInventoryValueCache(unittest.TestCase):
             'tshirtSize': ''
         }
 
-    def _set_mock_get_cache_resp(self, items: list[dict], created_at: str = '1970-01-01', is_expired = False):
+    def _set_mock_get_cache_resp(self, items: list[dict], created_at: str = '1970-01-01'):
         self.mock_graphql_client.make_request.return_value = \
-            { 'lastItemValues': items, 'createdAt': created_at, 'cacheIsExpired': is_expired }
+            { 'lastItemValues': items, 'createdAt': created_at }
 
     def test_load(self):
         n = 10
