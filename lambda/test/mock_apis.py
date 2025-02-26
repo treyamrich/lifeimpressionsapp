@@ -130,12 +130,11 @@ def gen_order_items_responses(order_type: OrderType, start: datetime, end: datet
 
 class MockPagination:
 
-    def __init__(self, items: Iterable, page_count: int, query_name: str):
+    def __init__(self, items: Iterable, page_count: int):
         dict_items = list(map(lambda x: asdict(x), items))
         self.pages = MockPagination._partition_list(
             page_count, dict_items)
         self.i = 0
-        self.query_name = query_name
 
     def __iter__(self):
         return self
@@ -167,18 +166,18 @@ inv_items = gen_inventory_items_response(num_inv_items)
 
 
 def get_rand_mock_inventory_item_api(items = inv_items, num_pages = num_inv_pages): return MockPagination(
-    items, num_pages, Queries.listTshirts.name
+    items, num_pages
 )
 
 def get_rand_mock_CO_resp(start: datetime, end: datetime, samples = 10):
     mp = MockPagination(
-        gen_order_items_responses(OrderType.CustomerOrder, start, end, samples), 1, Queries.tshirtTransactionQueues.name
+        gen_order_items_responses(OrderType.CustomerOrder, start, end, samples), 1
     )
     return next(mp)
 
 def get_rand_mock_PO_resp(start: datetime, end: datetime, samples = 10):
     mp = MockPagination(
-        gen_order_items_responses(OrderType.PurchaseOrder, start, end, samples), 1, Queries.tshirtTransactionQueues.name
+        gen_order_items_responses(OrderType.PurchaseOrder, start, end, samples), 1
     )
     return next(mp)
 
@@ -213,15 +212,15 @@ class OrderItemMockResponseBuilder:
     
     def build_stream_single(self) -> MockPagination:
         stream = self._build()
-        api_responses = MockPagination(stream, 1, Queries.tshirtTransactionQueues.name)
+        api_responses = MockPagination(stream, 1)
         return iter(api_responses)
     
     def build_stream_split(self) -> Tuple[MockPagination, MockPagination]:
         stream = self._build()
         co_order_items = filter(lambda x: x.customerOrderOrderedItemsId != None, stream)
         po_order_items = filter(lambda x: x.purchaseOrderOrderedItemsId != None, stream)
-        co_resp = MockPagination(co_order_items, 1, Queries.tshirtTransactionQueues.name)
-        po_resp = MockPagination(po_order_items, 1, Queries.tshirtTransactionQueues.name)
+        co_resp = MockPagination(co_order_items, 1)
+        po_resp = MockPagination(po_order_items, 1)
         return iter(co_resp), iter(po_resp)
     
     def print_stream_single(self):

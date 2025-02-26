@@ -4,7 +4,7 @@ from decimal import Decimal
 from enum import Enum
 import os
 import json
-from typing import Callable, Iterable, List, Optional, Tuple, Union
+from typing import Callable, Iterable, Iterator, List, Optional, Tuple, Union
 from dateutil.relativedelta import relativedelta
 from datetime import datetime, timedelta, timezone
 import requests
@@ -16,7 +16,7 @@ from mangum import Mangum
 import logging
 import heapq
 import threading
-from pydantic import BaseModel
+from typing import Generic, TypeVar, List
 
 # Dev stuff
 def load_env_vars(file_path):
@@ -156,6 +156,35 @@ class DateRange:
             )
             raise ValueError("Start date is greater than end date")
 
+T = TypeVar('T')
+class DirectionalIterator(Generic[T]):
+    
+    def __init__(self, data: List[T]):
+        self._data = data
+        self._delta = 1
+        self._is_reversed = False
+    
+    def __iter__(self):
+        self._index = self._beginning()
+        return self
+    
+    def __next__(self) -> T:
+        if self._index == self._end():
+            raise StopIteration
+        item = self._data[self._index]
+        self._index += self._delta
+        return item
+    
+    def reverse(self) -> "DirectionalIterator[T]":
+        self._is_reversed = not self._is_reversed
+        self._delta *= -1
+        return self
+    
+    def _beginning(self) -> int:
+        return len(self._data) - 1 if self._is_reversed else 0
+    
+    def _end(self) -> int:
+        return -1 if self._is_reversed else len(self._data)
 
 @dataclass
 class InventoryItem:
@@ -246,6 +275,7 @@ class GraphQLClient:
         self.session = session
 
     def make_request(self, q: Query, variables: dict):
+        logging.debug(f"Executing query '{q.name}' with vars {variables}")
         response = self.session.request(
             url=GRAPHQL_ENDPOINT,
             method="POST",
@@ -253,6 +283,8 @@ class GraphQLClient:
             json={"query": q.query, "variables": variables},
         )
         resp = response.json(parse_float=Decimal)  # IMPORTANT: parse floats as Decimal
+        print("executed query", q.name, variables)
+        print(resp)
         errors = resp.get("errors", [])
         if len(errors) > 0:
             logging.exception(
@@ -437,7 +469,6 @@ class PaginationIterator:
         self._graphql_client = graphql_client
         self._q = q
         self._page = []
-        self._next_token = None
         self._idx = 0
 
         filters = variables.get("filter", {})  # Force filter out deleted items
@@ -447,31 +478,60 @@ class PaginationIterator:
         }
 
     def __iter__(self):
+        """
+            If the first response is an empty list, then this iterator breaks
+            because it will return StopIteration. This can't be helped because
+            it's a bug in the integration between aws appsync and dynamodb's pagination
+        """
         self._get_next_page()
         return self
 
-    def __next__(self):
-        if not self._page:
-            raise StopIteration
-
+    def __next__(self):        
         at_end_of_page = self._idx == len(self._page)
-        at_last_page = self._next_token == None
-
-        if at_end_of_page and at_last_page:
-            raise StopIteration
+        at_last_page = self._variables.get("nextToken") == None
 
         if at_end_of_page:
+            if at_last_page:
+                raise StopIteration
             self._get_next_page()
-
+            
         item = self._page[self._idx]
         self._idx += 1
         return item
 
     def _get_next_page(self):
         resp = self._graphql_client.make_request(self._q, self._variables)
-        self._page, self._next_token = resp["items"], resp["nextToken"]
+        self._page = resp.get("items", []) or []
+        self._variables["nextToken"] = resp.get("nextToken", None)
         self._idx = 0
-        self._variables["nextToken"] = self._next_token
+
+
+class QueryPaginator:
+    def __init__(self, graphql_client: GraphQLClient, q: Query, variables: dict):
+        self._graphql_client = graphql_client
+        self._q = q
+        self._data = []
+
+        filters = variables.get("filter", {})  # Force filter out deleted items
+        self._variables = {
+            **variables,
+            "filter": {**filters, "isDeleted": {"ne": True}},
+        }
+
+    def load_pages(self) -> "QueryPaginator":
+        while True:
+            resp = self._graphql_client.make_request(self._q, self._variables)
+
+            items = resp.get("items", None) or []
+            self._data.extend(items)                
+
+            self._variables["nextToken"] = resp.get("nextToken", None)            
+            # Stopping on empty responses reduces dynamodb read units
+            if not items or not self._variables["nextToken"]:
+                break
+        
+    def get_data(self) -> list:
+        return self._data
 
 
 @dataclass
@@ -527,6 +587,8 @@ class InventoryValueCache:
         self._data[item_id] = value
 
     def __getitem__(self, item_id: str) -> InventoryItemValue:
+        print("Getting item from cache")
+        print(self._data.get(item_id))
         return self._data.get(
             item_id,
             InventoryItemValue(item_id),
@@ -541,7 +603,7 @@ class InventoryValueCache:
             {"createdAt": MyDateTime.to_ISO8601(self._created_date, is_only_date=True)},
         )
         if not resp:
-            return
+            return self
 
         lastItemVals = resp["lastItemValues"]
         itemVals = map(lambda x: InventoryItemValue(**x), lastItemVals)
@@ -604,12 +666,12 @@ class Inventory:
         if self._fully_loaded:
             return
 
-        it = PaginationIterator(
+        items = QueryPaginator(
             self.graphql_client,
             Queries.listTshirts,
             {"limit": Queries.QUERY_PAGE_LIMIT},
-        )
-        for obj in it:
+        ).load_pages().get_data()
+        for obj in items:
             item = InventoryItem(**obj)
             self.items[item.id] = item
 
@@ -624,7 +686,7 @@ class Inventory:
 
 class DataStream:
     """
-    Provides a stream of QueueItems for Purchase Orders or Customer Orders.
+        Provides a stream of QueueItems for Purchase Orders or Customer Orders.
     """
 
     def __init__(self, data_source: Iterable[QueueItem]):
@@ -657,8 +719,7 @@ class DataStreamBuilder:
     def build(self) -> DataStream:
         if not self._queue_head or not self._end_excl:
             raise ValueError("Start and end dates must be set")
-        raw_data_source = self._build_iterator()
-        data_source = self._decorate(raw_data_source)
+        data_source = self._get_data_source()
         return DataStream(data_source)
 
     def set_type_PO(self) -> "DataStreamBuilder":
@@ -677,18 +738,21 @@ class DataStreamBuilder:
         self._end_excl = end_excl
         return self
 
-    def _decorate(self, raw_data_source: PaginationIterator) -> Iterable[QueueItem]:
+    def _get_data_source(self) -> Iterable[QueueItem]:
         if self._type == DataStreamBuilder.TYPE_PO:
-            return self._decorate_PO(raw_data_source)
-        return self._decorate_CO(raw_data_source)
+            raw_data_source = self._build_PO_data_source()
+            return self._process_PO_source(raw_data_source)
+        
+        raw_data_source = self._build_CO_data_source()
+        return self._process_CO_source(raw_data_source)
 
-    def _decorate_PO(self, raw_data_source: PaginationIterator) -> Iterable[QueueItem]:
+    def _process_PO_source(self, raw_data_source: QueryPaginator) -> Iterable[QueueItem]:
         """This works because each interval is sorted by start
         All values in interval are sorted, and next interval starts after,
         but they may overlap"""
         po_heap = []
 
-        def decorate(it):
+        def decorate(it: Iterator[dict]):
             queue_head, end = self._queue_head, self._end_excl
             for po in it:
                 item = OrderItem(**po)
@@ -705,9 +769,12 @@ class DataStreamBuilder:
             while po_heap:
                 yield heapq.heappop(po_heap)
 
-        return decorate(raw_data_source)
+        # The following is adapter logic and can be removed when POs are normalized.
+        raw_data = raw_data_source.load_pages().get_data()
+        reversed_raw_data = DirectionalIterator(raw_data).reverse()
+        return decorate(reversed_raw_data)
 
-    def _decorate_CO(self, raw_data_source: PaginationIterator) -> Iterable[QueueItem]:
+    def _process_CO_source(self, raw_data_source: PaginationIterator) -> Iterable[QueueItem]:
         def decorate(it):
             for co in it:
                 item = OrderItem(**co)
@@ -718,18 +785,45 @@ class DataStreamBuilder:
                         item.earliestTransaction, TZ_UTC_HOUR_OFFSET
                     ),
                 )
-
+        
         return decorate(raw_data_source)
-
-    def _build_iterator(self) -> PaginationIterator:
-        is_PO = self._type == DataStreamBuilder.TYPE_PO
-        qty_filter = {"amountReceived": {"gt": 0}} if is_PO else {"quantity": {"gt": 0}}
+    
+    def _build_CO_data_source(self) -> PaginationIterator:
+        # Note COs are normalized and do not require reverse query
+        qty_filter = {"quantity": {"gt": 0}}
+        start = MyDateTime.to_ISO8601(self._queue_head)
+        end = MyDateTime.to_ISO8601(self._end_excl - timedelta(seconds=1))
         return PaginationIterator(
             self.graphql_client,
             Queries.tshirtTransactionQueues,
             {
-                "indexField": f"{self.item_id}-{self._type}",
                 "sortDirection": Queries.SORT_DIRECTION_ASC,
+                "indexField": f"{self.item_id}-{self._type}",
+                "limit": Queries.QUERY_PAGE_LIMIT,
+                "earliestTransaction": {"between": [start, end]},
+                "filter": { **qty_filter },
+            },
+        )
+
+    def _build_PO_data_source(self) -> QueryPaginator:
+        """
+            This query fetches data in reverse order to conserve dynamodb read units.
+            The reason is dynamodb fetches data based on the key condition (earliestTransaction < end_excl).
+            If data is fetched in ascending order, data will be over-fetched and filtered out after dynamodb
+            peforms the read operation. It would be possible that the first request is an empty page.
+            The trade off to fetching in reverse order is all pages must be loaded into memory before processing;
+            data cannot be streamed. 
+            
+            To optimize this, the purchase order receivals would need to be normalized; this however would
+            result in more storage cost over time.
+        """
+        qty_filter = {"amountReceived": {"gt": 0}}
+        return QueryPaginator(
+            self.graphql_client,
+            Queries.tshirtTransactionQueues,
+            {
+                "sortDirection": Queries.SORT_DIRECTION_DESC,
+                "indexField": f"{self.item_id}-{self._type}",
                 "limit": Queries.QUERY_PAGE_LIMIT,
                 "earliestTransaction": {"lt": MyDateTime.to_ISO8601(self._end_excl)},
                 "filter": {
@@ -880,6 +974,8 @@ class ItemValueCalculator:
 
             sold_this_period = co_queue.read_current_qty()
             current_in_stock = po_queue.read_current_qty()
+            print(f"Sold this period: {sold_this_period}")
+            print(f"Current in stock: {current_in_stock}")
 
             num_oversold = po_queue.pop(sold_this_period)
             co_queue.pop(current_in_stock)
@@ -1120,6 +1216,7 @@ class CacheProvider:
 class Queries:
     QUERY_PAGE_LIMIT = 100
     SORT_DIRECTION_ASC = "ASC"
+    SORT_DIRECTION_DESC = "DESC"
 
     listTshirts = Query(
         name="listTShirts",
@@ -1158,7 +1255,6 @@ class Queries:
         getTShirt(id: $id) {
         id
         styleNumber
-        brand
         color
         size
         quantityOnHand
@@ -1273,7 +1369,7 @@ class Queries:
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    app.state.graphql_client = GraphQLClient()
+    app.state.graphql_client = GraphQLClient(use_api_key=True)
     app.state.dynamodb_client = DynamoDBClient()
     app.state.inventory = Inventory(app.state.graphql_client)
     app.state.factory = Factory(
@@ -1298,17 +1394,28 @@ async def get_inventory_values(item_id: str, startInclusive: str, endExclusive: 
             date_range, item, prev_iiv, app.state.graphql_client
         ).calculate()
 
-        resp = {"data": { "items": []}}
+        resp = {
+            "data": {
+                "type": "inventory-values",
+                "id": item_id,
+                "attributes": {
+                    "tshirt": {
+                        "styleNumber": item.styleNumber,
+                        "color": item.color,
+                        "size": item.size
+                    },
+                    "items": []
+                }
+            }
+        }
         for date, iiv in calculator.items():
-            resp["data"].append({
-                "date": MyDateTime.to_ISO8601(date),
-                "aggregateValue": iiv.aggregateValue,
-                "numUnsold": iiv.numUnsold,
-                "inventoryQty": iiv.inventoryQty,
-                "tshirtStyleNumber": iiv.tshirtStyleNumber,
-                "tshirtColor": iiv.tshirtColor,
-                "tshirtSize": iiv.tshirtSize,
+            resp["data"]["attributes"]["items"].append({
+            "date": MyDateTime.to_ISO8601(date),
+            "aggregateValue": iiv.aggregateValue,
+            "numUnsold": iiv.numUnsold,
+            "inventoryQty": iiv.inventoryQty
             })
+
         logging.info(f"Success getting inventory values for item {item_id} through {date_range}")
         return resp
     except HTTPException:

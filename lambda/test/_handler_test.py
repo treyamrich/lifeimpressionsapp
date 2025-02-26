@@ -1,8 +1,10 @@
+import json
+import os
+import sys
 import unittest
+
 from _event_builder import build_event
 
-import sys
-import os
 
 sys.path.insert(0, os.path.abspath(".."))
 from src.index import handler
@@ -14,13 +16,19 @@ class TestLambdaHandler(unittest.TestCase):
         pass
 
     def test_get_item_value(self):
-        item_id = 'item_1'
-        res = self._call_get_item_value(item_id, '2020-01-01', '2020-02-01', 'DAY')
-        print(res)
+        item_id = '25afff97-2297-42be-ab65-1eff3c099a25'
+        res = self._call_get_item_value(
+            item_id, 
+            '2023-01-01', 
+            '2025-03-01', 
+            'MONTH'
+        )
+        # body = json.loads(res['body'])
+        # print(json.dumps(body, indent=4))
 
-    def test_post_inventory_value_report(self):
-        res = self._call_post_inventory_value_report()
-        print(res)
+    # def test_post_inventory_value_report(self):
+    #     res = self._call_post_inventory_value_report()
+    #     print(res)
 
     def _call_get_item_value(self, item_id: str, start_date: str, end_date: str, step_size: str):
         event = build_event(

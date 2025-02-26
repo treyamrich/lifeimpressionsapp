@@ -23,7 +23,7 @@ class TestInventory(unittest.TestCase):
         
     def test_empty_response(self):
         # Should not throw errors
-        self.mock_graphql_client.make_request.side_effect = mock_apis.MockPagination([], 2,  Queries.listTshirts.name)
+        self.mock_graphql_client.make_request.side_effect = mock_apis.MockPagination([], 2)
         self.inventory.list()
         call_count = self.mock_graphql_client.make_request.call_count
         self.assertEqual(call_count, 1)
