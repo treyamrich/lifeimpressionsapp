@@ -4,13 +4,14 @@ import { IconButton, Tooltip } from "@mui/material";
 import CloudSyncIcon from "@mui/icons-material/CloudSync";
 
 import React, { SetStateAction, useEffect, useState } from "react";
+import { Page } from "@/api/types";
 
 export type LoadMorePaginationButtonProps<T> = {
   items: T[];
   setItems: React.Dispatch<SetStateAction<T[]>>;
   fetchFunc: (
     nextToken: string | undefined | null
-  ) => Promise<ListAPIResponse<T>>;
+  ) => Promise<Page<T>>;
   filterDuplicates?: {
     getHashkey: (obj: T) => string;
   }
@@ -54,8 +55,14 @@ function LoadMorePaginationButton<T>({
     rescueDBOperation(
       () => fetchFunc(token),
       DBOperation.LIST,
-      (resp: ListAPIResponse<T>) => {
-        let newRes = resp.result;
+      (resp: Page<T> | ListAPIResponse<T>) => {
+        let newRes: T[] = [];
+
+        if ('items' in resp) {
+          newRes = resp.items;
+        } else if ('result' in resp) {
+          newRes = resp.result;
+        }
 
         if (expireNextToken) {
           setItems(newRes);

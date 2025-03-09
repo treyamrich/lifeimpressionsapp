@@ -6,25 +6,35 @@ import MaterialReactTable, {
   MRT_ColumnFiltersState,
 } from "material-react-table";
 import { getTableColumns } from "./tabel-constants";
-import React, { SetStateAction, useMemo, useState } from "react";
-import TableToolbar from "../../Table/TableToolbar";
-import { ListAPIResponse } from "@/graphql-helpers/types";
+import React, { SetStateAction, useEffect, useMemo, useState } from "react";
+import { useListOrderChangeHistory } from "@/api/list-apis";
+import { usePagination } from "@/hooks/use-pagination";
+import Typography from "@mui/material/Typography";
 
 const OrderChangeHistory = ({
   changeHistory,
-  paginationProps,
-  isLoading,
+  setEditHistory,
 }: {
   changeHistory: OrderChange[];
-  paginationProps?: {
-    setChangeHistory: React.Dispatch<SetStateAction<OrderChange[]>>;
-    fetchChangeHistoryPaginationFn: (
-      nextToken: string | null | undefined
-    ) => Promise<ListAPIResponse<OrderChange>>;
-    setIsLoading: React.Dispatch<SetStateAction<boolean>>;
-  };
-  isLoading?: boolean
+  setEditHistory: React.Dispatch<SetStateAction<OrderChange[]>>;
 }) => {
+  const {
+    pagination,
+    setPagination,
+    currentPage,
+    numRows,
+    isLoading,
+    disabledNextButton,
+    error,
+  } = usePagination<OrderChange>({
+    query: () =>
+      useListOrderChangeHistory({
+        orderId: "adc3b3b0-0b3b-4b3b-8b3b-!0b3b3b3b3b3b", // can be any uuid since we list all order changes
+      }),
+    pageSize: 10,
+    setData: setEditHistory,
+  });
+
   const [columnFilters, setColumnFilters] = useState<MRT_ColumnFiltersState>(
     []
   );
@@ -32,6 +42,7 @@ const OrderChangeHistory = ({
     () => getTableColumns(),
     []
   );
+
   return (
     <MaterialReactTable
       displayColumnDefOptions={{
@@ -43,7 +54,7 @@ const OrderChangeHistory = ({
         },
       }}
       columns={columns}
-      data={changeHistory}
+      data={currentPage}
       initialState={{
         showColumnFilters: true,
         sorting: [
@@ -53,28 +64,41 @@ const OrderChangeHistory = ({
           },
         ],
       }}
-      renderTopToolbarCustomActions={
-        paginationProps
-          ? () => (
-              <TableToolbar
-                pagination={{
-                  items: changeHistory,
-                  setItems: paginationProps.setChangeHistory,
-                  fetchFunc: paginationProps.fetchChangeHistoryPaginationFn,
-                  setIsLoading: paginationProps.setIsLoading,
-                }}
-              />
-            )
-          : undefined
-      }
       editingMode="modal" //default
       enableColumnOrdering
       enableHiding={false}
       onColumnFiltersChange={setColumnFilters}
+      muiToolbarAlertBannerProps={
+        error
+          ? {
+              color: "error",
+              children: (
+                <Typography
+                  sx={{
+                    color: "#FA896B",
+                    fontWeight: "bold",
+                  }}
+                >
+                  Error loading data
+                </Typography>
+              ),
+            }
+          : undefined
+      }
       state={{
         columnFilters,
-        isLoading
+        isLoading,
+        pagination,
+        showAlertBanner: error != null,
       }}
+      manualPagination
+      onPaginationChange={setPagination}
+      muiTablePaginationProps={{
+        nextIconButtonProps: {
+          disabled: disabledNextButton,
+        },
+      }}
+      rowCount={numRows}
     />
   );
 };
