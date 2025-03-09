@@ -5,7 +5,7 @@ node_modules/
 *.env
 .vscode
 **/*venv/*
-
+**/.aws-sam/
 
 *__pycache__*
 
