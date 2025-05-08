@@ -1,92 +1,89 @@
 "use client";
 
 import { CustomerOrder, ModelSortDirection } from "@/API";
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { listCustomerOrderAPI } from "@/graphql-helpers/list-apis";
 
+import { columnInfo, getTableColumns } from "./table-constants";
 import {
-  columnInfo,
-  getTableColumns,
-} from "./table-constants";
-import { 
-  type MRT_Row, 
-  type MRT_ColumnFiltersState 
+  type MRT_Row,
+  type MRT_ColumnFiltersState,
 } from "material-react-table";
 import OrderViewAddPage from "../components/po-customer-order-shared-components/ViewOrdersPage";
-import { EntityType } from "../components/po-customer-order-shared-components/CreateOrderPage";
+import { usePagination } from "@/hooks/use-pagination";
+import {
+  listCustomerOrdersBaseQueryKey,
+  useListCustomerOrder,
+} from "@/api/hooks/list-hooks";
+import { LRUCache } from "@/api/hooks/lru-cache";
+import { queryClient } from "@/api/hooks/query-client";
+
+const uiPageSize = 20;
+const fetchPageSize = 100;
 
 const CustomerOrders = () => {
   const { push } = useRouter();
-  const [tableData, setTableData] = useState<CustomerOrder[]>([]);
   const [columnFilters, setColumnFilters] = useState<MRT_ColumnFiltersState>(
     []
   );
-  const [didUpdateFetchFn, setDidUpdateFetchFn] = useState(false);
-  const [customerNameFilter, setCustomerNameFilter] = useState('');
+  const [customerNameFilter, setCustomerNameFilter] = useState("");
+  const lruCacheRef = useRef<LRUCache<string>>(
+    new LRUCache<string>({
+      name: "ListCustomerOrders",
+      maxSize: 3,
+      onEviction: (evictedKey: string) => {
+        queryClient.removeQueries({
+          queryKey: [listCustomerOrdersBaseQueryKey, evictedKey],
+        });
+      },
+    })
+  );
 
   const handleRowClick = (row: MRT_Row<CustomerOrder>) => {
     const orderId = row.getValue("id");
     push(`/customer-orders/view/${orderId}`);
   };
+
+  // If ever adding logic to add a row in the table on this page, tanstack query caches need to be cleared
   const handleAddRow = () => push("/customer-orders/create");
 
-  const fetchCustomerOrdersNoFilterFn = (
-    nextToken: string | null | undefined
-  ) => {
-    const deletedFilter = { isDeleted: { ne: true } };
-    return listCustomerOrderAPI({
-      filters: deletedFilter,
-      nextToken: nextToken,
-      sortDirection: ModelSortDirection.DESC,
-    });
-  };
-
-  const fetchCustomerOrdersByCustomerNameFn = (customerName: string) => {
-    const deletedFilter = { isDeleted: { ne: true }};
-    return (nextToken: string | null | undefined) => listCustomerOrderAPI({
-      filters: deletedFilter,
-      doCompletePagination: true,
-      nextToken,
-      indexPartitionKey: customerName
-    },
-    "byCustomerName");
-  }
-
-  const fetchOrdersPaginationFn = useMemo(() => {
-    setDidUpdateFetchFn(true);
-    if (customerNameFilter !== '') {
-      return fetchCustomerOrdersByCustomerNameFn(customerNameFilter);
-    }
-    return fetchCustomerOrdersNoFilterFn;
-  }, [customerNameFilter]);
-
   const handleColFiltersChange = () => {
-    let idx = columnFilters.findIndex((x: any) => x.id === 'customerName')
+    let idx = columnFilters.findIndex((x: any) => x.id === "customerName");
     if (idx >= 0) {
       setCustomerNameFilter(columnFilters[idx].value as string);
     } else {
-      setCustomerNameFilter('');
+      setCustomerNameFilter("");
     }
-  }
+  };
 
   useEffect(() => {
     handleColFiltersChange();
-  }, [columnFilters])
+  }, [columnFilters]);
+
+  const usePaginationReturn = usePagination<CustomerOrder>({
+    query: () =>
+      useListCustomerOrder(
+        {
+          filters: { isDeleted: { ne: true } },
+          sortDirection: ModelSortDirection.DESC,
+          limit: fetchPageSize,
+        },
+        customerNameFilter,
+        lruCacheRef.current
+      ),
+    pageSize: uiPageSize,
+  });
 
   return (
     <OrderViewAddPage
-      tableData={tableData}
-      setTableData={setTableData}
+      usePaginationReturn={usePaginationReturn}
+      pageSize={uiPageSize}
       onRowClick={handleRowClick}
       onAddRow={handleAddRow}
       pageTitle="Customer Orders"
-      entityType={EntityType.CustomerOrder}
       getTableColumns={getTableColumns}
       columnInfo={columnInfo}
       columnFiltersState={{ columnFilters, setColumnFilters }}
-      fetchOrdersPaginationFn={fetchOrdersPaginationFn}
-      didUpdateFetchFnState={{ updated: didUpdateFetchFn, setUpdated: setDidUpdateFetchFn }}
     />
   );
 };

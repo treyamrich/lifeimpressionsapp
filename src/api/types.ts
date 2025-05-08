@@ -16,5 +16,5 @@ export interface ListAPIResponse<T> {
 
 export interface Page<T> {
     items: T[];
-    nextToken: string | null;
+    nextToken: string | null | undefined | unknown;
 }

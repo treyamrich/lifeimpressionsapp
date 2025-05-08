@@ -17,9 +17,5 @@ export interface ListAPIInput<T> {
     createdAt?: ModelStringKeyConditionInput;
     nextToken?: string | null;
     indexPartitionKey?: string;
+    limit?: number;
 }
-
-export type ListAPIResponse<T> = {
-    result: T[];
-    nextToken: string | null | undefined;
-};

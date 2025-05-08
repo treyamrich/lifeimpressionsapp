@@ -76,21 +76,23 @@ const CreateTShirtModal = <TShirt extends Record<string, any>>({
       allValid = allValid && errMsg === "";
     });
 
-    let hasDuplicate = records.reduce(
-      (prev, curr) =>
-        prev ||
-        (curr.styleNumber.toLowerCase() === values.styleNumber.toLowerCase() &&
-          curr.size.toLowerCase() === values.size.toLowerCase() &&
-          curr.color.toLowerCase() === values.color.toLowerCase()),
-      false
-    );
-    if (hasDuplicate) {
-      allValid = false;
-      const dupMsg = "Tshirt with style number, size, color already exists";
-      newErrors.set("styleNumber", dupMsg);
-      newErrors.set("size", dupMsg);
-      newErrors.set("color", dupMsg);
-    }
+    // THIS IS BUGGED because pagination reduces the records
+    // let hasDuplicate = records.reduce(
+    //   (prev, curr) =>
+    //     prev ||
+    //     (curr.styleNumber.toLowerCase() === values.styleNumber.toLowerCase() &&
+    //       curr.size.toLowerCase() === values.size.toLowerCase() &&
+    //       curr.color.toLowerCase() === values.color.toLowerCase()),
+    //   false
+    // );
+
+    // if (hasDuplicate) {
+    //   allValid = false;
+    //   const dupMsg = "Tshirt with style number, size, color already exists";
+    //   newErrors.set("styleNumber", dupMsg);
+    //   newErrors.set("size", dupMsg);
+    //   newErrors.set("color", dupMsg);
+    // }
 
     setErrorMap(newErrors);
 

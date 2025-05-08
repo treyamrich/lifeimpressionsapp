@@ -3,7 +3,6 @@
 import {
   CreateOrderChangeInput,
   CustomerOrder,
-  OrderChange,
   TShirtOrder,
 } from "@/API";
 import PageContainer from "@/app/(DashboardLayout)/components/container/PageContainer";
@@ -40,6 +39,7 @@ import { deleteOrderTransactionAPI } from "@/dynamodb-transactions/delete-order-
 import { failedUpdateTShirtStr } from "@/utils/tshirtOrder";
 import MoreInfoAccordian from "@/app/(DashboardLayout)/components/MoreInfoAccordian/MoreInfoAccordian";
 import { fromUTC, getStartOfMonth } from "@/utils/datetimeConversions";
+import { prependOrderChangeHistory } from "@/api/hooks/mutations";
 
 type ViewCustomerOrderProps = {
   params: { id: string };
@@ -52,7 +52,6 @@ const ViewCustomerOrder = ({ params }: ViewCustomerOrderProps) => {
   const { rescueDBOperation } = useDBOperationContext();
   const [co, setCo] = useState<CustomerOrder>({} as CustomerOrder);
   const [showEditPopup, setShowEditPopup] = useState(false);
-  const [editHistory, setEditHistory] = useState<OrderChange[]>([]);
   const [updatedOrderedItems, setUpdatedOrderedItems] = useState<TShirtOrder[]>(
     () => {
       return co.orderedItems ? (co.orderedItems.items as TShirtOrder[]) : [];
@@ -68,13 +67,6 @@ const ViewCustomerOrder = ({ params }: ViewCustomerOrderProps) => {
       () => getCustomerOrderAPI({ id }),
       DBOperation.GET,
       (res: CustomerOrder) => {
-        const changeHistory = res.changeHistory?.items;
-
-        if (changeHistory) {
-          let history = changeHistory.filter((x) => x != null) as OrderChange[];
-          setEditHistory(history);
-        }
-
         setCo(res);
         let orderedItems = res.orderedItems
           ? (res.orderedItems.items.filter((v) => v !== null) as TShirtOrder[])
@@ -152,14 +144,12 @@ const ViewCustomerOrder = ({ params }: ViewCustomerOrderProps) => {
                 setTableData={setUpdatedOrderedItems}
                 parentCustomerOrder={co}
                 setCustomerOrder={setCo}
-                changeHistory={editHistory}
-                setChangeHistory={setEditHistory}
                 setNegativeInventoryWarning={setNegativeInventoryWarning}
               />
             </Section>
 
             <Section header="Change History" columnWidth={12}>
-              <ChangeHistoryTable changeHistory={editHistory} />
+              <ChangeHistoryTable orderId={co.id} />
             </Section>
           </Grid>
 
@@ -187,8 +177,6 @@ type OrderedItemsTableProps = {
   setTableData: React.Dispatch<React.SetStateAction<TShirtOrder[]>>;
   parentCustomerOrder: CustomerOrder;
   setCustomerOrder: React.Dispatch<React.SetStateAction<CustomerOrder>>;
-  changeHistory: OrderChange[];
-  setChangeHistory: React.Dispatch<React.SetStateAction<OrderChange[]>>;
   setNegativeInventoryWarning: React.Dispatch<
     React.SetStateAction<NegativeInventoryWarningState>
   >;
@@ -199,8 +187,6 @@ const OrderedItemsTable = ({
   setTableData,
   parentCustomerOrder,
   setCustomerOrder,
-  changeHistory,
-  setChangeHistory,
   setNegativeInventoryWarning,
 }: OrderedItemsTableProps) => {
   const { rescueDBOperation } = useDBOperationContext();
@@ -255,7 +241,11 @@ const OrderedItemsTable = ({
 
         tableData[row.index] = resp.newTShirtOrder;
         setTableData([...tableData]);
-        setChangeHistory([resp.orderChange, ...changeHistory]);
+        prependOrderChangeHistory({
+          newOrderChanges: [resp.orderChange],
+          orderId: parentCustomerOrder.id,
+          orderType: EntityType.CustomerOrder,
+        })
         setCustomerOrder({
           ...parentCustomerOrder,
           updatedAt: resp.orderUpdatedAtTimestamp,
@@ -313,8 +303,12 @@ const OrderedItemsTable = ({
           });
           return;
         }
-
-        setChangeHistory([resp.orderChange, ...changeHistory]);
+        
+        prependOrderChangeHistory({
+          newOrderChanges: [resp.orderChange],
+          orderId: parentCustomerOrder.id,
+          orderType: EntityType.CustomerOrder,
+        })
         setCustomerOrder({
           ...parentCustomerOrder,
           updatedAt: resp.orderUpdatedAtTimestamp,
@@ -362,14 +356,14 @@ const OrderedItemsTable = ({
 };
 
 const ChangeHistoryTable = ({
-  changeHistory,
+  orderId,
 }: {
-  changeHistory: OrderChange[];
+  orderId: string;
 }) => {
   return (
     <BlankCard>
       <CardContent>
-        <OrderChangeHistory changeHistory={changeHistory} />
+        <OrderChangeHistory orderId={orderId} entityType={EntityType.CustomerOrder}/>
       </CardContent>
     </BlankCard>
   );

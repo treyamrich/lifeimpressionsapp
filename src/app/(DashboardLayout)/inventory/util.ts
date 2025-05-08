@@ -1,10 +1,10 @@
 import { TShirt } from "@/API";
 import { DBOperation } from "@/contexts/DBErrorContext";
 import { listTShirtAPI } from "@/graphql-helpers/list-apis";
-import { ListAPIResponse } from "@/graphql-helpers/types";
 import { CSVHeader, downloadCSV } from "@/utils/csvGeneration";
 import { getTodayInSetTz, toReadableDateTime } from "@/utils/datetimeConversions";
 import { TShirtFields, tshirtSizeToLabel, tshirtTypeToLabel } from "./InventoryTable/table-constants";
+import { Page } from "@/api/types";
 
 export const fetchAllNonDeletedTShirts = (
   rescueDBOperation: (
@@ -13,7 +13,7 @@ export const fetchAllNonDeletedTShirts = (
     onSuccess: any,
     customErrorMessage?: string | undefined
   ) => void,
-  responseHandler: (resp: ListAPIResponse<TShirt>) => void
+  responseHandler: (resp: Page<TShirt>) => void
 ) => {
   const deletedFilter = { isDeleted: { ne: true } };
   rescueDBOperation(

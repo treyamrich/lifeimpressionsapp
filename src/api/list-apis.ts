@@ -2,24 +2,60 @@ import { OrderChange } from "@/API";
 import { ListAPIResponse, Page, SortDirection } from "./types";
 import { EntityType } from "@/app/(DashboardLayout)/components/po-customer-order-shared-components/CreateOrderPage";
 import { apiClient } from "./api";
-import { useInfiniteQuery } from "@tanstack/react-query";
 import { AxiosResponse } from "axios";
 
-const parseListApiResponse = <T>(response: AxiosResponse<ListAPIResponse<T>>): Page<T> => {
+const parseListApiResponse = <T>(
+  response: AxiosResponse<ListAPIResponse<T>>
+): Page<T> => {
   return {
-    items: response.data.data.items, 
+    items: response.data.data.items,
     nextToken: response.data.data.nextToken,
-  }
-}
+  };
+};
 
-const listOrderChangesHistory = async ({
+const PAGINATION_LIMIT = 100;
+const SAFETY_LIMIT = 10;
+
+export const fetchUntilLimitItemsReceived = async <T>({
   nextToken = null,
+  queryFn,
+  limit = PAGINATION_LIMIT,
+}: {
+  nextToken: string | null | undefined | unknown; 
+  queryFn: () => Promise<Page<T>>;
+  limit?: number;
+}): Promise<Page<T>> => {
+  let done = false;
+  let result: T[] = [];
+  let lastToken = nextToken;
+  let i = 0;
+  while (!done) {
+    const page = await queryFn();
+    lastToken = page.nextToken;
+    result = result.concat(page.items);
+    done = !page.nextToken || result.length >= limit;
+    i++;
+    if (i > SAFETY_LIMIT) {
+      console.error("Exceeded safety limit fetching pages");
+      break
+    }
+  }
+  return {
+    items: result,
+    nextToken: lastToken,
+  }
+};
+
+export const listOrderChangesHistoryAPI = async ({
+  nextToken = null,
+  limit,
   orderId,
   orderType,
 }: {
   orderId: string;
   orderType: EntityType;
   nextToken: string | null | unknown;
+  limit: number;
 }): Promise<Page<OrderChange>> => {
   let params: any = {};
   if (orderType === EntityType.PurchaseOrder) {
@@ -27,36 +63,20 @@ const listOrderChangesHistory = async ({
   } else if (orderType === EntityType.CustomerOrder) {
     params.type = "CO";
   }
-  const resp = await apiClient.get<ListAPIResponse<OrderChange>>(`/order/${orderId}/history`, {
-    params: {
-      ...params,
-      limit: 10,
-      nextToken: nextToken,
-      sort: SortDirection.DESC,
-    },
-  }).then(parseListApiResponse);
-  return resp;
-};
+  const f = () => apiClient
+    .get<ListAPIResponse<OrderChange>>(`/order/${orderId}/history`, {
+      params: {
+        ...params,
+        limit: limit,
+        nextToken: nextToken,
+        sort: SortDirection.DESC,
+      },
+    })
+    .then(parseListApiResponse);
 
-export const useListOrderChangeHistory = ({
-  orderId,
-  orderType,
-}: {
-  orderId: string;
-  orderType?: EntityType;
-}) =>
-  useInfiniteQuery<Page<OrderChange>>({
-    queryKey: ["orderChangeHistory", orderId, orderType],
-    queryFn: ({ pageParam }) =>
-      listOrderChangesHistory({
-        nextToken: pageParam,
-        orderId,
-        orderType: orderType!,
-      }),
-    getNextPageParam: (lastPage) => lastPage.nextToken,
-    initialPageParam: null,
-    retry: (failureCount, error) => {
-      if (error.stack?.includes("status code 400")) return false;
-      return failureCount < 3;
-    },
+  return fetchUntilLimitItemsReceived<OrderChange>({
+    nextToken,
+    queryFn: f,
+    limit,
   });
+};
