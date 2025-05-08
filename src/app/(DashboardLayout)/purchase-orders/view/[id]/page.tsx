@@ -42,6 +42,7 @@ import { failedUpdateTShirtStr } from "@/utils/tshirtOrder";
 import MoreInfoAccordian from "@/app/(DashboardLayout)/components/MoreInfoAccordian/MoreInfoAccordian";
 import { fromUTC, getStartOfMonth, getTodayInSetTz, toAWSDateTime } from "@/utils/datetimeConversions";
 import { buildOrderChangeInput, BuildOrderChangeInput } from "@/app/(DashboardLayout)/components/po-customer-order-shared-components/OrderChangeHistory/util";
+import { prependOrderChangeHistory } from "@/api/hooks/mutations";
 
 
 type ViewPurchaseOrderProps = {
@@ -54,7 +55,6 @@ const ViewPurchaseOrder = ({ params }: ViewPurchaseOrderProps) => {
   const { rescueDBOperation } = useDBOperationContext();
   const [po, setPo] = useState<PurchaseOrder>({} as PurchaseOrder);
   const [showEditPopup, setShowEditPopup] = useState(false);
-  const [editHistory, setEditHistory] = useState<OrderChange[]>([]);
   const [updatedOrderedItems, setUpdatedOrderedItems] = useState<TShirtOrder[]>(
     () => {
       return po.orderedItems ? (po.orderedItems.items as TShirtOrder[]) : [];
@@ -71,11 +71,6 @@ const ViewPurchaseOrder = ({ params }: ViewPurchaseOrderProps) => {
       () => getPurchaseOrderAPI({ id }),
       DBOperation.GET,
       (res: PurchaseOrder) => {
-        const changeHistory = res.changeHistory?.items;
-        if (changeHistory) {
-          let history = changeHistory.filter((x) => x != null) as OrderChange[];
-          setEditHistory(history);
-        }
         setPo(res);
         let orderedItems = res.orderedItems
           ? (res.orderedItems.items.filter((v) => v !== null) as TShirtOrder[])
@@ -157,14 +152,12 @@ const ViewPurchaseOrder = ({ params }: ViewPurchaseOrderProps) => {
                 setTableData={setUpdatedOrderedItems}
                 parentPurchaseOrder={po}
                 setPurchaseOrder={setPo}
-                changeHistory={editHistory}
-                setChangeHistory={setEditHistory}
                 setNegativeInventoryWarning={setNegativeInventoryWarning}
               />
             </Section>
 
             <Section header="Change History" columnWidth={12}>
-              <ChangeHistoryTable changeHistory={editHistory} />
+              <ChangeHistoryTable orderId={po.id} />
             </Section>
           </Grid>
 
@@ -192,8 +185,6 @@ type OrderedItemsTableProps = {
   setTableData: React.Dispatch<React.SetStateAction<TShirtOrder[]>>;
   parentPurchaseOrder: PurchaseOrder;
   setPurchaseOrder: React.Dispatch<React.SetStateAction<PurchaseOrder>>;
-  changeHistory: OrderChange[];
-  setChangeHistory: React.Dispatch<React.SetStateAction<OrderChange[]>>;
   setNegativeInventoryWarning: React.Dispatch<
     React.SetStateAction<NegativeInventoryWarningState>
   >;
@@ -203,8 +194,6 @@ const OrderedItemsTable = ({
   setTableData,
   parentPurchaseOrder,
   setPurchaseOrder,
-  changeHistory,
-  setChangeHistory,
   setNegativeInventoryWarning,
 }: OrderedItemsTableProps) => {
   const { user, refreshSession } = useAuthContext();
@@ -263,7 +252,11 @@ const OrderedItemsTable = ({
 
         tableData[row.index] = resp.newTShirtOrder;
         setTableData([...tableData]);
-        setChangeHistory([resp.orderChange, ...changeHistory]);
+        prependOrderChangeHistory({
+          orderId: parentPurchaseOrder.id,
+          orderType: EntityType.PurchaseOrder,
+          newOrderChanges: [resp.orderChange]
+        })
         setPurchaseOrder({
           ...parentPurchaseOrder,
           updatedAt: resp.orderUpdatedAtTimestamp,
@@ -307,7 +300,11 @@ const OrderedItemsTable = ({
       (resp: UpdateOrderTransactionResponse) => {
         // Transaction failed shouldn't fail due to inventory counts for creating a PO
         if (resp === null) return;
-        setChangeHistory([resp.orderChange as OrderChange, ...changeHistory]);
+        prependOrderChangeHistory({
+          orderId: parentPurchaseOrder.id,
+          orderType: EntityType.PurchaseOrder,
+          newOrderChanges: [resp.orderChange]
+        })
         setPurchaseOrder({
           ...parentPurchaseOrder,
           updatedAt: resp.orderUpdatedAtTimestamp,
@@ -328,7 +325,7 @@ const OrderedItemsTable = ({
     const today = toAWSDateTime(getTodayInSetTz().set('second', 0));
     let poUpdatedAt = today;
     const newTableData = [...tableData];
-    const newChangeHistory = [...changeHistory];
+    const newOrderChanges: OrderChange[] = [];
     const batchItems: AsyncBatchItem<UpdateOrderTransactionResponse>[] = [];
 
     tableData.forEach((oldTShirtOrder, idx) => {
@@ -381,7 +378,7 @@ const OrderedItemsTable = ({
 
           poUpdatedAt = resp.orderUpdatedAtTimestamp;
           newTableData[idx] = resp.newTShirtOrder;
-          newChangeHistory.unshift(resp.orderChange);
+          newOrderChanges.unshift(resp.orderChange);
         },
         errorMessage: `failed to receive item for (${oldTShirtOrder.tshirt.styleNumber}, ${oldTShirtOrder.tshirt.color}, ${oldTShirtOrder.tshirt.size})`,
       }
@@ -392,7 +389,11 @@ const OrderedItemsTable = ({
     await rescueDBOperationBatch(batchItems);
 
     setTableData(newTableData);
-    setChangeHistory(newChangeHistory);
+    prependOrderChangeHistory({
+      orderId: parentPurchaseOrder.id,
+      orderType: EntityType.PurchaseOrder,
+      newOrderChanges: newOrderChanges
+    })
     setPurchaseOrder({
       ...parentPurchaseOrder,
       updatedAt: poUpdatedAt,
@@ -442,15 +443,15 @@ const OrderedItemsTable = ({
   );
 };
 
-type ChangeHistoryTableProps = {
-  changeHistory: OrderChange[];
-};
-
-const ChangeHistoryTable = ({ changeHistory }: ChangeHistoryTableProps) => {
+const ChangeHistoryTable = ({
+  orderId,
+}: {
+  orderId: string;
+}) => {
   return (
     <BlankCard>
       <CardContent>
-        <OrderChangeHistory changeHistory={changeHistory} />
+        <OrderChangeHistory orderId={orderId} entityType={EntityType.PurchaseOrder}/>
       </CardContent>
     </BlankCard>
   );

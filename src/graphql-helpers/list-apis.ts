@@ -18,17 +18,17 @@ import {
 import { API } from "aws-amplify";
 import { GraphQLQuery } from "@aws-amplify/api";
 import {
-  customerOrdersByCreatedAt,
-  customerOrderByCustomerName,
   listTShirtOrders,
   orderChangesByCreatedAt,
-  purchaseOrdersByCreatedAt,
   tshirtsByQty,
   tshirtsByStyleNumber
 } from "@/graphql/queries";
 import { configuredAuthMode } from "./auth-mode";
 import { GraphQLOptions, GraphQLResult } from "@aws-amplify/api-graphql";
-import { ListAPIInput, ListAPIResponse, Query } from "./types";
+import { ListAPIInput, Query } from "./types";
+import { customerOrderByCustomerNameMinimum, customerOrdersByCreatedAtMinimum, purchaseOrdersByCreatedAtMinimum } from "@/my-graphql-queries/list-queries";
+import { Page } from "@/api/types";
+import { fetchUntilLimitItemsReceived } from "@/api/list-apis";
 
 const PAGINATION_LIMIT = 100;
 
@@ -36,7 +36,7 @@ async function completePagination<T>(
   options: GraphQLOptions,
   dataExtractor: (res: GraphQLResult<T>) => any,
   onErrMsg: string
-): Promise<ListAPIResponse<any>> {
+): Promise<Page<any>> {
   let done = false;
   let result: any[] = [];
 
@@ -53,7 +53,7 @@ async function completePagination<T>(
         throw new Error(onErrMsg);
       });
   }
-  return { result: result, nextToken: null };
+  return { items: result, nextToken: null };
 }
 
 async function listAPI<F, Q, R>(
@@ -61,14 +61,14 @@ async function listAPI<F, Q, R>(
   q: Query,
   qVariables: object,
   errorMessage: string
-): Promise<ListAPIResponse<R>> {
+): Promise<Page<R>> {
   const options: GraphQLOptions = {
     query: q.query,
     variables: {
       ...qVariables,
       filter: input.filters,
       nextToken: input.nextToken,
-      limit: PAGINATION_LIMIT,
+      limit: input.limit ?? PAGINATION_LIMIT,
     },
     authMode: configuredAuthMode,
   };
@@ -86,13 +86,13 @@ async function listAPI<F, Q, R>(
     );
   }
 
-  const resp = await API.graphql<GraphQLQuery<Q>>(
+  const f = () => API.graphql<GraphQLQuery<Q>>(
     options
   )
     .then((res: any) => {
       let data = extractor(res);
       return {
-        result: data?.items as R[],
+        items: data?.items as R[],
         nextToken: data?.nextToken,
       };
     })
@@ -100,13 +100,17 @@ async function listAPI<F, Q, R>(
       console.log(e);
       throw new Error(errorMessage);
     });
-  return resp;
+  return fetchUntilLimitItemsReceived<R>({
+    nextToken: input.nextToken,
+    queryFn: f,
+    limit: input.limit ?? PAGINATION_LIMIT,
+  });
 };
 
 export const listTShirtAPI = async (
   input: ListAPIInput<ModelTShirtFilterInput>,
   queryColumn?: "byStyleNumber" | "byQty"
-): Promise<ListAPIResponse<TShirt>> => {
+): Promise<Page<TShirt>> => {
   let q: Query;
   let v: any = { sortDirection: input.sortDirection }
 
@@ -126,12 +130,13 @@ export const listTShirtAPI = async (
   );
 }
 
+// Keeping this separate from hook since reports don't require pagination
 export const listPurchaseOrderAPI = async (
   input: ListAPIInput<ModelPurchaseOrderFilterInput>
-): Promise<ListAPIResponse<PurchaseOrder>> => {
+): Promise<Page<PurchaseOrder>> => {
   const q: Query = {
     name: 'purchaseOrdersByCreatedAt',
-    query: purchaseOrdersByCreatedAt
+    query: purchaseOrdersByCreatedAtMinimum // Query name is the same, just no change history
   };
   const v = {
     sortDirection: input.sortDirection,
@@ -147,21 +152,21 @@ export const listPurchaseOrderAPI = async (
 export const listCustomerOrderAPI = async (
   input: ListAPIInput<ModelCustomerOrderFilterInput>,
   queryColumn?: "byCustomerName" | "byCreatedAt"
-): Promise<ListAPIResponse<CustomerOrder>> => {
+): Promise<Page<CustomerOrder>> => {
   let q: Query;
   let v: any = { sortDirection: input.sortDirection }
   switch (queryColumn) {
     case "byCustomerName":
       q = {
         name: 'customerOrderByCustomerName',
-        query: customerOrderByCustomerName
+        query: customerOrderByCustomerNameMinimum // Query name is the same, just no change history
       };
       v = { ...v, customerName: input.indexPartitionKey };
       break;
     default:
       q = {
         name: 'customerOrdersByCreatedAt',
-        query: customerOrdersByCreatedAt
+        query: customerOrdersByCreatedAtMinimum // Query name is the same, just no change history
       }
       v = {
         ...v,
@@ -178,7 +183,7 @@ export const listCustomerOrderAPI = async (
 
 export const listOrderChangeHistoryAPI = async (
   input: ListAPIInput<ModelOrderChangeFilterInput>
-): Promise<ListAPIResponse<OrderChange>> => {
+): Promise<Page<OrderChange>> => {
   const q: Query = {
     name: 'orderChangesByCreatedAt',
     query: orderChangesByCreatedAt
@@ -196,7 +201,7 @@ export const listOrderChangeHistoryAPI = async (
 
 export const listTShirtOrdersAPI = async (
   input: ListAPIInput<ModelTShirtOrderFilterInput>
-): Promise<ListAPIResponse<TShirtOrder>> => {
+): Promise<Page<TShirtOrder>> => {
   const q: Query = { name: 'listTShirtOrders', query: listTShirtOrders };
   const v = {}
   return await listAPI<

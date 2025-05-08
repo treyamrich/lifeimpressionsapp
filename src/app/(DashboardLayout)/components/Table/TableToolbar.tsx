@@ -1,7 +1,6 @@
 import { IconButton, Stack, Tooltip } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
-import LoadMorePaginationButton, { LoadMorePaginationButtonProps } from "../pagination/LoadMorePaginationButton";
 import React from "react";
 import IconMenu from "../IconMenu/IconMenu";
 import ChecklistRtlIcon from '@mui/icons-material/ChecklistRtl';
@@ -28,12 +27,10 @@ const TableToolbarButton = ({
 );
 
 function TableToolbar<T>({
-  pagination,
   addButton,
   exportButton,
   receiveAllItemsButton,
 }: {
-  pagination?: LoadMorePaginationButtonProps<T>;
   addButton?: {
     onAdd: () => void;
     text?: string;
@@ -56,11 +53,6 @@ function TableToolbar<T>({
           onClick={addButton.onAdd}
           icon={<AddIcon />}
           tooltip="Add new item"
-        />
-      )}
-      {pagination && (
-        <LoadMorePaginationButton
-          {...pagination}
         />
       )}
       {exportButton && (

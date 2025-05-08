@@ -10,26 +10,17 @@ import OrderChangeHistory from "../components/po-customer-order-shared-component
 import InventoryTable from "./InventoryTable/InventoryTable";
 
 const InventoryPage = () => {
-  const [editHistory, setEditHistory] = useState<OrderChange[]>([]);
-  const [isLoadingInventory, setIsLoadingInventory] = useState<boolean>(false);
-
   return (
     <PageContainer title="Inventory" description="this is Inventory">
       <DashboardCard title="Inventory">
         <Grid container rowSpacing={5} columnSpacing={5}>
           <Section header="Items" columnWidth={12}>
-            <InventoryTable
-              editHistory={editHistory}
-              setEditHistory={setEditHistory}
-              isLoading={isLoadingInventory}
-              setIsLoading={setIsLoadingInventory}
-            />
+            <InventoryTable/>
           </Section>
           <Section header="Change History" columnWidth={12}>
             <></>
             <OrderChangeHistory
-              changeHistory={editHistory}
-              setEditHistory={setEditHistory}
+              entityType={undefined}
             />
           </Section>
         </Grid>

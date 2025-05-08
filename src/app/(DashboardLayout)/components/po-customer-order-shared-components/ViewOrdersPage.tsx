@@ -2,10 +2,9 @@
 
 import PageContainer from "@/app/(DashboardLayout)/components/container/PageContainer";
 import DashboardCard from "@/app/(DashboardLayout)/components/shared/DashboardCard";
-import React, { SetStateAction, useMemo, useRef, useState } from "react";
+import React, { SetStateAction, useMemo, useRef } from "react";
 
 import {
-  MaterialReactTable,
   type MRT_ColumnDef,
   type MRT_Row,
   type MRT_ColumnFiltersState,
@@ -13,47 +12,44 @@ import {
 } from "material-react-table";
 import { ColumnInfo } from "../../purchase-orders/table-constants";
 import TableToolbar from "../Table/TableToolbar";
-import { ListAPIResponse } from "@/graphql-helpers/types";
 import TableInfoHeader from "../Table/TableInfoHeader";
-import { Stack } from "@mui/material";
-import { EntityType } from "./CreateOrderPage";
+import { Stack, Typography } from "@mui/material";
+import { UsePaginationReturn } from "@/hooks/use-pagination";
+import { MRTable } from "../Table/MRTable";
 
 function ViewOrdersPage<T extends Record<any, any>>({
-  tableData,
-  setTableData,
+  usePaginationReturn,
+  pageSize,
   onRowClick,
   onAddRow,
-  fetchOrdersPaginationFn,
   pageTitle,
-  entityType,
   getTableColumns,
   columnInfo,
   columnFiltersState,
-  didUpdateFetchFnState,
 }: {
-  tableData: T[];
-  setTableData: React.Dispatch<SetStateAction<T[]>>;
+  usePaginationReturn: UsePaginationReturn<T>;
+  pageSize: number;
   onRowClick: (row: MRT_Row<T>) => void;
   onAddRow: () => void;
-  fetchOrdersPaginationFn: (
-    nextToken: string | null | undefined
-  ) => Promise<ListAPIResponse<T>>;
   pageTitle: string;
-  entityType: EntityType;
   getTableColumns: () => MRT_ColumnDef<T>[];
   columnInfo: Map<string | number | symbol | undefined, ColumnInfo>;
   columnFiltersState: {
     columnFilters: MRT_ColumnFiltersState;
     setColumnFilters: React.Dispatch<SetStateAction<MRT_ColumnFiltersState>>;
   };
-  didUpdateFetchFnState?: { 
-    updated: boolean;
-    setUpdated: React.Dispatch<SetStateAction<boolean>>; 
-  }
 }) {
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-  const { columnFilters, setColumnFilters } = columnFiltersState;
+  const {
+    currentPage,
+    numRows,
+    isLoading,
+    error,
+    pagination,
+    setPagination,
+    disabledNextButton,
+  } = usePaginationReturn;
 
+  const { columnFilters, setColumnFilters } = columnFiltersState;
   const columns = useMemo<MRT_ColumnDef<T>[]>(() => getTableColumns(), []);
 
   const hiddenColumns = useRef<() => MRT_VisibilityState>(() => {
@@ -72,8 +68,8 @@ function ViewOrdersPage<T extends Record<any, any>>({
     >
       <DashboardCard title={`${pageTitle}`}>
         <Stack>
-          <TableInfoHeader subheaderText="This table loads records created most recently first."/>
-          <MaterialReactTable
+          <TableInfoHeader subheaderText="This table loads records created most recently first." />
+          <MRTable
             displayColumnDefOptions={{
               "mrt-row-actions": {
                 muiTableHeadCellProps: {
@@ -91,7 +87,7 @@ function ViewOrdersPage<T extends Record<any, any>>({
               },
             })}
             columns={columns}
-            data={tableData}
+            data={currentPage}
             initialState={{
               showColumnFilters: true,
               columnVisibility: hiddenColumns.current(),
@@ -101,10 +97,6 @@ function ViewOrdersPage<T extends Record<any, any>>({
             enableHiding={false}
             enableGlobalFilter={false}
             onColumnFiltersChange={setColumnFilters}
-            state={{
-              columnFilters,
-              isLoading
-            }}
             filterFns={{
               noOpFilterFn: (row, id, filterValue) => {
                 return true;
@@ -112,18 +104,43 @@ function ViewOrdersPage<T extends Record<any, any>>({
             }}
             renderTopToolbarCustomActions={() => (
               <TableToolbar
-                pagination={{
-                  items: tableData,
-                  setItems: setTableData,
-                  fetchFunc: fetchOrdersPaginationFn,
-                  setIsLoading: setIsLoading,
-                  updatedFetchFn: didUpdateFetchFnState
-                }}
                 addButton={{
                   onAdd: onAddRow,
                 }}
               />
             )}
+            muiToolbarAlertBannerProps={
+              error
+                ? {
+                    color: "error",
+                    children: (
+                      <Typography
+                        sx={{
+                          color: "#FA896B",
+                          fontWeight: "bold",
+                        }}
+                      >
+                        Error loading data
+                      </Typography>
+                    ),
+                  }
+                : undefined
+            }
+            state={{
+              columnFilters,
+              isLoading,
+              pagination,
+              showAlertBanner: error != null,
+            }}
+            manualPagination
+            onPaginationChange={setPagination}
+            muiTablePaginationProps={{
+              rowsPerPageOptions: [pageSize],
+              nextIconButtonProps: {
+                disabled: disabledNextButton,
+              },
+            }}
+            rowCount={numRows}
           />
         </Stack>
       </DashboardCard>

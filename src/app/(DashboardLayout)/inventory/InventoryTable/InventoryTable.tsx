@@ -1,8 +1,6 @@
 "use client";
 
 import { createTShirtAPI } from "@/graphql-helpers/create-apis";
-import { listTShirtAPI } from "@/graphql-helpers/list-apis";
-import { ListAPIResponse } from "@/graphql-helpers/types";
 import { updateTShirtAPI } from "@/graphql-helpers/update-apis";
 
 import { DBOperation, useDBOperationContext } from "@/contexts/DBErrorContext";
@@ -12,12 +10,11 @@ import {
   getTableColumns,
   hiddenColumns,
 } from "./table-constants";
-import { CardContent, Stack } from "@mui/material";
+import { CardContent, Stack, Typography } from "@mui/material";
 import {
-  MaterialReactTable,
   type MRT_ColumnDef,
   type MRT_Row,
-  type MRT_ColumnFiltersState
+  type MRT_ColumnFiltersState,
 } from "material-react-table";
 import CreateTShirtModal from "./CreateTShirtModal";
 import TableToolbar from "../../components/Table/TableToolbar";
@@ -31,67 +28,91 @@ import {
 } from "@/dynamodb-transactions/update-tshirt-transaction";
 import { useAuthContext } from "@/contexts/AuthContext";
 import BlankCard from "../../components/shared/BlankCard";
-import { CreateOrderChangeInput, OrderChange, TShirt } from "@/API";
+import { CreateOrderChangeInput, TShirt } from "@/API";
 import React, {
   useMemo,
   useState,
   useCallback,
-  SetStateAction,
-  useEffect
+  useEffect,
+  useRef,
 } from "react";
 import { downloadInventoryCSV, fetchAllNonDeletedTShirts } from "../util";
+import {
+  addTShirtMutation,
+  deleteTShirtMutation,
+  editTShirtMutation,
+  prependOrderChangeHistory,
+} from "@/api/hooks/mutations";
+import { dummyOrderIdForInventoryAdjustment } from "../../components/po-customer-order-shared-components/OrderChangeHistory/OrderChangeHistory";
+import { Page } from "@/api/types";
+import { listTShirtBaseQueryKey, useListTShirt } from "@/api/hooks/list-hooks";
+import { usePagination } from "@/hooks/use-pagination";
+import { LRUCache } from "@/api/hooks/lru-cache";
+import { queryClient } from "@/api/hooks/query-client";
+import { MRTable } from "../../components/Table/MRTable";
 
 type EditRowState = {
   showEditPopup: boolean;
   row: MRT_Row<TShirt> | undefined;
 };
 
-const InventoryTable = ({
-  editHistory,
-  setEditHistory,
-  isLoading,
-  setIsLoading,
-}: {
-  editHistory: OrderChange[];
-  setEditHistory: React.Dispatch<SetStateAction<OrderChange[]>>;
-  isLoading: boolean;
-  setIsLoading: React.Dispatch<SetStateAction<boolean>>;
-}) => {
+const uiPageSize = 20;
+const fetchPageSize = 100;
 
-  const fetchTShirtsNoFilterFn = (nextToken: string | null | undefined) => {
-    const deletedFilter = { isDeleted: { ne: true } };
-    return listTShirtAPI({ filters: deletedFilter, nextToken: nextToken });
-  };
-
-  const fetchTShirtsByStyleNumberFn = (styleNo: string) => {
-    const deletedFilter = { isDeleted: { ne: true } };
-    return (nextToken: string | null | undefined) => listTShirtAPI(
-      { filters: deletedFilter, nextToken: nextToken, indexPartitionKey: styleNo, doCompletePagination: true}, "byStyleNumber")
-  }
-
+const InventoryTable = () => {
   const { rescueDBOperation } = useDBOperationContext();
   const { user, refreshSession } = useAuthContext();
   const [createModalOpen, setCreateModalOpen] = useState<boolean>(false);
-  const [updatedFetchFn, setUpdatedFetchFn] = useState(false);
   const [editRowState, setEditRowState] = useState<EditRowState>({
     showEditPopup: false,
     row: undefined,
   });
-  const [tableData, setTableData] = useState<TShirt[]>([]);
   const [columnFilters, setColumnFilters] = useState<MRT_ColumnFiltersState>(
     []
   );
-  const [styleNoFilter, setStyleNoFilter] = useState('');
+  const [styleNoFilter, setStyleNoFilter] = useState("");
+  const resetStyleNoFilter = () => {
+    setStyleNoFilter("");
+    setColumnFilters((old) =>
+      old.filter((filter) => filter.id !== "styleNumber")
+    );
+  };
+
+  const lruCacheRef = useRef<LRUCache<string>>(
+    new LRUCache<string>({
+      name: "InventoryTable",
+      maxSize: 3,
+      onEviction: (evictedKey: string) => {
+        queryClient.removeQueries({
+          queryKey: [listTShirtBaseQueryKey, evictedKey],
+        });
+      },
+    })
+  );
+
+  const {
+    pagination,
+    setPagination,
+    currentPage,
+    numRows,
+    isLoading,
+    disabledNextButton,
+    error,
+    normalizedPages,
+  } = usePagination<TShirt>({
+    query: () => useListTShirt(styleNoFilter, lruCacheRef.current, fetchPageSize),
+    pageSize: uiPageSize,
+  });
 
   const closeEditModal = () =>
     setEditRowState({ row: undefined, showEditPopup: false });
 
-  const handleCreateNewRow = (values: TShirt) => {
+  const handleCreateNewRow = (value: TShirt) => {
     rescueDBOperation(
-      () => createTShirtAPI(values),
+      () => createTShirtAPI(value),
       DBOperation.CREATE,
       (resp: TShirt) => {
-        setTableData([...tableData, resp]);
+        addTShirtMutation(value, lruCacheRef.current, resetStyleNoFilter);
       }
     );
   };
@@ -107,7 +128,7 @@ const InventoryTable = ({
       return;
     }
 
-    const oldTShirt = tableData[row.index];
+    const oldTShirt = row.original;
     const newTShirt: any = { ...oldTShirt };
     createInventoryChangeInput.fieldChanges.forEach((fieldChange) => {
       newTShirt[fieldChange.fieldName] = fieldChange.newValue;
@@ -122,9 +143,11 @@ const InventoryTable = ({
       DBOperation.UPDATE,
       (resp: UpdateTShirtTransactionResponse) => {
         newTShirt.updatedAt = resp.tshirtUpdatedAtTimestamp;
-        tableData[row.index] = newTShirt;
-        setTableData([...tableData]);
-        setEditHistory([resp.orderChange, ...editHistory]);
+        editTShirtMutation(newTShirt, lruCacheRef.current);
+        prependOrderChangeHistory({
+          newOrderChanges: [resp.orderChange],
+          orderId: dummyOrderIdForInventoryAdjustment,
+        });
         closeEditModal();
         resetForm();
       }
@@ -145,43 +168,34 @@ const InventoryTable = ({
         () => updateTShirtAPI(deletedTShirt),
         DBOperation.DELETE,
         () => {
-          tableData.splice(row.index, 1);
-          setTableData([...tableData]);
+          deleteTShirtMutation(deletedTShirt.id, lruCacheRef.current);
         }
       );
     },
-    [tableData]
+    [normalizedPages]
   );
 
   const columns = useMemo<MRT_ColumnDef<TShirt>[]>(() => getTableColumns(), []);
 
-  const fetchTShirtsPaginationFn = useMemo(() => {
-    setUpdatedFetchFn(true);
-    if (styleNoFilter !== '') {
-      return fetchTShirtsByStyleNumberFn(styleNoFilter);
-    }
-    return fetchTShirtsNoFilterFn;
-  }, [styleNoFilter])
-
   const handleColFiltersChange = () => {
-    let idx = columnFilters.findIndex((x: any) => x.id === 'styleNumber')
+    let idx = columnFilters.findIndex((x: any) => x.id === "styleNumber");
     if (idx >= 0) {
       setStyleNoFilter(columnFilters[idx].value as string);
     } else {
-      setStyleNoFilter('');
+      setStyleNoFilter("");
     }
-  }
+  };
 
   useEffect(() => {
     handleColFiltersChange();
-  }, [columnFilters])
+  }, [columnFilters]);
 
   return (
     <BlankCard>
       <CardContent>
         <Stack>
           <TableInfoHeader subheaderText="This table loads records with the lowest quantity first." />
-          <MaterialReactTable
+          <MRTable
             displayColumnDefOptions={{
               "mrt-row-actions": {
                 muiTableHeadCellProps: {
@@ -191,7 +205,7 @@ const InventoryTable = ({
               },
             }}
             columns={columns}
-            data={tableData}
+            data={currentPage}
             initialState={{
               showColumnFilters: true,
               sorting: [
@@ -200,14 +214,43 @@ const InventoryTable = ({
                   desc: false,
                 },
               ],
-              pagination: { pageIndex: 0, pageSize: 25 }
+              pagination: { pageIndex: 0, pageSize: 25 },
             }}
             onColumnFiltersChange={setColumnFilters}
+            // Pagination
+            muiToolbarAlertBannerProps={
+              error
+                ? {
+                    color: "error",
+                    children: (
+                      <Typography
+                        sx={{
+                          color: "#FA896B",
+                          fontWeight: "bold",
+                        }}
+                      >
+                        Error loading data
+                      </Typography>
+                    ),
+                  }
+                : undefined
+            }
             state={{
               columnFilters,
               columnVisibility: hiddenColumns,
               isLoading,
+              pagination,
+              showAlertBanner: error != null,
             }}
+            manualPagination
+            onPaginationChange={setPagination}
+            muiTablePaginationProps={{
+              rowsPerPageOptions: [uiPageSize],
+              nextIconButtonProps: {
+                disabled: disabledNextButton,
+              },
+            }}
+            rowCount={numRows}
             muiTableBodyRowProps={({ row }: { row: MRT_Row<TShirt> }) => ({
               sx: {
                 opacity: row.original.quantityOnHand <= 0 ? "50%" : "100%",
@@ -233,16 +276,6 @@ const InventoryTable = ({
             )}
             renderTopToolbarCustomActions={() => (
               <TableToolbar
-                pagination={{
-                  items: tableData,
-                  setItems: setTableData,
-                  fetchFunc: fetchTShirtsPaginationFn,
-                  setIsLoading: setIsLoading,
-                  filterDuplicates: {
-                    getHashkey: (tshirt: TShirt) => tshirt.id,
-                  },
-                  updatedFetchFn: { updated: updatedFetchFn, setUpdated: setUpdatedFetchFn }
-                }}
                 addButton={{
                   onAdd: () => setCreateModalOpen(true),
                 }}
@@ -250,13 +283,13 @@ const InventoryTable = ({
                   onExportAll: () => {
                     fetchAllNonDeletedTShirts(
                       rescueDBOperation,
-                      (resp: ListAPIResponse<TShirt>) => {
-                        downloadInventoryCSV(resp.result);
+                      (resp: Page<TShirt>) => {
+                        downloadInventoryCSV(resp.items);
                       }
                     );
                   },
                   onExportResults: () => {
-                    downloadInventoryCSV(tableData);
+                    downloadInventoryCSV(normalizedPages);
                   },
                 }}
               />
@@ -268,7 +301,7 @@ const InventoryTable = ({
             onClose={() => setCreateModalOpen(false)}
             onSubmit={handleCreateNewRow}
             entityName={entityName}
-            records={tableData}
+            records={[]}
           />
           <EditTShirtModal
             open={editRowState.showEditPopup}

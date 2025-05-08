@@ -8,8 +8,9 @@ import {
   tshirtSizeColumnFilterFn,
   tshirtSizeToLabel,
 } from "@/app/(DashboardLayout)/inventory/InventoryTable/table-constants";
+import { EntityType } from "../CreateOrderPage";
 
-export const getTableColumns = (): MRT_ColumnDef<OrderChange>[] => {
+export const getTableColumns = (changesHaveParentOrder: boolean): MRT_ColumnDef<OrderChange>[] => {
   return [
     {
       accessorKey: "tshirt.styleNumber",
@@ -35,11 +36,7 @@ export const getTableColumns = (): MRT_ColumnDef<OrderChange>[] => {
     } as MRT_ColumnDef<OrderChange>,
     {
       accessorFn: (orderChange: OrderChange) => {
-        const changeIsForTShirtOrder =
-          orderChange.purchaseOrderChangeHistoryId ||
-          orderChange.customerOrderChangeHistoryId;
-
-        let fieldNameToColumnHeaderMap: any = changeIsForTShirtOrder
+        let fieldNameToColumnHeaderMap: any = changesHaveParentOrder
           ? toTShirtOrderColumnHeaderMap
           : toTShirtColumnHeaderMap;
         return (

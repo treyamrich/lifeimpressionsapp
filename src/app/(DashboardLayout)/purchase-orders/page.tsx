@@ -3,7 +3,6 @@
 import { ModelSortDirection, PurchaseOrder } from "@/API";
 import React, { useState } from "react";
 import { useRouter } from 'next/navigation';
-import { listPurchaseOrderAPI } from "@/graphql-helpers/list-apis";
 
 import {
   columnInfo,
@@ -14,11 +13,14 @@ import {
   type MRT_ColumnFiltersState
 } from "material-react-table";
 import OrderViewAddPage from "../components/po-customer-order-shared-components/ViewOrdersPage";
-import { EntityType } from "../components/po-customer-order-shared-components/CreateOrderPage";
+import { useListPurchaseOrder } from "@/api/hooks/list-hooks";
+import { usePagination } from "@/hooks/use-pagination";
+
+const uiPageSize = 20;
+const fetchPageSize = 100;
 
 const PurchaseOrders = () => {
   const { push } = useRouter();
-  const [tableData, setTableData] = useState<PurchaseOrder[]>([]);
   const [columnFilters, setColumnFilters] = useState<MRT_ColumnFiltersState>(
     []
   );
@@ -29,29 +31,25 @@ const PurchaseOrders = () => {
   }
   const handleAddRow = () => push('/purchase-orders/create');
 
-  const fetchPurchaseOrdersPaginationFn = (
-    nextToken: string | null | undefined
-  ) => {
-    const deletedFilter = { isDeleted: { ne: true } };
-    return listPurchaseOrderAPI({
-      filters: deletedFilter,
-      nextToken: nextToken,
+  const usePaginationReturn = usePagination<PurchaseOrder>({
+    query: () => useListPurchaseOrder({
+      filters: { isDeleted: { ne: true } },
       sortDirection: ModelSortDirection.DESC,
-    });
-  };
+      limit: fetchPageSize,
+    }),
+    pageSize: uiPageSize,
+  });
 
   return (
     <OrderViewAddPage 
-      tableData={tableData}
-      setTableData={setTableData}
+      usePaginationReturn={usePaginationReturn}
+      pageSize={uiPageSize}
       onRowClick={handleRowClick}
       onAddRow={handleAddRow}
       pageTitle="Purchase Orders"
-      entityType={EntityType.PurchaseOrder}
       getTableColumns={getTableColumns}
       columnInfo={columnInfo}
       columnFiltersState={{ columnFilters, setColumnFilters }}
-      fetchOrdersPaginationFn={fetchPurchaseOrdersPaginationFn}
     />
   )
 }

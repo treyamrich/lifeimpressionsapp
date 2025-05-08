@@ -4,12 +4,10 @@ import { CreateOrderChangeInput, CustomerOrder, PurchaseOrder, TShirt, TShirtOrd
 import React, { useMemo, useState, useEffect } from "react";
 import { getTableColumns, TShirtOrderFields } from "./table-constants";
 import {
-  MaterialReactTable,
   type MRT_ColumnDef,
   type MRT_Row,
   type MRT_ColumnFiltersState,
 } from "material-react-table";
-import { ListAPIResponse } from "@/graphql-helpers/types";
 import CreateTShirtOrderModal from "./CreateTShirtOrder/CreateTShirtOrderModal";
 import EditRowPopup from "./EditTShirtOrder/EditTShirtOrderPopup";
 import { useDBOperationContext } from "@/contexts/DBErrorContext";
@@ -18,6 +16,8 @@ import TableToolbar from "../Table/TableToolbar";
 import TableRowActions from "../Table/TableRowActions";
 import { fetchAllNonDeletedTShirts } from "../../inventory/util";
 import { Dayjs } from "dayjs";
+import { Page } from "@/api/types";
+import { MRTable } from "../Table/MRTable";
 
 export type EditTShirtOrderResult = {
   row: MRT_Row<TShirtOrder>;
@@ -100,7 +100,7 @@ const TShirtOrderTable = ({
   const fetchTShirts = () =>
     fetchAllNonDeletedTShirts(
       rescueDBOperation,
-      (resp: ListAPIResponse<TShirt>) => setTShirtChoices(resp.result)
+      (resp: Page<TShirt>) => setTShirtChoices(resp.items)
     );
 
   useEffect(() => {
@@ -119,7 +119,7 @@ const TShirtOrderTable = ({
 
   return (
     <>
-      <MaterialReactTable
+      <MRTable
         displayColumnDefOptions={{
           "mrt-row-actions": {
             muiTableHeadCellProps: {

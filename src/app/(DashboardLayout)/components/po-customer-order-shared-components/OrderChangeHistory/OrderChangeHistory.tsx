@@ -1,22 +1,28 @@
 "use client";
 
 import { OrderChange } from "@/API";
-import MaterialReactTable, {
+import {
   MRT_ColumnDef,
   MRT_ColumnFiltersState,
 } from "material-react-table";
 import { getTableColumns } from "./tabel-constants";
-import React, { SetStateAction, useEffect, useMemo, useState } from "react";
-import { useListOrderChangeHistory } from "@/api/list-apis";
+import React, { useMemo, useState } from "react";
+import { useListOrderChangeHistory } from "@/api/hooks/list-hooks";
 import { usePagination } from "@/hooks/use-pagination";
 import Typography from "@mui/material/Typography";
+import { EntityType } from "../CreateOrderPage";
+import { MRTable } from "../../Table/MRTable";
+
+export const dummyOrderIdForInventoryAdjustment = "adc3b3b0-0b3b-4b3b-8b3b-0b3b3b3b3b3b";
+const uiPageSize = 20;
+const fetchPageSize = 100;
 
 const OrderChangeHistory = ({
-  changeHistory,
-  setEditHistory,
+  entityType,
+  orderId,
 }: {
-  changeHistory: OrderChange[];
-  setEditHistory: React.Dispatch<SetStateAction<OrderChange[]>>;
+  entityType: EntityType | undefined;
+  orderId?: string;
 }) => {
   const {
     pagination,
@@ -29,22 +35,23 @@ const OrderChangeHistory = ({
   } = usePagination<OrderChange>({
     query: () =>
       useListOrderChangeHistory({
-        orderId: "adc3b3b0-0b3b-4b3b-8b3b-!0b3b3b3b3b3b", // can be any uuid since we list all order changes
+        orderType: entityType,
+        orderId: orderId ?? dummyOrderIdForInventoryAdjustment,
+        limit: fetchPageSize,
       }),
-    pageSize: 10,
-    setData: setEditHistory,
+    pageSize: uiPageSize,
   });
 
   const [columnFilters, setColumnFilters] = useState<MRT_ColumnFiltersState>(
     []
   );
   const columns = useMemo<MRT_ColumnDef<OrderChange>[]>(
-    () => getTableColumns(),
+    () => getTableColumns(entityType !== undefined),
     []
   );
 
   return (
-    <MaterialReactTable
+    <MRTable
       displayColumnDefOptions={{
         "mrt-row-actions": {
           muiTableHeadCellProps: {
@@ -94,6 +101,7 @@ const OrderChangeHistory = ({
       manualPagination
       onPaginationChange={setPagination}
       muiTablePaginationProps={{
+        rowsPerPageOptions: [uiPageSize],
         nextIconButtonProps: {
           disabled: disabledNextButton,
         },

@@ -13,13 +13,13 @@ import {
   listPurchaseOrderAPI,
   listTShirtOrdersAPI,
 } from "@/graphql-helpers/list-apis";
-import { ListAPIResponse } from "@/graphql-helpers/types";
 import { datetimeInPlaceSort } from "@/utils/datetimeConversions";
 import { FormState } from "./GenerateReportForm";
 import { DetailedReportOrder, Order } from "./types";
 import { getOrderMinInfoAPI } from "@/graphql-helpers/get-apis";
 import { EntityType } from "../components/po-customer-order-shared-components/CreateOrderPage";
 import { OrderMinInfo } from "@/my-graphql-queries/types";
+import { Page } from "@/api/types";
 
 export type RequestFilters = {
   poFilter: ModelPurchaseOrderFilterInput;
@@ -93,7 +93,7 @@ export const handleHighLevelReportRequest = async (
   let hadError = false;
 
   if (includePOs) {
-    let item: AsyncBatchItem<ListAPIResponse<PurchaseOrder>> = {
+    let item: AsyncBatchItem<Page<PurchaseOrder>> = {
       requestFn: () =>
         listPurchaseOrderAPI({
           doCompletePagination: true,
@@ -102,8 +102,8 @@ export const handleHighLevelReportRequest = async (
           createdAt: createdAtRangeFilter,
         }),
       dbOperation: DBOperation.LIST,
-      successHandler: (resp: ListAPIResponse<PurchaseOrder>) => {
-        resPO = resPO.concat(resp.result);
+      successHandler: (resp: Page<PurchaseOrder>) => {
+        resPO = resPO.concat(resp.items);
       },
       errorHandler: (e) => {
         hadError = true;
@@ -112,7 +112,7 @@ export const handleHighLevelReportRequest = async (
     batchItems.push(item);
   }
   if (includeCOs) {
-    let item: AsyncBatchItem<ListAPIResponse<CustomerOrder>> = {
+    let item: AsyncBatchItem<Page<CustomerOrder>> = {
       requestFn: () =>
         listCustomerOrderAPI({
           doCompletePagination: true,
@@ -121,8 +121,8 @@ export const handleHighLevelReportRequest = async (
           createdAt: createdAtRangeFilter,
         }),
       dbOperation: DBOperation.LIST,
-      successHandler: (resp: ListAPIResponse<CustomerOrder>) => {
-        resCO = resCO.concat(resp.result);
+      successHandler: (resp: Page<CustomerOrder>) => {
+        resCO = resCO.concat(resp.items);
       },
       errorHandler: (e) => {
         hadError = true;
@@ -177,8 +177,8 @@ export const handleDetailedReportRequest = async (
                     filters: filter,
               }),
             dbOperation: DBOperation.LIST,
-            successHandler: (resp: ListAPIResponse<TShirtOrder>) => {
-                tshirtOrders = resp.result;
+            successHandler: (resp: Page<TShirtOrder>) => {
+                tshirtOrders = resp.items;
             }
         }
     ],
