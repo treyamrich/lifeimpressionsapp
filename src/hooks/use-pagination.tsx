@@ -62,7 +62,9 @@ export function usePagination<T>({
       pages[pages.length - 1].length < pageSize
     ) {
       const last = pages.pop();
-      numRows -= last?.length ?? 0;
+      const lastLength = last?.length ?? 0;
+      numRows -= lastLength;
+      normalizedData.splice(-lastLength, lastLength);
     }
     return { pages, numRows, normalizedPages: normalizedData };
   }, [pagination.pageSize, data, hasNextPage]);

@@ -57,7 +57,7 @@ type EditRowState = {
 };
 
 const uiPageSize = 20;
-const fetchPageSize = 100;
+const fetchPageSize = 20;
 
 const InventoryTable = () => {
   const { rescueDBOperation } = useDBOperationContext();

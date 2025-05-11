@@ -1,10 +1,9 @@
 "use client";
 
-import { OrderChange } from "@/API";
 import PageContainer from "@/app/(DashboardLayout)/components/container/PageContainer";
 import DashboardCard from "@/app/(DashboardLayout)/components/shared/DashboardCard";
 import { Grid } from "@mui/material";
-import React, { useState } from "react";
+import React from "react";
 import Section from "../components/po-customer-order-shared-components/ViewOrderHeader/Section";
 import OrderChangeHistory from "../components/po-customer-order-shared-components/OrderChangeHistory/OrderChangeHistory";
 import InventoryTable from "./InventoryTable/InventoryTable";

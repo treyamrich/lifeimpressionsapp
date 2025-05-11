@@ -21,12 +21,16 @@ import {
   listTShirtOrders,
   orderChangesByCreatedAt,
   tshirtsByQty,
-  tshirtsByStyleNumber
+  tshirtsByStyleNumber,
 } from "@/graphql/queries";
 import { configuredAuthMode } from "./auth-mode";
 import { GraphQLOptions, GraphQLResult } from "@aws-amplify/api-graphql";
 import { ListAPIInput, Query } from "./types";
-import { customerOrderByCustomerNameMinimum, customerOrdersByCreatedAtMinimum, purchaseOrdersByCreatedAtMinimum } from "@/my-graphql-queries/list-queries";
+import {
+  customerOrderByCustomerNameMinimum,
+  customerOrdersByCreatedAtMinimum,
+  purchaseOrdersByCreatedAtMinimum,
+} from "@/my-graphql-queries/list-queries";
 import { Page } from "@/api/types";
 import { fetchUntilLimitItemsReceived } from "@/api/list-apis";
 
@@ -76,77 +80,78 @@ async function listAPI<F, Q, R>(
   const extractor = (res: GraphQLResult<Q>) => {
     const data = res.data as any;
     return data ? data[q.name] : undefined;
-  }
+  };
 
   if (input.doCompletePagination) {
-    return await completePagination(
-      options,
-      extractor,
-      errorMessage
-    );
+    return await completePagination(options, extractor, errorMessage);
   }
 
-  const f = () => API.graphql<GraphQLQuery<Q>>(
-    options
-  )
-    .then((res: any) => {
-      let data = extractor(res);
-      return {
-        items: data?.items as R[],
-        nextToken: data?.nextToken,
-      };
-    })
-    .catch((e) => {
-      console.log(e);
-      throw new Error(errorMessage);
-    });
+  const f = (nextTok: string | null | undefined | unknown) => {
+    options.variables = {
+      ...options.variables,
+      nextToken: nextTok,
+    };
+    return API.graphql<GraphQLQuery<Q>>(options)
+      .then((res: any) => {
+        let data = extractor(res);
+        return {
+          items: data?.items as R[],
+          nextToken: data?.nextToken,
+        };
+      })
+      .catch((e) => {
+        console.log(e);
+        throw new Error(errorMessage);
+      });
+  };
   return fetchUntilLimitItemsReceived<R>({
     nextToken: input.nextToken,
     queryFn: f,
     limit: input.limit ?? PAGINATION_LIMIT,
   });
-};
+}
 
 export const listTShirtAPI = async (
   input: ListAPIInput<ModelTShirtFilterInput>,
   queryColumn?: "byStyleNumber" | "byQty"
 ): Promise<Page<TShirt>> => {
   let q: Query;
-  let v: any = { sortDirection: input.sortDirection }
+  let v: any = { sortDirection: input.sortDirection };
 
   if (queryColumn === "byStyleNumber") {
-    q = { name: 'tshirtsByStyleNumber', query: tshirtsByStyleNumber };
-    v = {...v, styleNumber: input.indexPartitionKey };
+    q = { name: "tshirtsByStyleNumber", query: tshirtsByStyleNumber };
+    v = { ...v, styleNumber: input.indexPartitionKey };
   } else {
-    q = { name: 'tshirtsByQty', query: tshirtsByQty };
-    v = {...v, indexField: "TShirtIndexField" };
+    q = { name: "tshirtsByQty", query: tshirtsByQty };
+    v = { ...v, indexField: "TShirtIndexField" };
   }
-    
+
   return await listAPI<ModelTShirtFilterInput, TshirtsByQtyQuery, TShirt>(
     input,
     q,
     v,
     "Failed to fetch TShirts"
   );
-}
+};
 
 // Keeping this separate from hook since reports don't require pagination
 export const listPurchaseOrderAPI = async (
   input: ListAPIInput<ModelPurchaseOrderFilterInput>
 ): Promise<Page<PurchaseOrder>> => {
   const q: Query = {
-    name: 'purchaseOrdersByCreatedAt',
-    query: purchaseOrdersByCreatedAtMinimum // Query name is the same, just no change history
+    name: "purchaseOrdersByCreatedAt",
+    query: purchaseOrdersByCreatedAtMinimum, // Query name is the same, just no change history
   };
   const v = {
     sortDirection: input.sortDirection,
     type: "PurchaseOrder", // Index Key
-    createdAt: input.createdAt // Sort Key
+    createdAt: input.createdAt, // Sort Key
   };
   return await listAPI<
     ModelPurchaseOrderFilterInput,
     PurchaseOrdersByCreatedAtQuery,
-    PurchaseOrder>(input, q, v, "Failed to fetch Purchase Orders")
+    PurchaseOrder
+  >(input, q, v, "Failed to fetch Purchase Orders");
 };
 
 export const listCustomerOrderAPI = async (
@@ -154,58 +159,60 @@ export const listCustomerOrderAPI = async (
   queryColumn?: "byCustomerName" | "byCreatedAt"
 ): Promise<Page<CustomerOrder>> => {
   let q: Query;
-  let v: any = { sortDirection: input.sortDirection }
+  let v: any = { sortDirection: input.sortDirection };
   switch (queryColumn) {
     case "byCustomerName":
       q = {
-        name: 'customerOrderByCustomerName',
-        query: customerOrderByCustomerNameMinimum // Query name is the same, just no change history
+        name: "customerOrderByCustomerName",
+        query: customerOrderByCustomerNameMinimum, // Query name is the same, just no change history
       };
       v = { ...v, customerName: input.indexPartitionKey };
       break;
     default:
       q = {
-        name: 'customerOrdersByCreatedAt',
-        query: customerOrdersByCreatedAtMinimum // Query name is the same, just no change history
-      }
+        name: "customerOrdersByCreatedAt",
+        query: customerOrdersByCreatedAtMinimum, // Query name is the same, just no change history
+      };
       v = {
         ...v,
         type: "CustomerOrder", // Index Key
-        createdAt: input.createdAt // Sort key
-      }
+        createdAt: input.createdAt, // Sort key
+      };
   }
   return await listAPI<
     ModelCustomerOrderFilterInput,
     CustomerOrdersByCreatedAtQuery,
-    CustomerOrder>(input, q, v, "Failed to fetch Customer Orders");
+    CustomerOrder
+  >(input, q, v, "Failed to fetch Customer Orders");
 };
-
 
 export const listOrderChangeHistoryAPI = async (
   input: ListAPIInput<ModelOrderChangeFilterInput>
 ): Promise<Page<OrderChange>> => {
   const q: Query = {
-    name: 'orderChangesByCreatedAt',
-    query: orderChangesByCreatedAt
-  }
+    name: "orderChangesByCreatedAt",
+    query: orderChangesByCreatedAt,
+  };
   const v = {
     sortDirection: input.sortDirection,
     indexField: input.indexPartitionKey, // Index key
-    createdAt: input.createdAt  // Sort key
-  }
+    createdAt: input.createdAt, // Sort key
+  };
   return await listAPI<
     ModelOrderChangeFilterInput,
     OrderChangesByCreatedAtQuery,
-    OrderChange>(input, q, v, "Failed to fetch Change History")
+    OrderChange
+  >(input, q, v, "Failed to fetch Change History");
 };
 
 export const listTShirtOrdersAPI = async (
   input: ListAPIInput<ModelTShirtOrderFilterInput>
 ): Promise<Page<TShirtOrder>> => {
-  const q: Query = { name: 'listTShirtOrders', query: listTShirtOrders };
-  const v = {}
+  const q: Query = { name: "listTShirtOrders", query: listTShirtOrders };
+  const v = {};
   return await listAPI<
     ModelTShirtOrderFilterInput,
     ListTShirtOrdersQuery,
-    TShirtOrder>(input, q, v, "Failed to fetch Order Items")
+    TShirtOrder
+  >(input, q, v, "Failed to fetch Order Items");
 };
