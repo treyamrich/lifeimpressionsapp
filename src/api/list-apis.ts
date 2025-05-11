@@ -22,7 +22,7 @@ export const fetchUntilLimitItemsReceived = async <T>({
   limit = PAGINATION_LIMIT,
 }: {
   nextToken: string | null | undefined | unknown; 
-  queryFn: () => Promise<Page<T>>;
+  queryFn: (nextToken: string | null | undefined | unknown) => Promise<Page<T>>;
   limit?: number;
 }): Promise<Page<T>> => {
   let done = false;
@@ -30,7 +30,7 @@ export const fetchUntilLimitItemsReceived = async <T>({
   let lastToken = nextToken;
   let i = 0;
   while (!done) {
-    const page = await queryFn();
+    const page = await queryFn(lastToken);
     lastToken = page.nextToken;
     result = result.concat(page.items);
     done = !page.nextToken || result.length >= limit;
@@ -63,12 +63,12 @@ export const listOrderChangesHistoryAPI = async ({
   } else if (orderType === EntityType.CustomerOrder) {
     params.type = "CO";
   }
-  const f = () => apiClient
+  const f = (nextTok: string | null | undefined | unknown) => apiClient
     .get<ListAPIResponse<OrderChange>>(`/order/${orderId}/history`, {
       params: {
         ...params,
         limit: limit,
-        nextToken: nextToken,
+        nextToken: nextTok,
         sort: SortDirection.DESC,
       },
     })
