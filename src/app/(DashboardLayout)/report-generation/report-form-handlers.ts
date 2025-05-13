@@ -26,7 +26,7 @@ export const handleGenerateSubmission = async (
     func: () => void,
     operation: DBOperation,
     onSuccess: any,
-    customErrorMessage?: string | undefined
+    errorTranslator?: (error: Error) => string
   ) => void,
   rescueDBOperationBatch: <T>(batchItems: AsyncBatchItem<T>[]) => Promise<void>
 ) => {
@@ -78,7 +78,7 @@ const handleInventoryValueReport = async (
     func: () => void,
     operation: DBOperation,
     onSuccess: any,
-    customErrorMessage?: string | undefined
+    errorTranslator?: (error: Error) => string
   ) => void
 ) => {
   const createdAt = form.yearAndMonth.format("YYYY-MM-DD");
