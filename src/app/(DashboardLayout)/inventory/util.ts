@@ -11,7 +11,7 @@ export const fetchAllNonDeletedTShirts = (
     func: () => void,
     operation: DBOperation,
     onSuccess: any,
-    customErrorMessage?: string | undefined
+    errorTranslator?: (error: Error) => string
   ) => void,
   responseHandler: (resp: Page<TShirt>) => void
 ) => {

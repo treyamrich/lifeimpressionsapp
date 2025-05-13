@@ -34,14 +34,15 @@ type DBErrorContextType = {
     rescueDBOperation: (func: () => void,
         operation: DBOperation,
         onSuccess: any,
-        customErrorMessage?: string) => void;
+        errorTranslator?: (error: Error) => string
+    ) => Promise<any>;
     rescueDBOperationBatch: <T>(batchItems: AsyncBatchItem<T>[]) => Promise<void>;
 };
 
 const dbOpErrorContextDefaultValues: DBErrorContextType = {
     dbOperationError: defaultDBOperationError,
     clearDBOperationErrors: () => { },
-    rescueDBOperation: () => { },
+    rescueDBOperation: () => Promise.resolve(),
     rescueDBOperationBatch: () => Promise.resolve(),
 };
 
@@ -61,7 +62,7 @@ export const DBOperationContextProvider = ({ children }: Props) => {
         func: () => void,
         operation: DBOperation,
         onSuccess: any,
-        customErrorMessage: string = ""
+        errorTranslator?: (error: Error) => string,
     ) => {
         let resp;
         try {
@@ -70,7 +71,7 @@ export const DBOperationContextProvider = ({ children }: Props) => {
         } catch (err: any) {
             console.log(err);
             setDBOperationError({
-                errorMessage: customErrorMessage ? customErrorMessage : err?.message,
+                errorMessage: errorTranslator ? errorTranslator(err) : err?.message,
                 operationName: operation,
             } as DBOperationError);
         }

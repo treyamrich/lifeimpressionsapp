@@ -1,6 +1,5 @@
 "use client";
 
-import { createTShirtAPI } from "@/graphql-helpers/create-apis";
 import { updateTShirtAPI } from "@/graphql-helpers/update-apis";
 
 import { DBOperation, useDBOperationContext } from "@/contexts/DBErrorContext";
@@ -44,12 +43,13 @@ import {
   prependOrderChangeHistory,
 } from "@/api/hooks/mutations";
 import { dummyOrderIdForInventoryAdjustment } from "../../components/po-customer-order-shared-components/OrderChangeHistory/OrderChangeHistory";
-import { Page } from "@/api/types";
+import { CreateTShirtAPIResponse, Page } from "@/api/types";
 import { listTShirtBaseQueryKey, useListTShirt } from "@/api/hooks/list-hooks";
 import { usePagination } from "@/hooks/use-pagination";
 import { LRUCache } from "@/api/hooks/lru-cache";
 import { queryClient } from "@/api/hooks/query-client";
 import { MRTable } from "../../components/Table/MRTable";
+import { createTShirtAPI } from "@/api/create-apis";
 
 type EditRowState = {
   showEditPopup: boolean;
@@ -111,9 +111,9 @@ const InventoryTable = () => {
     rescueDBOperation(
       () => createTShirtAPI(value),
       DBOperation.CREATE,
-      (resp: TShirt) => {
+      (resp: CreateTShirtAPIResponse) => {
         addTShirtMutation(value, lruCacheRef.current, resetStyleNoFilter);
-      }
+      },
     );
   };
 

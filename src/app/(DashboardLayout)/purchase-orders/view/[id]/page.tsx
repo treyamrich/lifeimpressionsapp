@@ -77,7 +77,7 @@ const ViewPurchaseOrder = ({ params }: ViewPurchaseOrderProps) => {
           : [];
         setUpdatedOrderedItems(orderedItems);
       },
-      "Order does not exist."
+      () => "Order does not exist."
     );
   };
 
