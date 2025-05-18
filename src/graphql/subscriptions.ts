@@ -93,7 +93,7 @@ export const onCreatePurchaseOrder = /* GraphQL */ `subscription OnCreatePurchas
         }
         quantity
         costPerUnit
-        costPerUnitAsCents
+        costPerUnitCents
         amountReceived
         receivals {
           timestamp
@@ -193,7 +193,7 @@ export const onUpdatePurchaseOrder = /* GraphQL */ `subscription OnUpdatePurchas
         }
         quantity
         costPerUnit
-        costPerUnitAsCents
+        costPerUnitCents
         amountReceived
         receivals {
           timestamp
@@ -293,7 +293,7 @@ export const onDeletePurchaseOrder = /* GraphQL */ `subscription OnDeletePurchas
         }
         quantity
         costPerUnit
-        costPerUnitAsCents
+        costPerUnitCents
         amountReceived
         receivals {
           timestamp
@@ -505,7 +505,7 @@ export const onCreateTShirtOrder = /* GraphQL */ `subscription OnCreateTShirtOrd
     }
     quantity
     costPerUnit
-    costPerUnitAsCents
+    costPerUnitCents
     amountReceived
     receivals {
       timestamp
@@ -549,7 +549,7 @@ export const onUpdateTShirtOrder = /* GraphQL */ `subscription OnUpdateTShirtOrd
     }
     quantity
     costPerUnit
-    costPerUnitAsCents
+    costPerUnitCents
     amountReceived
     receivals {
       timestamp
@@ -593,7 +593,7 @@ export const onDeleteTShirtOrder = /* GraphQL */ `subscription OnDeleteTShirtOrd
     }
     quantity
     costPerUnit
-    costPerUnitAsCents
+    costPerUnitCents
     amountReceived
     receivals {
       timestamp
@@ -643,7 +643,7 @@ export const onCreateCustomerOrder = /* GraphQL */ `subscription OnCreateCustome
         }
         quantity
         costPerUnit
-        costPerUnitAsCents
+        costPerUnitCents
         amountReceived
         receivals {
           timestamp
@@ -742,7 +742,7 @@ export const onUpdateCustomerOrder = /* GraphQL */ `subscription OnUpdateCustome
         }
         quantity
         costPerUnit
-        costPerUnitAsCents
+        costPerUnitCents
         amountReceived
         receivals {
           timestamp
@@ -841,7 +841,7 @@ export const onDeleteCustomerOrder = /* GraphQL */ `subscription OnDeleteCustome
         }
         quantity
         costPerUnit
-        costPerUnitAsCents
+        costPerUnitCents
         amountReceived
         receivals {
           timestamp

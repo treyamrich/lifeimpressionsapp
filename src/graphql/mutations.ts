@@ -103,7 +103,7 @@ export const createPurchaseOrder = /* GraphQL */ `mutation CreatePurchaseOrder(
         }
         quantity
         costPerUnit
-        costPerUnitAsCents
+        costPerUnitCents
         amountReceived
         receivals {
           timestamp
@@ -204,7 +204,7 @@ export const updatePurchaseOrder = /* GraphQL */ `mutation UpdatePurchaseOrder(
         }
         quantity
         costPerUnit
-        costPerUnitAsCents
+        costPerUnitCents
         amountReceived
         receivals {
           timestamp
@@ -305,7 +305,7 @@ export const deletePurchaseOrder = /* GraphQL */ `mutation DeletePurchaseOrder(
         }
         quantity
         costPerUnit
-        costPerUnitAsCents
+        costPerUnitCents
         amountReceived
         receivals {
           timestamp
@@ -521,7 +521,7 @@ export const createTShirtOrder = /* GraphQL */ `mutation CreateTShirtOrder(
     }
     quantity
     costPerUnit
-    costPerUnitAsCents
+    costPerUnitCents
     amountReceived
     receivals {
       timestamp
@@ -566,7 +566,7 @@ export const updateTShirtOrder = /* GraphQL */ `mutation UpdateTShirtOrder(
     }
     quantity
     costPerUnit
-    costPerUnitAsCents
+    costPerUnitCents
     amountReceived
     receivals {
       timestamp
@@ -611,7 +611,7 @@ export const deleteTShirtOrder = /* GraphQL */ `mutation DeleteTShirtOrder(
     }
     quantity
     costPerUnit
-    costPerUnitAsCents
+    costPerUnitCents
     amountReceived
     receivals {
       timestamp
@@ -662,7 +662,7 @@ export const createCustomerOrder = /* GraphQL */ `mutation CreateCustomerOrder(
         }
         quantity
         costPerUnit
-        costPerUnitAsCents
+        costPerUnitCents
         amountReceived
         receivals {
           timestamp
@@ -762,7 +762,7 @@ export const updateCustomerOrder = /* GraphQL */ `mutation UpdateCustomerOrder(
         }
         quantity
         costPerUnit
-        costPerUnitAsCents
+        costPerUnitCents
         amountReceived
         receivals {
           timestamp
@@ -862,7 +862,7 @@ export const deleteCustomerOrder = /* GraphQL */ `mutation DeleteCustomerOrder(
         }
         quantity
         costPerUnit
-        costPerUnitAsCents
+        costPerUnitCents
         amountReceived
         receivals {
           timestamp

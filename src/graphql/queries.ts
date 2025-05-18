@@ -160,7 +160,7 @@ export const getPurchaseOrder = /* GraphQL */ `query GetPurchaseOrder($id: ID!) 
         }
         quantity
         costPerUnit
-        costPerUnitAsCents
+        costPerUnitCents
         amountReceived
         receivals {
           timestamp
@@ -271,7 +271,7 @@ export const listPurchaseOrders = /* GraphQL */ `query ListPurchaseOrders(
           }
           quantity
           costPerUnit
-          costPerUnitAsCents
+          costPerUnitCents
           amountReceived
           receivals {
             timestamp
@@ -387,7 +387,7 @@ export const purchaseOrdersByCreatedAt = /* GraphQL */ `query PurchaseOrdersByCr
           }
           quantity
           costPerUnit
-          costPerUnitAsCents
+          costPerUnitCents
           amountReceived
           receivals {
             timestamp
@@ -620,7 +620,7 @@ export const getTShirtOrder = /* GraphQL */ `query GetTShirtOrder($id: ID!) {
     }
     quantity
     costPerUnit
-    costPerUnitAsCents
+    costPerUnitCents
     amountReceived
     receivals {
       timestamp
@@ -667,7 +667,7 @@ export const listTShirtOrders = /* GraphQL */ `query ListTShirtOrders(
       }
       quantity
       costPerUnit
-      costPerUnitAsCents
+      costPerUnitCents
       amountReceived
       receivals {
         timestamp
@@ -727,7 +727,7 @@ export const tshirtTransactionQueues = /* GraphQL */ `query TshirtTransactionQue
       }
       quantity
       costPerUnit
-      costPerUnitAsCents
+      costPerUnitCents
       amountReceived
       receivals {
         timestamp
@@ -778,7 +778,7 @@ export const getCustomerOrder = /* GraphQL */ `query GetCustomerOrder($id: ID!) 
         }
         quantity
         costPerUnit
-        costPerUnitAsCents
+        costPerUnitCents
         amountReceived
         receivals {
           timestamp
@@ -888,7 +888,7 @@ export const listCustomerOrders = /* GraphQL */ `query ListCustomerOrders(
           }
           quantity
           costPerUnit
-          costPerUnitAsCents
+          costPerUnitCents
           amountReceived
           receivals {
             timestamp
@@ -1001,7 +1001,7 @@ export const customerOrderByCustomerName = /* GraphQL */ `query CustomerOrderByC
           }
           quantity
           costPerUnit
-          costPerUnitAsCents
+          costPerUnitCents
           amountReceived
           receivals {
             timestamp
@@ -1116,7 +1116,7 @@ export const customerOrdersByCreatedAt = /* GraphQL */ `query CustomerOrdersByCr
           }
           quantity
           costPerUnit
-          costPerUnitAsCents
+          costPerUnitCents
           amountReceived
           receivals {
             timestamp

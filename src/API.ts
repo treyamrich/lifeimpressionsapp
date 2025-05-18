@@ -256,7 +256,7 @@ export type TShirtOrder = {
   tshirt: TShirt,
   quantity: number,
   costPerUnit: number,
-  costPerUnitAsCents: number,
+  costPerUnitCents: number,
   amountReceived?: number | null,
   receivals?:  Array<POReceival > | null,
   earliestTransaction: string,
@@ -389,7 +389,7 @@ export type DeleteOrderChangeInput = {
 export type CreateTShirtOrderInput = {
   quantity: number,
   costPerUnit: number,
-  costPerUnitAsCents: number,
+  costPerUnitCents: number,
   amountReceived?: number | null,
   receivals?: Array< POReceivalInput > | null,
   earliestTransaction: string,
@@ -411,7 +411,7 @@ export type POReceivalInput = {
 export type ModelTShirtOrderConditionInput = {
   quantity?: ModelIntInput | null,
   costPerUnit?: ModelFloatInput | null,
-  costPerUnitAsCents?: ModelIntInput | null,
+  costPerUnitCents?: ModelIntInput | null,
   amountReceived?: ModelIntInput | null,
   earliestTransaction?: ModelStringInput | null,
   latestTransaction?: ModelStringInput | null,
@@ -430,7 +430,7 @@ export type ModelTShirtOrderConditionInput = {
 export type UpdateTShirtOrderInput = {
   quantity?: number | null,
   costPerUnit?: number | null,
-  costPerUnitAsCents?: number | null,
+  costPerUnitCents?: number | null,
   amountReceived?: number | null,
   receivals?: Array< POReceivalInput > | null,
   earliestTransaction?: string | null,
@@ -713,7 +713,7 @@ export type ModelOrderChangeFilterInput = {
 export type ModelTShirtOrderFilterInput = {
   quantity?: ModelIntInput | null,
   costPerUnit?: ModelFloatInput | null,
-  costPerUnitAsCents?: ModelIntInput | null,
+  costPerUnitCents?: ModelIntInput | null,
   amountReceived?: ModelIntInput | null,
   earliestTransaction?: ModelStringInput | null,
   latestTransaction?: ModelStringInput | null,
@@ -896,7 +896,7 @@ export type ModelSubscriptionOrderChangeFilterInput = {
 export type ModelSubscriptionTShirtOrderFilterInput = {
   quantity?: ModelSubscriptionIntInput | null,
   costPerUnit?: ModelSubscriptionFloatInput | null,
-  costPerUnitAsCents?: ModelSubscriptionIntInput | null,
+  costPerUnitCents?: ModelSubscriptionIntInput | null,
   amountReceived?: ModelSubscriptionIntInput | null,
   earliestTransaction?: ModelSubscriptionStringInput | null,
   latestTransaction?: ModelSubscriptionStringInput | null,
@@ -1044,7 +1044,7 @@ export type CreatePurchaseOrderMutation = {
         },
         quantity: number,
         costPerUnit: number,
-        costPerUnitAsCents: number,
+        costPerUnitCents: number,
         amountReceived?: number | null,
         receivals?:  Array< {
           __typename: "POReceival",
@@ -1144,7 +1144,7 @@ export type UpdatePurchaseOrderMutation = {
         },
         quantity: number,
         costPerUnit: number,
-        costPerUnitAsCents: number,
+        costPerUnitCents: number,
         amountReceived?: number | null,
         receivals?:  Array< {
           __typename: "POReceival",
@@ -1244,7 +1244,7 @@ export type DeletePurchaseOrderMutation = {
         },
         quantity: number,
         costPerUnit: number,
-        costPerUnitAsCents: number,
+        costPerUnitCents: number,
         amountReceived?: number | null,
         receivals?:  Array< {
           __typename: "POReceival",
@@ -1454,7 +1454,7 @@ export type CreateTShirtOrderMutation = {
     },
     quantity: number,
     costPerUnit: number,
-    costPerUnitAsCents: number,
+    costPerUnitCents: number,
     amountReceived?: number | null,
     receivals?:  Array< {
       __typename: "POReceival",
@@ -1498,7 +1498,7 @@ export type UpdateTShirtOrderMutation = {
     },
     quantity: number,
     costPerUnit: number,
-    costPerUnitAsCents: number,
+    costPerUnitCents: number,
     amountReceived?: number | null,
     receivals?:  Array< {
       __typename: "POReceival",
@@ -1542,7 +1542,7 @@ export type DeleteTShirtOrderMutation = {
     },
     quantity: number,
     costPerUnit: number,
-    costPerUnitAsCents: number,
+    costPerUnitCents: number,
     amountReceived?: number | null,
     receivals?:  Array< {
       __typename: "POReceival",
@@ -1594,7 +1594,7 @@ export type CreateCustomerOrderMutation = {
         },
         quantity: number,
         costPerUnit: number,
-        costPerUnitAsCents: number,
+        costPerUnitCents: number,
         amountReceived?: number | null,
         receivals?:  Array< {
           __typename: "POReceival",
@@ -1693,7 +1693,7 @@ export type UpdateCustomerOrderMutation = {
         },
         quantity: number,
         costPerUnit: number,
-        costPerUnitAsCents: number,
+        costPerUnitCents: number,
         amountReceived?: number | null,
         receivals?:  Array< {
           __typename: "POReceival",
@@ -1792,7 +1792,7 @@ export type DeleteCustomerOrderMutation = {
         },
         quantity: number,
         costPerUnit: number,
-        costPerUnitAsCents: number,
+        costPerUnitCents: number,
         amountReceived?: number | null,
         receivals?:  Array< {
           __typename: "POReceival",
@@ -2125,7 +2125,7 @@ export type GetPurchaseOrderQuery = {
         },
         quantity: number,
         costPerUnit: number,
-        costPerUnitAsCents: number,
+        costPerUnitCents: number,
         amountReceived?: number | null,
         receivals?:  Array< {
           __typename: "POReceival",
@@ -2230,7 +2230,7 @@ export type ListPurchaseOrdersQuery = {
           },
           quantity: number,
           costPerUnit: number,
-          costPerUnitAsCents: number,
+          costPerUnitCents: number,
           amountReceived?: number | null,
           receivals?:  Array< {
             __typename: "POReceival",
@@ -2338,7 +2338,7 @@ export type PurchaseOrdersByCreatedAtQuery = {
           },
           quantity: number,
           costPerUnit: number,
-          costPerUnitAsCents: number,
+          costPerUnitCents: number,
           amountReceived?: number | null,
           receivals?:  Array< {
             __typename: "POReceival",
@@ -2561,7 +2561,7 @@ export type GetTShirtOrderQuery = {
     },
     quantity: number,
     costPerUnit: number,
-    costPerUnitAsCents: number,
+    costPerUnitCents: number,
     amountReceived?: number | null,
     receivals?:  Array< {
       __typename: "POReceival",
@@ -2608,7 +2608,7 @@ export type ListTShirtOrdersQuery = {
       },
       quantity: number,
       costPerUnit: number,
-      costPerUnitAsCents: number,
+      costPerUnitCents: number,
       amountReceived?: number | null,
       receivals?:  Array< {
         __typename: "POReceival",
@@ -2660,7 +2660,7 @@ export type TshirtTransactionQueuesQuery = {
       },
       quantity: number,
       costPerUnit: number,
-      costPerUnitAsCents: number,
+      costPerUnitCents: number,
       amountReceived?: number | null,
       receivals?:  Array< {
         __typename: "POReceival",
@@ -2713,7 +2713,7 @@ export type GetCustomerOrderQuery = {
         },
         quantity: number,
         costPerUnit: number,
-        costPerUnitAsCents: number,
+        costPerUnitCents: number,
         amountReceived?: number | null,
         receivals?:  Array< {
           __typename: "POReceival",
@@ -2817,7 +2817,7 @@ export type ListCustomerOrdersQuery = {
           },
           quantity: number,
           costPerUnit: number,
-          costPerUnitAsCents: number,
+          costPerUnitCents: number,
           amountReceived?: number | null,
           receivals?:  Array< {
             __typename: "POReceival",
@@ -2923,7 +2923,7 @@ export type CustomerOrderByCustomerNameQuery = {
           },
           quantity: number,
           costPerUnit: number,
-          costPerUnitAsCents: number,
+          costPerUnitCents: number,
           amountReceived?: number | null,
           receivals?:  Array< {
             __typename: "POReceival",
@@ -3030,7 +3030,7 @@ export type CustomerOrdersByCreatedAtQuery = {
           },
           quantity: number,
           costPerUnit: number,
-          costPerUnitAsCents: number,
+          costPerUnitCents: number,
           amountReceived?: number | null,
           receivals?:  Array< {
             __typename: "POReceival",
@@ -3288,7 +3288,7 @@ export type OnCreatePurchaseOrderSubscription = {
         },
         quantity: number,
         costPerUnit: number,
-        costPerUnitAsCents: number,
+        costPerUnitCents: number,
         amountReceived?: number | null,
         receivals?:  Array< {
           __typename: "POReceival",
@@ -3387,7 +3387,7 @@ export type OnUpdatePurchaseOrderSubscription = {
         },
         quantity: number,
         costPerUnit: number,
-        costPerUnitAsCents: number,
+        costPerUnitCents: number,
         amountReceived?: number | null,
         receivals?:  Array< {
           __typename: "POReceival",
@@ -3486,7 +3486,7 @@ export type OnDeletePurchaseOrderSubscription = {
         },
         quantity: number,
         costPerUnit: number,
-        costPerUnitAsCents: number,
+        costPerUnitCents: number,
         amountReceived?: number | null,
         receivals?:  Array< {
           __typename: "POReceival",
@@ -3692,7 +3692,7 @@ export type OnCreateTShirtOrderSubscription = {
     },
     quantity: number,
     costPerUnit: number,
-    costPerUnitAsCents: number,
+    costPerUnitCents: number,
     amountReceived?: number | null,
     receivals?:  Array< {
       __typename: "POReceival",
@@ -3735,7 +3735,7 @@ export type OnUpdateTShirtOrderSubscription = {
     },
     quantity: number,
     costPerUnit: number,
-    costPerUnitAsCents: number,
+    costPerUnitCents: number,
     amountReceived?: number | null,
     receivals?:  Array< {
       __typename: "POReceival",
@@ -3778,7 +3778,7 @@ export type OnDeleteTShirtOrderSubscription = {
     },
     quantity: number,
     costPerUnit: number,
-    costPerUnitAsCents: number,
+    costPerUnitCents: number,
     amountReceived?: number | null,
     receivals?:  Array< {
       __typename: "POReceival",
@@ -3829,7 +3829,7 @@ export type OnCreateCustomerOrderSubscription = {
         },
         quantity: number,
         costPerUnit: number,
-        costPerUnitAsCents: number,
+        costPerUnitCents: number,
         amountReceived?: number | null,
         receivals?:  Array< {
           __typename: "POReceival",
@@ -3927,7 +3927,7 @@ export type OnUpdateCustomerOrderSubscription = {
         },
         quantity: number,
         costPerUnit: number,
-        costPerUnitAsCents: number,
+        costPerUnitCents: number,
         amountReceived?: number | null,
         receivals?:  Array< {
           __typename: "POReceival",
@@ -4025,7 +4025,7 @@ export type OnDeleteCustomerOrderSubscription = {
         },
         quantity: number,
         costPerUnit: number,
-        costPerUnitAsCents: number,
+        costPerUnitCents: number,
         amountReceived?: number | null,
         receivals?:  Array< {
           __typename: "POReceival",
