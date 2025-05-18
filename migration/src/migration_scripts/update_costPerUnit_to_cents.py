@@ -2,7 +2,7 @@ from enum import Enum
 import os
 from clients.dynamodb_client import DynamoDBClient, DynamoDBPaginationIterator
 from migration_helper import batch_execute_partiql, get_full_table_name
-import pandas as pd
+from decimal import Decimal, ROUND_HALF_UP
 from queries import *
 
 class TShirtOrderFields(Enum):
@@ -26,10 +26,16 @@ def list_tshirtorder_iterator(table_name: str):
     )
 
 def validate_migration(it: DynamoDBPaginationIterator):
+    mismatches = []
     for x in it:
         if x['costPerUnit'] != x['costPerUnitCents'] / 100:
-            raise Exception(f"costPerUnit mismatch: {x['id']}")
-        
+            mismatches.append([x['id'], x['costPerUnit'], x['costPerUnitCents']])
+    
+    if len(mismatches) > 0:
+        print(f"Found {len(mismatches)} mismatches:")
+        for mismatch in mismatches:
+            print(f"ID: {mismatch[0]}, costPerUnit: {mismatch[1]}, costPerUnitCents: {mismatch[2]}")
+        raise Exception("Validation failed: costPerUnit and costPerUnitCents do not match.")
         
 def run():
     TSHIRT_ORDER_TABLE_NAME = os.environ['TSHIRT_ORDER_TABLE_NAME']
@@ -39,9 +45,11 @@ def run():
     tshirt_orders = get_it()
 
     def process_item(item: dict):
+        cost_per_unit = Decimal(item['costPerUnit'])
+        cost_per_unit_cents = (cost_per_unit * 100).quantize(Decimal("1"), rounding=ROUND_HALF_UP)
         new_item = {
             'id': item['id'],
-            'costPerUnitCents': int(item['costPerUnit'] * 100),
+            'costPerUnitCents': int(cost_per_unit_cents),
         }
         return (DynamoDBClient.DBOperation.UPDATE, new_item)
     
