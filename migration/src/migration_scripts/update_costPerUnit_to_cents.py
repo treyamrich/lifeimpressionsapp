@@ -36,6 +36,12 @@ def validate_migration(it: DynamoDBPaginationIterator):
         for mismatch in mismatches:
             print(f"ID: {mismatch[0]}, costPerUnit: {mismatch[1]}, costPerUnitCents: {mismatch[2]}")
         raise Exception("Validation failed: costPerUnit and costPerUnitCents do not match.")
+    
+def validate_removal(it: DynamoDBPaginationIterator):
+    for x in it:
+        if 'costPerUnit' in x:
+            print(f"ID: {x['id']}, costPerUnit: {x['costPerUnit']}")
+            raise Exception("Validation failed: costPerUnit should be removed.")
         
 def run():
     TSHIRT_ORDER_TABLE_NAME = os.environ['TSHIRT_ORDER_TABLE_NAME']
@@ -44,17 +50,25 @@ def run():
 
     tshirt_orders = get_it()
 
+    # def process_item(item: dict):
+    #     cost_per_unit = Decimal(item['costPerUnit'])
+    #     cost_per_unit_cents = (cost_per_unit * 100).quantize(Decimal("1"), rounding=ROUND_HALF_UP)
+    #     new_item = {
+    #         'id': item['id'],
+    #         'costPerUnitCents': int(cost_per_unit_cents),
+    #     }
+    #     return (DynamoDBClient.DBOperation.UPDATE, new_item)
+    
     def process_item(item: dict):
-        cost_per_unit = Decimal(item['costPerUnit'])
-        cost_per_unit_cents = (cost_per_unit * 100).quantize(Decimal("1"), rounding=ROUND_HALF_UP)
         new_item = {
             'id': item['id'],
-            'costPerUnitCents': int(cost_per_unit_cents),
+            'costPerUnit': None,
         }
-        return (DynamoDBClient.DBOperation.UPDATE, new_item)
+        return (DynamoDBClient.DBOperation.REMOVE_ATTRIBUTES, new_item)
     
     update_items = list(map(process_item, tshirt_orders))
 
     batch_execute_partiql(full_table_name, "id", update_items)
     
-    validate_migration(get_it())
+    # validate_migration(get_it())
+    validate_removal(get_it())
