@@ -103,6 +103,7 @@ type TShirtOrder @model @auth(rules: [
   tshirt: TShirt! @hasOne
   quantity: Int!
   costPerUnit: Float!
+  costPerUnitCents: Int! @default(value: "0")
   
   amountReceived: Int @default(value: "0") # This is only used for PurchaseOrder
   receivals: [POReceival!]
