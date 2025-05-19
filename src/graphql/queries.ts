@@ -159,7 +159,6 @@ export const getPurchaseOrder = /* GraphQL */ `query GetPurchaseOrder($id: ID!) 
           __typename
         }
         quantity
-        costPerUnit
         costPerUnitCents
         amountReceived
         receivals {
@@ -270,7 +269,6 @@ export const listPurchaseOrders = /* GraphQL */ `query ListPurchaseOrders(
             __typename
           }
           quantity
-          costPerUnit
           costPerUnitCents
           amountReceived
           receivals {
@@ -386,7 +384,6 @@ export const purchaseOrdersByCreatedAt = /* GraphQL */ `query PurchaseOrdersByCr
             __typename
           }
           quantity
-          costPerUnit
           costPerUnitCents
           amountReceived
           receivals {
@@ -619,7 +616,6 @@ export const getTShirtOrder = /* GraphQL */ `query GetTShirtOrder($id: ID!) {
       __typename
     }
     quantity
-    costPerUnit
     costPerUnitCents
     amountReceived
     receivals {
@@ -666,7 +662,6 @@ export const listTShirtOrders = /* GraphQL */ `query ListTShirtOrders(
         __typename
       }
       quantity
-      costPerUnit
       costPerUnitCents
       amountReceived
       receivals {
@@ -726,7 +721,6 @@ export const tshirtTransactionQueues = /* GraphQL */ `query TshirtTransactionQue
         __typename
       }
       quantity
-      costPerUnit
       costPerUnitCents
       amountReceived
       receivals {
@@ -777,7 +771,6 @@ export const getCustomerOrder = /* GraphQL */ `query GetCustomerOrder($id: ID!) 
           __typename
         }
         quantity
-        costPerUnit
         costPerUnitCents
         amountReceived
         receivals {
@@ -887,7 +880,6 @@ export const listCustomerOrders = /* GraphQL */ `query ListCustomerOrders(
             __typename
           }
           quantity
-          costPerUnit
           costPerUnitCents
           amountReceived
           receivals {
@@ -1000,7 +992,6 @@ export const customerOrderByCustomerName = /* GraphQL */ `query CustomerOrderByC
             __typename
           }
           quantity
-          costPerUnit
           costPerUnitCents
           amountReceived
           receivals {
@@ -1115,7 +1106,6 @@ export const customerOrdersByCreatedAt = /* GraphQL */ `query CustomerOrdersByCr
             __typename
           }
           quantity
-          costPerUnit
           costPerUnitCents
           amountReceived
           receivals {

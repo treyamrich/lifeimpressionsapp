@@ -43,6 +43,8 @@ import MoreInfoAccordian from "@/app/(DashboardLayout)/components/MoreInfoAccord
 import { fromUTC, getStartOfMonth, getTodayInSetTz, toAWSDateTime } from "@/utils/datetimeConversions";
 import { buildOrderChangeInput, BuildOrderChangeInput } from "@/app/(DashboardLayout)/components/po-customer-order-shared-components/OrderChangeHistory/util";
 import { prependOrderChangeHistory } from "@/api/hooks/mutations";
+import { TShirtOrderMoneyAwareForm } from "@/app/(DashboardLayout)/components/TShirtOrderTable/table-constants";
+import { toCents } from "@/utils/money";
 
 
 type ViewPurchaseOrderProps = {
@@ -204,18 +206,14 @@ const OrderedItemsTable = ({
     res: EditTShirtOrderResult,
     allowNegativeInventory: boolean = false
   ) => {
-    const { row, orderChange, exitEditingMode, poItemDateReceived } = res;
+    const { row, updatedTShirtOrder, orderChange, exitEditingMode, poItemDateReceived } = res;
     let createOrderChangeInput = orderChange;
     const oldTShirtOrder = tableData[row.index];
-    const newTShirtOrder: any = { ...oldTShirtOrder };
-    createOrderChangeInput.fieldChanges.forEach((fieldChange) => {
-      newTShirtOrder[fieldChange.fieldName] = fieldChange.newValue;
-    });
 
     const inventoryQtyDelta =
-      newTShirtOrder.amountReceived - oldTShirtOrder.amountReceived!;
+      updatedTShirtOrder.amountReceived! - oldTShirtOrder.amountReceived!;
     const updateOrderInput: UpdateOrderTransactionInput = {
-      updatedTShirtOrder: newTShirtOrder,
+      updatedTShirtOrder: updatedTShirtOrder,
       parentOrder: parentPurchaseOrder,
       inventoryQtyDelta: inventoryQtyDelta,
       createOrderChangeInput: createOrderChangeInput,
@@ -270,15 +268,27 @@ const OrderedItemsTable = ({
   };
 
   const handleAfterRowAdd = (
-    newTShirtOrder: TShirtOrder,
+    formValues: TShirtOrderMoneyAwareForm,
     createOrderChangeInput: CreateOrderChangeInput,
     closeFormCallback: () => void
   ) => {
-    if (newTShirtOrder.id) return; // Only create new tshirt orders
+    const updatedOrderItem: TShirtOrder = {
+      __typename: "TShirtOrder",
+      tshirt: formValues.tshirt!,
+      quantity: formValues.quantity,
+      amountReceived: formValues.amountReceived,
+      costPerUnitCents: formValues.costPerUnitCents,
+      id: "",
+      createdAt: "",
+      updatedAt: "",
+      earliestTransaction: "",
+      latestTransaction: "",
+      tShirtOrderTshirtId: formValues.tshirt!.id,
+    }
 
     const inventoryQtyDelta = 0; // Inventory qty shouldn't change
     const updateOrderInput: UpdateOrderTransactionInput = {
-      updatedTShirtOrder: newTShirtOrder,
+      updatedTShirtOrder: updatedOrderItem,
       parentOrder: parentPurchaseOrder,
       inventoryQtyDelta: inventoryQtyDelta,
       createOrderChangeInput: createOrderChangeInput,

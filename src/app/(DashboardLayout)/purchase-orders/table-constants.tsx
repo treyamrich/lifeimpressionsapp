@@ -1,4 +1,4 @@
-import { POStatus, PurchaseOrder } from "@/API";
+import { OrderChange, POStatus, PurchaseOrder, TShirtOrder } from "@/API";
 import { getStartOfMonth, getTodayInSetTz, toReadableDateTime } from "@/utils/datetimeConversions";
 import { Chip } from "@mui/material";
 import { Dayjs } from "dayjs";
@@ -12,7 +12,24 @@ export interface SelectValue {
 
 export const tablePrimaryKey = "id";
 
-export const getInitialPurchaseOrderState = () => ({
+export type CreatePurchaseOrderMoneyAwareForm = {
+  __typename: "PurchaseOrder";
+  orderNumber: string;
+  vendor: string;
+  orderedItems: TShirtOrder[];
+  orderNotes: string;
+  status: POStatus;
+  changeHistory: OrderChange[];
+  taxRate: string;
+  shipping: string;
+  shippingAddress: string;
+  fees: string;
+  sentToVendor: boolean;
+  dateExpected: Dayjs;
+  createdAt: Dayjs;
+}
+
+export const getInitialPurchaseOrderState = (): CreatePurchaseOrderMoneyAwareForm => ({
   __typename: "PurchaseOrder",
   orderNumber: "",
   vendor: "",
@@ -20,10 +37,10 @@ export const getInitialPurchaseOrderState = () => ({
   orderNotes: "",
   status: POStatus.Open,
   changeHistory: [],
-  taxRate: 0,
-  shipping: 0,
+  taxRate: "0",
+  shipping: "0",
   shippingAddress: "",
-  fees: 0,
+  fees: "0",
   sentToVendor: false,
   dateExpected: getStartOfDay(1),
   createdAt: getTodayInSetTz()

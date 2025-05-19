@@ -7,9 +7,9 @@ import {
 import {
   getTableColumns,
   columnInfo,
-  getInitialCustomerOrderFormState
+  getInitialCustomerOrderFormState,
+  CreateCustomerOrderMoneyAwareForm
 } from "../table-constants";
-import { CustomerOrder } from "@/API";
 import CreateOrderPage, { EntityType } from "../../components/po-customer-order-shared-components/CreateOrderPage";
 import { createOrderTransactionAPI } from "@/dynamodb-transactions/create-order-transaction";
 import { useAuthContext } from "@/contexts/AuthContext";
@@ -18,13 +18,13 @@ import NegativeInventoryConfirmPopup from "../../components/forms/confirm-popup/
 type NegativeInventoryWarningState = {
   show: boolean;
   callback: () => void;
-  customerOrder: CustomerOrder;
+  customerOrder: CreateCustomerOrderMoneyAwareForm;
   failedTShirts: string[];
 }
 const initialNegativeInventoryWarningState = {
   show: false,
   callback: () => { },
-  customerOrder: {} as CustomerOrder,
+  customerOrder: {} as CreateCustomerOrderMoneyAwareForm,
   failedTShirts: []
 };
 
@@ -33,14 +33,14 @@ const CreateCustomerOrderPage = () => {
   const { rescueDBOperation } = useDBOperationContext();
   const [negativeInventoryWarning, setNegativeInventoryWarning] = useState<NegativeInventoryWarningState>({...initialNegativeInventoryWarningState});
 
-  const handleCreateCustomerOrder = (co: CustomerOrder, callback: () => void, allowNegativeInventory: boolean = false) => {
+  const handleCreateCustomerOrder = (formValues: CreateCustomerOrderMoneyAwareForm, callback: () => void, allowNegativeInventory: boolean = false) => {
     rescueDBOperation(
-      () => createOrderTransactionAPI(co, EntityType.CustomerOrder, user, allowNegativeInventory, refreshSession),
+      () => createOrderTransactionAPI(formValues, EntityType.CustomerOrder, user, allowNegativeInventory, refreshSession),
       DBOperation.CREATE,
       (resp: string[]) => {
         if (resp.length > 0) {
           setNegativeInventoryWarning({
-            customerOrder: co,
+            customerOrder: formValues,
             show: true,
             callback: callback,
             failedTShirts: resp

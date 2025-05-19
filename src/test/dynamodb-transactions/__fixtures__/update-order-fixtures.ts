@@ -25,7 +25,7 @@ export const updatedTShirtOrder: TShirtOrder = {
     createdAt: '',
     updatedAt: '',
     tshirt: updatedTShirt,
-    costPerUnit: 0,
+    costPerUnitCents: 0,
     earliestTransaction: '',
     latestTransaction: ''
 };

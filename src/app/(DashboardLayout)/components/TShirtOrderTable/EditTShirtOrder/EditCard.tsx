@@ -29,8 +29,8 @@ type EditCardProps = {
   setNewAmtOrdered: React.Dispatch<React.SetStateAction<number>>;
 
   currentCostPerUnit: number;
-  newCostPerUnit: FormValue<number>;
-  setNewCostPerUnit: React.Dispatch<React.SetStateAction<FormValue<number>>>;
+  newCostPerUnit: FormValue<string>;
+  setNewCostPerUnit: React.Dispatch<React.SetStateAction<FormValue<string>>>;
 
   editReason: EditReasonFormState;
   setEditReason: React.Dispatch<React.SetStateAction<EditReasonFormState>>;
@@ -110,18 +110,18 @@ const EditCard = ({
                 <Grid item>
                   <NumberInput
                     label="Cost/Unit $"
-                    initialValue={currentCostPerUnit}
+                    initialValue={currentCostPerUnit.toString()}
                     isFloat
-                    isValidFn={(newValue: number) => {
+                    isValidFn={(newValue: string) => {
                       let err =
-                        newValue < 0 ? "Cost/Unit cannot be negative" : "";
+                        parseFloat(newValue) < 0 ? "Cost/Unit cannot be negative" : "";
                       setNewCostPerUnit({
                         value: newValue,
                         hasError: err !== "",
                       });
                       return err;
                     }}
-                    onChange={(newValue: number, hasError: boolean) => {
+                    onChange={(newValue: string, hasError: boolean) => {
                       setNewCostPerUnit({
                         value: newValue,
                         hasError: hasError,

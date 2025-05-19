@@ -5,25 +5,24 @@ import DashboardCard from "@/app/(DashboardLayout)/components/shared/DashboardCa
 import React, { useMemo, useState } from "react";
 import { TextField, Stack, MenuItem, Box, Button, Typography } from "@mui/material";
 
-import { MRT_ColumnDef, MRT_Row } from "material-react-table";
+import { MRT_ColumnDef } from "material-react-table";
 import { CreateOrderChangeInput, TShirtOrder } from "@/API";
 import TShirtOrderTable, { EditTShirtOrderResult, TableMode } from "../TShirtOrderTable/TShirtOrderTable";
 import ConfirmPopup from "../../components/forms/confirm-popup/ConfirmPopup";
 import { useRouter } from "next/navigation";
 import { ColumnInfo, SelectValue } from "../../purchase-orders/table-constants";
 import { DateTimePicker } from "@mui/x-date-pickers";
-import { toAWSDateTime } from "@/utils/datetimeConversions";
-import { Dayjs } from "dayjs";
 import MyTelInput from "../inputs/MyTelInput";
 import { validateEmail, validatePhoneNumber } from "@/utils/field-validation";
 import NonNegativeFloatInput from "./NonNegativeFloatInput";
+import { TShirtOrderMoneyAwareForm } from "../TShirtOrderTable/table-constants";
 
 export enum EntityType {
     CustomerOrder = "customer",
     PurchaseOrder = "purchase"
 }
 
-function CreateOrderPage<T extends Record<any, any>>({
+function CreateOrderPage<O extends Record<any, any>, I extends object>({
     entityType,
     getTableColumns,
     columnInfo,
@@ -31,11 +30,11 @@ function CreateOrderPage<T extends Record<any, any>>({
     getInitialFormState
 }: {
     entityType: EntityType,
-    getInitialFormState: () => any,
-    getTableColumns: () => MRT_ColumnDef<T>[],
+    getInitialFormState: () => I,
+    getTableColumns: () => MRT_ColumnDef<O>[],
     columnInfo: Map<string | number | symbol | undefined, ColumnInfo>,
     handleCreateOrder: (
-        order: T,
+        orderFormValues: I,
         callback: () => void
     ) => void
 }) {
@@ -96,12 +95,8 @@ function CreateOrderPage<T extends Record<any, any>>({
             // Convert the datetime that was input with user's timezone to UTC timezone
             const order = {} as any;
             Object.keys(values).forEach((key: string) => {
-                if (columnInfo.get(key)?.dateTimeField) {
-                    const datetime = values[key] as Dayjs;
-                    order[key] = toAWSDateTime(datetime);
-                }
                 // This field had to be optional
-                else if (values[key] === "") {
+                if (values[key] === "") {
                     order[key] = undefined;
                 }
                 else {
@@ -117,12 +112,12 @@ function CreateOrderPage<T extends Record<any, any>>({
         }
     };
 
-    const columns = useMemo<MRT_ColumnDef<T>[]>(
+    const columns = useMemo<MRT_ColumnDef<O>[]>(
         () => getTableColumns(),
         []
     );
 
-    const getFormField = (column: MRT_ColumnDef<T>) => {
+    const getFormField = (column: MRT_ColumnDef<O>) => {
         const errMsg = errorMap.get(column.accessorKey as string);
         const hasError = errMsg !== "" && errMsg !== undefined;
         const colInfo = columnInfo.get(column.accessorKey);
@@ -232,17 +227,15 @@ function CreateOrderPage<T extends Record<any, any>>({
                             }
                             parentOrder={undefined}
                             onRowEdit={(res: EditTShirtOrderResult) => {
-                                const { row, orderChange, exitEditingMode } = res;
+                                const { row, updatedTShirtOrder, orderChange, exitEditingMode } = res;
                                 const tableData = values.orderedItems;
-                                orderChange.fieldChanges.forEach(fieldChange => {
-                                    tableData[row.index][fieldChange.fieldName] = fieldChange.newValue;
-                                })
-                                    setValues({ ...values, orderedItems: [...tableData] });
+                                tableData[row.index] = updatedTShirtOrder;
+                                setValues({ ...values, orderedItems: [...tableData] });
                                 exitEditingMode();
                             }}
-                            onRowAdd={(newTShirtOrder: TShirtOrder, orderChange: CreateOrderChangeInput, closeFormCallback: () => void) => {
+                            onRowAdd={(tshirtOrderFormVals: TShirtOrderMoneyAwareForm, orderChange: CreateOrderChangeInput, closeFormCallback: () => void) => {
                                 const tableData = values.orderedItems;
-                                setValues({ ...values, orderedItems: [...tableData, newTShirtOrder] })
+                                setValues({ ...values, orderedItems: [...tableData, tshirtOrderFormVals] })
                                 closeFormCallback();
                             }}
                             entityType={entityType}

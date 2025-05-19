@@ -102,7 +102,6 @@ export const createPurchaseOrder = /* GraphQL */ `mutation CreatePurchaseOrder(
           __typename
         }
         quantity
-        costPerUnit
         costPerUnitCents
         amountReceived
         receivals {
@@ -203,7 +202,6 @@ export const updatePurchaseOrder = /* GraphQL */ `mutation UpdatePurchaseOrder(
           __typename
         }
         quantity
-        costPerUnit
         costPerUnitCents
         amountReceived
         receivals {
@@ -304,7 +302,6 @@ export const deletePurchaseOrder = /* GraphQL */ `mutation DeletePurchaseOrder(
           __typename
         }
         quantity
-        costPerUnit
         costPerUnitCents
         amountReceived
         receivals {
@@ -520,7 +517,6 @@ export const createTShirtOrder = /* GraphQL */ `mutation CreateTShirtOrder(
       __typename
     }
     quantity
-    costPerUnit
     costPerUnitCents
     amountReceived
     receivals {
@@ -565,7 +561,6 @@ export const updateTShirtOrder = /* GraphQL */ `mutation UpdateTShirtOrder(
       __typename
     }
     quantity
-    costPerUnit
     costPerUnitCents
     amountReceived
     receivals {
@@ -610,7 +605,6 @@ export const deleteTShirtOrder = /* GraphQL */ `mutation DeleteTShirtOrder(
       __typename
     }
     quantity
-    costPerUnit
     costPerUnitCents
     amountReceived
     receivals {
@@ -661,7 +655,6 @@ export const createCustomerOrder = /* GraphQL */ `mutation CreateCustomerOrder(
           __typename
         }
         quantity
-        costPerUnit
         costPerUnitCents
         amountReceived
         receivals {
@@ -761,7 +754,6 @@ export const updateCustomerOrder = /* GraphQL */ `mutation UpdateCustomerOrder(
           __typename
         }
         quantity
-        costPerUnit
         costPerUnitCents
         amountReceived
         receivals {
@@ -861,7 +853,6 @@ export const deleteCustomerOrder = /* GraphQL */ `mutation DeleteCustomerOrder(
           __typename
         }
         quantity
-        costPerUnit
         costPerUnitCents
         amountReceived
         receivals {

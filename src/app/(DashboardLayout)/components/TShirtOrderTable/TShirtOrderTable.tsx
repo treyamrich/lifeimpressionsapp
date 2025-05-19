@@ -2,7 +2,7 @@
 
 import { CreateOrderChangeInput, CustomerOrder, PurchaseOrder, TShirt, TShirtOrder } from "@/API";
 import React, { useMemo, useState, useEffect } from "react";
-import { getTableColumns, TShirtOrderFields } from "./table-constants";
+import { getTableColumns, TShirtOrderFields, TShirtOrderMoneyAwareForm } from "./table-constants";
 import {
   type MRT_ColumnDef,
   type MRT_Row,
@@ -21,6 +21,7 @@ import { MRTable } from "../Table/MRTable";
 
 export type EditTShirtOrderResult = {
   row: MRT_Row<TShirtOrder>;
+  updatedTShirtOrder: TShirtOrder;
   orderChange: CreateOrderChangeInput;
   exitEditingMode: () => void;
   poItemDateReceived?: Dayjs;
@@ -32,7 +33,7 @@ interface TShirtOrderTableProps {
   parentOrder: PurchaseOrder | CustomerOrder | undefined;
   onRowEdit: (res: EditTShirtOrderResult) => void | undefined;
   onRowAdd: (
-    newRowValue: TShirtOrder,
+    newRowValue: TShirtOrderMoneyAwareForm,
     orderChange: CreateOrderChangeInput,
     closeFormCallback: () => void
   ) => void | undefined;
@@ -76,6 +77,7 @@ const TShirtOrderTable = ({
 
   const handleEditRowAudit = (
     orderChange: CreateOrderChangeInput,
+    newTShirtOrder: TShirtOrder,
     resetEditFormCallback: () => void,
     poItemDateReceived?: Dayjs,
   ) => {
@@ -83,6 +85,7 @@ const TShirtOrderTable = ({
     if (!row) return;
     onRowEdit({
       row, 
+      updatedTShirtOrder: newTShirtOrder,
       orderChange, 
       exitEditingMode: () => {
         setEditMode({ show: false, row: undefined });
@@ -114,7 +117,7 @@ const TShirtOrderTable = ({
 
   // As of now, COs aren't concerned with these fields
   if (entityType === EntityType.CustomerOrder) {
-    hiddenColumns[TShirtOrderFields.CostPerUnit] = false;
+    hiddenColumns[TShirtOrderFields.CostPerUnitCents] = false;
   }
 
   return (

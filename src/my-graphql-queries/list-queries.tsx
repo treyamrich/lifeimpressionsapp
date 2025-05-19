@@ -23,7 +23,7 @@ const listCustomerOrdersFieldsOnly = `
                 __typename
             }
             quantity
-            costPerUnit
+            costPerUnitCents
             amountReceived
             receivals {
                 timestamp
@@ -141,7 +141,7 @@ export const purchaseOrdersByCreatedAtMinimum = /* GraphQL */ `
               __typename
             }
             quantity
-            costPerUnit
+            costPerUnitCents
             amountReceived
             receivals {
               timestamp

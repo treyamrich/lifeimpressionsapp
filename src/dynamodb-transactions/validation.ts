@@ -7,7 +7,7 @@ export const validateTShirtOrderInput = (
   tshirtOrder: TShirtOrder,
   dbOperation: DBOperation
 ) => {
-  if (dbOperation === DBOperation.CREATE && tshirtOrder.id !== undefined) {
+  if (dbOperation === DBOperation.CREATE && tshirtOrder.id !== "") {
     throw Error("Creating TShirtOrder should not already have an id");
   }
   if (dbOperation === DBOperation.UPDATE && tshirtOrder.id === undefined) {
@@ -20,7 +20,7 @@ export const validateTShirtOrderInput = (
   )
     throw Error("Invalid amount received input");
   if (tshirtOrder.quantity < 0) throw Error("Invalid quantity inputs");
-  if (tshirtOrder.costPerUnit < 0) throw Error("Invalid cost per unit input");
+  if (tshirtOrder.costPerUnitCents < 0) throw Error("Invalid cost per unit input");
   if (
     !tshirtOrder.tshirt ||
     !tshirtOrder.tShirtOrderTshirtId ||
