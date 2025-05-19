@@ -1,10 +1,11 @@
-import { TShirtOrder } from "@/API";
-import { MRT_ColumnDef, MRT_Cell } from "material-react-table";
+import { TShirt, TShirtOrder } from "@/API";
+import { MRT_ColumnDef } from "material-react-table";
 import { ColumnInfo } from "../../purchase-orders/table-constants";
 import {
   tshirtSizeColumnFilterFn,
   tshirtSizeToLabel,
 } from "../../inventory/InventoryTable/table-constants";
+import { centsToDollars } from "@/utils/money";
 
 export const tablePrimaryKey = "id";
 export const modalTitle = "Add to Order";
@@ -13,7 +14,7 @@ export const amountReceivedField = "amountReceived";
 export enum TShirtOrderFields {
   Qty = "quantity",
   AmtReceived = "amountReceived",
-  CostPerUnit = "costPerUnit",
+  CostPerUnitCents = "costPerUnitCents",
   Receivals = "receivals",
   EarliestTransaction = "earliestTransaction",
   LatestTransaction = "latestTransaction"
@@ -22,7 +23,7 @@ export enum TShirtOrderFields {
 export const toTShirtOrderColumnHeaderMap = {
   [TShirtOrderFields.Qty]: "Quantity",
   [TShirtOrderFields.AmtReceived]: "Amt. Received",
-  [TShirtOrderFields.CostPerUnit]: "Cost/Unit $",
+  [TShirtOrderFields.CostPerUnitCents]: "Cost/Unit $",
 };
 
 export const numberInputFields = new Set<string>([
@@ -30,19 +31,25 @@ export const numberInputFields = new Set<string>([
   TShirtOrderFields.AmtReceived,
 ]);
 export const floatInputFields = new Set<string>([
-  TShirtOrderFields.CostPerUnit,
+  TShirtOrderFields.CostPerUnitCents,
 ]);
 
 export interface TShirtOrderFormError {
   message: string;
 }
 
-export const initialTShirtOrderFormState: any = {
+export type TShirtOrderMoneyAwareForm = {
+  tshirt: TShirt | null;
+  quantity: number;
+  amountReceived: number;
+  costPerUnitCents: number;
+}
+
+export const initialTShirtOrderFormState: TShirtOrderMoneyAwareForm = {
   tshirt: null,
   quantity: 1,
   amountReceived: 0,
-  costPerUnit: 0,
-  tShirtOrderTshirtId: "",
+  costPerUnitCents: 0,
 };
 
 export const getInitialTShirtOrderFormErrorMap = () =>
@@ -81,8 +88,11 @@ export const getTableColumns = (): MRT_ColumnDef<TShirtOrder>[] => {
       header: toTShirtOrderColumnHeaderMap[TShirtOrderFields.AmtReceived],
     } as MRT_ColumnDef<TShirtOrder>,
     {
-      accessorKey: TShirtOrderFields.CostPerUnit,
-      header: toTShirtOrderColumnHeaderMap[TShirtOrderFields.CostPerUnit],
+      accessorKey: TShirtOrderFields.CostPerUnitCents,
+      Cell: ({ row }) => {
+        return <span>{centsToDollars(row.original.costPerUnitCents)}</span>;
+      },
+      header: toTShirtOrderColumnHeaderMap[TShirtOrderFields.CostPerUnitCents],
     } as MRT_ColumnDef<TShirtOrder>,
     {
       accessorKey: "id",
@@ -117,7 +127,7 @@ export const columnInfo = new Map<
     { isEditable: true, isNumberField: true } as ColumnInfo,
   ],
   [
-    TShirtOrderFields.CostPerUnit,
+    TShirtOrderFields.CostPerUnitCents,
     { isEditable: true, isFloatField: true } as ColumnInfo,
   ],
 ]);

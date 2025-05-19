@@ -3,11 +3,11 @@ import { useEffect, useState } from "react";
 
 type NumberInputProps = {
     label: string;
-    initialValue: number;
+    initialValue: string;
     isFloat?: boolean;
     decimalPlaceLimit?: number;
-    isValidFn?: (newValue: number) => string;
-    onChange: (newValue: number, hasError: boolean) => void;
+    isValidFn?: (newValue: string) => string;
+    onChange: (newValue: string, hasError: boolean) => void;
     placeholder?: string;
     name: string;
 };
@@ -36,22 +36,18 @@ const NumberInput = ({ label, initialValue, isFloat, onChange, decimalPlaceLimit
                 setInputValue(unparsedVal);
 
                 let newErrorMsg: string = "";
-                let parsedVal = 0;
+
+                const integerRegex = /^-?\d+$/;
+                const floatRegex = new RegExp(`^-?(\\d+(\\.\\d{1,${decimalPlaceLimit}})?|\\.\\d{1,${decimalPlaceLimit}})$`);
 
                 if (isFloat) {
-                    const floatRegex = new RegExp(`^-?(\\d+(\\.\\d{1,${decimalPlaceLimit}})?|\\.\\d{1,${decimalPlaceLimit}})$`);
-                    if (floatRegex.test(unparsedVal) && unparsedVal !== ".0") {
-                        parsedVal = parseFloat(unparsedVal);
-                    }
-                    else {
+                    let parsedVal = parseFloat(unparsedVal);
+                    if (!floatRegex.test(unparsedVal) || unparsedVal === ".0" || isNaN(parsedVal)) {
                         newErrorMsg = "Not a valid decimal value"
                     }
-                    if (isNaN(parsedVal)) newErrorMsg = "Not a valid decimal value";
                 } else {
-                    const integerRegex = /^-?\d+$/;
-                    if (integerRegex.test(unparsedVal)) {
-                        parsedVal = parseInt(unparsedVal, 10);
-                    } else {
+                    let parsedVal = parseInt(unparsedVal, 10);
+                    if (!integerRegex.test(unparsedVal) || isNaN(parsedVal)) {
                         newErrorMsg = "Not a valid number value"
                     }
                 }
@@ -59,13 +55,11 @@ const NumberInput = ({ label, initialValue, isFloat, onChange, decimalPlaceLimit
                 let hasError = newErrorMsg !== "";
                 // Ensure we have a valid value before calling client's validationFn
                 if (!hasError && isValidFn) {
-                    newErrorMsg = isValidFn(parsedVal);
+                    newErrorMsg = isValidFn(unparsedVal);
                     hasError = newErrorMsg !== "";
                 }
                 setErrorMsg(newErrorMsg)
-
-                let newVal = hasError ? 0 : parsedVal;
-                onChange(newVal, hasError);
+                onChange(unparsedVal, hasError);
             }}
         />
     )

@@ -16,10 +16,13 @@ export type OrderTotal = {
 }
 
 export const calculateOrderTotal = (order: OrderTotalModel, orderedItems: TShirtOrder[]): OrderTotal => {
-    const subtotal = orderedItems
-        .map(item => item.costPerUnit * item.quantity)
+    const subtotalCents = orderedItems
+        .map(item => item.costPerUnitCents * item.quantity)
         .reduce((prev, curr) => prev + curr, 0);
 
+    const subtotal = subtotalCents / 100;
+
+    // TO DO: Make tax rate, fees, shipping as cents as well
     const taxRate = order.taxRate / 100;
     const fees = order.fees ?? 0;
     const shipping = order.shipping ?? 0;

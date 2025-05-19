@@ -133,15 +133,15 @@ const CreateTShirtModal = <TShirt extends Record<string, any>>({
           key={column.accessorKey as React.Key}
           label={column.header}
           initialValue={values[column.accessorKey]}
-          onChange={(newValue: number, hasError: boolean) => {
+          onChange={(newValue: string, hasError: boolean) => {
             handleUpdateNumberField(
               column.accessorKey as string,
-              newValue,
+              parseInt(newValue, 10),
               hasError
             );
           }}
-          isValidFn={(newValue: number) =>
-            newValue < 0 ? "Negative values not allowed" : ""
+          isValidFn={(newValue: string) =>
+            parseInt(newValue, 10) < 0 ? "Negative values not allowed" : ""
           }
           name={column.accessorKey as string}
         />

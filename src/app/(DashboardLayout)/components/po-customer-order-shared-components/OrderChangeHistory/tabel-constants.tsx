@@ -2,13 +2,14 @@ import { OrderChange } from "@/API";
 import { toReadableDateTime } from "@/utils/datetimeConversions";
 import { Box, Stack, Typography } from "@mui/material";
 import { MRT_ColumnDef } from "material-react-table";
-import { toTShirtOrderColumnHeaderMap } from "../../TShirtOrderTable/table-constants";
+import { toTShirtOrderColumnHeaderMap, TShirtOrderFields } from "../../TShirtOrderTable/table-constants";
 import {
   toTShirtColumnHeaderMap,
   tshirtSizeColumnFilterFn,
   tshirtSizeToLabel,
 } from "@/app/(DashboardLayout)/inventory/InventoryTable/table-constants";
 import { EntityType } from "../CreateOrderPage";
+import { centsToDollars } from "@/utils/money";
 
 export const getTableColumns = (changesHaveParentOrder: boolean): MRT_ColumnDef<OrderChange>[] => {
   return [
@@ -41,16 +42,26 @@ export const getTableColumns = (changesHaveParentOrder: boolean): MRT_ColumnDef<
           : toTShirtColumnHeaderMap;
         return (
           <Stack>
-            {orderChange.fieldChanges.map((fieldChange, idx) => (
+            {orderChange.fieldChanges.map((fieldChange, idx) => {
+              let oldValue = fieldChange.oldValue;
+              let newValue = fieldChange.newValue;
+              if (fieldChange.fieldName === TShirtOrderFields.CostPerUnitCents) {
+                let parsedOldVal = parseInt(fieldChange.oldValue, 10);
+                let parsedNewVal = parseInt(fieldChange.newValue, 10);
+                // The value could've been '-' if the field was null
+                oldValue = isNaN(parsedOldVal) ? fieldChange.oldValue : centsToDollars(parsedOldVal).toString();
+                newValue = isNaN(parsedNewVal) ? fieldChange.newValue : centsToDollars(parsedNewVal).toString();
+              }
+              return (
               <Box key={`order-change-${idx}`}>
                 <Typography variant="body1" fontWeight={500}>
                   {fieldNameToColumnHeaderMap[fieldChange.fieldName]}
                 </Typography>
                 <Typography variant="body2">
-                  From: {fieldChange.oldValue} To: {fieldChange.newValue}
+                  From: {oldValue} To: {newValue}
                 </Typography>
               </Box>
-            ))}
+            )})}
           </Stack>
         );
       },

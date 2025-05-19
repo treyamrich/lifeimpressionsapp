@@ -7,6 +7,7 @@ import {
 import { DetailedReportOrder, Order } from "./types";
 import { CSVHeader, downloadCSV, processCSVCell } from "@/utils/csvGeneration";
 import { OrderTotal } from "@/utils/orderTotal";
+import { centsToDollars } from "@/utils/money";
 
 export const downloadHighLevelReport = (
   orders: Order[],
@@ -91,7 +92,7 @@ export const downloadDetailedReport = (
 
         amountReceived: amountReceived,
         orderedQuantity: orderedQty,
-        costPerUnit: orderItem.costPerUnit,
+        costPerUnit: centsToDollars(orderItem.costPerUnitCents),
       });
 
       const originalOrderItemQty = orderItem.quantity.toString();

@@ -3,12 +3,11 @@
 import { useState, useEffect } from "react";
 import {
   TShirtOrderFields,
+  TShirtOrderMoneyAwareForm,
   columnInfo,
-  floatInputFields,
   getInitialTShirtOrderFormErrorMap,
   initialTShirtOrderFormState,
   modalTitle,
-  numberInputFields,
 } from "../table-constants";
 import {
   Button,
@@ -20,17 +19,18 @@ import {
   Stack,
   Typography,
 } from "@mui/material";
-import { CreateOrderChangeInput, TShirt } from "@/API";
+import { CreateOrderChangeInput, TShirt, TShirtOrder } from "@/API";
 import { MRT_ColumnDef } from "material-react-table";
 import TShirtPicker from "./TShirtPicker";
 import BlankCard from "../../shared/BlankCard";
 import { EntityType } from "../../po-customer-order-shared-components/CreateOrderPage";
 import NumberInput from "../../inputs/NumberInput";
+import { toCents } from "@/utils/money";
 
-interface CreateTShirtOrderModalProps<TShirtOrder extends Record<string, any>> {
+interface CreateTShirtOrderModalProps {
   columns: MRT_ColumnDef<TShirtOrder>[];
   onClose: () => void;
-  onSubmit: (values: TShirtOrder, createOrderChangeInput: CreateOrderChangeInput, callback: () => void) => void;
+  onSubmit: (values: TShirtOrderMoneyAwareForm, createOrderChangeInput: CreateOrderChangeInput, callback: () => void) => void;
   open: boolean;
   tshirtChoices: TShirt[];
   tableData: TShirtOrder[];
@@ -38,7 +38,7 @@ interface CreateTShirtOrderModalProps<TShirtOrder extends Record<string, any>> {
   parentOrderId: string | undefined;
 }
 
-const CreateTShirtOrderModal = <TShirtOrder extends Record<string, any>>({
+const CreateTShirtOrderModal = ({
   open,
   columns,
   onClose,
@@ -47,9 +47,9 @@ const CreateTShirtOrderModal = <TShirtOrder extends Record<string, any>>({
   tableData,
   entityType,
   parentOrderId,
-}: CreateTShirtOrderModalProps<TShirtOrder>) => {
+}: CreateTShirtOrderModalProps) => {
   //Initial TShirtOrder values
-  const [values, setValues] = useState<any>(() => {
+  const [values, setValues] = useState<TShirtOrderMoneyAwareForm>(() => {
     return { ...initialTShirtOrderFormState };
   });
   const [errorMap, setErrorMap] = useState(() => getInitialTShirtOrderFormErrorMap());
@@ -92,9 +92,9 @@ const CreateTShirtOrderModal = <TShirtOrder extends Record<string, any>>({
         reason: "Added new tshirt to purchase order",
         fieldChanges: [
           { fieldName: TShirtOrderFields.Qty, oldValue: "-", newValue: values[TShirtOrderFields.Qty].toString() },
-          { fieldName: TShirtOrderFields.CostPerUnit, oldValue: "-", newValue: values[TShirtOrderFields.CostPerUnit].toString() },
+          { fieldName: TShirtOrderFields.CostPerUnitCents, oldValue: "-", newValue: values[TShirtOrderFields.CostPerUnitCents].toString() },
         ],
-        orderChangeTshirtId: values.tshirt.id,
+        orderChangeTshirtId: values.tshirt!.id,
         [`${entityType === EntityType.PurchaseOrder ? "purchase" : "customer"}OrderChangeHistoryId`]: parentOrderId,
       };
       if (entityType === EntityType.PurchaseOrder) {
@@ -120,15 +120,21 @@ const CreateTShirtOrderModal = <TShirtOrder extends Record<string, any>>({
       newErrorMap.set('tshirt', 'Order already contains T-Shirt type.');
     } else {
       newErrorMap.set('tshirt', '');
-      setValues({ ...values, tshirt: newShirt, tShirtOrderTshirtId: newShirt?.id });
+      setValues({ ...values, tshirt: newShirt });
     }
     setErrorMap(newErrorMap);
   }
 
-  const handleUpdateNumberField = (key: string, newValue: number, hasError: boolean) => {
+  const handleUpdateNumberField = (key: string, newValue: string, hasError: boolean) => {
     let newErrMap = new Map(errorMap);
+    let parsedVal;
+    if (key === TShirtOrderFields.CostPerUnitCents) {
+      parsedVal = toCents(newValue)
+    } else {
+      parsedVal = parseInt(newValue, 10)
+    }
     if (!hasError) {
-      setValues({ ...values, [key]: newValue });
+      setValues({ ...values, [key]: parsedVal });
       newErrMap.set(key, '');
     } else {
       newErrMap.set(key, 'some error');
@@ -140,7 +146,7 @@ const CreateTShirtOrderModal = <TShirtOrder extends Record<string, any>>({
   const filterOutCOCols = (col: MRT_ColumnDef<TShirtOrder>) => {
     return entityType === EntityType.PurchaseOrder ||
       entityType === EntityType.CustomerOrder &&
-      col.accessorKey !== TShirtOrderFields.CostPerUnit
+      col.accessorKey !== TShirtOrderFields.CostPerUnitCents
   }
 
   return (
@@ -188,16 +194,16 @@ const CreateTShirtOrderModal = <TShirtOrder extends Record<string, any>>({
                         key={idx}
                         name={column.accessorKey as string}
                         label={column.header}
-                        initialValue={values[column.accessorKey]}
+                        initialValue="0"
                         isFloat={columnInfo.get(column.accessorKey)?.isFloatField}
-                        onChange={(newValue: number, hasError: boolean) =>
+                        onChange={(newValue: string, hasError: boolean) => {
                           handleUpdateNumberField(column.accessorKey as string, newValue, hasError)
-                        }
-                        isValidFn={(newValue: number) => {
+                        }}
+                        isValidFn={(newValue: string) => {
                           let errMsg = "";
-                          if (column.accessorKey === TShirtOrderFields.Qty && newValue <= 0) {
+                          if (column.accessorKey === TShirtOrderFields.Qty && parseInt(newValue, 10) <= 0) {
                             errMsg = "Number must be positive";
-                          } else if (column.accessorKey === TShirtOrderFields.CostPerUnit && newValue < 0) {
+                          } else if (column.accessorKey === TShirtOrderFields.CostPerUnitCents && parseFloat(newValue) < 0) {
                             errMsg = "Cost cannot be negative";
                           }
                           let newErrMap = new Map(errorMap);

@@ -8,19 +8,21 @@ import {
   getInitialPurchaseOrderState,
   getTableColumns,
   columnInfo,
+  CreatePurchaseOrderMoneyAwareForm,
 } from "../table-constants";
 import { PurchaseOrder } from "@/API";
 import CreateOrderPage, { EntityType } from "../../components/po-customer-order-shared-components/CreateOrderPage";
 import { createOrderTransactionAPI } from "@/dynamodb-transactions/create-order-transaction";
 import { useAuthContext } from "@/contexts/AuthContext";
+import { toAWSDateTime } from "@/utils/datetimeConversions";
 
 const CreatePurchaseOrderPage = () => {
   const { user, refreshSession } = useAuthContext();
   const { rescueDBOperation } = useDBOperationContext();
   
-  const handleCreatePurchaseOrder = (po: PurchaseOrder, callback: () => void) => {
+  const handleCreatePurchaseOrder = (formValues: CreatePurchaseOrderMoneyAwareForm, callback: () => void) => {
     rescueDBOperation(
-      () => createOrderTransactionAPI(po, EntityType.PurchaseOrder, user, false, refreshSession),
+      () => createOrderTransactionAPI(formValues, EntityType.PurchaseOrder, user, false, refreshSession),
       DBOperation.CREATE,
       (resp: any) => {
         callback();

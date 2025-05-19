@@ -22,15 +22,16 @@ function NonNegativeFloatInput<T extends Record<any, any>>({
             isFloat
             name={column.accessorKey as string}
             placeholder="4.57"
-            isValidFn={(newValue: number) => {
-                let err = newValue < 0 ? "Input cannot be negative" : "";
+            isValidFn={(newValue: string) => {
+                let floatV = parseFloat(newValue);
+                let err = floatV < 0 ? "Input cannot be negative" : "";
                 let newErrors = new Map(errorMap);
                 newErrors.set(column.accessorKey as string, err);
                 setErrorMap(newErrors);
                 setValues({ ...values, [column.accessorKey as string]: newValue })
                 return err
             }}
-            onChange={(newValue: number, hasError: boolean) => {
+            onChange={(newValue: string, hasError: boolean) => {
                 let newErrors = new Map(errorMap);
                 let err = hasError ? "some error" : "";
                 newErrors.set(column.accessorKey as string, err);

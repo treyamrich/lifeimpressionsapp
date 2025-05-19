@@ -52,7 +52,7 @@ export const tshirtOrders: TShirtOrder[] = [
         createdAt: '',
         updatedAt: '',
         tshirt: tshirts[0],
-        costPerUnit: 52.1,
+        costPerUnitCents: 5210,
         earliestTransaction: 'earliest_transaction_t',
         latestTransaction: 'latest_transaction_t'
     },
@@ -65,7 +65,7 @@ export const tshirtOrders: TShirtOrder[] = [
         createdAt: '',
         updatedAt: '',
         tshirt: tshirts[1],
-        costPerUnit: 52.4,
+        costPerUnitCents: 5240,
         earliestTransaction: 'earliest_transaction_t',
         latestTransaction: 'latest_transaction_t'
     }
@@ -132,7 +132,7 @@ export const getDummyTShirtOrder = ({
     createdAt = '',
     updatedAt = '',
     tshirt = tshirts[0],
-    costPerUnit = 52.1,
+    costPerUnitCents = 5210,
     earliestTransaction = 'earliest_transaction_t',
     latestTransaction = 'latest_transaction_t'
   }, 
@@ -147,7 +147,7 @@ export const getDummyTShirtOrder = ({
     createdAt,
     updatedAt,
     tshirt,
-    costPerUnit,
+    costPerUnitCents,
     receivals,
     earliestTransaction,
     latestTransaction

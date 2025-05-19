@@ -4,6 +4,7 @@ import BlankCard from "../shared/BlankCard";
 import { ReactNode } from "react";
 import React from "react";
 import { OrderTotalModel, calculateOrderTotal } from "@/utils/orderTotal";
+import { centsToDollars } from "@/utils/money";
 
 const OrderTotalCard = ({ order, orderedItems }: {
     order: OrderTotalModel;
@@ -44,14 +45,14 @@ const OrderTotalCard = ({ order, orderedItems }: {
         const tshirt = tshirtOrder.tshirt;
         let qtyHint = ''
         if (tshirtOrder.quantity > 1) {
-            qtyHint = ` ($${tshirtOrder.costPerUnit}) each`
+            qtyHint = ` ($${centsToDollars(tshirtOrder.costPerUnitCents)}) each`
         }
         return `${tshirt.styleNumber} - ${tshirt.color} ${tshirt.size} x ${tshirtOrder.quantity}${qtyHint}`
     }
 
     const formatTShirtOrderCost = (tshirtItem: TShirtOrder) => {
-        const total = tshirtItem.quantity * tshirtItem.costPerUnit;
-        return `$${total}`
+        const totalCents = tshirtItem.quantity * tshirtItem.costPerUnitCents;
+        return `$${centsToDollars(totalCents)}`;
     }
 
     return (

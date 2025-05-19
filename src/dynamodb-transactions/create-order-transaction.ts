@@ -1,6 +1,7 @@
 import {
   fromUTC,
   getTodayInSetTz,
+  toAWSDateTime,
 } from "@/utils/datetimeConversions";
 import { EntityType } from "../app/(DashboardLayout)/components/po-customer-order-shared-components/CreateOrderPage";
 import { CognitoUser } from "@aws-amplify/auth";
@@ -32,6 +33,8 @@ import {
 import { validateTShirtOrderInput } from "./validation";
 import { DBOperation } from "@/contexts/DBErrorContext";
 import { failedUpdateTShirtStr } from "@/utils/tshirtOrder";
+import { CreatePurchaseOrderMoneyAwareForm } from "@/app/(DashboardLayout)/purchase-orders/table-constants";
+import { CreateCustomerOrderMoneyAwareForm } from "@/app/(DashboardLayout)/customer-orders/table-constants";
 
 export type PreparedStatements = {
   statements: ParameterizedStatement[];
@@ -169,14 +172,48 @@ const validateCreateOrderInput = (
   }
 };
 
+const transformInput = (input: POOrCOCreateInput, entityType: EntityType): PurchaseOrderOrCustomerOrder => {
+  if (entityType === EntityType.CustomerOrder) {
+    let inputCO = input as CreateCustomerOrderMoneyAwareForm;
+    return {
+      ...inputCO,
+      createdAt: toAWSDateTime(inputCO.createdAt),
+      dateNeededBy: toAWSDateTime(inputCO.dateNeededBy),
+      taxRate: parseFloat(inputCO.taxRate),
+      orderedItems: inputCO.orderedItems as any,
+      updatedAt: '',
+      id: '',
+      changeHistory: [] as any,
+    };
+  }
+  let inputPO = input as CreatePurchaseOrderMoneyAwareForm;
+  return {
+    ...inputPO,
+    createdAt: toAWSDateTime(inputPO.createdAt),
+    dateExpected: toAWSDateTime(inputPO.dateExpected),
+    taxRate: parseFloat(inputPO.taxRate),
+    shipping: parseFloat(inputPO.shipping),
+    fees: parseFloat(inputPO.fees),
+    orderedItems: inputPO.orderedItems as any,
+    id: '',
+    updatedAt: '',
+    changeHistory: [] as any,
+  }
+}
+
+
+export type POOrCOCreateInput = CreatePurchaseOrderMoneyAwareForm | CreateCustomerOrderMoneyAwareForm;
+
 // If allow negative inventory is set to false, then an array of tshirt order style numbers will be returned that would've caused negative inventory
 export const createOrderTransactionAPI = async (
-  input: PurchaseOrderOrCustomerOrder,
+  createInput: POOrCOCreateInput,
   entityType: EntityType,
   user: CognitoUser,
   allowNegativeInventory: boolean,
   refreshTokenFn?: () => Promise<CognitoUser | undefined>
 ): Promise<Array<string>> => {
+
+  const input = transformInput(createInput, entityType);
   validateCreateOrderInput(input, entityType);
 
   const commonError = new Error(`Failed to create ${entityType} order`);
@@ -204,7 +241,7 @@ export const createOrderTransactionAPI = async (
       if (updatedSession) {
         // Don't retry session renewal again
         return createOrderTransactionAPI(
-          input,
+          createInput,
           entityType,
           updatedSession,
           allowNegativeInventory

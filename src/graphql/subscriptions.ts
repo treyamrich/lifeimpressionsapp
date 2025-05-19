@@ -92,7 +92,6 @@ export const onCreatePurchaseOrder = /* GraphQL */ `subscription OnCreatePurchas
           __typename
         }
         quantity
-        costPerUnit
         costPerUnitCents
         amountReceived
         receivals {
@@ -192,7 +191,6 @@ export const onUpdatePurchaseOrder = /* GraphQL */ `subscription OnUpdatePurchas
           __typename
         }
         quantity
-        costPerUnit
         costPerUnitCents
         amountReceived
         receivals {
@@ -292,7 +290,6 @@ export const onDeletePurchaseOrder = /* GraphQL */ `subscription OnDeletePurchas
           __typename
         }
         quantity
-        costPerUnit
         costPerUnitCents
         amountReceived
         receivals {
@@ -504,7 +501,6 @@ export const onCreateTShirtOrder = /* GraphQL */ `subscription OnCreateTShirtOrd
       __typename
     }
     quantity
-    costPerUnit
     costPerUnitCents
     amountReceived
     receivals {
@@ -548,7 +544,6 @@ export const onUpdateTShirtOrder = /* GraphQL */ `subscription OnUpdateTShirtOrd
       __typename
     }
     quantity
-    costPerUnit
     costPerUnitCents
     amountReceived
     receivals {
@@ -592,7 +587,6 @@ export const onDeleteTShirtOrder = /* GraphQL */ `subscription OnDeleteTShirtOrd
       __typename
     }
     quantity
-    costPerUnit
     costPerUnitCents
     amountReceived
     receivals {
@@ -642,7 +636,6 @@ export const onCreateCustomerOrder = /* GraphQL */ `subscription OnCreateCustome
           __typename
         }
         quantity
-        costPerUnit
         costPerUnitCents
         amountReceived
         receivals {
@@ -741,7 +734,6 @@ export const onUpdateCustomerOrder = /* GraphQL */ `subscription OnUpdateCustome
           __typename
         }
         quantity
-        costPerUnit
         costPerUnitCents
         amountReceived
         receivals {
@@ -840,7 +832,6 @@ export const onDeleteCustomerOrder = /* GraphQL */ `subscription OnDeleteCustome
           __typename
         }
         quantity
-        costPerUnit
         costPerUnitCents
         amountReceived
         receivals {

@@ -25,10 +25,12 @@ import {
 } from "../../EditReasonRadioGroup/EditReasonRadioGroup";
 import { fromUTC, getTodayInSetTz } from "@/utils/datetimeConversions";
 import { Dayjs } from "dayjs";
+import { centsToDollars, toCents } from "@/utils/money";
 
 interface EditTShirtOrderPopupProps {
   onSubmit: (
     createOrderChangeInput: CreateOrderChangeInput,
+    newTShirtOrder: TShirtOrder,
     resetFormCallback: () => void,
     poItemDateReceived?: Dayjs,
   ) => void;
@@ -67,10 +69,10 @@ const EditTShirtOrderPopup = ({
     : 0;
 
   const currentCostPerUnit = row
-    ? (row.getValue(TShirtOrderFields.CostPerUnit) as number)
+    ? centsToDollars(row.getValue(TShirtOrderFields.CostPerUnitCents) as number)
     : 0.0;
-  const [newCostPerUnit, setNewCostPerUnit] = useState<FormValue<number>>({
-    value: 0,
+  const [newCostPerUnit, setNewCostPerUnit] = useState<FormValue<string>>({
+    value: "0",
     hasError: false,
   });
 
@@ -88,7 +90,7 @@ const EditTShirtOrderPopup = ({
     setEditReason(getInitialEditReasonState());
     setNewAmtReceived(0);
     setNewAmtOrdered(0);
-    setNewCostPerUnit({ value: 0, hasError: false });
+    setNewCostPerUnit({ value: "0", hasError: false });
     setNoChangeError(undefined);
   };
 
@@ -104,7 +106,7 @@ const EditTShirtOrderPopup = ({
 
     const newTShirtOrder: TShirtOrder = {
       ...row!.original,
-      costPerUnit: newCostPerUnit.value,
+      costPerUnitCents: toCents(newCostPerUnit.value),
       // These two variables are delta's
       quantity: currentAmtOrdered + newAmtOrdered,
       amountReceived: currentAmtReceived + newAmtReceived,
@@ -130,6 +132,7 @@ const EditTShirtOrderPopup = ({
 
     onSubmit(
       createOrderChangeInput, 
+      newTShirtOrder,
       resetForm,
       entityType === EntityType.CustomerOrder ? 
         undefined :
@@ -138,7 +141,7 @@ const EditTShirtOrderPopup = ({
   };
 
   useEffect(() => {
-    setNewCostPerUnit({ ...newCostPerUnit, value: currentCostPerUnit });
+    setNewCostPerUnit({ ...newCostPerUnit, value: currentCostPerUnit.toString() });
   }, [row]);
 
   return (

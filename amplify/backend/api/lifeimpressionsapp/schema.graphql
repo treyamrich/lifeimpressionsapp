@@ -102,7 +102,6 @@ type TShirtOrder @model @auth(rules: [
   { allow: public, provider: iam, operations: [read]}]) {
   tshirt: TShirt! @hasOne
   quantity: Int!
-  costPerUnit: Float!
   costPerUnitCents: Int! @default(value: "0")
 
   amountReceived: Int @default(value: "0") # This is only used for PurchaseOrder

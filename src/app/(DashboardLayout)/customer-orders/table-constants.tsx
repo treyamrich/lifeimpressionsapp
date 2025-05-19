@@ -1,8 +1,9 @@
-import { CustomerOrder, CustomerOrderStatus } from "@/API";
+import { CustomerOrder, CustomerOrderStatus, TShirtOrder } from "@/API";
 import { MRT_ColumnDef } from "material-react-table";
 import { ColumnInfo } from "../purchase-orders/table-constants";
 import { getStartOfDay, getStartOfMonth, getTodayInSetTz, toReadableDateTime } from "@/utils/datetimeConversions";
 import { Chip } from "@mui/material";
+import { Dayjs } from "dayjs";
 
 export interface SelectValue {
   label: string;
@@ -11,7 +12,22 @@ export interface SelectValue {
 
 export const tablePrimaryKey = "id";
 
-export const getInitialCustomerOrderFormState = () => ({
+export type CreateCustomerOrderMoneyAwareForm = {
+  __typename: "CustomerOrder";
+  orderStatus: CustomerOrderStatus;
+  orderNumber: string;
+  orderedItems: TShirtOrder[];
+  orderNotes: string;
+  customerName: string;
+  customerEmail: string;
+  customerPhoneNumber: string;
+  taxRate: string;
+  dateNeededBy: Dayjs;
+  createdAt: Dayjs;
+};
+
+
+export const getInitialCustomerOrderFormState = (): CreateCustomerOrderMoneyAwareForm => ({
   __typename: "CustomerOrder",
   orderStatus: CustomerOrderStatus.NEW,
   dateNeededBy: getStartOfDay(1),
@@ -21,7 +37,7 @@ export const getInitialCustomerOrderFormState = () => ({
   customerName: "",
   customerEmail: "",
   customerPhoneNumber: "",
-  taxRate: 0,
+  taxRate: "0",
   createdAt: getTodayInSetTz()
 });
 

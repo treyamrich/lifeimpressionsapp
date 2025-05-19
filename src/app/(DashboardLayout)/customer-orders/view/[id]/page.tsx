@@ -40,6 +40,8 @@ import { failedUpdateTShirtStr } from "@/utils/tshirtOrder";
 import MoreInfoAccordian from "@/app/(DashboardLayout)/components/MoreInfoAccordian/MoreInfoAccordian";
 import { fromUTC, getStartOfMonth } from "@/utils/datetimeConversions";
 import { prependOrderChangeHistory } from "@/api/hooks/mutations";
+import { TShirtOrderMoneyAwareForm } from "@/app/(DashboardLayout)/components/TShirtOrderTable/table-constants";
+import { toCents } from "@/utils/money";
 
 type ViewCustomerOrderProps = {
   params: { id: string };
@@ -196,17 +198,13 @@ const OrderedItemsTable = ({
     res: EditTShirtOrderResult,
     allowNegativeInventory: boolean = false
   ) => {
-    const { row, orderChange, exitEditingMode } = res;
+    const { row, updatedTShirtOrder, orderChange, exitEditingMode } = res;
     let createOrderChangeInput = orderChange;
     const oldTShirtOrder = tableData[row.index];
-    const newTShirtOrder: any = { ...oldTShirtOrder };
-    createOrderChangeInput.fieldChanges.forEach((fieldChange) => {
-      newTShirtOrder[fieldChange.fieldName] = fieldChange.newValue;
-    });
 
-    const inventoryQtyDelta = newTShirtOrder.quantity - oldTShirtOrder.quantity;
+    const inventoryQtyDelta = updatedTShirtOrder.quantity - oldTShirtOrder.quantity;
     const updateOrderInput: UpdateOrderTransactionInput = {
-      updatedTShirtOrder: newTShirtOrder,
+      updatedTShirtOrder: updatedTShirtOrder,
       parentOrder: parentCustomerOrder,
       inventoryQtyDelta: inventoryQtyDelta,
       createOrderChangeInput: createOrderChangeInput,
@@ -259,16 +257,29 @@ const OrderedItemsTable = ({
   };
 
   const handleAfterRowAdd = (
-    newTShirtOrder: TShirtOrder,
+    formValues: TShirtOrderMoneyAwareForm,
     createOrderChangeInput: CreateOrderChangeInput,
     closeFormCallback: () => void,
     allowNegativeInventory: boolean = false
   ) => {
-    if (newTShirtOrder.id) return; // Only create new tshirt orders
 
-    const inventoryQtyDelta = newTShirtOrder.quantity;
+    const updatedOrderItem: TShirtOrder = {
+      __typename: "TShirtOrder",
+      tshirt: formValues.tshirt!,
+      quantity: formValues.quantity,
+      amountReceived: formValues.amountReceived,
+      costPerUnitCents: formValues.costPerUnitCents,
+      id: "",
+      createdAt: "",
+      updatedAt: "",
+      earliestTransaction: "",
+      latestTransaction: "",
+      tShirtOrderTshirtId: formValues.tshirt!.id,
+    }
+
+    const inventoryQtyDelta = formValues.quantity;
     const updateOrderInput: UpdateOrderTransactionInput = {
-      updatedTShirtOrder: newTShirtOrder,
+      updatedTShirtOrder: updatedOrderItem,
       parentOrder: parentCustomerOrder,
       inventoryQtyDelta: inventoryQtyDelta,
       createOrderChangeInput: createOrderChangeInput,
@@ -294,12 +305,12 @@ const OrderedItemsTable = ({
             show: true,
             cachedFunctionCall: () =>
               handleAfterRowAdd(
-                newTShirtOrder,
+                formValues,
                 createOrderChangeInput,
                 closeFormCallback,
                 true
               ),
-            failedTShirts: [failedUpdateTShirtStr(newTShirtOrder.tshirt)],
+            failedTShirts: [failedUpdateTShirtStr(formValues.tshirt!)],
           });
           return;
         }

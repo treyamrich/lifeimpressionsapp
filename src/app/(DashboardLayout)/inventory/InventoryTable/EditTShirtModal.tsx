@@ -178,16 +178,16 @@ function EditTShirtModal({
           name={column.accessorKey as string}
           label={column.header}
           initialValue={values[column.accessorKey as string]}
-          onChange={(newValue: number, hasError: boolean) =>
+          onChange={(newValue: string, hasError: boolean) =>
             handleUpdateNumberField(
               column.accessorKey as string,
-              newValue,
+              parseInt(newValue, 10),
               hasError
             )
           }
-          isValidFn={(newValue: number) => {
+          isValidFn={(newValue: string) => {
             let errMsg = "";
-            if (newValue < 0) {
+            if (parseInt(newValue, 10) < 0) {
               errMsg = "Value cannot be negative";
             }
             let newErrMap = new Map(errorMap);
