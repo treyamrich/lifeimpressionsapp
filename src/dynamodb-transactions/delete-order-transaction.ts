@@ -19,7 +19,6 @@ import {
 } from "@/utils/datetimeConversions";
 import dayjs from "dayjs";
 import { PreparedStatements } from "./create-order-transaction";
-import { failedUpdateTShirtStr } from "@/utils/tshirtOrder";
 
 export const deleteOrderTransactionAPI = async (
   input: PurchaseOrderOrCustomerOrder,
@@ -28,7 +27,7 @@ export const deleteOrderTransactionAPI = async (
   user: CognitoUser,
   allowNegativeInventory: boolean,
   refreshTokenFn?: () => Promise<CognitoUser | undefined>
-): Promise<Array<string>> => {
+): Promise<Array<TShirt>> => {
   validateDeleteOrderInput(input);
   let command = null;
   let transactionStatements: PreparedStatements;
@@ -48,7 +47,11 @@ export const deleteOrderTransactionAPI = async (
   }
 
   const dynamodbClient = await createDynamoDBObj(user);
-  return dynamodbClient.send(command).catch(async (e) => {
+  return dynamodbClient.send(command)
+  .then((response) => {
+    return [];
+  })
+  .catch(async (e) => {
     // Retry and try refresh token
     if (e.message.includes("Token expired") && refreshTokenFn) {
       let updatedSession = await refreshTokenFn();
@@ -68,8 +71,7 @@ export const deleteOrderTransactionAPI = async (
       const negativeInventoryShirts = e.CancellationReasons
         .map((cancellationObj: any, index: number) => {
           if (cancellationObj.Code === "ConditionalCheckFailed") {
-            const tshirt = transactionStatements.statementIdxToTShirt[index];
-            return failedUpdateTShirtStr(tshirt);
+            return transactionStatements.statementIdxToTShirt[index];
           }
           return null;
         })
@@ -78,7 +80,7 @@ export const deleteOrderTransactionAPI = async (
     }
 
     throw new Error(`Failed to delete ${entityType} order`);
-  });
+  })
 };
 
 const validateDeleteOrderInput = (input: PurchaseOrderOrCustomerOrder) => {

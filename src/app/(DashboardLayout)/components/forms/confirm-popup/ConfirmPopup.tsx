@@ -7,6 +7,7 @@ interface ConfirmPopupProps {
     onClose: () => void;
     onSubmit: () => void;
     open: boolean;
+    confirmationBody?: React.ReactNode;
     confirmationMsg: string;
     submitButtonMsg: string;
     cancelButtonMsg: string;
@@ -14,20 +15,22 @@ interface ConfirmPopupProps {
     customSubmitBtnColor?: "primary" | "inherit" | "secondary" | "success" | "error" | "info" | "warning" | undefined;
 }
 
-const ConfirmPopup = ({ open, onClose, onSubmit, confirmationMsg, submitButtonMsg, cancelButtonMsg, title, customSubmitBtnColor }: ConfirmPopupProps) => {
+const ConfirmPopup = ({ open, onClose, onSubmit, confirmationBody, confirmationMsg, submitButtonMsg, cancelButtonMsg, title, customSubmitBtnColor }: ConfirmPopupProps) => {
     return (
         <Dialog open={open} maxWidth="xs">
             <DialogTitle textAlign="center">{title}</DialogTitle>
             <DialogContent style={{ padding: "25px" }}>
                 <Grid container spacing={3} direction="column">
                     <Grid item>
-                        <BlankCard>
-                            <CardContent>
-                                <Typography textAlign={"center"}>
-                                    {confirmationMsg}
-                                </Typography>
-                            </CardContent>
-                        </BlankCard>
+                        {confirmationBody ? confirmationBody : (
+                            <BlankCard>
+                                <CardContent>
+                                    <Typography textAlign={"center"}>
+                                        {confirmationMsg}
+                                    </Typography>
+                                </CardContent>
+                            </BlankCard>
+                        )}
                     </Grid>
                     <Grid item>
                         <Grid container justifyContent={"space-between"}>

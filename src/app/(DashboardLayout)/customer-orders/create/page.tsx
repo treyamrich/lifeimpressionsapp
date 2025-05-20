@@ -14,12 +14,13 @@ import CreateOrderPage, { EntityType } from "../../components/po-customer-order-
 import { createOrderTransactionAPI } from "@/dynamodb-transactions/create-order-transaction";
 import { useAuthContext } from "@/contexts/AuthContext";
 import NegativeInventoryConfirmPopup from "../../components/forms/confirm-popup/NegativeInventoryConfirmPopup";
+import { TShirt } from "@/API";
 
 type NegativeInventoryWarningState = {
   show: boolean;
   callback: () => void;
   customerOrder: CreateCustomerOrderMoneyAwareForm;
-  failedTShirts: string[];
+  failedTShirts: TShirt[];
 }
 const initialNegativeInventoryWarningState = {
   show: false,
@@ -37,7 +38,7 @@ const CreateCustomerOrderPage = () => {
     rescueDBOperation(
       () => createOrderTransactionAPI(formValues, EntityType.CustomerOrder, user, allowNegativeInventory, refreshSession),
       DBOperation.CREATE,
-      (resp: string[]) => {
+      (resp: TShirt[]) => {
         if (resp.length > 0) {
           setNegativeInventoryWarning({
             customerOrder: formValues,
