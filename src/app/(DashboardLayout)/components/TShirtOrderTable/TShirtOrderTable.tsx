@@ -37,6 +37,7 @@ interface TShirtOrderTableProps {
     orderChange: CreateOrderChangeInput,
     closeFormCallback: () => void
   ) => void | undefined;
+  onRowDelete?: (row: MRT_Row<TShirtOrder>) => void;
   onReceiveAllItems?: () => void;
   receiveAllDisabled?: boolean;
   entityType: EntityType;
@@ -59,6 +60,7 @@ const TShirtOrderTable = ({
   parentOrder,
   onRowEdit,
   onRowAdd,
+  onRowDelete,
   onReceiveAllItems,
   receiveAllDisabled,
   entityType,
@@ -175,6 +177,12 @@ const TShirtOrderTable = ({
         renderRowActions={({ row, table }) => (
           <TableRowActions
             onEdit={() => setEditMode({ show: true, row: row })}
+            onDelete={() => {
+              if (onRowDelete) {
+                onRowDelete(row);
+              }
+            }}
+            showDeleteButton={onRowDelete !== undefined}
             showEditButton
           />
         )}

@@ -1,6 +1,6 @@
 "use client";
 
-import { Button, ButtonPropsColorOverrides, CardContent, Dialog, DialogContent, DialogTitle, Grid, Typography } from "@mui/material";
+import { Button, CardContent, Dialog, DialogContent, DialogTitle, Grid, Typography } from "@mui/material";
 import BlankCard from "../../shared/BlankCard";
 
 interface ConfirmPopupProps {

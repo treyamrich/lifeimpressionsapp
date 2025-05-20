@@ -3,9 +3,9 @@
 import PageContainer from "@/app/(DashboardLayout)/components/container/PageContainer";
 import DashboardCard from "@/app/(DashboardLayout)/components/shared/DashboardCard";
 import React, { useMemo, useState } from "react";
-import { TextField, Stack, MenuItem, Box, Button, Typography } from "@mui/material";
+import { TextField, Stack, MenuItem, Box, Button, Typography, Alert } from "@mui/material";
 
-import { MRT_ColumnDef } from "material-react-table";
+import { MRT_ColumnDef, MRT_Row } from "material-react-table";
 import { CreateOrderChangeInput, TShirtOrder } from "@/API";
 import TShirtOrderTable, { EditTShirtOrderResult, TableMode } from "../TShirtOrderTable/TShirtOrderTable";
 import ConfirmPopup from "../../components/forms/confirm-popup/ConfirmPopup";
@@ -21,6 +21,9 @@ export enum EntityType {
     CustomerOrder = "customer",
     PurchaseOrder = "purchase"
 }
+
+// Limit imposed by the BE API
+const MAX_INITIAL_ORDER_ITEMS = 1;
 
 function CreateOrderPage<O extends Record<any, any>, I extends object>({
     entityType,
@@ -89,10 +92,17 @@ function CreateOrderPage<O extends Record<any, any>, I extends object>({
             newErrors.set(key, errMsg);
             allValid = allValid && errMsg === "";
         });
+
+        if (values.orderedItems.length > MAX_INITIAL_ORDER_ITEMS) { 
+            newErrors.set("orderedItems", `You can only order a maximum of ${MAX_INITIAL_ORDER_ITEMS} T-Shirts to an order initially. If you need more, update the order after creation.`);
+            allValid = false;
+        } else {
+            newErrors.set("orderedItems", "");
+        }
+
         setErrorMap(newErrors);
 
         if (allValid) {
-            // Convert the datetime that was input with user's timezone to UTC timezone
             const order = {} as any;
             Object.keys(values).forEach((key: string) => {
                 // This field had to be optional
@@ -111,6 +121,17 @@ function CreateOrderPage<O extends Record<any, any>, I extends object>({
                 });
         }
     };
+
+    const handleRemoveOrderItem = (row: MRT_Row<TShirtOrder>) => {
+        const tableData = values.orderedItems;
+        const newTableData = [...tableData];
+        newTableData.splice(row.index, 1);
+        setValues({ ...values, orderedItems: newTableData });
+
+        if (newTableData.length <= MAX_INITIAL_ORDER_ITEMS) {
+            setErrorMap(new Map(errorMap).set("orderedItems", ""));
+        }
+    }
 
     const columns = useMemo<MRT_ColumnDef<O>[]>(
         () => getTableColumns(),
@@ -238,9 +259,17 @@ function CreateOrderPage<O extends Record<any, any>, I extends object>({
                                 setValues({ ...values, orderedItems: [...tableData, tshirtOrderFormVals] })
                                 closeFormCallback();
                             }}
+                            onRowDelete={handleRemoveOrderItem}
                             entityType={entityType}
                             mode={TableMode.Create}
                         />
+
+                        {errorMap.get("orderedItems") !== '' && (
+                            <Box>
+                               <Alert variant="filled" color="error">{errorMap.get("orderedItems")}</Alert>
+                            </Box>
+                        )}
+
                         <Box>
                             <Button
                                 color="primary"
