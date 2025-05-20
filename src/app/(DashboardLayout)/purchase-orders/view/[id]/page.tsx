@@ -5,6 +5,7 @@ import {
   PurchaseOrder,
   OrderChange,
   TShirtOrder,
+  TShirt,
 } from "@/API";
 import PageContainer from "@/app/(DashboardLayout)/components/container/PageContainer";
 import BlankCard from "@/app/(DashboardLayout)/components/shared/BlankCard";
@@ -38,14 +39,11 @@ import ViewOrderActions from "@/app/(DashboardLayout)/components/po-customer-ord
 import { useRouter } from "next/navigation";
 import Section from "@/app/(DashboardLayout)/components/po-customer-order-shared-components/ViewOrderHeader/Section";
 import { deleteOrderTransactionAPI } from "@/dynamodb-transactions/delete-order-transaction";
-import { failedUpdateTShirtStr } from "@/utils/tshirtOrder";
 import MoreInfoAccordian from "@/app/(DashboardLayout)/components/MoreInfoAccordian/MoreInfoAccordian";
 import { fromUTC, getStartOfMonth, getTodayInSetTz, toAWSDateTime } from "@/utils/datetimeConversions";
 import { buildOrderChangeInput, BuildOrderChangeInput } from "@/app/(DashboardLayout)/components/po-customer-order-shared-components/OrderChangeHistory/util";
 import { prependOrderChangeHistory } from "@/api/hooks/mutations";
 import { TShirtOrderMoneyAwareForm } from "@/app/(DashboardLayout)/components/TShirtOrderTable/table-constants";
-import { toCents } from "@/utils/money";
-
 
 type ViewPurchaseOrderProps = {
   params: { id: string };
@@ -98,7 +96,7 @@ const ViewPurchaseOrder = ({ params }: ViewPurchaseOrderProps) => {
           refreshSession
         ),
       DBOperation.DELETE,
-      (resp: string[]) => {
+      (resp: TShirt[]) => {
         if (resp.length > 0) {
           setNegativeInventoryWarning({
             show: true,
@@ -243,7 +241,7 @@ const OrderedItemsTable = ({
             show: true,
             cachedFunctionCall: () =>
               handleAfterRowEdit(res, true),
-            failedTShirts: [failedUpdateTShirtStr(oldTShirtOrder.tshirt)],
+            failedTShirts: [oldTShirtOrder.tshirt],
           });
           return;
         }

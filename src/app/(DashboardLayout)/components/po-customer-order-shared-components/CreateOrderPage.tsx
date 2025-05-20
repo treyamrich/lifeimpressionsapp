@@ -23,7 +23,7 @@ export enum EntityType {
 }
 
 // Limit imposed by the BE API
-const MAX_INITIAL_ORDER_ITEMS = 1;
+const MAX_INITIAL_ORDER_ITEMS = 49;
 
 function CreateOrderPage<O extends Record<any, any>, I extends object>({
     entityType,

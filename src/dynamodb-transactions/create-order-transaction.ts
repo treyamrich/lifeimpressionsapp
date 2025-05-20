@@ -32,7 +32,6 @@ import {
 } from "@/utils/field-validation";
 import { validateTShirtOrderInput } from "./validation";
 import { DBOperation } from "@/contexts/DBErrorContext";
-import { failedUpdateTShirtStr } from "@/utils/tshirtOrder";
 import { CreatePurchaseOrderMoneyAwareForm } from "@/app/(DashboardLayout)/purchase-orders/table-constants";
 import { CreateCustomerOrderMoneyAwareForm } from "@/app/(DashboardLayout)/customer-orders/table-constants";
 
@@ -211,7 +210,7 @@ export const createOrderTransactionAPI = async (
   user: CognitoUser,
   allowNegativeInventory: boolean,
   refreshTokenFn?: () => Promise<CognitoUser | undefined>
-): Promise<Array<string>> => {
+): Promise<Array<TShirt>> => {
 
   const input = transformInput(createInput, entityType);
   validateCreateOrderInput(input, entityType);
@@ -234,7 +233,11 @@ export const createOrderTransactionAPI = async (
   }
 
   const dynamodbClient = await createDynamoDBObj(user);
-  return dynamodbClient.send(command).catch(async (e) => {
+  return dynamodbClient.send(command)
+  .then((response) => {
+    return [];
+  })
+  .catch(async (e) => {
     // Retry and try refresh token
     if (e.message.includes("Token expired") && refreshTokenFn) {
       let updatedSession = await refreshTokenFn();
@@ -250,11 +253,10 @@ export const createOrderTransactionAPI = async (
     }
 
     if (!allowNegativeInventory && e.CancellationReasons) {
-      const negativeInventoryShirts = e.CancellationReasons.map(
+      const negativeInventoryShirts: TShirt[] = e.CancellationReasons.map(
         (cancellationObj: any, index: number) => {
           if (cancellationObj.Code === "ConditionalCheckFailed") {
-            const tshirt = transactionStatements.statementIdxToTShirt[index];
-            return failedUpdateTShirtStr(tshirt);
+            return transactionStatements.statementIdxToTShirt[index];
           }
           if (cancellationObj.Code !== "None")
             throw commonError;
